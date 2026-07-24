@@ -2,13 +2,16 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import { sessionFetch } from '@/lib/client-api';
+import { authenticatedFetch, sessionFetch } from '@/lib/client-api';
 import type { AdminSession, NavView } from '@/lib/types';
 import { AdminShell } from './admin-shell';
+import { AuditView } from './audit-view';
 import { CategoriesView } from './categories-view';
+import { ChangesetsView } from './changesets-view';
 import { LoginScreen } from './login-screen';
 import { MediaView } from './media-view';
 import { OverviewView } from './overview-view';
+import { SourcesView } from './sources-view';
 import { TutorialsView } from './tutorials-view';
 import { Spinner } from './ui';
 
@@ -24,16 +27,19 @@ export function AdminApp() {
   }, [refreshSession]);
 
   async function logout() {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await authenticatedFetch('/api/auth/logout', { method: 'POST' });
     setSession(null);
   }
 
-  if (session === undefined) return <main className="boot-screen"><div className="brand-mark">K</div><Spinner label="Opening Tutorial Studio" /></main>;
+  if (session === undefined) return <main className="boot-screen"><div className="brand-mark">K</div><Spinner label="Opening Admin Studio" /></main>;
   if (!session) return <LoginScreen onSuccess={refreshSession} />;
 
   return (
     <AdminShell session={session} view={view} onView={setView} onLogout={logout}>
       {view === 'overview' ? <OverviewView onNavigate={setView} /> : null}
+      {view === 'sources' ? <SourcesView /> : null}
+      {view === 'changesets' ? <ChangesetsView /> : null}
+      {view === 'audit' ? <AuditView /> : null}
       {view === 'tutorials' ? <TutorialsView /> : null}
       {view === 'categories' ? <CategoriesView /> : null}
       {view === 'media' ? <MediaView /> : null}

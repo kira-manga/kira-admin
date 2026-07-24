@@ -1,9 +1,12 @@
 import type { SVGProps } from 'react';
 
-export type IconName = 'overview' | 'tutorials' | 'categories' | 'media' | 'logout' | 'plus' | 'arrow' | 'archive' | 'restore' | 'upload' | 'edit' | 'close' | 'check' | 'menu' | 'spark' | 'history' | 'trash' | 'chevronUp' | 'chevronDown';
+export type IconName = 'overview' | 'sources' | 'changesets' | 'audit' | 'tutorials' | 'categories' | 'media' | 'logout' | 'plus' | 'arrow' | 'archive' | 'restore' | 'upload' | 'edit' | 'close' | 'check' | 'menu' | 'spark' | 'history' | 'trash' | 'chevronUp' | 'chevronDown';
 
 const paths: Record<IconName, React.ReactNode> = {
   overview: <><rect x="3" y="3" width="7" height="7" rx="2" /><rect x="14" y="3" width="7" height="7" rx="2" /><rect x="3" y="14" width="7" height="7" rx="2" /><rect x="14" y="14" width="7" height="7" rx="2" /></>,
+  sources: <><circle cx="6" cy="6" r="2" /><circle cx="18" cy="6" r="2" /><circle cx="12" cy="18" r="2" /><path d="m8 7 3 9m5-9-3 9M8 6h8" /></>,
+  changesets: <><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5" /><path d="m15 16 1.5 1.5L20 14" /></>,
+  audit: <><path d="M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6l-8-3Z" /><path d="m8.5 12 2.2 2.2 4.8-5" /></>,
   tutorials: <><path d="M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2V4Z" /><path d="M8 8h8M8 12h6M8 16h5" /></>,
   categories: <><path d="M3 7h7l2 2h9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" /><path d="M3 7V5a2 2 0 0 1 2-2h5l2 2h5" /></>,
   media: <><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="m4 17 5-4 4 3 3-2 4 3" /></>,

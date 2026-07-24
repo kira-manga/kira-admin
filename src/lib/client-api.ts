@@ -1,5 +1,6 @@
 type Problem = { detail?: string; title?: string; message?: string; fieldErrors?: Array<{ message?: string }> };
 export type UploadProgress = { loaded: number; total: number; percent: number };
+let csrfToken = '';
 
 export class ApiError extends Error {
   constructor(message: string, readonly status: number) {
@@ -26,12 +27,17 @@ function readUploadError(request: XMLHttpRequest) {
 }
 
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+  return (await apiFetchWithMeta<T>(path, init)).data;
+}
+
+export async function apiFetchWithMeta<T>(path: string, init: RequestInit = {}): Promise<{ data: T; etag: string | null }> {
   const headers = new Headers(init.headers);
   if (init.body && !(init.body instanceof FormData)) headers.set('Content-Type', 'application/json');
+  if (init.method && init.method !== 'GET') headers.set('X-Kira-CSRF', csrfToken);
   const response = await fetch(`/api/backend/${path.replace(/^\//, '')}`, { ...init, headers, cache: 'no-store' });
   if (!response.ok) throw new ApiError(await readError(response), response.status);
-  if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+  if (response.status === 204) return { data: undefined as T, etag: response.headers.get('etag') };
+  return { data: await response.json() as T, etag: response.headers.get('etag') };
 }
 
 export function apiUpload<T>(endpoint: string, body: FormData, onProgress: (progress: UploadProgress) => void): Promise<T> {
@@ -40,6 +46,7 @@ export function apiUpload<T>(endpoint: string, body: FormData, onProgress: (prog
     request.open('POST', endpoint);
     request.timeout = 70_000;
     request.setRequestHeader('Accept', 'application/json, application/problem+json');
+    request.setRequestHeader('X-Kira-CSRF', csrfToken);
     request.upload.addEventListener('progress', (event) => {
       if (!event.lengthComputable || event.total <= 0) return;
       onProgress({ loaded: event.loaded, total: event.total, percent: Math.min(100, Math.round((event.loaded / event.total) * 100)) });
@@ -70,5 +77,13 @@ export function apiUpload<T>(endpoint: string, body: FormData, onProgress: (prog
 export async function sessionFetch() {
   const response = await fetch('/api/auth/session', { cache: 'no-store' });
   if (!response.ok) return null;
-  return response.json();
+  const session = await response.json();
+  csrfToken = session.csrfToken;
+  return session;
+}
+
+export async function authenticatedFetch(path: string, init: RequestInit = {}) {
+  const headers = new Headers(init.headers);
+  headers.set('X-Kira-CSRF', csrfToken);
+  return fetch(path, { ...init, headers, cache: 'no-store' });
 }

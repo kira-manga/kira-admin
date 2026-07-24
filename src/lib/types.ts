@@ -5,6 +5,7 @@ export type AdminSession = {
   email: string;
   role: 'ADMIN';
   createdAt: string;
+  csrfToken: string;
 };
 
 export type AdminCategory = {
@@ -84,4 +85,94 @@ export type TutorialMedia = {
   createdAt: string;
 };
 
-export type NavView = 'overview' | 'tutorials' | 'categories' | 'media';
+export type NavView = 'overview' | 'sources' | 'changesets' | 'audit' | 'tutorials' | 'categories' | 'media';
+
+export type SourceHead = {
+  api: string;
+  displayName: string;
+  language: string;
+  engine: string;
+  status: 'draft' | 'withheld' | 'active' | 'disabled' | 'retired' | 'removed';
+  position: number;
+  baseUrl: string;
+  adult: boolean;
+  currentPublishedRevisionNumber: number | null;
+  latestRevisionNumber: number | null;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string | null;
+};
+
+export type SourceRevision = {
+  revisionNumber: number;
+  status: 'draft' | 'published' | 'superseded';
+  checksum: string;
+  createdBy: string;
+  createdAt: string;
+  publishedAt: string | null;
+  valid: boolean | null;
+};
+
+export type SourceDraft = {
+  id: string;
+  basedOnRevisionNumber: number;
+  content: string;
+  version: number;
+  createdBy: string;
+  updatedBy: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ValidationFinding = { code: string; path: string; message: string };
+export type ValidationResult = { valid: boolean; errors: ValidationFinding[]; warnings: ValidationFinding[] };
+
+export type SourceCapabilities = {
+  sourceSchemaVersion: number;
+  catalogSchemaVersion: number;
+  canonicalization: string;
+  authorableEngines: string[];
+  serverLifecycleStates: string[];
+  transforms: string[];
+  dateStrategies: string[];
+  imageStrategies: string[];
+  paginationStrategies: string[];
+  endpointMethods: string[];
+  endpointFormats: string[];
+  editorDraftMaxBytes: number;
+  optimisticLocking: string;
+  publicEnginePolicy: string;
+};
+
+export type SourceChange = {
+  type: 'publish' | 'disable' | 'enable' | 'retire' | 'remove' | 'reorder';
+  api?: string;
+  revisionNumber?: number;
+  confirm?: string;
+  orderedApis?: string[];
+};
+
+export type SourceChangeset = {
+  id: string;
+  name: string;
+  description: string | null;
+  operations: SourceChange[];
+  status: 'open' | 'applied' | 'discarded';
+  version: number;
+  appliedDocumentRevision: number | null;
+  createdBy: string;
+  updatedBy: string;
+  createdAt: string;
+  updatedAt: string;
+  appliedAt: string | null;
+};
+
+export type AuditEntry = {
+  id: number;
+  actorUserId: string | null;
+  action: string;
+  entityType: string;
+  entityId: string;
+  detail: Record<string, string | number | boolean | null>;
+  createdAt: string;
+};

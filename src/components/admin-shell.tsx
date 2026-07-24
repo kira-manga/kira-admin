@@ -7,6 +7,9 @@ import { Icon, type IconName } from './icons';
 
 const navigation: Array<{ id: NavView; label: string; detail: string; icon: IconName }> = [
   { id: 'overview', label: 'Overview', detail: 'Workspace pulse', icon: 'overview' },
+  { id: 'sources', label: 'Sources', detail: 'Catalog & revisions', icon: 'sources' },
+  { id: 'changesets', label: 'Changesets', detail: 'Atomic releases', icon: 'changesets' },
+  { id: 'audit', label: 'Audit history', detail: 'Verified activity', icon: 'audit' },
   { id: 'tutorials', label: 'Tutorials', detail: 'Guides & revisions', icon: 'tutorials' },
   { id: 'categories', label: 'Categories', detail: 'Library structure', icon: 'categories' },
   { id: 'media', label: 'Media', detail: 'Screenshots & assets', icon: 'media' },
@@ -19,7 +22,7 @@ export function AdminShell({ session, view, onView, onLogout, children }: { sess
   return (
     <div className="admin-shell">
       <aside className={`sidebar${mobileOpen ? ' sidebar-open' : ''}`}>
-        <div className="brand"><span>K</span><div><strong>Kira</strong><small>Tutorial Studio</small></div></div>
+        <div className="brand"><span>K</span><div><strong>Kira</strong><small>Admin Studio</small></div></div>
         <button className="mobile-close" type="button" onClick={() => setMobileOpen(false)} aria-label="Close navigation"><Icon name="close" /></button>
         <nav>
           <p>WORKSPACE</p>
@@ -29,7 +32,7 @@ export function AdminShell({ session, view, onView, onLogout, children }: { sess
             </button>
           ))}
         </nav>
-        <div className="sidebar-note"><Icon name="spark" /><div><strong>Live publishing</strong><small>Changes appear on the website in about 60 seconds.</small></div></div>
+        <div className="sidebar-note"><Icon name="audit" /><div><strong>Safe publishing</strong><small>Optimistic drafts, password step-up, and atomic catalogs.</small></div></div>
         <div className="profile-card">
           <span>{session.email.slice(0, 1).toUpperCase()}</span>
           <div><strong>{session.email}</strong><small>Administrator</small></div>
@@ -41,7 +44,7 @@ export function AdminShell({ session, view, onView, onLogout, children }: { sess
         <header className="topbar">
           <button className="menu-button" type="button" onClick={() => setMobileOpen(true)} aria-label="Open navigation"><Icon name="menu" /></button>
           <div><span>{current.detail}</span><h1>{current.label}</h1></div>
-          <a href="https://kiramanga.me/tutorials" target="_blank" rel="noreferrer">View live site <Icon name="arrow" /></a>
+          <a href="https://api.kiramanga.me/api/v1/source-config/catalog" target="_blank" rel="noreferrer">View live catalog <Icon name="arrow" /></a>
         </header>
         <div className="workspace-content">{children}</div>
       </main>
