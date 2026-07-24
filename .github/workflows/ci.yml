@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "feature/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kira-admin-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up Node
+        uses: actions/setup-node@1e60f620b9541d3b445d8f646f0a96273e571305 # v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Verify source, security policy, tests, and production build
+        run: npm run verify
+
+      - name: Audit production dependency graph
+        run: npm audit --omit=dev --audit-level=high
+
+  container:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Build exact-SHA production image
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          load: true
+          push: false
+          tags: kira-admin:${{ github.sha }}
+          build-args: |
+            VERSION=${{ github.sha }}
+            VCS_REF=${{ github.sha }}
+            BUILD_DATE=1970-01-01T00:00:00Z
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke-test the read-only runtime container
+        shell: bash
+        run: |
+          set -euo pipefail
+          container=kira-admin-smoke
+          trap 'docker rm --force "$container" >/dev/null 2>&1 || true' EXIT
+          docker run --detach --name "$container" \
+            --read-only --tmpfs /tmp:size=16m \
+            --env KIRA_BACKEND_URL=https://api.kiramanga.me \
+            --env KIRA_ADMIN_ORIGIN=http://127.0.0.1:18082 \
+            --publish 127.0.0.1:18082:8080 \
+            "kira-admin:${GITHUB_SHA}"
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error --max-time 3 \
+              http://127.0.0.1:18082/ >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs "$container"
+          exit 1
