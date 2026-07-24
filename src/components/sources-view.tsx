@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { apiFetch, apiFetchWithMeta } from '@/lib/client-api';
+import { persistEditorDraft } from '@/lib/source-draft-publish';
 import type { SourceCapabilities, SourceDraft, SourceHead, SourceRevision, ValidationResult } from '@/lib/types';
 import { Icon } from './icons';
 import { StepUpDialog } from './step-up-dialog';
@@ -65,14 +66,14 @@ export function SourcesView() {
     generic: sources?.filter((source) => source.engine === 'generic').length ?? 0,
   }), [sources]);
 
-  async function openEditor() {
+  async function openEditor(fromRevision?: number) {
     if (!selected) return;
     setBusy(true);
     setError('');
     try {
       const result = await apiFetchWithMeta<SourceDraft>(`sources/${encodeURIComponent(selected.api)}/editor-draft`, {
         method: 'POST',
-        body: '{}',
+        body: JSON.stringify(fromRevision === undefined ? {} : { fromRevision }),
       });
       if (!result.etag) throw new Error('The backend did not return the required draft ETag.');
       setEditor({ draft: result.data, etag: result.etag, content: pretty(result.data.content), validation: null });
@@ -167,10 +168,17 @@ export function SourcesView() {
   async function publishDraft() {
     if (!editor || !selected) return;
     setBusy(true);
+    setError('');
     try {
+      // Quick publish must publish what is currently visible in the editor, not merely the
+      // last explicitly saved server draft. Persist first and use the returned optimistic
+      // token for the protected publish request.
+      const saved = await persistEditorDraft(selected.api, editor);
+      const current: EditorState = { ...saved, validation: null };
+      setEditor(current);
       const result = await apiFetchWithMeta<{ draft: SourceDraft; publication: { documentRevision: number } }>(
         `sources/${encodeURIComponent(selected.api)}/editor-draft/publish`,
-        { method: 'POST', headers: { 'If-Match': editor.etag } },
+        { method: 'POST', headers: { 'If-Match': current.etag } },
       );
       if (!result.etag) throw new Error('The backend did not return the updated draft ETag.');
       setEditor({ draft: result.data.draft, etag: result.etag, content: pretty(result.data.draft.content), validation: null });
@@ -197,7 +205,7 @@ export function SourcesView() {
 
   return (
     <div className="view-stack source-studio">
-      <section className="view-heading"><div><span className="eyebrow"><Icon name="sources" /> SOURCE CONTROL</span><h2>Catalog sources</h2><p>Edit generic source definitions with server-side drafts. Bundled and legacy engines are visible as history only and cannot be published through this studio.</p></div><Button icon="edit" tone="primary" onClick={openEditor} disabled={!selected || busy}>Edit selected source</Button></section>
+      <section className="view-heading"><div><span className="eyebrow"><Icon name="sources" /> SOURCE CONTROL</span><h2>Catalog sources</h2><p>Edit generic source definitions with server-side drafts. Bundled and legacy engines are visible as history only and cannot be published through this studio.</p></div><Button icon="edit" tone="primary" onClick={() => void openEditor()} disabled={!selected || busy}>Edit selected source</Button></section>
       <section className="source-kpis">
         <div><small>Active</small><strong>{counts.active}</strong><span>available to apps</span></div>
         <div><small>Withheld</small><strong>{counts.withheld}</strong><span>unavailable to apps</span></div>
@@ -216,8 +224,8 @@ export function SourcesView() {
         <div className="panel manager-detail">
           {selected ? <><div className="detail-hero"><div><span className="eyebrow">{selected.engine.toUpperCase()} ENGINE</span><h3>{selected.displayName}</h3><p>{selected.baseUrl}</p></div><StatusBadge status={selected.status} /></div>
             <div className="detail-meta"><div><span>PUBLISHED REVISION</span><strong>{selected.currentPublishedRevisionNumber ?? '—'}</strong></div><div><span>LATEST REVISION</span><strong>{selected.latestRevisionNumber ?? '—'}</strong></div><div><span>UPDATED</span><strong>{formatDate(selected.updatedAt)}</strong></div></div>
-            <div className="revision-heading"><div><span className="eyebrow">IMMUTABLE HISTORY</span><h4>Source revisions</h4></div><Button icon="edit" onClick={openEditor}>Open editor</Button></div>
-            <div className="revision-list">{revisions.map((revision) => <article className={revision.status === 'published' ? 'current' : ''} key={revision.revisionNumber}><span className="revision-number">r{revision.revisionNumber}</span><div><strong>{revision.status}</strong><small>{revision.checksum.slice(0, 16)}…</small><p>{formatDate(revision.createdAt)}</p></div><StatusBadge status={revision.valid === false ? 'invalid' : revision.status} /></article>)}</div></> : <EmptyState icon="sources" title="Select a source" copy="Choose a catalog source to inspect its immutable history." />}
+            <div className="revision-heading"><div><span className="eyebrow">IMMUTABLE HISTORY</span><h4>Source revisions</h4></div><Button icon="edit" onClick={() => void openEditor()}>Open editor</Button></div>
+            <div className="revision-list">{revisions.map((revision) => <article className={revision.status === 'published' ? 'current' : ''} key={revision.revisionNumber}><span className="revision-number">r{revision.revisionNumber}</span><div><strong>{revision.status}</strong><small>{revision.checksum.slice(0, 16)}…</small><p>{formatDate(revision.createdAt)}</p></div><div className="revision-actions"><StatusBadge status={revision.valid === false ? 'invalid' : revision.status} />{revision.status === 'draft' ? <Button type="button" onClick={() => void openEditor(revision.revisionNumber)} disabled={busy}>Open draft</Button> : null}</div></article>)}</div></> : <EmptyState icon="sources" title="Select a source" copy="Choose a catalog source to inspect its immutable history." />}
         </div>
       </section>
 
