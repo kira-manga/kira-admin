@@ -1,10 +1,15 @@
+import { randomBytes } from 'node:crypto';
+
 import { NextResponse } from 'next/server';
 
-import { adminTokenCookie, backendUrl } from '@/lib/server-config';
+import { adminCsrfCookie, adminTokenCookie, backendUrl } from '@/lib/server-config';
+import { requireSameOrigin } from '@/lib/server-security';
 
 type LoginResponse = { accessToken: string; expiresInSeconds: number; role: string };
 
 export async function POST(request: Request) {
+  const rejected = await requireSameOrigin(request);
+  if (rejected) return rejected;
   const body = await request.text();
   const upstream = await fetch(`${backendUrl}/api/v1/auth/login`, {
     method: 'POST',
@@ -23,6 +28,13 @@ export async function POST(request: Request) {
   const response = NextResponse.json({ role: login.role, expiresInSeconds: login.expiresInSeconds });
   response.cookies.set(adminTokenCookie, login.accessToken, {
     httpOnly: true,
+    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: login.expiresInSeconds,
+  });
+  response.cookies.set(adminCsrfCookie, randomBytes(32).toString('base64url'), {
+    httpOnly: false,
     sameSite: 'strict',
     secure: process.env.NODE_ENV === 'production',
     path: '/',

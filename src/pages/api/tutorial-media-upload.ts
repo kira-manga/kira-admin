@@ -1,9 +1,11 @@
 import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
+import { timingSafeEqual } from 'node:crypto';
+import { TLSSocket } from 'node:tls';
 
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { adminTokenCookie, backendUrl } from '@/lib/server-config';
+import { adminCsrfCookie, adminOrigin, adminTokenCookie, backendUrl } from '@/lib/server-config';
 
 const maxRequestBytes = 5 * 1024 * 1024;
 const upstreamTimeoutMs = 65_000;
@@ -18,6 +20,22 @@ export default function handler(request: NextApiRequest, response: NextApiRespon
   if (request.method !== 'POST') {
     response.setHeader('Allow', 'POST');
     response.status(405).json({ detail: 'Method not allowed.' });
+    return;
+  }
+
+  const host = request.headers['x-forwarded-host'] ?? request.headers.host;
+  const protocol = request.headers['x-forwarded-proto'] ?? (request.socket instanceof TLSSocket ? 'https' : 'http');
+  const expectedOrigin = adminOrigin || (host ? `${protocol}://${host}` : '');
+  const origin = request.headers.origin;
+  const expectedCsrf = request.cookies[adminCsrfCookie];
+  const suppliedCsrf = request.headers['x-kira-csrf'];
+  if (
+    !origin || origin !== expectedOrigin ||
+    request.headers['sec-fetch-site'] === 'cross-site' ||
+    !expectedCsrf || typeof suppliedCsrf !== 'string' ||
+    !constantTimeEqual(expectedCsrf, suppliedCsrf)
+  ) {
+    response.status(403).json({ detail: 'Invalid cross-site request token.' });
     return;
   }
 
@@ -90,4 +108,10 @@ export default function handler(request: NextApiRequest, response: NextApiRespon
     request.on('aborted', () => upstreamRequest.destroy());
     request.pipe(upstreamRequest);
   });
+}
+
+function constantTimeEqual(left: string, right: string) {
+  const a = Buffer.from(left);
+  const b = Buffer.from(right);
+  return a.length === b.length && timingSafeEqual(a, b);
 }

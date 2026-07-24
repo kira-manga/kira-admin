@@ -39,11 +39,11 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
       <div className="login-glow login-glow-one" />
       <div className="login-glow login-glow-two" />
       <section className="login-card">
-        <div className="login-brand"><span>K</span><div><strong>Kira</strong><small>Tutorial Studio</small></div></div>
+        <div className="login-brand"><span>K</span><div><strong>Kira</strong><small>Admin Studio</small></div></div>
         <div className="login-copy">
           <span className="eyebrow"><Icon name="spark" /> PRIVATE WORKSPACE</span>
-          <h1>Shape every guide from one calm place.</h1>
-          <p>Write in English and Arabic, manage screenshots, review revisions, and publish directly to the Kira website.</p>
+          <h1>Operate Kira from one calm place.</h1>
+          <p>Edit generic sources, review immutable revisions, publish atomic catalogs, and manage the bilingual tutorial library.</p>
         </div>
         <form onSubmit={submit} className="login-form">
           <div className="login-form-heading"><h2>Welcome back</h2><p>Use your Kira administrator account.</p></div>

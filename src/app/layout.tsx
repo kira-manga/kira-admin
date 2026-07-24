@@ -4,8 +4,8 @@ import type { ReactNode } from 'react';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Kira Tutorial Studio',
-  description: 'Private tutorial administration workspace for Kira.',
+  title: 'Kira Admin Studio',
+  description: 'Private source catalog and tutorial administration workspace for Kira.',
   robots: { index: false, follow: false },
 };
 
