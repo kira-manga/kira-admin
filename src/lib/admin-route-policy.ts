@@ -10,6 +10,7 @@ export function adminRouteAllowed(path: string[], method: string) {
     return ['GET', 'POST', 'DELETE'].includes(method) && !(method === 'POST' && path[0] === 'tutorial-media');
   }
   if (joined === 'source-studio/capabilities') return method === 'GET';
+  if (joined === 'source-preview') return method === 'POST';
   if (path[0] === 'audit' || path[0] === 'documents') return method === 'GET';
   if (path[0] === 'source-changesets') return ['GET', 'POST', 'PUT', 'DELETE'].includes(method);
   if (path[0] !== 'sources') return false;

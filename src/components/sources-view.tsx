@@ -9,6 +9,7 @@ import { StepUpDialog } from './step-up-dialog';
 import { Button, EmptyState, Field, Input, Spinner, StatusBadge, Textarea, formatDate } from './ui';
 
 type EditorState = { draft: SourceDraft; etag: string; content: string; validation: ValidationResult | null };
+type PreviewOperation = 'home' | 'featured' | 'search';
 
 export function SourcesView() {
   const [sources, setSources] = useState<SourceHead[] | null>(null);
@@ -21,6 +22,11 @@ export function SourcesView() {
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const [confirmPublish, setConfirmPublish] = useState(false);
+  const [previewFixture, setPreviewFixture] = useState('');
+  const [previewOutput, setPreviewOutput] = useState('');
+  const [previewOperation, setPreviewOperation] = useState<PreviewOperation>('home');
+  const [previewQuery, setPreviewQuery] = useState('');
+  const [previewPage, setPreviewPage] = useState(1);
 
   const load = useCallback(async () => {
     try {
@@ -133,6 +139,31 @@ export function SourcesView() {
     }
   }
 
+  async function previewDraft() {
+    if (!editor) return;
+    setBusy(true);
+    setError('');
+    try {
+      const result = await apiFetch<{ success: boolean; output: unknown; error: string | null; request: unknown }>('source-preview', {
+        method: 'POST',
+        body: JSON.stringify({
+          sourceJson: editor.content,
+          operation: previewOperation,
+          page: previewPage,
+          query: previewQuery,
+          responseStatus: 200,
+          responseBody: previewFixture,
+        }),
+      });
+      setPreviewOutput(JSON.stringify(result, null, 2));
+      setMessage(result.success ? 'Shared-engine preview completed.' : `Preview failed: ${result.error ?? 'unknown error'}`);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Preview failed.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function publishDraft() {
     if (!editor || !selected) return;
     setBusy(true);
@@ -193,7 +224,7 @@ export function SourcesView() {
       {editor && selected ? <div className="editor-layer"><section className="source-editor">
         <header><div><span>SERVER DRAFT · {editor.etag}</span><h2>{selected.displayName}</h2></div><div><Button onClick={saveDraft} disabled={busy}>Save draft</Button><Button onClick={validateDraft} disabled={busy}>Validate</Button><Button onClick={finalizeDraft} disabled={busy}>Create revision</Button><Button tone="primary" onClick={() => setConfirmPublish(true)} disabled={busy}>Quick publish</Button><button className="editor-close" type="button" onClick={() => setEditor(null)} aria-label="Close editor"><Icon name="close" /></button></div></header>
         <div className="source-editor-grid">
-          <aside><h3>Guided fields</h3><p>These edit the same JSON shown on the right.</p><Field label="Display name"><Input value={readTopLevel(editor.content, 'displayName')} onChange={(event) => updateTopLevel('displayName', event.target.value)} /></Field><Field label="Base URL"><Input value={readTopLevel(editor.content, 'baseUrl')} onChange={(event) => updateTopLevel('baseUrl', event.target.value)} /></Field><Field label="Language"><Input value={readTopLevel(editor.content, 'language')} onChange={(event) => updateTopLevel('language', event.target.value)} /></Field><Field label="Source revision"><Input type="number" min="1" value={readTopLevel(editor.content, 'sourceRevision')} onChange={(event) => updateTopLevel('sourceRevision', Number(event.target.value))} /></Field><div className="contract-card"><strong>Backend vocabulary</strong><small>{capabilities.transforms.length} transforms · {capabilities.paginationStrategies.length} pagination strategies</small><small>Max draft {Math.round(capabilities.editorDraftMaxBytes / 1024)} KiB · {capabilities.publicEnginePolicy}</small></div></aside>
+          <aside><h3>Guided fields</h3><p>These edit the same JSON shown on the right.</p><Field label="Display name"><Input value={readTopLevel(editor.content, 'displayName')} onChange={(event) => updateTopLevel('displayName', event.target.value)} /></Field><Field label="Base URL"><Input value={readTopLevel(editor.content, 'baseUrl')} onChange={(event) => updateTopLevel('baseUrl', event.target.value)} /></Field><Field label="Language"><Input value={readTopLevel(editor.content, 'language')} onChange={(event) => updateTopLevel('language', event.target.value)} /></Field><Field label="Source revision"><Input type="number" min="1" value={readTopLevel(editor.content, 'sourceRevision')} onChange={(event) => updateTopLevel('sourceRevision', Number(event.target.value))} /></Field><div className="contract-card"><strong>Backend vocabulary</strong><small>{capabilities.transforms.length} transforms · {capabilities.paginationStrategies.length} pagination strategies</small><small>Max draft {Math.round(capabilities.editorDraftMaxBytes / 1024)} KiB · {capabilities.publicEnginePolicy}</small></div><Field label="Preview operation"><select className="input" value={previewOperation} onChange={(event) => setPreviewOperation(event.target.value as PreviewOperation)}><option value="home">Home</option><option value="featured">Featured</option><option value="search">Search</option></select></Field>{previewOperation === 'search' ? <Field label="Search query"><Input value={previewQuery} maxLength={500} onChange={(event) => setPreviewQuery(event.target.value)} /></Field> : null}<Field label="Preview page"><Input type="number" min="1" max="10000" value={previewPage} onChange={(event) => setPreviewPage(Math.max(1, Number(event.target.value) || 1))} /></Field><Field label={`${previewOperation} response fixture`} hint="Paste a saved HTML/JSON response. Preview never performs server-side network access."><Textarea value={previewFixture} onChange={(event) => setPreviewFixture(event.target.value)} /></Field><Button onClick={previewDraft} disabled={busy || !previewFixture}>Run shared-engine preview</Button>{previewOutput ? <pre className="preview-output">{previewOutput}</pre> : null}</aside>
           <main><div className="code-heading"><div><span>RAW SOURCE JSON</span><small>{new TextEncoder().encode(editor.content).length.toLocaleString()} bytes</small></div></div><Textarea className="source-code" spellCheck={false} value={editor.content} onChange={(event) => setEditor({ ...editor, content: event.target.value, validation: null })} />
             {editor.validation ? <div className={`validation-panel ${editor.validation.valid ? 'valid' : 'invalid'}`}><strong>{editor.validation.valid ? 'Validation passed' : `${editor.validation.errors.length} blocking issue(s)`}</strong>{[...editor.validation.errors, ...editor.validation.warnings].map((finding) => <p key={`${finding.code}-${finding.path}`}><code>{finding.code}</code> {finding.path}: {finding.message}</p>)}</div> : null}
           </main>

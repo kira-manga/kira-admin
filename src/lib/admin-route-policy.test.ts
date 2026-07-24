@@ -9,6 +9,7 @@ describe('admin BFF route policy', () => {
     expect(adminRouteAllowed(['sources', 'Azora', 'editor-draft', 'publish'], 'POST')).toBe(true);
     expect(adminRouteAllowed(['source-changesets', 'id', 'apply'], 'POST')).toBe(true);
     expect(adminRouteAllowed(['audit'], 'GET')).toBe(true);
+    expect(adminRouteAllowed(['source-preview'], 'POST')).toBe(true);
   });
 
   it('denies operational escape hatches and direct lifecycle publication', () => {

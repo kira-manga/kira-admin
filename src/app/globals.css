@@ -251,6 +251,7 @@ svg { width: 1.1rem; height: 1.1rem; }
 .contract-card { display: flex; flex-direction: column; gap: .35rem; margin-top: 1.4rem; padding: .85rem; border: 1px solid var(--line); border-radius: .75rem; background: var(--surface); }
 .contract-card strong { color: var(--coral); font-size: .58rem; }
 .contract-card small { color: var(--muted); font-size: .48rem; line-height: 1.45; }
+.preview-output { max-height: 14rem; overflow: auto; margin: .8rem 0 0; padding: .7rem; border: 1px solid var(--line); border-radius: .65rem; background: #090a0e; color: var(--muted-light); font-size: .48rem; white-space: pre-wrap; }
 .validation-panel { flex: 0 0 auto; max-height: 12rem; overflow-y: auto; margin-top: .75rem; padding: .85rem; border: 1px solid var(--line); border-radius: .75rem; background: var(--surface); }
 .validation-panel.valid { border-color: rgba(85,214,160,.3); }
 .validation-panel.invalid { border-color: rgba(255,102,125,.3); }
