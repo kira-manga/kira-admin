@@ -132,6 +132,9 @@ svg { width: 1.1rem; height: 1.1rem; }
 .status { min-height: 1.55rem; display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .5rem; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.025); color: var(--muted-light); font-size: .45rem; font-weight: 750; letter-spacing: .04em; }
 .status i { width: .35rem; height: .35rem; border-radius: 50%; background: var(--muted); }
 .status-published { border-color: rgba(85,214,160,.2); color: #7edeb4; }.status-published i { background: var(--mint); box-shadow: 0 0 .45rem var(--mint); }
+.status-enabled { border-color: rgba(85,214,160,.2); color: #7edeb4; }.status-enabled i { background: var(--mint); box-shadow: 0 0 .45rem var(--mint); }
+.status-under-maintenance { border-color: rgba(244,184,102,.2); color: #eac287; }.status-under-maintenance i { background: var(--amber); }
+.status-disabled { border-color: rgba(255,102,125,.2); color: #ff91a2; }.status-disabled i { background: var(--danger); }
 .status-draft { border-color: rgba(244,184,102,.2); color: #eac287; }.status-draft i { background: var(--amber); }
 .status-archived { color: #777a84; }
 .empty-state { min-height: 17rem; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2.5rem; text-align: center; }
@@ -232,6 +235,19 @@ svg { width: 1.1rem; height: 1.1rem; }
 .source-row small { margin-top: .25rem; color: var(--muted); font-size: .48rem; }
 .source-position { width: 2rem; height: 2rem; display: grid; place-items: center; border: 1px solid var(--line); border-radius: .55rem; color: var(--coral); font-size: .5rem; }
 .source-position svg { width: .9rem; }
+.operational-control { display: flex; align-items: center; justify-content: space-between; gap: 1.25rem; padding: 1.1rem 1.3rem; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.012); }
+.operational-control > div:first-child { display: flex; flex-direction: column; }
+.operational-control > div:first-child span { color: var(--coral); font-size: .45rem; font-weight: 750; letter-spacing: .1em; }
+.operational-control > div:first-child strong { margin-top: .3rem; font-size: .7rem; }
+.operational-control > div:first-child small { max-width: 28rem; margin-top: .3rem; color: var(--muted); font-size: .48rem; line-height: 1.5; }
+.mode-switch { flex: 0 0 auto; display: grid; grid-template-columns: repeat(3, auto); gap: .25rem; padding: .25rem; border: 1px solid var(--line); border-radius: .7rem; background: #0e0f14; }
+.mode-switch button { min-height: 2.25rem; padding: .45rem .65rem; border: 1px solid transparent; border-radius: .5rem; background: transparent; color: var(--muted); cursor: pointer; font-size: .52rem; font-weight: 700; }
+.mode-switch button:hover:not(:disabled) { color: var(--text); background: var(--surface-high); }
+.mode-switch button.active { color: var(--text); opacity: 1; }
+.mode-switch .mode-enabled.active { border-color: rgba(85,214,160,.25); background: rgba(85,214,160,.1); color: #8be5bd; }
+.mode-switch .mode-under_maintenance.active { border-color: rgba(244,184,102,.25); background: rgba(244,184,102,.1); color: #f2c98f; }
+.mode-switch .mode-disabled.active { border-color: rgba(255,102,125,.25); background: rgba(255,102,125,.08); color: #ff91a2; }
+.mode-unavailable { max-width: 15rem; color: var(--muted); font-size: .52rem; line-height: 1.5; text-align: right; }
 .source-editor { height: 100vh; display: flex; flex-direction: column; background: var(--canvas); }
 .source-editor > header { min-height: 5.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .8rem 1.3rem; border-bottom: 1px solid var(--line); background: rgba(17,18,24,.95); backdrop-filter: blur(1.5rem); }
 .source-editor > header > div:first-child { display: flex; flex-direction: column; }
@@ -287,6 +303,9 @@ svg { width: 1.1rem; height: 1.1rem; }
 @media (max-width: 48rem) {
   .source-kpis { grid-template-columns: 1fr; }
   .source-kpis > div { border-right: 0; border-bottom: 1px solid var(--line); }
+  .operational-control { align-items: stretch; flex-direction: column; }
+  .mode-switch { grid-template-columns: 1fr; }
+  .mode-unavailable { max-width: none; text-align: left; }
   .source-editor > header { align-items: flex-start; }
   .source-editor > header > div:last-child { flex-wrap: wrap; justify-content: flex-end; }
   .source-editor-grid { grid-template-columns: 1fr; overflow-y: auto; }

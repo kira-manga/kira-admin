@@ -21,7 +21,8 @@ export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
 }
 
 export function StatusBadge({ status }: { status: string }) {
-  return <span className={`status status-${status.toLowerCase()}`}><i />{status}</span>;
+  const className = status.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return <span className={`status status-${className}`}><i />{status}</span>;
 }
 
 export function EmptyState({ icon, title, copy, action }: { icon: IconName; title: string; copy: string; action?: ReactNode }) {

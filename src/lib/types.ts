@@ -93,6 +93,8 @@ export type SourceHead = {
   language: string;
   engine: string;
   status: 'draft' | 'withheld' | 'active' | 'disabled' | 'retired' | 'removed';
+  siteState?: 'WORKING' | 'UNDER_MAINTENANCE' | 'STOPPED' | 'ADULT_18_PLUS' | null;
+  operationalMode?: SourceOperationalMode | null;
   position: number;
   baseUrl: string;
   adult: boolean;
@@ -101,6 +103,17 @@ export type SourceHead = {
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;
+};
+
+export type SourceOperationalMode = 'enabled' | 'disabled' | 'under_maintenance';
+
+export type SourceOperationalModeResult = {
+  api: string;
+  mode: SourceOperationalMode;
+  sourceRevisionNumber: number;
+  documentRevision: number;
+  checksum: string;
+  noOp: boolean;
 };
 
 export type SourceRevision = {

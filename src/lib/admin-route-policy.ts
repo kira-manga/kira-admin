@@ -18,6 +18,7 @@ export function adminRouteAllowed(path: string[], method: string) {
   if (joined === 'sources') return method === 'POST';
   if (/^sources\/[^/]+\/revisions$/.test(joined)) return method === 'POST';
   if (/^sources\/[^/]+\/revisions\/[1-9][0-9]*\/validate$/.test(joined)) return method === 'POST';
+  if (/^sources\/[^/]+\/operational-mode$/.test(joined)) return method === 'PUT';
   if (/^sources\/[^/]+\/editor-draft(?:\/(?:validate|finalize|publish))?$/.test(joined)) {
     return ['POST', 'PUT', 'DELETE'].includes(method);
   }
@@ -26,5 +27,5 @@ export function adminRouteAllowed(path: string[], method: string) {
 
 export function routeNeedsStepUp(path: string[]) {
   const joined = path.join('/');
-  return joined.endsWith('/apply') || joined.endsWith('/editor-draft/publish');
+  return joined.endsWith('/apply') || joined.endsWith('/editor-draft/publish') || /^sources\/[^/]+\/operational-mode$/.test(joined);
 }

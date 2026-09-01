@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { apiFetch, apiFetchWithMeta } from '@/lib/client-api';
 import { persistEditorDraft } from '@/lib/source-draft-publish';
-import type { SourceCapabilities, SourceDraft, SourceHead, SourceRevision, ValidationResult } from '@/lib/types';
+import type { SourceCapabilities, SourceDraft, SourceHead, SourceOperationalMode, SourceOperationalModeResult, SourceRevision, ValidationResult } from '@/lib/types';
 import { Icon } from './icons';
 import { StepUpDialog } from './step-up-dialog';
 import { Button, EmptyState, Field, Input, Spinner, StatusBadge, Textarea, formatDate } from './ui';
@@ -23,6 +23,7 @@ export function SourcesView() {
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const [confirmPublish, setConfirmPublish] = useState(false);
+  const [pendingMode, setPendingMode] = useState<SourceOperationalMode | null>(null);
   const [previewFixture, setPreviewFixture] = useState('');
   const [previewOutput, setPreviewOutput] = useState('');
   const [previewOperation, setPreviewOperation] = useState<PreviewOperation>('home');
@@ -58,12 +59,12 @@ export function SourcesView() {
   const selected = sources?.find((source) => source.api === selectedApi) ?? null;
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    return (sources ?? []).filter((source) => !needle || `${source.api} ${source.displayName} ${source.language} ${source.status}`.toLowerCase().includes(needle));
+    return (sources ?? []).filter((source) => !needle || `${source.api} ${source.displayName} ${source.language} ${source.status} ${source.operationalMode ?? ''}`.toLowerCase().includes(needle));
   }, [query, sources]);
   const counts = useMemo(() => ({
-    active: sources?.filter((source) => source.status === 'active').length ?? 0,
-    withheld: sources?.filter((source) => source.status === 'withheld').length ?? 0,
-    generic: sources?.filter((source) => source.engine === 'generic').length ?? 0,
+    enabled: sources?.filter((source) => source.operationalMode === 'enabled').length ?? 0,
+    maintenance: sources?.filter((source) => source.operationalMode === 'under_maintenance').length ?? 0,
+    disabled: sources?.filter((source) => source.operationalMode === 'disabled').length ?? 0,
   }), [sources]);
 
   async function openEditor(fromRevision?: number) {
@@ -190,6 +191,28 @@ export function SourcesView() {
     }
   }
 
+  async function applyOperationalMode() {
+    if (!selected || !pendingMode) return;
+    setBusy(true);
+    setError('');
+    try {
+      const result = await apiFetch<SourceOperationalModeResult>(
+        `sources/${encodeURIComponent(selected.api)}/operational-mode`,
+        { method: 'PUT', body: JSON.stringify({ mode: pendingMode }) },
+      );
+      setMessage(result.noOp
+        ? `${selected.displayName} is already ${modeLabel(result.mode).toLowerCase()}.`
+        : `${selected.displayName} is now ${modeLabel(result.mode).toLowerCase()} in catalog revision ${result.documentRevision}.`);
+      setPendingMode(null);
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not change the source mode.');
+      throw caught;
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function updateTopLevel(field: string, value: string | number) {
     if (!editor) return;
     try {
@@ -207,9 +230,9 @@ export function SourcesView() {
     <div className="view-stack source-studio">
       <section className="view-heading"><div><span className="eyebrow"><Icon name="sources" /> SOURCE CONTROL</span><h2>Catalog sources</h2><p>Edit generic source definitions with server-side drafts. Bundled and legacy engines are visible as history only and cannot be published through this studio.</p></div><Button icon="edit" tone="primary" onClick={() => void openEditor()} disabled={!selected || busy}>Edit selected source</Button></section>
       <section className="source-kpis">
-        <div><small>Active</small><strong>{counts.active}</strong><span>available to apps</span></div>
-        <div><small>Withheld</small><strong>{counts.withheld}</strong><span>unavailable to apps</span></div>
-        <div><small>Generic</small><strong>{counts.generic}</strong><span>publishable engine</span></div>
+        <div><small>Enabled</small><strong>{counts.enabled}</strong><span>available to apps</span></div>
+        <div><small>Maintenance</small><strong>{counts.maintenance}</strong><span>visible, requests blocked</span></div>
+        <div><small>Disabled</small><strong>{counts.disabled}</strong><span>removed from active app catalog</span></div>
         <div><small>Contract</small><strong>v{capabilities.sourceSchemaVersion}</strong><span>{capabilities.canonicalization}</span></div>
       </section>
       {message ? <div className="notice notice-success">{message}</div> : null}
@@ -218,11 +241,12 @@ export function SourcesView() {
         <div className="panel manager-list">
           <div className="source-search"><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search source, language, status…" /></div>
           <div className="entity-list">
-            {filtered.map((source) => <button className={`source-row${selectedApi === source.api ? ' selected' : ''}`} type="button" key={source.api} onClick={() => setSelectedApi(source.api)}><span className="source-position">{source.position + 1}</span><div><strong>{source.displayName}</strong><small>{source.api} · {source.language}</small></div><StatusBadge status={source.status} /></button>)}
+            {filtered.map((source) => <button className={`source-row${selectedApi === source.api ? ' selected' : ''}`} type="button" key={source.api} onClick={() => setSelectedApi(source.api)}><span className="source-position">{source.position + 1}</span><div><strong>{source.displayName}</strong><small>{source.api} · {source.language}</small></div><StatusBadge status={source.operationalMode ? modeLabel(source.operationalMode) : source.status} /></button>)}
           </div>
         </div>
         <div className="panel manager-detail">
-          {selected ? <><div className="detail-hero"><div><span className="eyebrow">{selected.engine.toUpperCase()} ENGINE</span><h3>{selected.displayName}</h3><p>{selected.baseUrl}</p></div><StatusBadge status={selected.status} /></div>
+          {selected ? <><div className="detail-hero"><div><span className="eyebrow">{selected.engine.toUpperCase()} ENGINE</span><h3>{selected.displayName}</h3><p>{selected.baseUrl}</p></div><StatusBadge status={selected.operationalMode ? modeLabel(selected.operationalMode) : selected.status} /></div>
+            <div className="operational-control"><div><span>APP AVAILABILITY</span><strong>Operational mode</strong><small>Publishes one signed catalog update. Foreground apps revalidate immediately and poll while active.</small></div>{selected.operationalMode ? <div className="mode-switch" role="radiogroup" aria-label={`Operational mode for ${selected.displayName}`}>{OPERATIONAL_MODES.map((mode) => <button type="button" role="radio" aria-checked={selected.operationalMode === mode} className={`mode-${mode}${selected.operationalMode === mode ? ' active' : ''}`} disabled={busy || selected.operationalMode === mode} onClick={() => setPendingMode(mode)} key={mode}>{modeLabel(mode)}</button>)}</div> : <span className="mode-unavailable">Managed through the advanced lifecycle workflow</span>}</div>
             <div className="detail-meta"><div><span>PUBLISHED REVISION</span><strong>{selected.currentPublishedRevisionNumber ?? '—'}</strong></div><div><span>LATEST REVISION</span><strong>{selected.latestRevisionNumber ?? '—'}</strong></div><div><span>UPDATED</span><strong>{formatDate(selected.updatedAt)}</strong></div></div>
             <div className="revision-heading"><div><span className="eyebrow">IMMUTABLE HISTORY</span><h4>Source revisions</h4></div><Button icon="edit" onClick={() => void openEditor()}>Open editor</Button></div>
             <div className="revision-list">{revisions.map((revision) => <article className={revision.status === 'published' ? 'current' : ''} key={revision.revisionNumber}><span className="revision-number">r{revision.revisionNumber}</span><div><strong>{revision.status}</strong><small>{revision.checksum.slice(0, 16)}…</small><p>{formatDate(revision.createdAt)}</p></div><div className="revision-actions"><StatusBadge status={revision.valid === false ? 'invalid' : revision.status} />{revision.status === 'draft' ? <Button type="button" onClick={() => void openEditor(revision.revisionNumber)} disabled={busy}>Open draft</Button> : null}</div></article>)}</div></> : <EmptyState icon="sources" title="Select a source" copy="Choose a catalog source to inspect its immutable history." />}
@@ -239,8 +263,16 @@ export function SourcesView() {
         </div>
       </section></div> : null}
       {confirmPublish ? <StepUpDialog action={`publishing ${selected?.api}`} onCancel={() => setConfirmPublish(false)} onApproved={publishDraft} /> : null}
+      {pendingMode ? <StepUpDialog action={`setting ${selected?.api} to ${modeLabel(pendingMode).toLowerCase()}`} onCancel={() => setPendingMode(null)} onApproved={applyOperationalMode} /> : null}
     </div>
   );
+}
+
+const OPERATIONAL_MODES: SourceOperationalMode[] = ['enabled', 'under_maintenance', 'disabled'];
+
+function modeLabel(mode: SourceOperationalMode) {
+  if (mode === 'under_maintenance') return 'Under maintenance';
+  return mode[0].toUpperCase() + mode.slice(1);
 }
 
 function pretty(content: string) {
