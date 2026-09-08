@@ -1,0 +1,31 @@
+{
+  "verified_at": "2026-09-08T10:05:32.611398+03:00",
+  "scope": "Owned GitHub-transfer staging only; no build, remediation, merge, deployment or issue closure.",
+  "owned_temporary_directory_removed": "kira-github-checkpoint-3llgo1rp",
+  "temporary_files_removed": 10117,
+  "temporary_logical_bytes_removed": 456004684,
+  "temporary_open_file_check": "lsof +D returned 1 with empty stdout/stderr before removal",
+  "owned_Admin_validation_process_groups_absent": [
+    33381,
+    33438
+  ],
+  "generated_paths_confirmed_absent": [
+    "kira-backend/build",
+    "kira-backend/buildSrc/build",
+    "kira-admin/node_modules",
+    "kira-admin/.next",
+    "kira-admin/out",
+    "kira-admin/coverage"
+  ],
+  "final_archive_preserved_sha256": "da94218f74eb0f5831241c8606c8f82142e49b818acfaff027a78f2efe77faab",
+  "original_review_evidence_preserved": true,
+  "root_AGENTS_preserved_byte_for_byte": true,
+  "all_delegated_tasks_stopped": true,
+  "foreign_processes_stopped": false,
+  "source_configuration_signing_files_deleted": false,
+  "global_dependency_caches_deleted": false,
+  "free_disk_bytes_before": 11168710656,
+  "free_disk_bytes_after": 11650809856,
+  "archive_not_rebuilt": "This final cleanup receipt sits beside the already verified immutable review archive.",
+  "prior_inspection_note": "A read-only shell inspection shadowed zsh PATH with a loop variable; the GitHub visibility query was rerun in a fresh shell and confirmed private/push-enabled. No product validation was affected."
+}
