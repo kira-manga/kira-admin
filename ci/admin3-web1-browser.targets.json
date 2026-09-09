@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "admin": {
+    "repository": "kira-manga/kira-admin",
+    "sha": "3004f84d679d9fbbe261199419064e32b7113a1e",
+    "sha256": {
+      "src/components/sources-view.tsx": "450f9bc7465fe9d85b87541a0b8ba5396825340fe445356961eeaad75523bb58",
+      "src/components/changesets-view.tsx": "40876a4222d7830745d15d32f7f40b2c8c4b9bc839de4af7c5e242976956acb7",
+      "src/components/step-up-dialog.tsx": "b0a69911892baf8241fd42fd05ffdf3ca86d9af0d4c9a6b5968b802f7bfd19b0",
+      "src/lib/source-draft-publish.ts": "045c49061c18433d765af3a3ab172f7d1e7265e11c76f7037958b0b9a8c762e7",
+      "src/lib/source-draft-publish.test.ts": "30609a1f36e511fff9c6efa273dd31ad4b0607f519ab6478109ea2fe70eb00da",
+      "src/lib/changeset-editor.ts": "801a2884153b33d76212173d5db88294e9345b1f10636b62f3b377a8931fabff",
+      "src/lib/changeset-editor.test.ts": "32820b2810da4b77f54ca27e2f4b5c02f3e75a6c4674ab728f89867b06486e91",
+      "src/lib/action-owner.ts": "d04c9b3d026b1456f1cb0cfebae4b5199a7fe451d83edcf93324c9e5e2fd5beb",
+      "src/lib/action-owner.test.ts": "858ddbf6667fa09ff29984a49eadb511807f6b9c0874e633989374e834f639e3",
+      "src/lib/step-up.ts": "75fa8a81fc5ffab71ee2e3a8863e0372467b10ea31c0a68fe351b6af60a63109",
+      "src/lib/step-up.test.ts": "bd355802963614a48e6014efac4689a3c9e65339646cedbcfc736b285fc6ce35"
+    }
+  },
+  "web": {
+    "repository": "kira-manga/kira-web",
+    "sha": "3348a1c6142da66b3547286a12b0240ffefe36c8"
+  }
+}

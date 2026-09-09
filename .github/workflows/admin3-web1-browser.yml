@@ -1,0 +1,127 @@
+name: Admin3 and Web1 targeted browser validation (private)
+on:
+  push:
+    branches: [remediation/app-29-backend-complaints]
+    paths:
+      - .github/workflows/admin3-web1-browser.yml
+      - ci/admin3-web1-browser.mjs
+      - ci/admin3-web1-browser.targets.json
+permissions:
+  contents: read
+concurrency:
+  group: admin3-web1-private-browser-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  browser:
+    if: github.event.repository.private == true && github.repository == 'kira-manga/kira-admin'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      EVIDENCE_ROOT: ${{ runner.temp }}/admin3-web1-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Check out exact private control commit
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.sha }}
+          path: control
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Require primary-bound exact product commits
+        id: targets
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync, appendFileSync } from 'node:fs';
+          const targets = JSON.parse(readFileSync('control/ci/admin3-web1-browser.targets.json', 'utf8'));
+          assert.equal(targets.schemaVersion, 1);
+          for (const name of ['admin', 'web']) {
+            assert.equal(targets[name].repository, 'kira-manga/kira-' + name);
+            assert.match(targets[name].sha, /^[0-9a-f]{40}$/);
+            assert.notEqual(targets[name].sha, '0'.repeat(40), 'Primary must bind the reviewed ' + name + ' commit');
+            appendFileSync(process.env.GITHUB_OUTPUT, name + '=' + targets[name].sha + '\n');
+          }
+          NODE
+      - name: Check out exact private Admin product
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: kira-manga/kira-admin
+          ref: ${{ steps.targets.outputs.admin }}
+          path: admin
+          persist-credentials: false
+      - name: Check out exact public Web product
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: kira-manga/kira-web
+          ref: ${{ steps.targets.outputs.web }}
+          path: web
+          persist-credentials: false
+      - name: Bind clean sources and final reviewed Admin files
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
+          import { createHash } from 'node:crypto';
+          import { execFileSync } from 'node:child_process';
+          const targets = JSON.parse(readFileSync('control/ci/admin3-web1-browser.targets.json', 'utf8'));
+          const digest = path => createHash('sha256').update(readFileSync(path)).digest('hex');
+          const git = (root, ...args) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', timeout: 5000 }).trim();
+          for (const name of ['admin', 'web']) {
+            assert.equal(git(name, 'rev-parse', 'HEAD'), targets[name].sha);
+            assert.equal(git(name, 'status', '--porcelain'), '', 'Dirty product checkout');
+            assert(!readdirSync(name).some(file => file.startsWith('.env') && !file.endsWith('.example')), 'No local dotenv files');
+          }
+          assert.equal(Object.keys(targets.admin.sha256).length, 11);
+          for (const [file, sha] of Object.entries(targets.admin.sha256)) assert.equal(digest('admin/' + file), sha, file);
+          mkdirSync(process.env.EVIDENCE_ROOT, { mode: 0o700 });
+          writeFileSync(process.env.EVIDENCE_ROOT + '/bindings.json', JSON.stringify({ carrier: process.env.GITHUB_SHA, targets, node: process.version, harnessSha256: digest('control/ci/admin3-web1-browser.mjs') }, null, 2) + '\n', { flag: 'wx' });
+          NODE
+      - name: Build executable servers only (primary owns lint, types and unit gates)
+        id: build
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          build_home=$(mktemp -d /tmp/kira-build-XXXXXX)
+          trap 'timeout --signal=TERM --kill-after=5s 15s rm -rf -- "$build_home"' EXIT
+          allowed=(env -i "PATH=$PATH" "HOME=$build_home" "TMPDIR=$build_home" CI=true NEXT_TELEMETRY_DISABLED=1 KIRA_BACKEND_URL=http://127.0.0.1:9 KIRA_ADMIN_ORIGIN=http://localhost:3100 KIRA_TUTORIAL_API_URL=http://127.0.0.1:9 NEXT_PUBLIC_KIRA_API_URL=http://127.0.0.1:9 KIRA_WEB_PRODUCTION=false)
+          for product in admin web; do
+            (cd "$product" && timeout --signal=TERM --kill-after=10s 90s "${allowed[@]}" npm ci --no-audit --no-fund) > "$EVIDENCE_ROOT/$product-install.log" 2>&1
+            (cd "$product" && timeout --signal=TERM --kill-after=10s 150s "${allowed[@]}" npm run build) > "$EVIDENCE_ROOT/$product-build.log" 2>&1
+          done
+      - name: Actual Admin UI/BFF and Web rendered missing-detail 404
+        id: smoke
+        timeout-minutes: 4
+        shell: bash
+        run: |
+          set -euo pipefail
+          node control/ci/admin3-web1-browser.mjs --app-root "$GITHUB_WORKSPACE/admin" --web-root "$GITHUB_WORKSPACE/web" --output-root "$EVIDENCE_ROOT/smoke"
+      - name: Keep only private diagnostic evidence for three days
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always() && steps.build.outcome != 'skipped'
+        with:
+          name: admin3-web1-browser-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.EVIDENCE_ROOT }}/bindings.json
+            ${{ env.EVIDENCE_ROOT }}/*-install.log
+            ${{ env.EVIDENCE_ROOT }}/*-build.log
+            ${{ env.EVIDENCE_ROOT }}/smoke/*.json
+            ${{ env.EVIDENCE_ROOT }}/smoke/*.log
+            ${{ env.EVIDENCE_ROOT }}/smoke/*.png
+          retention-days: 3
+          if-no-files-found: error
+      - name: Remove only generated product outputs after evidence upload
+        if: always()
+        timeout-minutes: 1
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout --signal=TERM --kill-after=10s 45s rm -rf -- \
+            "$GITHUB_WORKSPACE/admin/node_modules" "$GITHUB_WORKSPACE/admin/.next" "$GITHUB_WORKSPACE/admin/tsconfig.tsbuildinfo" \
+            "$GITHUB_WORKSPACE/web/node_modules" "$GITHUB_WORKSPACE/web/.next" "$GITHUB_WORKSPACE/web/tsconfig.tsbuildinfo"
