@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 
 import { apiFetch } from '@/lib/client-api';
+import { buildFeaturedToggleItems } from '@/lib/tutorial-featured-order';
 import type { AdminCategory, AdminTutorial, TutorialMedia, TutorialRevision } from '@/lib/types';
 import { Icon } from './icons';
 import { TutorialEditor } from './tutorial-editor';
@@ -82,8 +83,7 @@ export function TutorialsView() {
 
   async function toggleFeatured() {
     if (!selected) return;
-    const featured = tutorials.filter((item) => item.featuredPosition !== null && item.id !== selected.id).sort((a, b) => (a.featuredPosition ?? 0) - (b.featuredPosition ?? 0));
-    const next = tutorials.map((item) => ({ id: item.id, position: item.position, featuredPosition: item.id === selected.id ? (selected.featuredPosition === null ? featured.length : null) : item.featuredPosition }));
+    const next = buildFeaturedToggleItems(tutorials, selected);
     try { await mutate(() => apiFetch('tutorials/reorder', { method: 'POST', body: JSON.stringify({ items: next }) }), selected.featuredPosition === null ? 'Tutorial added to the homepage.' : 'Tutorial removed from the homepage.'); } catch { /* shown above */ }
   }
 
