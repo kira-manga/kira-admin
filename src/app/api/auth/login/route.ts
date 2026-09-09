@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto';
 
 import { NextResponse } from 'next/server';
 
+import { authenticationIdentityHeaders } from '@/lib/server-client-ip';
 import { adminCsrfCookie, adminTokenCookie, backendUrl } from '@/lib/server-config';
 import { requireSameOrigin } from '@/lib/server-security';
 
@@ -13,7 +14,11 @@ export async function POST(request: Request) {
   const body = await request.text();
   const upstream = await fetch(`${backendUrl}/api/v1/auth/login`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      ...authenticationIdentityHeaders(request),
+    },
     body,
     cache: 'no-store',
   });

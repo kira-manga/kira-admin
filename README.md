@@ -42,6 +42,27 @@ No ADMIN password or backend JWT is deployed with the dashboard. Operators authe
 existing backend login; the BFF keeps the resulting short-lived credentials in secure HTTP-only
 cookies.
 
+### Authentication client identity
+
+`KIRA_ADMIN_TRUSTED_INGRESS` is server-only and defaults off, including in production. Only the exact
+values `true` and `false` are accepted when set. `true` also requires the exact
+`KIRA_BACKEND_URL=http://backend:8080` (no trailing slash); configuration is checked when server config
+loads. Other deployments retain their configurable backend URL with trust unset/false.
+
+Enable it only after the reviewed server3 ingress topology is installed and verified: Nginx must
+overwrite X-Real-IP and X-Forwarded-For with the observed peer and clear Forwarded; Admin must be
+reachable only through that ingress, with host-loopback publication and a dedicated non-internal
+Backend/Admin NAT bridge excluding Web. Follow the backend server3 runbook's Engine >=28.0.0,
+firewall, routing and actual peer checks. Host and Backend remain trusted. Server3 Compose pins the
+internal URL and opt-in, overriding env-file values. Installed isolation remains external verification;
+Origin/CSRF checks alone do not authenticate the proxy.
+
+Only login and password step-up consume one bounded numeric X-Real-IP and construct a fresh canonical
+X-Forwarded-For. Incoming XFF/Forwarded chains are never copied, and the generic BFF is unchanged.
+With trust off or missing/invalid/duplicate/oversized metadata, neither forwarding header is sent:
+the backend falls back to the BFF peer, a **degraded shared throttle bucket**, not distinct-client isolation.
+No client-IP form field, browser configuration or new secret is introduced.
+
 ## Live catalog view and post-deploy smoke
 
 **View live catalog** opens the same-origin /api/catalog/manifest endpoint in a new tab.
