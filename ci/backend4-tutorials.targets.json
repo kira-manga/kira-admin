@@ -1,15 +1,14 @@
 {
-  "backend_sha": "e4b1b97ecbf50a7290e8860cf5ef5dafc848415f",
+  "backend_sha": "a4601cf2ba9298e911c2dc696dce3f6edbb84ed9",
   "classes": {
-    "me.manga.kira.backend.tutorial.TutorialLifecycleIT": 8,
-    "me.manga.kira.backend.tutorial.TutorialCategoryRestartIT": 1
+    "me.manga.kira.backend.tutorial.TutorialLifecycleIT": 8
   },
   "source_hashes": {
     "docs/TUTORIALS.md": "757fc814430b18a2d74c3d8c8bab64012b2af99b8dd919c6ecb7da35ad3a010c",
     "src/main/kotlin/me/manga/kira/backend/tutorial/application/TutorialService.kt": "4552b4d21a28f8e873c925ca8dd74a9e3435c64ba6fe5d255bc33664dd3bd802",
     "src/main/kotlin/me/manga/kira/backend/tutorial/application/TutorialSeed.kt": "26129593df7abd14c1586c4573a0b3e9b6436cb1f1f9273a7538cd0df709b23d",
-    "src/test/kotlin/me/manga/kira/backend/tutorial/TutorialLifecycleIT.kt": "66cc136fa124a45acc632ce557cab346a99672b6359603aa1cc07a1c81a67d8a",
+    "src/test/kotlin/me/manga/kira/backend/tutorial/TutorialLifecycleIT.kt": "91155aacf66bedcf9494c354cda47803540d3b8dc1ee73790829aee1c2a83b33",
     "src/test/kotlin/me/manga/kira/backend/tutorial/TutorialCategoryRestartIT.kt": "2dd4bcecc1f2083461b5a651b7b4286729dca413d32a9b7efe51f06d30afb453"
   },
-  "status": "SOURCE_REVIEWED; targeted PostgreSQL/compiler/static validation pending, not accepted integration"
+  "status": "SOURCE_REVIEWED; corrected Lifecycle8 validation pending; reuse unchanged run34392910971 restart1 PASS; not integrated"
 }
