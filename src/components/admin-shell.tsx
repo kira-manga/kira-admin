@@ -44,7 +44,7 @@ export function AdminShell({ session, view, onView, onLogout, children }: { sess
         <header className="topbar">
           <button className="menu-button" type="button" onClick={() => setMobileOpen(true)} aria-label="Open navigation"><Icon name="menu" /></button>
           <div><span>{current.detail}</span><h1>{current.label}</h1></div>
-          <a href="https://api.kiramanga.me/api/v1/source-config/catalog" target="_blank" rel="noreferrer">View live catalog <Icon name="arrow" /></a>
+          <a href="/api/catalog/manifest" target="_blank" rel="noopener noreferrer">View live catalog <Icon name="arrow" /></a>
         </header>
         <div className="workspace-content">{children}</div>
       </main>
