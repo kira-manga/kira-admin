@@ -140,10 +140,113 @@ async function evaluate(expression) {
   assert(!reply.exceptionDetails, reply.exceptionDetails?.text); return reply.result.value;
 }
 const uiWait = expression => until(() => evaluate(expression), expression);
+
+// Passive application-promise evidence only. Raw CDP body completion remains a separate fact.
+const stepUpBinding = '__kiraPrivateStepUpFetch', stepUpFetches = [], stepUpNetwork = new Map(), stepUpContexts = new Map();
+function installStepUpFetchObserver(origin, bindingName) {
+  'use strict';
+  if (location.origin !== origin) return;
+  const nativeFetch = globalThis.fetch, nativeThen = Promise.prototype.then, notify = globalThis[bindingName], observed = [];
+  let ordinal = 0, failed = false;
+  const failure = () => { failed = true; try { notify(JSON.stringify({ phase: 'observer-failed' })); } catch { /* The checkpoint also fails closed. */ } };
+  const report = (row, phase) => notify(JSON.stringify({ ordinal: row.ordinal, phase, status: row.status, ok: row.ok, aborted: row.aborted }));
+  function update(row, phase, response) {
+    try {
+      row.aborted ||= row.signal?.aborted === true;
+      if (phase === 'fulfilled') { row.state = 'fulfilled'; row.status = response.status; row.ok = response.ok; }
+      if (phase === 'rejected') row.state = 'rejected'; // Never inspect the rejection value.
+      report(row, phase);
+    } catch { failure(); }
+  }
+  const passThrough = function (...args) {
+    const promise = Reflect.apply(nativeFetch, this, args); // Exactly one original call, receiver and arguments; synchronous throws also pass through.
+    if (args[0] !== '/api/auth/step-up') return promise;
+    try {
+      // The pinned client uses this literal path and a plain own-data POST init. Do not inspect headers/body or invoke init getters.
+      const init = args[1], method = Object.getOwnPropertyDescriptor(init, 'method'), signalField = Object.getOwnPropertyDescriptor(init, 'signal');
+      if (method?.value !== 'POST' || signalField && !Object.hasOwn(signalField, 'value') || 'signal' in init && !signalField) throw Error('Unsupported observation shape');
+      const signal = signalField?.value ?? null;
+      if (signal !== null && !(signal instanceof AbortSignal)) throw Error('Unsupported observation signal');
+      const row = { ordinal: ++ordinal, state: 'pending', status: null, ok: null, aborted: signal?.aborted === true, signal };
+      observed.push(row); report(row, 'start');
+      signal?.addEventListener('abort', () => update(row, 'aborted'), { once: true }); // Retained after fulfillment to observe late aborts.
+      nativeThen.call(promise, response => update(row, 'fulfilled', response), () => update(row, 'rejected'));
+    } catch { failure(); }
+    return promise; // Not the observation's derived promise; no Response replacement or body read/clone/cancel.
+  };
+  globalThis.fetch = passThrough;
+  Object.defineProperty(globalThis, bindingName + 'Healthy', { value: () => {
+    try { return !failed && globalThis.fetch === passThrough && observed.every(row => row.state !== 'rejected' && !row.aborted && row.signal?.aborted !== true); }
+    catch { return false; }
+  } });
+}
+const isStepUpRequest = row => row?.product === 'admin' && row.method === 'POST' && row.path === '/api/auth/step-up';
+function correlateStepUpFetches() {
+  const calls = stepUpFetches.filter(row => row.requestId === null), requests = [...stepUpNetwork].filter(([, row]) => !row.applicationFetch);
+  assert(calls.length <= 1 && requests.length <= 1, 'Ambiguous native step-up fetch/CDP correlation');
+  if (calls.length && requests.length) {
+    const [requestId, row] = requests[0], call = calls[0];
+    assert(row.type === 'Fetch' && row.frameId === call.frameId, 'Step-up fetch/CDP frame or request-kind mismatch');
+    call.requestId = requestId; row.applicationFetch = call;
+  }
+}
+function requireStepUpHealth() {
+  for (const call of stepUpFetches) assert(!call.aborted && call.state !== 'rejected', 'Actual step-up fetch aborted or rejected');
+  for (const row of stepUpNetwork.values()) {
+    assert(!row.loadingFailed && row.completion !== 'failed', 'Actual step-up CDP loadingFailed, including after application fulfillment');
+    if (row.status !== null && row.applicationFetch?.state === 'fulfilled') assert.equal(row.applicationFetch.status, row.status, 'Step-up fetch/CDP status mismatch');
+  }
+}
+function receiveStepUpObservation(contextId, payload) {
+  assert(typeof payload === 'string' && payload.length <= 256, 'Invalid step-up observation framing');
+  let data; try { data = JSON.parse(payload); } catch { throw Error('Invalid step-up observation JSON'); }
+  assert(data && typeof data === 'object' && data.phase !== 'observer-failed', 'Native step-up observer failed');
+  assert.deepEqual(Object.keys(data).sort(), ['aborted', 'ok', 'ordinal', 'phase', 'status']);
+  assert(Number.isSafeInteger(data.ordinal) && data.ordinal > 0 && typeof data.aborted === 'boolean', 'Invalid step-up observation scalars');
+  const frameId = stepUpContexts.get(contextId); assert(typeof frameId === 'string', 'Step-up observer is not in a known default document context');
+  let row = stepUpFetches.find(call => call.contextId === contextId && call.ordinal === data.ordinal);
+  if (data.phase === 'start') {
+    assert(!row && !stepUpFetches.some(call => call.state === 'pending'), 'Concurrent or duplicate step-up fetch is ambiguous');
+    assert.equal(data.ordinal, stepUpFetches.filter(call => call.contextId === contextId).length + 1, 'Step-up call ordinal gap');
+    assert(data.status === null && data.ok === null, 'Pending step-up fabricated a result');
+    row = { contextId, frameId, ordinal: data.ordinal, requestId: null, state: 'pending', status: null, ok: null, aborted: data.aborted };
+    stepUpFetches.push(row);
+  } else {
+    assert(row, 'Step-up completion has no original call');
+    if (data.phase === 'fulfilled') {
+      assert(row.state === 'pending' && Number.isInteger(data.status) && data.status >= 0 && data.status <= 599 && typeof data.ok === 'boolean', 'Invalid or duplicate step-up fulfillment');
+      assert.equal(data.ok, data.status >= 200 && data.status < 300, 'Inconsistent native response metadata');
+      row.state = 'fulfilled'; row.status = data.status; row.ok = data.ok;
+    } else if (data.phase === 'rejected') {
+      assert(row.state === 'pending' && data.status === null && data.ok === null, 'Invalid step-up rejection'); row.state = 'rejected';
+    } else {
+      assert(data.phase === 'aborted' && data.aborted && data.status === row.status && data.ok === row.ok, 'Invalid step-up abort observation');
+    }
+    row.aborted ||= data.aborted;
+  }
+  correlateStepUpFetches(); networkAt = Date.now(); requireStepUpHealth();
+}
+function successfulStepUpFetch(row) {
+  const call = row?.applicationFetch;
+  return isStepUpRequest(row) && row.status === 200 && !row.loadingFailed && row.completion !== 'failed' && call?.state === 'fulfilled' &&
+    call.status === 200 && call.ok === true && !call.aborted && stepUpNetwork.get(call.requestId) === row;
+}
+function applicationQuiet() {
+  requireStepUpHealth();
+  return stepUpFetches.every(row => row.requestId !== null && row.state === 'fulfilled') &&
+    [...stepUpNetwork.values()].every(row => row.applicationFetch) && [...active.values()].every(successfulStepUpFetch);
+}
+async function stepUpObserverCheckpoint() {
+  requireStepUpHealth();
+  if (product === 'admin') assert(await evaluate(`globalThis[${q(stepUpBinding + 'Healthy')}]?.() === true`), 'Native step-up observer checkpoint failed');
+  requireStepUpHealth(); if (fatal) throw fatal;
+}
 async function settle() {
-  await until(() => active.size === 0 && Date.now() - networkAt >= 200, 'browser API quiet');
+  await stepUpObserverCheckpoint();
+  await until(() => applicationQuiet() && Date.now() - networkAt >= 200, 'browser API quiet');
   await evaluate('new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))');
-  await until(() => active.size === 0 && Date.now() - networkAt >= 200, 'browser API quiet after rendering');
+  await until(() => applicationQuiet() && Date.now() - networkAt >= 200, 'browser API quiet after rendering');
+  await stepUpObserverCheckpoint();
 }
 function button(name, scope = '') { return `[...document.querySelectorAll(${q((scope ? scope + ' ' : '') + 'button')})].find(e => (e.querySelector('strong')?.textContent ?? e.textContent).trim() === ${q(name)} || e.getAttribute('aria-label') === ${q(name)})`; }
 async function click(name, scope) { await evaluate(`(() => { const e = ${button(name, scope)}; if (!e || e.matches(':disabled')) throw Error('Missing/disabled button'); e.click(); })()`); }
@@ -267,8 +370,17 @@ async function smoke() {
     // Deliberate lifecycle injection through the real AdminApp navigation handler, not a pointer click through the modal or a reload.
     await click('Changesets', '.sidebar nav'); await uiWait(`!document.querySelector(${q(dialog)}) && !document.querySelector('.source-editor') && !!document.querySelector('.changeset-editor')`);
     assert.deepEqual(await evaluate('({href:location.href,timeOrigin:performance.timeOrigin})'), identity);
-    auth.release(); await until(() => mutations(start)[0].status === 200 && browserRequests.slice(browserStarts.get(start)).some(e => e.path === '/api/auth/step-up' && e.status === 200 && e.completion === 'finished'), 'late verification completed successfully through BFF');
+    let verification;
+    auth.release(); await until(() => {
+      const requests = browserRequests.slice(browserStarts.get(start)).filter(isStepUpRequest);
+      assert(requests.length <= 1, 'Ambiguous late verification request'); verification = requests[0];
+      return mutations(start)[0].status === 200 && successfulStepUpFetch(verification);
+    }, 'late verification fixture200 + CDP200 + actual native fetch fulfillment200');
     await settle(); assert.equal(mutations(start).length, 1);
+    assert.deepEqual(await evaluate('({href:location.href,timeOrigin:performance.timeOrigin})'), identity);
+    requireStepUpHealth(); assert(successfulStepUpFetch(verification)); assert.equal(mutations(start)[0].status, 200);
+    assert.equal(key(mutations(start)[0].method, mutations(start)[0].path), key('POST', stepPath));
+    assert(!events.slice(start).some(e => e.path.endsWith('/publish') || e.path.endsWith('/apply')));
     assert(!browserRequests.slice(browserStarts.get(start)).some(e => e.path.endsWith('/publish') || e.path.endsWith('/apply')));
   });
   await scenario('changeset selection is single-flight and locks replacement/create', async () => {
@@ -370,13 +482,26 @@ try {
     const message = JSON.parse(event.data), pending = calls.get(message.id);
     if (pending) { calls.delete(message.id); clearTimeout(pending.timer); message.error ? pending.reject(new Error(q(message.error))) : pending.resolve(message.result); return; }
     const p = message.params;
+    if (message.method === 'Runtime.executionContextCreated' && p.context.auxData?.isDefault) stepUpContexts.set(p.context.id, p.context.auxData.frameId);
+    if (message.method === 'Runtime.bindingCalled' && p.name === stepUpBinding) receiveStepUpObservation(p.executionContextId, p.payload);
     if (message.method === 'Network.requestWillBeSent' && new URL(p.request.url).origin === pageOrigin && (p.type === 'Document' || new URL(p.request.url).pathname.startsWith('/api/'))) {
       const row = { product, type: p.type, method: p.request.method, path: new URL(p.request.url).pathname, status: null, completion: null, ...(p.type === 'Document' ? { frameId: p.frameId, loaderId: p.loaderId } : {}) };
       browserRequests.push(row); active.set(p.requestId, row); networkAt = Date.now();
+      if (isStepUpRequest(row)) {
+        assert(!stepUpNetwork.has(p.requestId), 'Duplicate or redirected step-up CDP request');
+        row.frameId = p.frameId; row.loadingFailed = false; stepUpNetwork.set(p.requestId, row); correlateStepUpFetches();
+      }
     }
-    if (message.method === 'Network.responseReceived' && active.has(p.requestId)) active.get(p.requestId).status = p.response.status;
-    if (['Network.loadingFinished', 'Network.loadingFailed'].includes(message.method) && active.has(p.requestId)) {
-      active.get(p.requestId).completion = message.method === 'Network.loadingFinished' ? 'finished' : 'failed'; active.delete(p.requestId); networkAt = Date.now();
+    if (message.method === 'Network.responseReceived') {
+      const row = active.get(p.requestId) ?? stepUpNetwork.get(p.requestId);
+      if (row) row.status = p.response.status;
+      requireStepUpHealth();
+    }
+    if (['Network.loadingFinished', 'Network.loadingFailed'].includes(message.method)) {
+      const row = active.get(p.requestId) ?? stepUpNetwork.get(p.requestId);
+      if (message.method === 'Network.loadingFailed' && stepUpNetwork.has(p.requestId)) row.loadingFailed = true;
+      if (row) { row.completion = message.method === 'Network.loadingFinished' ? 'finished' : 'failed'; active.delete(p.requestId); networkAt = Date.now(); }
+      requireStepUpHealth(); // Keep observing even when application quiet passed or a prior raw completion removed the active row.
     }
     if (message.method === 'Runtime.exceptionThrown') fatal = new Error('Uncaught browser exception: ' + p.exceptionDetails.text);
     if (message.method === 'Fetch.requestPaused') {
@@ -387,6 +512,9 @@ try {
     } catch (error) { fatal = error; }
   };
   await cdp('Page.enable'); await cdp('Runtime.enable'); await cdp('Network.enable'); await cdp('Fetch.enable', { patterns: [{ urlPattern: '*' }] });
+  await cdp('Runtime.addBinding', { name: stepUpBinding });
+  await cdp('Page.addScriptToEvaluateOnNewDocument', { source: `(${installStepUpFetchObserver.toString()})(${q(origin)}, ${q(stepUpBinding)})` });
+  result.stepUpCompletionOracle = 'Actual native fetch fulfillment200 + matching CDP200 + no observed abort/loadingFailed through assertions; raw body completion stays separate/possibly null';
   result.browser = await cdp('Browser.getVersion');
   await cdp('Page.navigate', { url: origin }); await smoke(); await web404(webOrigin); if (fatal) throw fatal; result.status = 'PASS';
 } catch (error) { result.error = error.stack ?? String(error); }
@@ -405,6 +533,7 @@ finally {
   if (!result.cleanup) result.status = 'FAIL';
   await writeFile(join(out, 'events.json'), JSON.stringify(events, null, 2) + '\n', { flag: 'wx' });
   await writeFile(join(out, 'browser-requests.json'), JSON.stringify(browserRequests, null, 2) + '\n', { flag: 'wx' });
+  await writeFile(join(out, 'step-up-fetches.json'), JSON.stringify(stepUpFetches, null, 2) + '\n', { flag: 'wx' });
   await writeFile(join(out, 'result.json'), JSON.stringify(result, null, 2) + '\n', { flag: 'wx' });
   console.log(JSON.stringify({ status: result.status, cases: result.cases.length, cleanup: result.cleanup, evidence: out }));
   process.exitCode = result.status === 'PASS' ? 0 : 1;
