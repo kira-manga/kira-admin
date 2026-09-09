@@ -41,3 +41,30 @@ KIRA_ADMIN_ORIGIN=https://admin.kiramanga.me
 No ADMIN password or backend JWT is deployed with the dashboard. Operators authenticate through the
 existing backend login; the BFF keeps the resulting short-lived credentials in secure HTTP-only
 cookies.
+
+## Live catalog view and post-deploy smoke
+
+**View live catalog** opens the same-origin /api/catalog/manifest endpoint in a new tab.
+Its fixed server-only GET fetches /api/v2/source-config/manifest using KIRA_BACKEND_URL;
+the browser never receives that origin, and the proxy does not forward admin credentials.
+It preserves the signed manifest bytes and public integrity headers, including conditional 304
+responses, but disables caching for this operator view.
+
+The view has a **1,048,576-byte decoded-body limit** and a **10-second fetch-and-body deadline**.
+This is a proxy-local display budget, not a backend publication limit: larger valid manifests
+return a generic 502 through this view. A no-publication 404, upstream/configuration failure 502,
+or timeout 504 is not successful release verification. Do not create a publication or fall back
+to an unrelated route just to make smoke pass.
+
+After a separately authorized deployment, set KIRA_ADMIN_ORIGIN to the exact public admin origin
+without a trailing slash and make one bounded, read-only request (no credentials or redirects):
+
+    curl --fail --silent --show-error --max-time 15 --dump-header - --output /dev/null \
+      "$KIRA_ADMIN_ORIGIN/api/catalog/manifest"
+
+Require HTTP 200, application/json, ETag and X-Config-Checksum, with no-store/no-transform and
+nosniff headers. Then click the actual shell link: it must open the same-origin JSON in a new tab,
+show catalogRevision and sources, and never expose the backend origin or the obsolete v1/catalog
+404. Do not paste production response bodies into issues or build logs. Deployment/publication
+prerequisites remain external verification; the existing container root-page smoke alone does not
+exercise this endpoint.
