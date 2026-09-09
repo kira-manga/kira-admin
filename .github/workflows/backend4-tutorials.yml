@@ -1,0 +1,62 @@
+name: Backend4 targeted tutorial PostgreSQL validation (private)
+on:
+  push:
+    branches: [remediation/app-29-backend-complaints]
+    paths:
+      - .github/workflows/backend4-tutorials.yml
+      - ci/backend4-tutorials.py
+      - ci/backend4-tutorials.targets.json
+permissions:
+  contents: read
+concurrency:
+  group: backend4-private-tutorials-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  tutorial-postgres:
+    if: github.event.repository.private == true && github.repository == 'kira-manga/kira-admin'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out exact private carrier
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.sha }}
+          path: admin
+          persist-credentials: false
+      - name: Require a primary-bound exact Backend issue commit
+        id: target
+        shell: bash
+        run: |
+          python3 -B - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          value = json.loads(Path('admin/ci/backend4-tutorials.targets.json').read_text())['backend_sha']
+          assert re.fullmatch('[0-9a-f]{40}', value) and value != '0' * 40, 'Unbound Backend4 target'
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('sha=' + value + '\n')
+          PY
+      - name: Check out only the exact public Backend issue target
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: kira-manga/Kira-backend
+          ref: ${{ steps.target.outputs.sha }}
+          path: backend
+          persist-credentials: false
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Run only reviewed tutorial classes with real PostgreSQL and statics
+        id: validation
+        env:
+          BACKEND4_RUN: ${{ runner.temp }}/backend4-${{ github.run_id }}-${{ github.run_attempt }}
+        run: python3 -B admin/ci/backend4-tutorials.py
+      - name: Retain private focused results only
+        if: always() && steps.validation.outcome != 'skipped'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: backend4-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/backend4-${{ github.run_id }}-${{ github.run_attempt }}/reports/
+          retention-days: 3
+          if-no-files-found: error
