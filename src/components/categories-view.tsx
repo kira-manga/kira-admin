@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 
+import { categoryRevisionDefaults } from '@/lib/category-revision-defaults';
 import { apiFetch } from '@/lib/client-api';
 import type { AdminCategory, CategoryRevision } from '@/lib/types';
 import { Icon } from './icons';
@@ -36,6 +37,7 @@ export function CategoriesView() {
   }, [selectedId]);
 
   const selected = categories.find((item) => item.id === selectedId) ?? null;
+  const revisionDefaults = categoryRevisionDefaults(revisions);
 
   async function mutate(action: () => Promise<unknown>, success: string) {
     setBusy(true); setError(''); setMessage('');
@@ -115,7 +117,7 @@ export function CategoriesView() {
       )}
 
       {createOpen ? <div className="modal-layer"><button className="modal-scrim" onClick={() => setCreateOpen(false)} /><form className="modal-card compact" onSubmit={createCategory}><div className="modal-heading"><div><span>NEW CATEGORY</span><h3>Create a category</h3></div><button type="button" onClick={() => setCreateOpen(false)}><Icon name="close" /></button></div><Field label="Stable slug" hint="Lowercase letters, numbers, and hyphens. This cannot be renamed later."><Input name="slug" placeholder="reading-basics" pattern="[a-z0-9-]+" required autoFocus /></Field><div className="modal-actions"><Button type="button" onClick={() => setCreateOpen(false)}>Cancel</Button><Button tone="primary" icon="plus" type="submit" disabled={busy}>Create category</Button></div></form></div> : null}
-      {revisionOpen && selected ? <div className="modal-layer"><button className="modal-scrim" onClick={() => setRevisionOpen(false)} /><form className="modal-card" onSubmit={createRevision}><div className="modal-heading"><div><span>NEW REVISION · {selected.slug}</span><h3>Bilingual category label</h3></div><button type="button" onClick={() => setRevisionOpen(false)}><Icon name="close" /></button></div><div className="form-grid"><Field label="English label"><Input name="labelEn" defaultValue={revisions.at(-1)?.label.en} placeholder="Getting started" required /></Field><Field label="Arabic label"><Input name="labelAr" defaultValue={revisions.at(-1)?.label.ar} placeholder="البدء" dir="rtl" required /></Field><Field label="Icon code" wide hint="Supported public icons: book, search, download, settings"><select className="input" name="iconCode" defaultValue={revisions.at(-1)?.iconCode ?? 'book'}><option value="book">Book</option><option value="search">Search</option><option value="download">Download</option><option value="settings">Settings</option></select></Field></div><div className="modal-actions"><Button type="button" onClick={() => setRevisionOpen(false)}>Cancel</Button><Button tone="primary" icon="check" type="submit" disabled={busy}>Save revision</Button></div></form></div> : null}
+      {revisionOpen && selected ? <div className="modal-layer"><button className="modal-scrim" onClick={() => setRevisionOpen(false)} /><form className="modal-card" onSubmit={createRevision}><div className="modal-heading"><div><span>NEW REVISION · {selected.slug}</span><h3>Bilingual category label</h3></div><button type="button" onClick={() => setRevisionOpen(false)}><Icon name="close" /></button></div><div className="form-grid"><Field label="English label"><Input name="labelEn" defaultValue={revisionDefaults.labelEn} placeholder="Getting started" required /></Field><Field label="Arabic label"><Input name="labelAr" defaultValue={revisionDefaults.labelAr} placeholder="البدء" dir="rtl" required /></Field><Field label="Icon code" wide hint="Supported public icons: book, search, download, settings"><select className="input" name="iconCode" defaultValue={revisionDefaults.iconCode}><option value="book">Book</option><option value="search">Search</option><option value="download">Download</option><option value="settings">Settings</option></select></Field></div><div className="modal-actions"><Button type="button" onClick={() => setRevisionOpen(false)}>Cancel</Button><Button tone="primary" icon="check" type="submit" disabled={busy}>Save revision</Button></div></form></div> : null}
     </div>
   );
 }
