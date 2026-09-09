@@ -1,0 +1,60 @@
+name: Backend10 config-only validation (private)
+on:
+  push:
+    branches: [remediation/app-29-backend-complaints]
+    paths:
+      - .github/workflows/backend10-config.yml
+      - ci/backend10-config.py
+      - ci/backend10-config.targets.json
+permissions:
+  contents: read
+concurrency:
+  group: backend10-private-config-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  config:
+    if: github.event.repository.private == true && github.repository == 'kira-manga/kira-admin'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact private control commit
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.sha }}
+          path: control
+          persist-credentials: false
+      - name: Require primary-bound Backend commit and official Nginx digest
+        id: targets
+        run: python3 -B control/ci/backend10-config.py --check-targets
+      - name: Bind the owned scratch path from the actual runner environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'BACKEND10_RUN=%s/backend10-config-%s-%s\n' \
+            "$RUNNER_TEMP" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
+      - name: Check out only the exact public Backend target
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: kira-manga/Kira-backend
+          ref: ${{ steps.targets.outputs.backend_sha }}
+          path: backend
+          persist-credentials: false
+      - name: Parse synthetic Compose and unmodified Nginx configurations only
+        id: validation
+        run: python3 -B control/ci/backend10-config.py
+      - name: Verify disposal of only this run's parser containers and scratch
+        if: always() && steps.validation.outcome != 'skipped'
+        timeout-minutes: 1
+        env:
+          BACKEND10_VALIDATION_OUTCOME: ${{ steps.validation.outcome }}
+        run: python3 -B control/ci/backend10-config.py --cleanup
+      - name: Keep only private result and sanitized command receipts for three days
+        if: always() && steps.validation.outcome != 'skipped'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: backend10-config-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.BACKEND10_RUN }}/reports/result.json
+            ${{ env.BACKEND10_RUN }}/reports/result.log
+          retention-days: 3
+          if-no-files-found: error
