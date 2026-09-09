@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
+import { authenticationIdentityHeaders } from '@/lib/server-client-ip';
 import { adminStepUpCookie, adminTokenCookie, backendUrl } from '@/lib/server-config';
 import { requireCsrf } from '@/lib/server-security';
 
@@ -17,6 +18,7 @@ export async function POST(request: Request) {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
       Accept: 'application/json, application/problem+json',
+      ...authenticationIdentityHeaders(request),
     },
     body: await request.text(),
     cache: 'no-store',
