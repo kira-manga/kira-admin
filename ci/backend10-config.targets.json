@@ -1,10 +1,21 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "scope": "server3-hsts",
   "backend": {
     "repository": "kira-manga/Kira-backend",
-    "sha": "8356fb24f63489d74bdf0eea591abb094b801267"
+    "sha": "3f0297b22583440616ce4b49b95dd203d2d8182c"
   },
   "nginx": {
     "image": "docker.io/library/nginx@sha256:0dcc88822d45581e65ae329f8be769762bf628d3b2bb7d2a077d4aa5c98b30e3"
+  },
+  "sourceSha256": {
+    "deploy/server3/nginx/api.kiramanga.me.http.conf": "37d65e9890ca32784be5e981c38c1f7170074996bdb909abb23f79fa59abc400",
+    "deploy/server3/nginx/api.kiramanga.me.tls.conf": "97aa8159a05adb50b3eec9bd6f9a3870cd827150c28266378ba09ab9ad481788",
+    "deploy/server3/nginx/admin.kiramanga.me.http.conf": "a40a6b6f60a71e117ee1349480b67e5875bbdb7809a9a5f2f6d407a015704b51",
+    "deploy/server3/nginx/admin.kiramanga.me.tls.conf": "860d27556f941be42ec789dc32a997dd013099910dd0514efaf1494e9bc4a22c",
+    "deploy/server3/nginx/kiramanga.me.http.conf": "ad01a0f489cab95686eb41b141618919ef8bc2bd2d6084ce32e4f9ee954ef1f2",
+    "deploy/server3/nginx/kiramanga.me.tls.conf": "5f2c6cd385b9e74eede0962b99182b6238a00d55b5ed7e939ddb9302e40ed8e4",
+    "deploy/server3/verify_hsts.py": "706bf3d0b1d9b9a229dfe10c1c53a06864301e5ebc0d14a896f14d3781a29f26",
+    "deploy/server3/test_verify_hsts.py": "25a3ab929ac8e4b21a84b9f77d290828dc5f46bf9e96fd262a50151b768114a2"
   }
 }

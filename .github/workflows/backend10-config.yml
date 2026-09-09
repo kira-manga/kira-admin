@@ -1,4 +1,4 @@
-name: Backend10 config-only validation (private)
+name: Backend scoped config/header validation (private)
 on:
   push:
     branches: [remediation/app-29-backend-complaints]
@@ -23,7 +23,7 @@ jobs:
           ref: ${{ github.sha }}
           path: control
           persist-credentials: false
-      - name: Require primary-bound Backend commit and official Nginx digest
+      - name: Require primary-bound Backend commit and scoped Nginx source bindings
         id: targets
         run: python3 -B control/ci/backend10-config.py --check-targets
       - name: Bind the owned scratch path from the actual runner environment
@@ -39,10 +39,10 @@ jobs:
           ref: ${{ steps.targets.outputs.backend_sha }}
           path: backend
           persist-credentials: false
-      - name: Parse synthetic Compose and unmodified Nginx configurations only
+      - name: Validate only the bound config scope with isolated Nginx headers when selected
         id: validation
         run: python3 -B control/ci/backend10-config.py
-      - name: Verify disposal of only this run's parser containers and scratch
+      - name: Verify disposal of only this run's owned Nginx containers and scratch
         if: always() && steps.validation.outcome != 'skipped'
         timeout-minutes: 1
         env:
