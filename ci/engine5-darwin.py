@@ -1,4 +1,4 @@
-"""R2 DRAFT: closed Engine5 lane phases, not a general CI runner. Primary executes after review."""
+"""R3 DRAFT: closed Engine5 lane phases, not a general CI runner. Primary executes after review."""
 import hashlib, json, os, platform, plistlib, re, select, shutil, signal, subprocess, sys, tarfile, time
 from pathlib import Path, PurePosixPath
 from xml.etree import ElementTree as ET
@@ -382,28 +382,62 @@ def devices(seconds=20):
 
 def simulator():
     scope()
-    runtimes = json.loads(command(['xcrun', 'simctl', 'list', 'runtimes', '--json']))['runtimes']
-    types = json.loads(command(['xcrun', 'simctl', 'list', 'devicetypes', '--json']))['devicetypes']
-    matches = [r for r in runtimes if r.get('isAvailable') and r['identifier'].startswith('com.apple.CoreSimulator.SimRuntime.iOS-')
-               and re.fullmatch(r'26\.4(?:\.\d+)?', r['version'])]
-    require(len(matches) == 1, 'Expected one available iOS 26.4.x runtime; do not guess or install')
-    phone = [d for d in types if d['identifier'] == 'com.apple.CoreSimulator.SimDeviceType.iPhone-17']
-    require(len(phone) == 1, 'Expected iPhone 17 device type')
-    name = 'Engine5-' + OWNER
-    require(not any(d['name'] == name for d in devices()), 'Owned simulator name already exists')
-    state = {'name': name, 'runtime': matches[0], 'deviceType': phone[0], 'creating': True}
-    save(RUN / 'simulator.json', state) # Records ownership before creation, including cancellation window.
-    state['udid'] = command(['xcrun', 'simctl', 'create', name, phone[0]['identifier'], matches[0]['identifier']]).strip()
-    require(re.fullmatch('[0-9A-Fa-f-]{36}', state['udid']), 'Invalid created simulator UUID')
-    state['creating'] = False
-    save(RUN / 'simulator.json', state)
-    command(['xcrun', 'simctl', 'boot', state['udid']])
-    state['bootstatus'] = command(['xcrun', 'simctl', 'bootstatus', state['udid'], '-b'], seconds=70)
-    save(REPORTS / 'simulator.json', state)
+    started = time.monotonic()
+    timing = {'clock': 'monotonic', 'startSeconds': started, 'elapsedSeconds': None,
+              'finalPhase': 'inventory', 'outcome': 'FAIL',
+              'bootStartSeconds': None, 'bootElapsedSeconds': None,
+              'bootstatusStartSeconds': None, 'bootstatusElapsedSeconds': None,
+              'bootstatusTimeoutSeconds': 180}
+    try:
+        runtimes = json.loads(command(['xcrun', 'simctl', 'list', 'runtimes', '--json']))['runtimes']
+        types = json.loads(command(['xcrun', 'simctl', 'list', 'devicetypes', '--json']))['devicetypes']
+        matches = [r for r in runtimes if r.get('isAvailable') and r['identifier'].startswith('com.apple.CoreSimulator.SimRuntime.iOS-')
+                   and re.fullmatch(r'26\.4(?:\.\d+)?', r['version'])]
+        require(len(matches) == 1, 'Expected one available iOS 26.4.x runtime; do not guess or install')
+        phone = [d for d in types if d['identifier'] == 'com.apple.CoreSimulator.SimDeviceType.iPhone-17']
+        require(len(phone) == 1, 'Expected iPhone 17 device type')
+        name = 'Engine5-' + OWNER
+        require(not any(d['name'] == name for d in devices()), 'Owned simulator name already exists')
+        timing['finalPhase'] = 'create'
+        state = {'name': name, 'runtime': matches[0], 'deviceType': phone[0], 'creating': True}
+        save(RUN / 'simulator.json', state) # Records ownership before creation, including cancellation window.
+        state['udid'] = command(['xcrun', 'simctl', 'create', name, phone[0]['identifier'], matches[0]['identifier']]).strip()
+        require(re.fullmatch('[0-9A-Fa-f-]{36}', state['udid']), 'Invalid created simulator UUID')
+        state['creating'] = False
+        save(RUN / 'simulator.json', state)
+        timing['finalPhase'] = 'boot'
+        timing['bootStartSeconds'] = time.monotonic()
+        command(['xcrun', 'simctl', 'boot', state['udid']])
+        timing['bootElapsedSeconds'] = time.monotonic() - timing['bootStartSeconds']
+        timing['finalPhase'] = 'bootstatus'
+        timing['bootstatusStartSeconds'] = time.monotonic()
+        state['bootstatus'] = command(['xcrun', 'simctl', 'bootstatus', state['udid'], '-b'], seconds=180)
+        timing['bootstatusElapsedSeconds'] = time.monotonic() - timing['bootstatusStartSeconds']
+        timing['finalPhase'] = 'receipt'
+        save(REPORTS / 'simulator.json', state)
+        timing.update(finalPhase='complete', outcome='PASS')
+    finally:
+        # Fixed-size timing only; elapsed command time includes its existing bounded failure cleanup.
+        ended = time.monotonic()
+        timing['elapsedSeconds'] = ended - started
+        for step in ('boot', 'bootstatus'):
+            if timing[step + 'StartSeconds'] is not None and timing[step + 'ElapsedSeconds'] is None:
+                timing[step + 'ElapsedSeconds'] = ended - timing[step + 'StartSeconds']
+        failing = sys.exc_info()[0] is not None
+        try: save(REPORTS / 'simulator-timing.json', timing)
+        except Exception:
+            if not failing: raise # Preserve the original failure if diagnostic persistence also fails.
 
 def collect():
     scope()
     require(all(p.stat().st_size <= JSON_LIMIT for p in REPORTS.glob('*.json')), 'Oversized JSON receipt')
+    prior_outcome = os.environ.get('ENGINE5_VALIDATION_OUTCOME')
+    if prior_outcome != 'success':
+        # Separate detail survives the unchanged main failure handler's result.json overwrite.
+        save(REPORTS / 'failed-collection.json',
+             {'validation': 'FAIL', 'priorValidationOutcome': prior_outcome[:64] if prior_outcome is not None else None,
+              'checks': {'sourceRecheck': 'NOT_RUN', 'linkInspection': 'NOT_RUN', 'xmlVerification': 'NOT_RUN'}})
+        require(False, 'Publication/compile/link/test stage did not succeed')
     binary_receipt = REPORTS / 'linked-binary.json'
     if binary_receipt.is_file():
         linked = json.loads(binary_receipt.read_text())
