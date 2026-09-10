@@ -1,4 +1,4 @@
-"""Private Backend4 tutorial-only PostgreSQL/static batch; executable, never import as a library."""
+"""Private focused Backend tutorial/auth PostgreSQL/static batch; executable, never import as a library."""
 import hashlib, json, os, re, shutil, signal, subprocess, tarfile, time
 from pathlib import Path, PurePosixPath
 from xml.etree import ElementTree as ET
@@ -14,6 +14,12 @@ ENV = dict(os.environ, GRADLE_USER_HOME=str(HOME), W01_RUN=str(W01), TMPDIR=str(
            JAVA_TOOL_OPTIONS=f'-Djava.io.tmpdir={TEMP}', DOCKER_HOST='unix:///var/run/docker.sock')
 TARGETS = json.loads((ADMIN / 'ci/backend4-tutorials.targets.json').read_text())
 CLASSES = TARGETS['classes']
+
+AUTH_CLASSES = {
+    'me.manga.kira.backend.user.LoginAuditIdentifierIT',
+    'me.manga.kira.backend.user.EmailNormalizationBoundaryTest',
+    'me.manga.kira.backend.user.AuthFlowIT',
+}
 PREFIX = 'review/working/app-29-w01-local-dependencies-20260905/'
 ARCHIVE_SHA = 'da94218f74eb0f5831241c8606c8f82142e49b818acfaff027a78f2efe77faab'
 MANIFEST_SHA = 'c67fcc5fe64a9a795373c4683c7c1edd6407146e3cd07609fa7018a8a98db79a'
@@ -59,7 +65,7 @@ result, started, before, cleanup_failed, project_caches = 1, False, None, False,
 try:
     OWNER = OwnedChildren()  # Refuse unavailable subreaping before the first command.
     target = TARGETS['backend_sha']
-    require(1 <= len(CLASSES) <= 3 and all(re.fullmatch(r'me\.manga\.kira\.backend\.tutorial\.(?:[A-Za-z]+IT|TutorialValidatorTest)', name) and type(count) is int and 1 <= count <= 128 for name, count in CLASSES.items()), 'Invalid focused tutorial class/count binding')
+    require(1 <= len(CLASSES) <= 3 and all((re.fullmatch(r'me\.manga\.kira\.backend\.tutorial\.(?:[A-Za-z]+IT|TutorialValidatorTest)', name) or name in AUTH_CLASSES) and type(count) is int and 1 <= count <= 128 for name, count in CLASSES.items()), 'Invalid focused tutorial/auth class/count binding')
     require(bool(TARGETS['source_hashes']), 'Missing reviewed source hashes')
     for relative, expected in TARGETS['source_hashes'].items():
         path = PurePosixPath(relative)

@@ -1,17 +1,21 @@
 {
-  "backend_sha": "d287a86f2dc65f095045f40610d9be184ffd33ef",
+  "backend_sha": "ef37a828f8809c4a99f89eac69fd12e887a9f234",
   "classes": {
-    "me.manga.kira.backend.tutorial.TutorialSlugBoundaryIT": 4,
-    "me.manga.kira.backend.tutorial.TutorialValidatorTest": 3
+    "me.manga.kira.backend.user.LoginAuditIdentifierIT": 5,
+    "me.manga.kira.backend.user.EmailNormalizationBoundaryTest": 2,
+    "me.manga.kira.backend.user.AuthFlowIT": 3
   },
   "source_hashes": {
-    "src/main/kotlin/me/manga/kira/backend/tutorial/domain/TutorialValidator.kt": "f7c05c068f5638eea854455eb004b97194ce25eff8e29217410e74a2137dbeb8",
-    "src/main/kotlin/me/manga/kira/backend/tutorial/application/TutorialService.kt": "1332aae0d631050ea4960792c546a00dabb2b003168a7c153c03c32cc369e940",
-    "src/main/kotlin/me/manga/kira/backend/tutorial/api/TutorialDtos.kt": "fc206f267c457585bf50218233dbbf46bd31560b38b2e692c88ab2b5487b3f09",
-    "src/main/kotlin/me/manga/kira/backend/tutorial/api/AdminTutorialController.kt": "b388a636327cb0e5f3e31fa78e949df39ab3bc8fb178771eee191d7f8ddc0539",
-    "src/test/kotlin/me/manga/kira/backend/tutorial/TutorialValidatorTest.kt": "7c5ca3068511b2d1f5501655b50a6ca2ba982867e2253dd891fc6232580e2e42",
-    "src/test/kotlin/me/manga/kira/backend/tutorial/TutorialSlugBoundaryIT.kt": "eecdf019238e1af297fa5ab1a3abcb2202449f150f24b6e6ace69d0e515e0b04",
-    "docs/TUTORIALS.md": "6ebc200da9453ce875d2ecead62dcd3583b3d0ecc25bf18bb35df7aa3fee7dcb"
+    "docs/API.md": "b9daeed744629265d885e858374f2f953b03b3b42f578928807e7e3b004456cd",
+    "docs/PLAN.md": "38709e1a2150a99613dd7a68383d31db3cb9da3d828e15f0da4c684edfcf13b9",
+    "docs/SECURITY.md": "1d5aee23ffe75477bb81880cb8e4945afa0beb0286bd17280b0dce03eb094cea",
+    "src/main/kotlin/me/manga/kira/backend/audit/application/AuditService.kt": "7776a5e1dd65a5a6d24d710dd5714b26901cd8b71e607d22240b7bfe4f5824cf",
+    "src/main/kotlin/me/manga/kira/backend/user/api/dto/AuthDtos.kt": "b7d87260a9559f40e5a05e41ec17a149d824ea5abbf3d92d048268a8a8eec81f",
+    "src/main/kotlin/me/manga/kira/backend/user/application/AuthService.kt": "4001d9cf6795ec2e4822fa1621779ee456493a693f131c58bfcad77273736f91",
+    "src/main/kotlin/me/manga/kira/backend/user/application/UserService.kt": "3838e57c2c7bfdc8d7d35e20826bdce37c73cef12587c2374d3774ae230f0d3c",
+    "src/test/kotlin/me/manga/kira/backend/user/EmailNormalizationBoundaryTest.kt": "a60e94ab77063d7b20621605dc1d9befcc5431b6030b9e9b3ad53a8b02cf226c",
+    "src/test/kotlin/me/manga/kira/backend/user/LoginAuditIdentifierIT.kt": "e6e6ed42ecf64c5cd452f2837439d7bc82932b6545d5f1ba433eb6eecf3f83e2",
+    "src/test/kotlin/me/manga/kira/backend/user/AuthFlowIT.kt": "a947d14c1b9dbeb8b9c0793de91e7de53aaa016d2529ffe3c42d8860e719bf9e"
   },
-  "status": "Backend6 source independently reviewed e7944775; focused HTTP4 + validator3/compile/statics pending, not integrated. Reuse unchanged Backend4 lifecycle/restart."
+  "status": "Backend9 independent actual source/selector review bf82c4d9; focused 10 tests plus all-test compilation/statics pending; NOT integrated. Reuse unchanged successful unrelated checks."
 }
