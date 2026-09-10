@@ -44,6 +44,11 @@ GRYPE_DB_URL = 'https://grype.anchore.io/databases/v6/latest.json'
 SCAN_POLICY = 'grype-high-critical-including-unfixed-v1'
 MAX_DB_AGE = 120 * 60 * 60
 GITHUB_ACTIONS_APP_ID = 15368
+MAX_DIAGNOSTIC_ENTRIES = 4
+MAX_DIAGNOSTIC_FRAMES = 4
+MAX_DIAGNOSTIC_TRACE = 64
+MAX_DIAGNOSTIC_LINE = 999999
+MAX_DIAGNOSTIC_BYTES = 2048
 
 
 class Refused(Exception):
@@ -866,9 +871,75 @@ def main():
         rehearse(directory, ctx, selection())
 
 
-if __name__ == '__main__':
+def diagnostic_family(error):
+    # Fixed family codes only; never obtain an exception's name, message, arguments or repr.
+    for family, kinds in (
+        ('refused', Refused), ('timeout', (TimeoutError, subprocess.TimeoutExpired)),
+        ('network', urllib.error.URLError), ('archive', (tarfile.TarError, zipfile.BadZipFile, gzip.BadGzipFile)),
+        ('process', subprocess.SubprocessError), ('os', OSError), ('lookup', LookupError),
+        ('value', ValueError), ('type', TypeError), ('attribute', AttributeError), ('runtime', RuntimeError),
+    ):
+        if issubclass(type(error), kinds):
+            return family
+    return 'other'
+
+
+def diagnostic_frames(error):
+    trace, lines, limited = error.__traceback__, [], False
+    for _ in range(MAX_DIAGNOSTIC_TRACE):
+        if trace is None:
+            break
+        frame = trace.tb_frame
+        if frame.f_globals is globals() and frame.f_code.co_filename == diagnostic_frames.__code__.co_filename:
+            line = trace.tb_lineno
+            if type(line) is int and 0 < line <= MAX_DIAGNOSTIC_LINE:
+                if len(lines) == MAX_DIAGNOSTIC_FRAMES:
+                    lines.pop(0)
+                    limited = True
+                lines.append(line)
+            else:
+                limited = True
+        trace = trace.tb_next
+    return {'lines': lines, 'frames_limited': limited or trace is not None}
+
+
+def failure_diagnostic(error):
+    """Bounded, best-effort location evidence, not a traceback or a root-cause assertion."""
+    try:
+        pending, entries, seen, repeated = [(error, None, 'raised')], [], set(), False
+        while pending and len(entries) < MAX_DIAGNOSTIC_ENTRIES:
+            current, parent, via = pending.pop(0)
+            if id(current) in seen:
+                repeated = True
+                continue
+            seen.add(id(current))
+            index = len(entries)
+            entries.append({'parent': parent, 'via': via, 'family': diagnostic_family(current),
+                            **diagnostic_frames(current)})
+            # Keep context even when suppressed or different from an explicit cause: cleanup can mask it.
+            for attribute, link in (('__cause__', 'cause'), ('__context__', 'context')):
+                previous = getattr(current, attribute)
+                if previous is not None:
+                    pending.append((previous, index, link))
+        value = 'DIAGNOSTIC: ' + canonical({'entries': entries, 'chain_limited': bool(pending),
+                                           'chain_repeated': repeated}).decode('ascii')
+        if len(value) + 1 <= MAX_DIAGNOSTIC_BYTES:  # Include print's newline; all projected data is ASCII.
+            return value
+    except BaseException:
+        pass
+    return 'DIAGNOSTIC: unavailable'
+
+
+def run():
     try:
         main()
     except Exception as error:
         print('REFUSED: ' + (str(error) if isinstance(error, Refused) else 'release operation failed closed'), file=sys.stderr)
+        # Diagnostics cannot replace an already-failed operation's exit status, even if interrupted.
+        with contextlib.suppress(BaseException):
+            print(failure_diagnostic(error), file=sys.stderr)
         sys.exit(1)
+
+
+if __name__ == '__main__':
+    run()

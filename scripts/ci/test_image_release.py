@@ -9,6 +9,7 @@ import contextlib
 import copy
 import datetime as dt
 import io
+import json
 import os
 from pathlib import Path
 import re
@@ -18,6 +19,7 @@ import struct
 import sys
 import tarfile
 import tempfile
+from types import TracebackType
 import unittest
 from unittest import mock
 import urllib.error
@@ -796,6 +798,134 @@ class ProducerTests(OfflineCase):
                         self.assertFalse((directory / 'receipt.json').exists())
                     smoke.assert_called_once_with(fixture.receipt['image'])
                 self.assertEqual(sum(argv[:2] == ['docker', 'save'] for argv in calls), 0 if result == 'smoke-error' else 1)
+
+
+class FailureDiagnosticTests(OfflineCase):
+    def diagnostic(self, error):
+        value = release.failure_diagnostic(error)
+        self.assertLessEqual(len(value.encode('ascii')) + 1, release.MAX_DIAGNOSTIC_BYTES)
+        self.assertTrue(value.startswith('DIAGNOSTIC: '))
+        return json.loads(value.removeprefix('DIAGNOSTIC: '))
+
+    def test_projection_never_formats_sensitive_exception_data_or_class_names(self):
+        secret = 'synthetic-secret https://credential@backend.invalid/private?token=synthetic'
+
+        class SensitiveDiagnosticClass(Exception):
+            def __str__(self):
+                raise AssertionError('exception formatting must not run')
+
+            __repr__ = __str__
+
+        errors = [
+            (SensitiveDiagnosticClass(secret, {'command': secret, 'environment': secret, 'locals': secret}), 'other'),
+            (release.subprocess.CalledProcessError(7, [secret], output=secret, stderr=secret), 'process'),
+            (urllib.error.HTTPError(secret, 500, secret, {'Authorization': secret}, None), 'network'),
+            (release.Refused(secret), 'refused'),
+        ]
+        for error, family in errors:
+            with self.subTest(family=family):
+                self.assertEqual(self.diagnostic(error), {
+                    'entries': [{'parent': None, 'via': 'raised', 'family': family,
+                                 'lines': [], 'frames_limited': False}],
+                    'chain_limited': False, 'chain_repeated': False,
+                })
+
+    def test_locations_are_helper_only_with_bounded_retention_and_traversal(self):
+        try:
+            release.need(False, 'synthetic refusal')
+        except release.Refused as error:
+            external, helper = error.__traceback__, error.__traceback__.tb_next
+            entry = self.diagnostic(error)['entries'][0]
+            self.assertEqual(entry['lines'], [helper.tb_lineno])
+            self.assertFalse(entry['frames_limited'])
+        # Synthetic traceback metadata puts a different helper line beyond the traversal cap.
+        trace = TracebackType(None, helper.tb_frame, helper.tb_lasti, release.main.__code__.co_firstlineno)
+        for _ in range(release.MAX_DIAGNOSTIC_TRACE):
+            trace = TracebackType(trace, helper.tb_frame, helper.tb_lasti, helper.tb_lineno)
+        trace = TracebackType(trace, external.tb_frame, external.tb_lasti, external.tb_lineno)
+        entry = self.diagnostic(ValueError('synthetic-secret').with_traceback(trace))['entries'][0]
+        self.assertEqual(entry['lines'], [helper.tb_lineno] * release.MAX_DIAGNOSTIC_FRAMES)
+        self.assertTrue(entry['frames_limited'])
+        self.assertTrue(all(0 < line <= release.MAX_DIAGNOSTIC_LINE for line in entry['lines']))
+
+    def test_cleanup_failure_retains_the_primary_failure_as_a_separate_context_entry(self):
+        primary, cleanup = KeyError('synthetic-primary-secret'), OSError('synthetic-cleanup-secret')
+        image = Fixture().receipt['image']
+
+        def command(argv, **_kwargs):
+            if argv[:3] == ['docker', 'image', 'inspect']:
+                return inspected(image)
+            if argv[:2] == ['docker', 'create']:
+                return b'fixture-container'
+            if argv[:2] == ['docker', 'start']:
+                raise primary
+            self.assertEqual(argv[:3], ['docker', 'container', 'inspect'])
+            raise cleanup
+
+        self.process.side_effect = command
+        try:
+            release.smoke(image)
+        except OSError as error:
+            self.assertIs(error, cleanup)
+            self.assertIs(error.__context__, primary)
+            report = self.diagnostic(error)
+        else:
+            self.fail('expected the injected cleanup failure')
+        entries = report['entries']
+        self.assertEqual([entry['family'] for entry in entries], ['os', 'lookup'])
+        self.assertEqual([entry['via'] for entry in entries], ['raised', 'context'])
+        self.assertEqual([entry['parent'] for entry in entries], [None, 0])
+        self.assertEqual([len(entry['lines']) for entry in entries], [1, 1])
+        self.assertNotEqual(entries[0]['lines'], entries[1]['lines'])
+        self.assertFalse(report['chain_limited'])
+
+    def test_explicit_cause_suppressed_context_cycles_and_entry_limits_are_bounded(self):
+        surfaced, cause, primary = OSError('synthetic'), TypeError('synthetic'), LookupError('synthetic')
+        surfaced.__cause__, surfaced.__context__, surfaced.__suppress_context__ = cause, primary, True
+        cause.__context__ = surfaced
+        report = self.diagnostic(surfaced)
+        self.assertEqual([entry['family'] for entry in report['entries']], ['os', 'type', 'lookup'])
+        self.assertEqual([entry['via'] for entry in report['entries']], ['raised', 'cause', 'context'])
+        self.assertEqual([entry['parent'] for entry in report['entries']], [None, 0, 0])
+        self.assertTrue(report['chain_repeated'])
+        self.assertFalse(report['chain_limited'])
+        tail = primary
+        for _ in range(release.MAX_DIAGNOSTIC_ENTRIES + 1):
+            tail.__context__ = ValueError('synthetic-secret')
+            tail = tail.__context__
+        report = self.diagnostic(surfaced)
+        self.assertEqual(len(report['entries']), release.MAX_DIAGNOSTIC_ENTRIES)
+        self.assertTrue(report['chain_limited'])
+
+    def test_unavailable_reporting_preserves_failure_exit_and_fixed_refusal_policy(self):
+        class UnavailableContext(Exception):
+            @property
+            def __context__(self):
+                raise RuntimeError('synthetic-secret')
+
+        self.assertEqual(release.failure_diagnostic(UnavailableContext()), 'DIAGNOSTIC: unavailable')
+        with mock.patch.object(release, 'MAX_DIAGNOSTIC_BYTES', 64):
+            self.assertEqual(release.failure_diagnostic(ValueError('synthetic')), 'DIAGNOSTIC: unavailable')
+        for error, message in [(ValueError('synthetic-secret'), 'release operation failed closed'),
+                               (release.Refused('command or scanner gate failed'), 'command or scanner gate failed')]:
+            stderr = io.StringIO()
+            with mock.patch.object(release, 'main', side_effect=error), contextlib.redirect_stderr(stderr):
+                with self.assertRaises(SystemExit) as exited:
+                    release.run()
+            self.assertEqual(exited.exception.code, 1)
+            self.assertEqual(stderr.getvalue().splitlines()[0], 'REFUSED: ' + message)
+            self.assertNotIn(message, stderr.getvalue().splitlines()[1])
+            self.assertNotIn('synthetic-secret', stderr.getvalue())
+        stderr = io.StringIO()
+        with mock.patch.object(release, 'main', side_effect=ValueError('synthetic-secret')), \
+             mock.patch.object(release, 'failure_diagnostic', side_effect=SystemExit(0)), \
+             contextlib.redirect_stderr(stderr), self.assertRaises(SystemExit) as exited:
+            release.run()
+        self.assertEqual(exited.exception.code, 1)
+        self.assertEqual(stderr.getvalue(), 'REFUSED: release operation failed closed\n')
+        with mock.patch.object(release, 'main'), mock.patch.object(release, 'failure_diagnostic') as diagnostic:
+            release.run()
+        diagnostic.assert_not_called()
 
 
 class SubprocessTests(unittest.TestCase):
