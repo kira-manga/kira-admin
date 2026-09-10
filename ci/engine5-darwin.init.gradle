@@ -147,9 +147,6 @@ gradle.beforeProject { p ->
             def resourceFiles = kotlin.sourceSets.collectMany { it.resources.files*.canonicalPath }.sort()
             def buildSha = p.buildFile.isFile() ? sha(p.buildFile) : null
             def hostOutput = p.layout.buildDirectory.get().asFile.canonicalFile.toPath()
-            def linkRows = linkFiles.collect { f ->
-                [file: f.path, components: artifactRows.findAll { it.file == f.path }*.id, hostOutput: f.toPath().startsWith(hostOutput)]
-            }.sort { it.file }
             def errors = []
             def checkClosure = { ok, message -> if (!ok) errors.add(message.toString()) }
             def projects = componentRows.findAll { it.kind == 'project' }
@@ -219,11 +216,39 @@ gradle.beforeProject { p ->
                     nativeVariant(row, row.attributes) && row.exists && row.inLinkLibraries,
                     'Unexpected/non-native/unlinked artifact: ' + row.id)
             }
-            checkClosure(linkRows.every { !it.components.empty || it.hostOutput }, 'Unattributed link library outside the host build')
+            // The observed compiler stdlib is not a resolved Gradle artifact. Admit only this owned path.
+            def owner = version.substring('0.1.0-engine5-darwin-'.length())
+            def runRoot = reports.parentFile
+            def ownerFile = new File(runRoot, 'owner')
+            def konanRoot = new File(runRoot, 'konan')
+            def configuredKonanRoot = System.getenv('KONAN_DATA_DIR')
+            def stdlibRelative = 'kotlin-native-prebuilt-macos-aarch64-2.4.0/klib/common/stdlib'
+            def stdlibFile = new File(konanRoot, stdlibRelative)
+            def stdlibComponents = componentRows.findAll { row ->
+                row.kind == 'module' && row.group == 'org.jetbrains.kotlin' && row.module == 'kotlin-stdlib' &&
+                    row.version == '2.4.0' && !row.variants.empty && row.variants.every { nativeVariant(row, it.attributes) }
+            }
+            def stdlibExists = stdlibFile.exists()
+            def stdlibBound = runRoot.name == 'engine5-darwin-' + owner &&
+                p.rootDir.canonicalFile == new File(runRoot, 'app') && ownerFile.isFile() && ownerFile.text == owner &&
+                configuredKonanRoot && new File(configuredKonanRoot).isAbsolute() &&
+                new File(configuredKonanRoot).canonicalFile == konanRoot && konanRoot.canonicalFile == konanRoot &&
+                stdlibFile.canonicalFile == stdlibFile && stdlibExists && stdlibComponents.size() == 1
+            def linkRows = linkFiles.collect { f ->
+                [file: f.path, components: artifactRows.findAll { it.file == f.path }*.id,
+                 hostOutput: f.toPath().startsWith(hostOutput), toolchainStdlib: stdlibBound && f == stdlibFile]
+            }.sort { it.file }
+            checkClosure(stdlibBound && linkRows.count { it.toolchainStdlib } == 1,
+                'Expected one owned Kotlin/Native 2.4.0 stdlib input with selected native module')
+            checkClosure(linkRows.every { !it.components.empty || it.hostOutput || it.toolchainStdlib },
+                'Unattributed link library outside the host build')
             save('native-closure.json', [validation: errors.empty ? 'PASS' : 'FAIL', errors: errors, timing: appClock(),
                 project: p.path, task: t.path, candidate: version, configuration: c.name, attributes: attributes(c.attributes),
                 target: nativeTarget, targets: kotlin.targets.names.sort(),
                 buildFile: p.buildFile.canonicalPath, buildSha256: buildSha, sourceSets: actualSources, resourceFiles: resourceFiles,
+                toolchainStdlib: [selectedComponents: stdlibComponents*.id, configuredKonanRoot: configuredKonanRoot,
+                    ownedKonanRoot: konanRoot.path, relativePath: stdlibRelative, file: stdlibFile.path,
+                    exists: stdlibExists, bindingAccepted: stdlibBound],
                 components: componentRows, artifacts: artifactRows, linkLibraries: linkRows])
             require(errors.empty, 'Rejected targeted native closure; see native-closure.json')
 
