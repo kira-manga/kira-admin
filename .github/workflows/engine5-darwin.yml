@@ -1,4 +1,4 @@
-# R1 DRAFT ONLY. Primary installs on the existing private remediation branch after review.
+# R2 DRAFT ONLY. Primary installs on the existing private remediation branch after review.
 name: Engine5 one-test Darwin validation (private)
 on:
   push:
@@ -58,7 +58,7 @@ jobs:
             -I "$init" "-Pengine5Version=$v" "-Pengine5Repository=$ENGINE5_RUN/repository"
             "-Pengine5Reports=$ENGINE5_RUN/reports" "-Pengine5Plist=$ENGINE5_RUN/test-Info.plist")
           cd "$ENGINE5_RUN/neutral"
-          gtimeout --signal=TERM --kill-after=10s 8m "${allowed[@]}" \
+          python3 -B "$GITHUB_WORKSPACE/control/ci/engine5-darwin.py" deadline publish "${allowed[@]}" \
             DEVELOPER_DIR=/Applications/Xcode_26.0.1.app/Contents/Developer \
             ./gradlew "${common[@]}" -Pengine5Role=neutral "-PVERSION_NAME=$v" \
             :source-contract:publishKotlinMultiplatformPublicationToEngine5CandidateRepository \
@@ -71,7 +71,7 @@ jobs:
           python3 -B control/ci/engine5-darwin.py simulator
           udid=$(python3 -B -c 'import json,os; print(json.load(open(os.environ["ENGINE5_RUN"]+"/simulator.json"))["udid"])')
           cd "$ENGINE5_RUN/app"
-          gtimeout --signal=TERM --kill-after=10s 18m "${allowed[@]}" \
+          python3 -B "$GITHUB_WORKSPACE/control/ci/engine5-darwin.py" deadline test "${allowed[@]}" \
             DEVELOPER_DIR=/Applications/Xcode_26.4.1.app/Contents/Developer \
             ./gradlew "${common[@]}" -Pengine5Role=app "-Pengine5Device=$udid" \
             :composeApp:iosSimulatorArm64Test \

@@ -1,4 +1,4 @@
-"""R1 DRAFT: closed Engine5 lane phases, not a general CI runner. Primary executes after review."""
+"""R2 DRAFT: closed Engine5 lane phases, not a general CI runner. Primary executes after review."""
 import hashlib, json, os, platform, plistlib, re, select, shutil, signal, subprocess, sys, tarfile, time
 from pathlib import Path, PurePosixPath
 from xml.etree import ElementTree as ET
@@ -33,6 +33,157 @@ JSON_LIMIT, TOOL_CAPTURE_LIMIT, TOOL_LOG_LIMIT = MIB, MIB, 4 * MIB
 GRADLE_LOG_LIMIT, XML_LIMIT, EVIDENCE_LIMIT = 8 * MIB, 4 * MIB, 32 * MIB
 DISK_FLOOR = 8 * 1024 * MIB
 TOOL_SIGNALS = []
+DEADLINE_SECONDS = {'publish': 480, 'test': 1080}
+DEADLINE_GRACE_SECONDS, DEADLINE_REAP_SECONDS = 10, 2
+
+def deadline_capabilities():
+    # CPython documents waitid on macOS from 3.13; reject an older/different interpreter, never install one.
+    require(all(hasattr(os, name) for name in ('waitid', 'P_PID', 'WEXITED', 'WNOHANG', 'WNOWAIT', 'CLD_EXITED', 'killpg')),
+            'Python lacks non-reaping POSIX deadline ownership APIs; no installation/fallback')
+    require(signal.getsignal(signal.SIGCHLD) == signal.SIG_DFL,
+            'Deadline requires default SIGCHLD handling; an automatic reaper would lose group ownership')
+
+def deadline_live_pids(pgid, seconds=1):
+    # Reuse bounded small-tool capture, never pipe/buffer Gradle through command(). No census during TERM grace.
+    rows = command(['ps', '-axww', '-o', 'pid=,pgid=,stat='], seconds=seconds, log_output=False).splitlines()
+    live = []
+    for row in rows:
+        parts = row.split()
+        require(len(parts) == 3 and parts[0].isdigit() and parts[1].isdigit(), 'Malformed deadline group census')
+        if int(parts[1]) == pgid and not parts[2].startswith('Z'): live.append(int(parts[0]))
+    require(len(live) <= 1024, 'Oversized deadline group inventory')
+    return sorted(live)
+
+def deadline():
+    scope()
+    require(len(sys.argv) >= 4 and sys.argv[2] in DEADLINE_SECONDS, 'Expected closed deadline publish/test role and argv')
+    deadline_capabilities()
+    role, argv = sys.argv[2], sys.argv[3:]
+    started = time.monotonic()
+    expires = started + DEADLINE_SECONDS[role]
+    receipt = {'deadline': 'INCOMPLETE', 'role': role, 'argv': argv, 'seconds': DEADLINE_SECONDS[role],
+               'graceSeconds': DEADLINE_GRACE_SECONDS, 'reapSeconds': DEADLINE_REAP_SECONDS,
+               'startNewSession': True, 'childPid': None, 'pgid': None, 'childExitCode': None,
+               'timedOut': False, 'forced': False, 'groupQuiet': False, 'leaderReaped': False,
+               'signalAttempts': [], 'errors': {}}
+    process, quiet, leader_owned = None, False, True
+    first_signal, repeated_signal = None, False
+    handlers = {}
+
+    def interrupted(signum, _frame):
+        # Never raise across Popen's spawn-to-assignment window; repeated signals cannot reset the grace clock.
+        nonlocal first_signal, repeated_signal
+        if first_signal is None: first_signal = signum
+        else: repeated_signal = True
+
+    def error(phase, failure): receipt['errors'][phase] = str(failure)[:1000]
+
+    def checkpoint():
+        try:
+            receipt.update(elapsedSeconds=time.monotonic() - started,
+                           interruptedBy=signal.Signals(first_signal).name if first_signal is not None else None,
+                           repeatedInterruption=repeated_signal)
+            save(REPORTS / (role + '-deadline.json'), receipt)
+        except BaseException as failure:
+            error('receipt', failure)
+            return False
+        return True
+
+    def peek():
+        nonlocal leader_owned
+        try: return os.waitid(os.P_PID, process.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+        except ChildProcessError:
+            leader_owned = False
+            raise RuntimeError('Leader was unexpectedly reaped; refuse signaling a potentially recycled PGID')
+
+    def send(attempt, sig):
+        attempt['attemptedAfterSeconds'] = time.monotonic() - started
+        try:
+            os.killpg(process.pid, sig)
+            attempt['outcome'] = 'sent'
+        except ProcessLookupError: attempt['outcome'] = 'alreadyGone'
+        except BaseException as failure:
+            attempt['outcome'] = 'failed'
+            error(sig.name, failure)
+
+    def force_group():
+        receipt['forced'] = True
+        # No wait()/poll() until all group signaling is finished: even an exit-0 leader pins the numeric PGID.
+        try: peek()
+        except BaseException as failure: error('ownership', failure)
+        if not leader_owned: return
+        attempts = [{'pgid': process.pid, 'signal': sig.name, 'outcome': 'planned'}
+                    for sig in (signal.SIGTERM, signal.SIGKILL)]
+        receipt['signalAttempts'] = attempts
+        checkpoint() # Both intents before TERM. Receipt failure must not abandon this explicitly owned group.
+        grace_end = time.monotonic() + DEADLINE_GRACE_SECONDS
+        try:
+            send(attempts[0], signal.SIGTERM)
+            while time.monotonic() < grace_end:
+                time.sleep(min(0.1, max(0, grace_end - time.monotonic())))
+        finally:
+            # No census, receipt writes or subprocess waits between TERM and KILL; grace never restarts.
+            send(attempts[1], signal.SIGKILL)
+        checkpoint()
+
+    try:
+        require(checkpoint(), 'Cannot record deadline start')
+        for sig in (signal.SIGTERM, signal.SIGINT):
+            handlers[sig] = signal.signal(sig, interrupted)
+        require(first_signal is None, 'Interrupted before deadline child spawn')
+        # Inherit stdout/stderr into the unchanged external bounded capture; argv is not interpreted by a shell.
+        process = subprocess.Popen(argv, start_new_session=True)
+        receipt.update(childPid=process.pid, pgid=process.pid)
+        require(checkpoint(), 'Cannot record deadline child ownership')
+        while True:
+            if first_signal is not None:
+                receipt['reason'] = 'interrupted'
+                break
+            if time.monotonic() >= expires:
+                receipt.update(timedOut=True, reason='timeout')
+                break
+            info = peek()
+            if info is not None:
+                remaining = expires - time.monotonic()
+                if remaining <= 0: continue
+                live = deadline_live_pids(process.pid, seconds=min(1, remaining))
+                receipt['lastLivePids'] = live
+                if first_signal is not None or time.monotonic() >= expires: continue
+                if not live:
+                    quiet = True
+                    break
+                if info.si_code != os.CLD_EXITED or info.si_status != 0:
+                    receipt['reason'] = 'child-failed-with-live-group'
+                    break
+            time.sleep(min(0.1, max(0, expires - time.monotonic())))
+    except BaseException as failure:
+        error('run', failure)
+    finally:
+        try:
+            if process is not None:
+                try:
+                    if not quiet:
+                        force_group()
+                        receipt['lastLivePids'] = deadline_live_pids(process.pid)
+                        quiet = not receipt['lastLivePids']
+                except BaseException as failure: error('groupCleanup', failure)
+                finally:
+                    # Signaling is now closed forever, including if reaping/census/receipt recording fails.
+                    try:
+                        receipt['childExitCode'] = process.wait(timeout=DEADLINE_REAP_SECONDS)
+                        receipt['leaderReaped'] = True
+                    except BaseException as failure: error('reap', failure)
+            receipt['groupQuiet'] = quiet
+            receipt['deadline'] = 'PASS' if (quiet and receipt['leaderReaped'] and receipt['childExitCode'] == 0
+                and not receipt['forced'] and first_signal is None and not receipt['errors']) else 'FAIL'
+            checkpoint()
+        finally:
+            for sig, handler in handlers.items(): signal.signal(sig, handler)
+    # Also reject an interruption or receipt failure in the final checkpoint/handler-restoration window.
+    if first_signal is not None or receipt['errors']:
+        receipt['deadline'] = 'FAIL'
+        checkpoint()
+    require(receipt['deadline'] == 'PASS', 'Deadline phase failed: ' + role)
 
 def require(ok, message):
     if not ok: raise RuntimeError(message)
@@ -197,8 +348,8 @@ def prepare():
     (RUN / 'test-Info.plist').write_bytes(plistlib.dumps({'NSAppTransportSecurity': {
         'NSExceptionDomains': {'127.0.0.1': {'NSExceptionAllowsInsecureHTTPLoads': True}}}}))
     require(sys.platform == 'darwin' and platform.machine() == 'arm64', 'Standard ARM macOS runner required')
-    require(shutil.which('gtimeout'), 'Expected runner coreutils gtimeout is unavailable; no installation/fallback')
     tools = {'machine': platform.machine(), 'macOS': platform.mac_ver()[0], 'logicalCPUs': os.cpu_count(),
+             'python': {'executable': sys.executable, 'version': sys.version},
              'memoryBytes': command(['sysctl', '-n', 'hw.memsize']).strip(), 'diskFreeBytes': shutil.disk_usage(RUN).free,
              'ImageOS': os.environ.get('ImageOS'), 'ImageVersion': os.environ.get('ImageVersion'),
              'java': command([os.environ['JAVA_HOME'] + '/bin/java', '-version']), 'xcode': {}}
@@ -421,7 +572,7 @@ def cleanup():
 
 if __name__ == '__main__':
     phase = sys.argv[1]
-    require(phase in {'prepare', 'published', 'simulator', 'collect', 'cleanup', 'capture'}, 'Unknown closed lane phase')
+    require(phase in {'prepare', 'published', 'simulator', 'collect', 'cleanup', 'capture', 'deadline'}, 'Unknown closed lane phase')
     try:
         globals()[phase]()
     except Exception as failure:
