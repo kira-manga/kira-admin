@@ -3,6 +3,7 @@
 
   "schemaVersion": 1,
   "lane": "engine5-darwin-one-test",
+  "validationHost": "engine5DarwinBoundary-v1",
   "neutral": {
     "baseSha": "fc55c149398068d1f47c2fb08597dbc08f0bf28a",
     "patchSha256": "28e6f5df04b5514b76b04ad43ce8a667f80cfc9059db506137a9e1888c28baff",

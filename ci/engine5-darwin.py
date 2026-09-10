@@ -1,4 +1,4 @@
-"""R3 DRAFT: closed Engine5 lane phases, not a general CI runner. Primary executes after review."""
+"""TARGETED NATIVE DRAFT with R4 diagnostics: closed Engine5 lane, not a general runner. Review before execution."""
 import hashlib, json, os, platform, plistlib, re, select, shutil, signal, subprocess, sys, tarfile, time
 from pathlib import Path, PurePosixPath
 from xml.etree import ElementTree as ET
@@ -28,6 +28,14 @@ APP_WRITER = {
     'manifestSha256': '0cc99c2675e9d94dee4f043f266c489975f4e7404afe564ba1796774d173ec5a',
     'reviewSha256': '4d91e0f277bd71b2ca74d69ef66ec4c1eb6bda7290b3eefe4976c2a1f64159cb',
 }
+NATIVE_HOST_PROJECT = ':engine5DarwinBoundary'
+NATIVE_HOST_BUILD = 'ci/engine5-darwin.host.gradle.kts'
+NATIVE_HOST_SOURCE_SETS = {
+    'commonMain': ['composeApp/src/commonMain/kotlin/me/manga/kira/sources/runtime/KtorHttpExecutor.kt'],
+    'commonTest': ['composeApp/src/commonTest/kotlin/me/manga/kira/sources/runtime/' + name for name in (
+        'SourceHttpTestFixture.kt', 'SourceHttpLoopback.kt', 'SourceHttpLoopbackCases.kt')],
+    'iosSimulatorArm64Test': ['composeApp/src/iosTest/kotlin/me/manga/kira/sources/runtime/KtorSourceDarwinBoundaryTest.kt'],
+}
 MIB = 1024 * 1024
 JSON_LIMIT, TOOL_CAPTURE_LIMIT, TOOL_LOG_LIMIT = MIB, MIB, 4 * MIB
 GRADLE_LOG_LIMIT, XML_LIMIT, EVIDENCE_LIMIT = 8 * MIB, 4 * MIB, 32 * MIB
@@ -35,6 +43,7 @@ DISK_FLOOR = 8 * 1024 * MIB
 TOOL_SIGNALS = []
 DEADLINE_SECONDS = {'publish': 480, 'test': 1080}
 DEADLINE_GRACE_SECONDS, DEADLINE_REAP_SECONDS = 10, 2
+PROCESS_IDENTITY_LIMIT = 32
 
 def deadline_capabilities():
     # CPython documents waitid on macOS from 3.13; reject an older/different interpreter, never install one.
@@ -43,15 +52,28 @@ def deadline_capabilities():
     require(signal.getsignal(signal.SIGCHLD) == signal.SIG_DFL,
             'Deadline requires default SIGCHLD handling; an automatic reaper would lose group ownership')
 
-def deadline_live_pids(pgid, seconds=1):
+def identity_rows(raw):
+    # Numeric fields plus ps comm, not argv/environment. Callers retain only their already-owned targets.
+    for row in raw.splitlines():
+        parts = row.split(None, 5)
+        require(len(parts) == 6 and all(value.isdigit() for value in parts[:4]), 'Malformed process identity census')
+        yield {'pid': int(parts[0]), 'uid': int(parts[1]), 'ppid': int(parts[2]), 'pgid': int(parts[3]),
+               'state': parts[4][:16], 'executable': PurePosixPath(parts[5]).name[:256]}
+
+def deadline_live_pids(pgid, seconds=1, identity=None):
     # Reuse bounded small-tool capture, never pipe/buffer Gradle through command(). No census during TERM grace.
-    rows = command(['ps', '-axww', '-o', 'pid=,pgid=,stat='], seconds=seconds, log_output=False).splitlines()
-    live = []
-    for row in rows:
-        parts = row.split()
-        require(len(parts) == 3 and parts[0].isdigit() and parts[1].isdigit(), 'Malformed deadline group census')
-        if int(parts[1]) == pgid and not parts[2].startswith('Z'): live.append(int(parts[0]))
+    rows = command(['ps', '-axww', '-o', 'pid=,uid=,ppid=,pgid=,stat=,comm='], seconds=seconds, log_output=False)
+    live, owned = [], []
+    for row in identity_rows(rows):
+        if row['pgid'] == pgid:
+            row['basis'] = ['process-group-held-by-unreaped-leader']
+            owned.append(row) # Keep zombie identity too, without changing the live/quiet predicate.
+            if not row['state'].startswith('Z'): live.append(row['pid'])
     require(len(live) <= 1024, 'Oversized deadline group inventory')
+    if identity is not None:
+        identity.update(observedMonotonicSeconds=time.monotonic(), ownedCount=len(owned),
+                        omittedOwnedCount=max(0, len(owned) - PROCESS_IDENTITY_LIMIT),
+                        processes=sorted(owned, key=lambda row: row['pid'])[:PROCESS_IDENTITY_LIMIT])
     return sorted(live)
 
 def deadline():
@@ -65,7 +87,7 @@ def deadline():
                'graceSeconds': DEADLINE_GRACE_SECONDS, 'reapSeconds': DEADLINE_REAP_SECONDS,
                'startNewSession': True, 'childPid': None, 'pgid': None, 'childExitCode': None,
                'timedOut': False, 'forced': False, 'groupQuiet': False, 'leaderReaped': False,
-               'signalAttempts': [], 'errors': {}}
+               'signalAttempts': [], 'errors': {}, 'startMonotonicSeconds': started, 'lastGroupIdentity': {}}
     process, quiet, leader_owned = None, False, True
     first_signal, repeated_signal = None, False
     handlers = {}
@@ -116,6 +138,12 @@ def deadline():
                     for sig in (signal.SIGTERM, signal.SIGKILL)]
         receipt['signalAttempts'] = attempts
         checkpoint() # Both intents before TERM. Receipt failure must not abandon this explicitly owned group.
+        # Diagnostic snapshot at the existing signal-receipt boundary, after ownership/intents and before grace.
+        # This is not the KILL-instant membership; a diagnostic failure must not abandon the owned group.
+        receipt['beforeSignalGroupIdentity'] = {}
+        try: deadline_live_pids(process.pid, identity=receipt['beforeSignalGroupIdentity'])
+        except BaseException as failure: receipt['beforeSignalGroupIdentity']['error'] = str(failure)[:1000]
+        checkpoint()
         grace_end = time.monotonic() + DEADLINE_GRACE_SECONDS
         try:
             send(attempts[0], signal.SIGTERM)
@@ -146,7 +174,7 @@ def deadline():
             if info is not None:
                 remaining = expires - time.monotonic()
                 if remaining <= 0: continue
-                live = deadline_live_pids(process.pid, seconds=min(1, remaining))
+                live = deadline_live_pids(process.pid, seconds=min(1, remaining), identity=receipt['lastGroupIdentity'])
                 receipt['lastLivePids'] = live
                 if first_signal is not None or time.monotonic() >= expires: continue
                 if not live:
@@ -164,7 +192,8 @@ def deadline():
                 try:
                     if not quiet:
                         force_group()
-                        receipt['lastLivePids'] = deadline_live_pids(process.pid)
+                        receipt['lastLivePids'] = deadline_live_pids(
+                            process.pid, identity=receipt['lastGroupIdentity'] if leader_owned else None)
                         quiet = not receipt['lastLivePids']
                 except BaseException as failure: error('groupCleanup', failure)
                 finally:
@@ -290,10 +319,11 @@ def prepare():
     request_path = CONTROL / 'ci/engine5-darwin.request.json'
     request = json.loads(request_path.read_text())
     require(request['schemaVersion'] == 1 and request['lane'] == 'engine5-darwin-one-test', 'Wrong request')
+    require(request.get('validationHost') == 'engine5DarwinBoundary-v1', 'Expected explicit targeted native host request')
     binding = {'carrierSha': os.environ['GITHUB_SHA'], 'requestSha256': digest(request_path),
                'candidate': VERSION, 'sources': request, 'controlSha256': {
                    name: digest(CONTROL / name) for name in (
-                       '.github/workflows/engine5-darwin.yml', 'ci/engine5-darwin.py', 'ci/engine5-darwin.init.gradle')}}
+                       '.github/workflows/engine5-darwin.yml', 'ci/engine5-darwin.py', 'ci/engine5-darwin.init.gradle', NATIVE_HOST_BUILD)}}
     save(REPORTS / 'bindings.json', binding)
     before = {}
     for role, (base, patch, manifest_sha, count) in PINS.items():
@@ -339,6 +369,20 @@ def prepare():
                 before[role + '/' + member.name] = hashlib.sha256(data).hexdigest()
         for item in entries:
             require(before.get(role + '/' + item['path']) == item['after_sha256'], 'Reviewed file mismatch: ' + item['path'])
+    # Add only reviewed validation configuration. All five Kotlin sources stay at their original archive paths.
+    host_control = CONTROL / NATIVE_HOST_BUILD
+    require(host_control.is_file() and not host_control.is_symlink() and host_control.stat().st_size <= 64 * 1024,
+            'Invalid/oversized native host build control')
+    host_build = RUN / 'app/engine5DarwinBoundary/build.gradle.kts'
+    host_build.parent.mkdir(mode=0o700, exist_ok=False) # Never reuse a project supplied by an archive.
+    host_build.write_bytes(host_control.read_bytes())
+    host_build.chmod(0o600)
+    host_sha = binding['controlSha256'][NATIVE_HOST_BUILD]
+    require(digest(host_build) == host_sha, 'Native host control changed while preparing')
+    before['app/engine5DarwinBoundary/build.gradle.kts'] = host_sha
+    binding['nativeHost'] = {'project': NATIVE_HOST_PROJECT, 'buildFile': str(host_build.resolve()), 'buildSha256': host_sha,
+                            'sourceSets': {source_set: {name: before['app/' + name] for name in names}
+                                           for source_set, names in NATIVE_HOST_SOURCE_SETS.items()}}
     save(RUN / 'before.json', before)
     webp = RUN / 'app/platform/libs/libwebp/ios-arm64-simulator/libwebp.a'
     require(webp.read_bytes().startswith(b'!<arch>\n'), 'libwebp is missing or an LFS pointer')
@@ -442,7 +486,7 @@ def collect():
     if binary_receipt.is_file():
         linked = json.loads(binary_receipt.read_text())
         binary = Path(linked['file'])
-        require(binary.resolve().is_relative_to((RUN / 'app').resolve()) and binary.is_file()
+        require(binary.resolve().is_relative_to((RUN / 'app/engine5DarwinBoundary/build').resolve()) and binary.is_file()
                 and digest(binary) == linked['sha256'], 'Changed/missing test executable')
         load_commands = command(['xcrun', 'vtool', '-show-build', str(binary)])
         plist_section = command(['xcrun', 'otool', '-s', '__TEXT', '__info_plist', str(binary)])
@@ -451,8 +495,14 @@ def collect():
     before = json.loads((RUN / 'before.json').read_text())
     require(all((RUN / name).is_file() and digest(RUN / name) == expected for name, expected in before.items()), 'Source bytes changed during validation')
     require(os.environ.get('ENGINE5_VALIDATION_OUTCOME') == 'success', 'Publication/compile/link/test stage did not succeed')
-    for name in ('published.json', 'link-inputs.json', 'linked-binary.json', 'test-invocation.json', 'simulator.json'):
+    for name in ('published.json', 'native-closure.json', 'link-inputs.json', 'linked-binary.json', 'test-invocation.json', 'simulator.json'):
         require((REPORTS / name).is_file(), 'Missing actual runtime receipt: ' + name)
+    for name, task in [('native-closure.json', 'linkDebugTestIosSimulatorArm64'), ('link-inputs.json', 'linkDebugTestIosSimulatorArm64'),
+                       ('linked-binary.json', 'linkDebugTestIosSimulatorArm64'), ('test-invocation.json', 'iosSimulatorArm64Test')]:
+        require(json.loads((REPORTS / name).read_text())['task'] == NATIVE_HOST_PROJECT + ':' + task, 'Wrong native host task: ' + name)
+    closure = json.loads((REPORTS / 'native-closure.json').read_text())
+    require(closure['validation'] == 'PASS' and closure['project'] == NATIVE_HOST_PROJECT and closure['candidate'] == VERSION,
+            'Targeted native dependency/source closure was not accepted')
     for name in ('neutral', 'darwin'):
         captured = json.loads((REPORTS / (name + '-capture.json')).read_text())
         require(captured['complete'] and not captured['truncated'], 'Incomplete Gradle diagnostic capture: ' + name)
@@ -469,13 +519,42 @@ def collect():
     require(not list(REPORTS.glob('*.limit.json')), 'Truncated diagnostic evidence is not a PASS')
     save(REPORTS / 'result.json', {'validation': 'PASS', 'candidate': VERSION,
                                   'testcase': cases[0].attrib, 'sourceBytesUnchanged': True,
+                                  'validationScope': 'targeted-native-boundary', 'fullAppNativeCompilation': 'SEPARATE_OBLIGATION',
                                   'requiresSeparateCleanupPass': True, 'requiresSeparateEvidencePass': True})
 
 def owned_pids():
     marker = '-Dengine5.darwin.owner=' + OWNER
     rows = command(['ps', '-axww', '-o', 'pid=,command='], seconds=5, log_output=False).splitlines()
-    return {int(row.split(None, 1)[0]) for row in rows if row.strip()
-            and (marker in row.split() or str(RUN) + '/' in row) and int(row.split(None, 1)[0]) != os.getpid()}
+    owned = {}
+    for row in rows:
+        if row.strip() and (marker in row.split() or str(RUN) + '/' in row):
+            pid = int(row.split(None, 1)[0])
+            if pid != os.getpid():
+                owned[pid] = [basis for basis, matched in (
+                    ('exact-owner-argument', marker in row.split()), ('owned-run-path', str(RUN) + '/' in row)) if matched]
+    return owned # Same PID selection; values record the existing match basis, never full command text.
+
+def worker_identity(owned):
+    # Only the first 32 already-owned PIDs, one bounded query at an existing census/signal boundary, no sampler.
+    selected = sorted(owned)[:PROCESS_IDENTITY_LIMIT]
+    snapshot = {'ownedCount': len(owned), 'omittedOwnedCount': max(0, len(owned) - PROCESS_IDENTITY_LIMIT),
+                'processes': [], 'unobservedPids': selected}
+    try:
+        if selected:
+            raw = command(['ps', '-ww', '-p', ','.join(map(str, selected)), '-o', 'pid=,uid=,ppid=,pgid=,stat=,comm='],
+                          seconds=1, log_output=False)
+            found = {}
+            for row in identity_rows(raw):
+                pid = row['pid']
+                require(pid in selected and pid not in found, 'Unexpected/duplicate targeted identity row')
+                row['basis'] = owned[pid]
+                found[pid] = row
+            snapshot['processes'] = [found[pid] for pid in sorted(found)]
+            snapshot['unobservedPids'] = sorted(set(selected) - found.keys())
+    except Exception as failure:
+        snapshot['error'] = str(failure)[:1000] # Observation only; does not authorize or suppress any worker signal.
+    snapshot['observedMonotonicSeconds'] = time.monotonic()
+    return snapshot
 
 def stage_evidence():
     # Called only after cleanup validated ownership. Upload only this byte-bounded snapshot.
@@ -484,7 +563,7 @@ def stage_evidence():
     reserve = 64 * 1024
     receipt = {'budget': 'FAIL', 'complete': False, 'limitBytes': EVIDENCE_LIMIT, 'files': [], 'omitted': []}
     save(target / 'evidence-budget.json', receipt)
-    core = {'bindings.json', 'tools.json', 'published.json', 'link-inputs.json', 'linked-binary.json',
+    core = {'bindings.json', 'tools.json', 'published.json', 'native-closure.json', 'link-inputs.json', 'linked-binary.json',
             'test-invocation.json', 'simulator.json', 'result.json', 'cleanup.json', 'binary-inspection.log'}
     files = sorted([*REPORTS.glob('*.json'), *(REPORTS / 'xml').glob('*.xml'), *REPORTS.glob('*.log')],
                    key=lambda p: (p.name not in core and p.suffix != '.xml', p.suffix == '.log', str(p)))
@@ -520,7 +599,7 @@ def stage_evidence():
 def cleanup():
     scope()
     receipt = {'cleanup': 'INCOMPLETE', 'errors': {}, 'signalAttempts': [], 'commandSignalAttempts': TOOL_SIGNALS,
-               'workersAbsent': False, 'simulatorRemoved': False, 'scratchRemoved': False}
+               'workersAbsent': False, 'simulatorRemoved': False, 'scratchRemoved': False, 'workerIdentity': {}}
     def error(phase, failure): receipt['errors'][phase] = str(failure)[:1000]
     def checkpoint():
         try: save(REPORTS / 'cleanup.json', receipt)
@@ -541,9 +620,14 @@ def cleanup():
     checkpoint()
     try:
         for sig in (signal.SIGTERM, signal.SIGKILL):
-            targets = owned_pids() & owned_pids() # Fresh confirmation; a failed census never authorizes a signal.
+            candidates = owned_pids()
+            identity = worker_identity(candidates)
+            confirmed = owned_pids() # Fresh confirmation stays AFTER diagnostics; a failed census never authorizes a signal.
+            targets = candidates.keys() & confirmed.keys()
+            for row in identity['processes']: row['confirmedForSignal'] = row['pid'] in targets
+            receipt['workerIdentity'][sig.name] = identity # Earlier observation, not identity at the signal instant.
             for pid in sorted(targets):
-                attempt = {'pid': pid, 'signal': sig.name, 'outcome': 'attempting'}
+                attempt = {'pid': pid, 'signal': sig.name, 'outcome': 'attempting', 'basis': confirmed[pid]}
                 receipt['signalAttempts'].append(attempt)
                 require(checkpoint(), 'Cannot record signal intent; refuse unrecorded signal')
                 try:
@@ -555,7 +639,9 @@ def cleanup():
                     error('signal-' + str(pid), failure)
                 checkpoint()
             time.sleep(3) # Also re-census initially empty sets; late KILL targets are recorded above.
-        receipt['remainingPids'] = sorted(owned_pids())
+        remaining = owned_pids()
+        receipt['remainingPids'] = sorted(remaining)
+        receipt['workerIdentity']['remaining'] = worker_identity(remaining)
         receipt['workersAbsent'] = not receipt['remainingPids']
         require(receipt['workersAbsent'], 'Owned workers remain; retain scratch')
     except Exception as failure: error('workers', failure)
@@ -589,7 +675,9 @@ def cleanup():
     try:
         require(receipt['workersAbsent'] and receipt['simulatorRemoved'], 'Worker/device absence not proven; retain scratch')
         receipt['workersAbsent'] = False
-        receipt['workersAbsent'] = not owned_pids()
+        before_remove = owned_pids()
+        receipt['workersAbsent'] = not before_remove
+        receipt['workerIdentity']['beforeScratchRemoval'] = worker_identity(before_remove)
         require(receipt['workersAbsent'], 'Owned workers appeared during cleanup; retain scratch')
         for path in RUN.iterdir():
             if path == REPORTS: continue

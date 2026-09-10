@@ -1,11 +1,19 @@
-// R1 DRAFT, only for the two exact task selections in engine5-darwin.yml. No product edit.
+// TARGETED NATIVE DRAFT with R4 diagnostics; only the two exact workflow selections. No product edit.
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import org.gradle.api.GradleException
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.publish.PublishingExtension
 import java.security.MessageDigest
 
+def initNanos = System.nanoTime()
+def initUtc = java.time.Instant.now().toString()
+def appClock = { -> [initUtc: initUtc, elapsedSeconds: (System.nanoTime() - initNanos) / 1_000_000_000d] }
+def appTiming = { event, taskPath ->
+    // At most one init line and two action markers for each of three exact App tasks; the existing log is capped.
+    println('ENGINE5_APP_TIMING ' + JsonOutput.toJson([event: event, task: taskPath] + appClock()))
+}
 def opt = gradle.startParameter.projectProperties
 def role = opt['engine5Role']
 def version = opt['engine5Version']
@@ -20,6 +28,7 @@ def reports = new File(opt['engine5Reports']).canonicalFile
 def plist = new File(opt['engine5Plist']).canonicalFile
 def group = 'me.manga.kira.source'
 def modules = ['source-contract', 'source-engine']
+def hostProject = ':engine5DarwinBoundary'
 def selector = 'me.manga.kira.sources.runtime.KtorSourceDarwinBoundaryTest.darwin_single_hop_bridge_cancellation_and_managed_closure'
 def sha = { File f -> MessageDigest.getInstance('SHA-256').digest(f.bytes).encodeHex().toString() }
 def save = { name, value ->
@@ -32,7 +41,16 @@ def save = { name, value ->
     new File(reports, name).bytes = bytes
 }
 def attributes = { a -> a.keySet().sort { it.name }.collectEntries { [(it.name): a.getAttribute(it).toString()] } }
-def expectedTasks = role == 'app' ? [':composeApp:iosSimulatorArm64Test'] : modules.collectMany { m ->
+def nativeHost = null
+if (role == 'app') {
+    def bindingFile = new File(reports, 'bindings.json')
+    require(bindingFile.isFile() && bindingFile.length() <= 1024 * 1024, 'Missing/oversized input binding')
+    def binding = new JsonSlurper().parse(bindingFile)
+    nativeHost = binding.nativeHost
+    require(binding.candidate == version && nativeHost?.project == hostProject &&
+        nativeHost.buildSha256 == binding.controlSha256['ci/engine5-darwin.host.gradle.kts'], 'Wrong native host binding')
+}
+def expectedTasks = role == 'app' ? [hostProject + ':iosSimulatorArm64Test'] : modules.collectMany { m ->
     ['KotlinMultiplatform', 'IosSimulatorArm64'].collect { v ->
         ":${m}:publish${v}PublicationToEngine5CandidateRepository".toString()
     }
@@ -42,6 +60,7 @@ def appArguments = expectedTasks + ['--tests', selector, '--device', opt['engine
 require(gradle.startParameter.taskNames == expectedTasks ||
     (role == 'app' && gradle.startParameter.taskNames == appArguments), 'Refusing a different task selection')
 require(!gradle.startParameter.dryRun, 'A dry run is not a Darwin execution')
+if (role == 'app') appTiming('init', null)
 
 gradle.settingsEvaluated { settings ->
     if (role == 'app') {
@@ -53,6 +72,13 @@ gradle.settingsEvaluated { settings ->
             }
             filter { includeGroup(group) }
         }
+        def hostDir = new File(settings.rootDir, 'engine5DarwinBoundary').canonicalFile
+        def hostBuild = new File(hostDir, 'build.gradle.kts')
+        require(settings.findProject(hostProject) == null, 'Refusing an existing validation host project')
+        require(hostBuild.canonicalPath == nativeHost.buildFile && hostBuild.isFile() &&
+            sha(hostBuild) == nativeHost.buildSha256, 'Unbound/different native host build file')
+        settings.include(hostProject)
+        settings.project(hostProject).projectDir = hostDir
     }
 }
 gradle.beforeProject { p ->
@@ -72,8 +98,13 @@ gradle.beforeProject { p ->
             }
         }
     }
-    if (role != 'app' || p.path != ':composeApp') return
+    if (role != 'app' || p.path != hostProject) return
 
+    // Action boundaries, not scheduler/worker timings. Skipped/failed actions do not acquire a fabricated end marker.
+    p.tasks.matching { it.name in ['compileKotlinIosSimulatorArm64', 'compileTestKotlinIosSimulatorArm64'] }.configureEach { t ->
+        t.doFirst { appTiming('actions-start', t.path) }
+        t.doLast { appTiming('actions-end', t.path) }
+    }
     // Name matching avoids importing KGP classes through the init-script classloader.
     p.tasks.matching { it.name == 'linkDebugTestIosSimulatorArm64' }.configureEach { t ->
         require(plist.isFile(), 'Missing test-only ATS plist')
@@ -82,7 +113,120 @@ gradle.beforeProject { p ->
         t.binary.linkerOpts('-sectcreate', '__TEXT', '__info_plist', plist.absolutePath)
         t.inputs.file(plist)
         t.doFirst {
+            appTiming('actions-start', t.path)
             def c = p.configurations.getByName(configurationName)
+            // Inspect the SAME resolved compile configuration and actual link libraries as the neutral checks below.
+            // This is a fail-closed admission policy, not a new resolver or a source/dependency substitute.
+            def allComponents = c.incoming.resolutionResult.allComponents
+            def allArtifacts = c.incoming.artifacts.artifacts
+            def linkFiles = t.libraries.files.collect { it.canonicalFile }
+            def identity = { id ->
+                if (id instanceof ProjectComponentIdentifier) {
+                    return [id: id.displayName, kind: 'project', build: id.build.buildPath, project: id.projectPath]
+                }
+                if (id instanceof ModuleComponentIdentifier) {
+                    return [id: id.displayName, kind: 'module', group: id.group, module: id.module, version: id.version]
+                }
+                [id: id.displayName, kind: 'other']
+            }
+            def componentRows = allComponents.collect { component ->
+                identity(component.id) + [moduleVersion: component.moduleVersion?.toString(), variants: component.variants.collect {
+                    [name: it.displayName, attributes: attributes(it.attributes)]
+                }]
+            }.sort { it.id }
+            def artifactRows = allArtifacts.collect { a ->
+                identity(a.id.componentIdentifier) + [variant: a.variant.displayName, attributes: attributes(a.variant.attributes),
+                    file: a.file.canonicalPath, exists: a.file.exists(), inLinkLibraries: linkFiles.contains(a.file.canonicalFile)]
+            }.sort { it.file }
+            def kotlin = p.extensions.getByName('kotlin')
+            def actualSources = kotlin.sourceSets.findAll { !it.kotlin.files.empty }.collectEntries { s ->
+                [(s.name): s.kotlin.files.sort { it.path }.collectEntries { f ->
+                    [(p.rootDir.canonicalFile.toPath().relativize(f.canonicalFile.toPath()).toString()): f.isFile() ? sha(f) : null]
+                }]
+            }
+            def resourceFiles = kotlin.sourceSets.collectMany { it.resources.files*.canonicalPath }.sort()
+            def buildSha = p.buildFile.isFile() ? sha(p.buildFile) : null
+            def hostOutput = p.layout.buildDirectory.get().asFile.canonicalFile.toPath()
+            def linkRows = linkFiles.collect { f ->
+                [file: f.path, components: artifactRows.findAll { it.file == f.path }*.id, hostOutput: f.toPath().startsWith(hostOutput)]
+            }.sort { it.file }
+            def errors = []
+            def checkClosure = { ok, message -> if (!ok) errors.add(message.toString()) }
+            def projects = componentRows.findAll { it.kind == 'project' }
+            def leafProjects = [':sources:engine', ':sources:contracts', ':domain', ':core'] as Set
+            checkClosure(projects.size() == 5 && (projects*.project).toSet() == leafProjects + [hostProject] &&
+                projects.every { it.build == ':' }, 'Expected only host and four actual App leaf projects in this build')
+            checkClosure(artifactRows.findAll { it.kind == 'project' }*.project.toSet() == leafProjects,
+                'Expected actual artifacts from all four App leaf main compilations')
+            checkClosure(buildSha == nativeHost.buildSha256 && actualSources == nativeHost.sourceSets && resourceFiles.empty,
+                'Host build/source allowlist hashes changed or extra resources selected')
+            checkClosure(kotlin.targets.names == (['metadata', 'iosSimulatorArm64'] as Set) && nativeTarget == 'ios_simulator_arm64',
+                'Host must have only the simulator native target')
+            checkClosure(!p.pluginManager.hasPlugin('org.jetbrains.compose') &&
+                !p.pluginManager.hasPlugin('org.jetbrains.kotlin.plugin.compose'), 'Compose plugin is not part of this host')
+
+            // Exact admitted coordinate families, with only the simulator suffix allowed. Unknown transitives FAIL;
+            // an authorized run records the observed graph rather than broadening this policy automatically.
+            def libraryVersions = [
+                'org.jetbrains.kotlin:kotlin-stdlib': '2.4.0', 'org.jetbrains.kotlin:kotlin-test': '2.4.0',
+                'org.jetbrains.kotlinx:kotlinx-coroutines-core': '1.11.0', 'org.jetbrains.kotlinx:kotlinx-coroutines-test': '1.11.0',
+                'org.jetbrains.kotlinx:kotlinx-serialization-core': '1.11.0', 'org.jetbrains.kotlinx:kotlinx-serialization-json': '1.11.0',
+                'org.jetbrains.kotlinx:kotlinx-datetime': '0.8.0', 'org.jetbrains.kotlinx:atomicfu': '0.33.0',
+                'org.jetbrains.kotlinx:kotlinx-io-core': '0.9.0', 'org.jetbrains.kotlinx:kotlinx-io-bytestring': '0.9.0',
+                'co.touchlab:kermit': '2.1.0', 'co.touchlab:kermit-core': '2.1.0',
+                'co.touchlab:stately-concurrency': '2.1.0', 'co.touchlab:stately-strict': '2.1.0',
+                'io.ktor:ktor-http-cio': '3.5.1', 'io.ktor:ktor-network-tls': '3.5.1',
+                'com.fleeksoft.ksoup:ksoup': '0.2.6', 'com.fleeksoft.charset:charset': '0.0.8', 'com.fleeksoft.io:io-core': '0.0.8',
+            ]
+            ['ktor-client-core', 'ktor-client-darwin', 'ktor-client-mock', 'ktor-network', 'ktor-http', 'ktor-io',
+             'ktor-utils', 'ktor-events', 'ktor-websockets', 'ktor-websocket-serialization', 'ktor-serialization', 'ktor-sse'].each {
+                libraryVersions['io.ktor:' + it] = '3.5.1'
+            }
+            modules.each { libraryVersions[group + ':' + it] = version }
+            def bomVersions = ['org.jetbrains.kotlinx:kotlinx-coroutines-bom': '1.11.0',
+                'org.jetbrains.kotlinx:kotlinx-serialization-bom': '1.11.0', 'io.ktor:ktor-bom': '3.5.1']
+            def coordinate = { row -> row.group + ':' + row.module.replaceFirst(/-iossimulatorarm64$/, '') }
+            def nativeVariant = { row, attrs ->
+                attrs['org.jetbrains.kotlin.platform.type'] == 'native' &&
+                    (attrs['org.jetbrains.kotlin.native.target'] == 'ios_simulator_arm64' ||
+                     (row.kind == 'module' && row.group == 'org.jetbrains.kotlin' && row.module in ['kotlin-stdlib', 'kotlin-test'] &&
+                      !attrs.containsKey('org.jetbrains.kotlin.native.target')))
+            }
+            componentRows.each { row ->
+                if (row.kind == 'module') {
+                    def key = coordinate(row)
+                    def bom = bomVersions[row.group + ':' + row.module]
+                    checkClosure(row.version == (libraryVersions[key] ?: bom), 'Unexpected module/version: ' + row.id)
+                    if (bom) {
+                        checkClosure(!row.variants.empty && row.variants.every {
+                            it.attributes['org.gradle.category'] in ['platform', 'enforced-platform']
+                        }, 'Unexpected BOM variant: ' + row.id)
+                    } else {
+                        checkClosure(!row.variants.empty && row.variants.every { nativeVariant(row, it.attributes) },
+                            'Unexpected native component variant: ' + row.id)
+                    }
+                } else {
+                    checkClosure(row.kind == 'project', 'Unexpected component identity: ' + row.id)
+                    if (row.project != hostProject) checkClosure(!row.variants.empty && row.variants.every {
+                        nativeVariant(row, it.attributes)
+                    }, 'Unexpected App native variant: ' + row.id)
+                }
+            }
+            artifactRows.each { row ->
+                def admitted = row.kind == 'project' ? row.build == ':' && row.project in leafProjects :
+                    row.kind == 'module' && row.version == libraryVersions[coordinate(row)]
+                checkClosure(admitted && componentRows.any { it.id == row.id } &&
+                    nativeVariant(row, row.attributes) && row.exists && row.inLinkLibraries,
+                    'Unexpected/non-native/unlinked artifact: ' + row.id)
+            }
+            checkClosure(linkRows.every { !it.components.empty || it.hostOutput }, 'Unattributed link library outside the host build')
+            save('native-closure.json', [validation: errors.empty ? 'PASS' : 'FAIL', errors: errors, timing: appClock(),
+                project: p.path, task: t.path, candidate: version, configuration: c.name, attributes: attributes(c.attributes),
+                target: nativeTarget, targets: kotlin.targets.names.sort(),
+                buildFile: p.buildFile.canonicalPath, buildSha256: buildSha, sourceSets: actualSources, resourceFiles: resourceFiles,
+                components: componentRows, artifacts: artifactRows, linkLibraries: linkRows])
+            require(errors.empty, 'Rejected targeted native closure; see native-closure.json')
+
             def components = c.incoming.resolutionResult.allComponents.findAll {
                 it.id instanceof ModuleComponentIdentifier && it.id.group == group
             }
@@ -109,7 +253,7 @@ gradle.beforeProject { p ->
                  attributes: attrs, resolvedFile: a.file.absolutePath, linkedFile: a.file.canonicalPath,
                  publishedFile: published.first().absolutePath, sha256: sha(a.file)]
             }
-            save('link-inputs.json', [task: t.path, configuration: c.name, attributes: attributes(c.attributes),
+            save('link-inputs.json', [timing: appClock(), task: t.path, configuration: c.name, attributes: attributes(c.attributes),
                 target: nativeTarget, candidate: version, artifacts: receipts,
                 components: components.collect { component ->
                     [id: component.id.displayName, variants: component.variants.collect {
@@ -122,6 +266,7 @@ gradle.beforeProject { p ->
             require(binary.isFile() && nativeTarget == 'ios_simulator_arm64', 'Missing actual simulator test executable')
             save('linked-binary.json', [task: t.path, file: binary.canonicalPath, sha256: sha(binary),
                 target: nativeTarget, plistSha256: sha(plist), linkerOpts: t.linkerOpts])
+            appTiming('actions-end', t.path)
         }
     }
     p.tasks.matching { it.name == 'iosSimulatorArm64Test' }.configureEach { t ->

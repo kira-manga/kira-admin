@@ -1,4 +1,4 @@
-# R2 DRAFT ONLY. Primary installs on the existing private remediation branch after review.
+# TARGETED NATIVE DRAFT with R4 diagnostics. Primary installs only after independent review.
 name: Engine5 one-test Darwin validation (private)
 on:
   push:
@@ -36,7 +36,7 @@ jobs:
           export ENGINE5_RUN="$RUNNER_TEMP/engine5-darwin-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           printf 'ENGINE5_RUN=%s\n' "$ENGINE5_RUN" >> "$GITHUB_ENV"
           python3 -B control/ci/engine5-darwin.py prepare
-      - name: Publish only root and simulator variants, then compile/link/run one Darwin test
+      - name: Publish root and simulator variants, then compile/link/run the targeted Darwin host
         id: validation
         timeout-minutes: 29
         shell: bash
@@ -74,7 +74,7 @@ jobs:
           python3 -B "$GITHUB_WORKSPACE/control/ci/engine5-darwin.py" deadline test "${allowed[@]}" \
             DEVELOPER_DIR=/Applications/Xcode_26.4.1.app/Contents/Developer \
             ./gradlew "${common[@]}" -Pengine5Role=app "-Pengine5Device=$udid" \
-            :composeApp:iosSimulatorArm64Test \
+            :engine5DarwinBoundary:iosSimulatorArm64Test \
             --tests me.manga.kira.sources.runtime.KtorSourceDarwinBoundaryTest.darwin_single_hop_bridge_cancellation_and_managed_closure \
             --device "$udid" 2>&1 | python3 -B "$GITHUB_WORKSPACE/control/ci/engine5-darwin.py" capture "$ENGINE5_RUN/reports/darwin.log"
       - name: Require actual candidate link inputs, simulator executable and exactly one passing XML case
