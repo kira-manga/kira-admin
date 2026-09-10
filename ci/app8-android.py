@@ -303,7 +303,7 @@ def inside():
     commands = Commands(reports, dict(os.environ), inputs / 'app29_owned_children.py', runtime['workDeadline'])
     adb = ['/sdk/platform-tools/adb', '-H', '127.0.0.1', '-P', '5037']
     device = adb + ['-s', 'emulator-5554']
-    bt, jar = Path('/sdk/build-tools/36.0.0'), Path('/sdk/platforms/android-37/android.jar')
+    bt, jar = Path('/sdk/build-tools/36.0.0'), Path('/sdk/platforms/android-36/android.jar')
     emulator = server = fixture = None
     avd_intended = installed = False
     mapping = None
@@ -507,6 +507,7 @@ def outside():
             and request['probeManifestSha256'] == MANIFEST and request['policySha256'] == POLICIES
             and request['ownedChildrenSha256'] == OWNER_HASH and request['orchestratorSha256'] == digest(source)
             and request['shippingBuildInputSha256'] == BUILD_HASH and request['shippingManifestSha256'] == APP_MANIFEST_HASH
+            and request['shippingCompileSdk'] == 37
             and request['shippingPolicyPath'] == POLICY_PATH and request['acceptedSourceGuardResultSha256'] == GUARD_HASH,
             'Unbound request/source')
     require(os.environ.get('GITHUB_REPOSITORY') == 'kira-manga/kira-admin'
@@ -529,13 +530,13 @@ def outside():
         for tool in ('sudo', 'unshare', 'chroot', 'setpriv', 'mount', 'ip', 'timeout', 'find'):
             require(shutil.which(tool, path=env['PATH']), 'Missing installed isolation prerequisite: ' + tool)
         tools = request['toolchain']
-        require(tools == {'javaHomeEnvironment': 'JAVA_HOME_17_X64', 'buildTools': '36.0.0', 'compilePlatform': 'android-37',
+        require(tools == {'javaHomeEnvironment': 'JAVA_HOME_17_X64', 'buildTools': '36.0.0', 'compilePlatform': 'android-36',
                           'systemImage': IMAGE, 'missingSdkPreparationSeconds': 120}, 'Unsupported toolchain request')
         sdk = Path(os.environ['ANDROID_HOME']).resolve()
         jdk = Path(os.environ['JAVA_HOME_17_X64']).resolve()
         require(':' not in str(sdk) + str(jdk) + str(run), 'Unsupported path separator')
         expected_tools = ['platform-tools/adb', 'emulator/emulator', 'build-tools/36.0.0/aapt2', 'build-tools/36.0.0/d8',
-                          'build-tools/36.0.0/zipalign', 'build-tools/36.0.0/apksigner', 'platforms/android-37/android.jar',
+                          'build-tools/36.0.0/zipalign', 'build-tools/36.0.0/apksigner', 'platforms/android-36/android.jar',
                           'cmdline-tools/latest/bin/sdkmanager', 'cmdline-tools/latest/bin/avdmanager']
         for relative in ('cmdline-tools/latest/bin/sdkmanager', 'cmdline-tools/latest/bin/avdmanager'):
             require((sdk / relative).is_file(), 'Missing installed SDK command-line tool: ' + relative)
@@ -576,6 +577,8 @@ def outside():
         require(read_json(checkpoint_path) == checkpoint, 'Primary checkpoint does not attest the bound policy bytes')
         save(reports / 'source-bindings.json', {'checkpoint': checkpoint, 'checkpointProvenanceSha256': digest(checkpoint_path),
                                              'frozenInputs': {relative: entries[relative] for relative in INPUTS},
+                                             'shippingCompileSdk': metadata['android']['compileSdk'],
+                                             'probeCompilePlatform': tools['compilePlatform'],
                                              'sourceGuardRerun': False})
         shutil.copyfile(source, inputs / 'app8-android.py')
         shutil.copyfile(source.with_name('app29_owned_children.py'), inputs / 'app29_owned_children.py')
@@ -588,7 +591,7 @@ def outside():
             'platform-tools': ('platform-tools/adb',),
             'build-tools;36.0.0': ('build-tools/36.0.0/aapt2', 'build-tools/36.0.0/d8',
                                  'build-tools/36.0.0/zipalign', 'build-tools/36.0.0/apksigner'),
-            'platforms;android-37': ('platforms/android-37/android.jar',),
+            'platforms;android-36': ('platforms/android-36/android.jar',),
             IMAGE: ('system-images/android-26/google_apis/x86_64/source.properties',),
         }
         missing_packages = [package for package, required in package_inputs.items()
@@ -613,6 +616,7 @@ def outside():
                    'hostNamespaces': namespace_identity('self'), 'sdkHashes': sdk_hashes,
                    'jdkJavacSha256': digest(jdk / 'bin/javac'), 'imageProperties': properties, 'imagePrepared': prepared,
                    'sdkPreparedPackages': missing_packages,
+                   'shippingCompileSdk': metadata['android']['compileSdk'], 'probeCompilePlatform': tools['compilePlatform'],
                    'probeManifestSha256': MANIFEST, 'sourceGuardRerun': False}
         save(inputs / 'runtime.json', runtime)
         commands.env = env  # Never inherit Actions tokens/proxies/agents into the namespace.

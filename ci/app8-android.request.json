@@ -11,14 +11,15 @@
   },
   "shippingPolicyPath": "app/src/main/res/xml/network_security_config.xml",
   "shippingBuildInputSha256": "fb1929a19efcac2e9d843bd3f1946f2573ff486747abf514fcf76f5f80b55889",
+  "shippingCompileSdk": 37,
   "shippingManifestSha256": "fc86dea1b63549f7df4c0cb289e6be2dd207c1520ed90616b8e251d122da22a9",
   "acceptedSourceGuardResultSha256": "c33add8f6fc647a9186e5e06affb433a174077601c4fb04c10ca4ef7bc2841a6",
-  "orchestratorSha256": "5e56d61420640a8e954730c07387a6ac6f367b93ce51d5ea5fe86083907a20a4",
+  "orchestratorSha256": "43dddfc568e88ce8048c2ee1d0cf46c2558035043846eda7af0c3814b98e5b5b",
   "checkpointProvenanceSha256": "116dcc3211fcf240e2c1e83869b5c24e1cd1a6c1c48b1355cb7a5b0f208c79f1",
   "toolchain": {
     "javaHomeEnvironment": "JAVA_HOME_17_X64",
     "buildTools": "36.0.0",
-    "compilePlatform": "android-37",
+    "compilePlatform": "android-36",
     "systemImage": "system-images;android-26;google_apis;x86_64",
     "missingSdkPreparationSeconds": 120
   }
