@@ -1,0 +1,15 @@
+{
+  "schema": "app3-ios-compile-private-v1",
+  "authorization": "APP3_IOS_COMPILE_ONE_ATTEMPT_AUTHORIZED",
+  "sourceRepository": "kira-manga/kira-app",
+  "sourceSha": "da0655b594930b563d31aaac97cfd2252d567f77",
+  "task": ":data:remote:compileKotlinIosSimulatorArm64",
+  "expectedRunAttempt": 1,
+  "sourcePatchSha256": "3b2d38e14419ac2edec133021a557daa2f8eddaabb23e961af217053a00deeb0",
+  "linuxCollectionSha256": "84933a030a4bf199e155183d9ae1d9342ebe4576981413db490d8369f6e7db21",
+  "ownerHelperSha256": "d6e5f696ae3c8dedc6f04bcf02dc1e0cb250b5611a0ef3b3de9372779ec2bba2",
+  "developerDir": "/Applications/Xcode_26.4.1.app/Contents/Developer",
+  "controllerSha256": "f0492735d97a3d906b2914a172d22dea08132c98b4e573301fcfccb72c22aead",
+  "initSha256": "745a8327b046e643fe7d8b4e06748fcd056ab5e0b22f5e7b0b7e016d23c989d4",
+  "workflowSha256": "287dfacdfd085ed3884e6f3c1fd35a584bdb0872da8945c5daa05d2229c0f24b"
+}

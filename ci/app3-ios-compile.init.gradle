@@ -1,0 +1,39 @@
+// Private one-task guard/receipt only: no dependency substitution, source rewrite or extra task.
+import groovy.json.JsonOutput
+
+def targetPath = ':data:remote:compileKotlinIosSimulatorArm64'
+if (gradle.startParameter.taskNames != [targetPath]) {
+    throw new GradleException('App3 permits exactly one requested compilation task')
+}
+if (gradle.gradleVersion != '9.6.1' || System.getProperty('java.specification.version') != '21') {
+    throw new GradleException('Unexpected Gradle/Java toolchain')
+}
+
+gradle.taskGraph.whenReady { graph ->
+    def paths = graph.allTasks.collect { it.path }
+    if (!paths.contains(targetPath) || graph.allTasks.any { task ->
+        def allowedProject = task.project.path in [':core', ':data:remote']
+        def allowedRoot = task.path == ':commonizeNativeDistribution'
+        (!allowedProject && !allowedRoot) ||
+            (task.name =~ /(?i)(test|link|assemble|publish|package|sign|framework|android|desktop|iosarm64|iosx64|macos)/).find()
+    }) {
+        throw new GradleException('Unexpected work outside the two-module iOS compilation graph: ' + paths)
+    }
+    graph.allTasks.find { it.path == targetPath }.doLast { task ->
+        def proof = new File(System.getenv('APP3_PROOF'))
+        def expected = new File(System.getenv('APP3_RUN'), 'reports/task-proof.json')
+        if (proof.canonicalFile != expected.canonicalFile || proof.exists()) {
+            throw new GradleException('Unexpected or stale App3 task receipt path')
+        }
+        def outputs = task.outputs.files.files.findAll { it.exists() }.collect {
+            task.rootProject.relativePath(it)
+        }.sort()
+        if (outputs.isEmpty()) throw new GradleException('Compilation produced no declared outputs')
+        proof.text = JsonOutput.prettyPrint(JsonOutput.toJson([
+            schema: 'app3-ios-compile-task-v1', sourceSha: System.getenv('APP3_SOURCE_SHA'),
+            requestedTask: targetPath, graph: paths, compileActionsReachedEnd: true,
+            gradleVersion: gradle.gradleVersion, javaVersion: System.getProperty('java.runtime.version'),
+            javaVendor: System.getProperty('java.vendor'), outputs: outputs,
+        ])) + '\n'
+    }
+}
