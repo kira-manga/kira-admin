@@ -1,0 +1,13 @@
+{
+  "acceptedSourceGuardResultSha256": "c33add8f6fc647a9186e5e06affb433a174077601c4fb04c10ca4ef7bc2841a6",
+  "historicalSha": "2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c",
+  "issueSha": "cebc952602fb69e03eb654dab30937e2f830a239",
+  "policySha256": {
+    "allow": "708ca4944a642ef0304608f3fe7615563d0ec703b453256169157951d836c50a",
+    "deny": "c0c2f75b51066e4ebc3b1e62296be449ba731ac299b6c7cd117130ba335224df"
+  },
+  "probeManifestSha256": "b5f0070646575c99a2f9ef5b46d2550b949c6810459ac7ab7788c29e42baf6b0",
+  "schema": "app8-apple-source-checkpoint-v1",
+  "shippingBuildInputSha256": "1068ab565071844513c06e1cfa7b8580bc4d9278dd2a8661aac903c45082533c",
+  "shippingPolicyPath": "iosApp/iosApp/Info.plist"
+}
