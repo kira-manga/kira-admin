@@ -1,0 +1,75 @@
+# Primary-authorized one-run private validation; no product deployment.
+name: Backend24 one tiny shared-receiver Docker gate (private)
+'on':
+  push:
+    branches: [remediation/app-29-backend-complaints]
+    paths: [ci/backend24-real-docker.request.json]
+permissions:
+  contents: read
+concurrency:
+  group: backend24-one-private-real-docker-gate
+  cancel-in-progress: false
+jobs:
+  receiver:
+    if: github.event.repository.private == true && github.repository == 'kira-manga/kira-admin'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out the exact private carrier without persisted credentials
+        timeout-minutes: 1
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.sha }}
+          path: control
+          persist-credentials: false
+      - name: Require separate primary source and one-run authorization
+        id: request
+        timeout-minutes: 1
+        run: python3 -I -B control/ci/backend24-real-docker.py --check-request
+      - name: Check out only the reconciled and bound Backend commit
+        timeout-minutes: 1
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: kira-manga/Kira-backend
+          ref: ${{ steps.request.outputs.backend_sha }}
+          path: backend
+          persist-credentials: false
+      - name: Run the one tiny A, failed B, identical A receiver sequence
+        id: validation
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo -n env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin LANG=C \
+            RUNNER_TEMP="$RUNNER_TEMP" RUNNER_ENVIRONMENT="$RUNNER_ENVIRONMENT" \
+            RUNNER_OS="$RUNNER_OS" RUNNER_ARCH="$RUNNER_ARCH" \
+            GITHUB_REPOSITORY="$GITHUB_REPOSITORY" GITHUB_REF="$GITHUB_REF" \
+            GITHUB_EVENT_NAME="$GITHUB_EVENT_NAME" GITHUB_EVENT_PATH="$GITHUB_EVENT_PATH" \
+            GITHUB_RUN_ID="$GITHUB_RUN_ID" GITHUB_RUN_ATTEMPT="$GITHUB_RUN_ATTEMPT" \
+            GITHUB_SHA="$GITHUB_SHA" \
+            /usr/bin/python3 -I -B "$GITHUB_WORKSPACE/control/ci/backend24-real-docker.py" --run
+      - name: Independently recheck bounded owned cleanup; cleanup success alone is not PASS
+        if: always() && steps.validation.outcome != 'skipped'
+        timeout-minutes: 1
+        env:
+          BACKEND24_VALIDATION_OUTCOME: ${{ steps.validation.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo -n env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin LANG=C \
+            RUNNER_TEMP="$RUNNER_TEMP" RUNNER_ENVIRONMENT="$RUNNER_ENVIRONMENT" \
+            RUNNER_OS="$RUNNER_OS" RUNNER_ARCH="$RUNNER_ARCH" \
+            GITHUB_REPOSITORY="$GITHUB_REPOSITORY" GITHUB_REF="$GITHUB_REF" \
+            GITHUB_EVENT_NAME="$GITHUB_EVENT_NAME" GITHUB_EVENT_PATH="$GITHUB_EVENT_PATH" \
+            GITHUB_RUN_ID="$GITHUB_RUN_ID" GITHUB_RUN_ATTEMPT="$GITHUB_RUN_ATTEMPT" \
+            GITHUB_SHA="$GITHUB_SHA" BACKEND24_VALIDATION_OUTCOME="$BACKEND24_VALIDATION_OUTCOME" \
+            /usr/bin/python3 -I -B "$GITHUB_WORKSPACE/control/ci/backend24-real-docker.py" --cleanup
+      - name: Retain only compact private identity, exit, health and absence evidence
+        if: always() && steps.validation.outcome != 'skipped'
+        timeout-minutes: 1
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: backend24-real-docker-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/backend24-real-docker-${{ github.run_id }}-${{ github.run_attempt }}/reports/result.json
+          retention-days: 3
+          if-no-files-found: error

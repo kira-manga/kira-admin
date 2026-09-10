@@ -1,0 +1,15 @@
+{
+  "schema": "backend24-one-real-docker-v1",
+  "authorization": "BACKEND24_ONE_REAL_DOCKER_GATE_AUTHORIZED",
+  "backendSha": "be9e5646b3e2c3bf67468f1e444b976e562c7479",
+  "sourceSha256": {
+    "deploy/server3/kira-deploy": "fa0fbbff16e6bf4067de55ea6add651d7860c7e665708efbb6f61c34d6695f17",
+    "scripts/ci/image_release.py": "c9492de4168fcdcddd1c1856ab54a78c8d1bc43771259a34c7a80fada2016c18"
+  },
+  "base": "docker.io/library/busybox@sha256:29989570aeecad61a019f684218ea74d4b8c1c74f9e0abeb34ca926b81174ee1",
+  "syntheticSha": "2424242424242424242424242424242424242424",
+  "scriptSha256": "eb95ba378c153686403a5bc6ed7ea32fb51bf8266c3e0214bbc9eac7df9c52d5",
+  "workflowSha256": "50ae6a815eb83e5dc863e3627efde6c994f046b865a0260d8439ef650a8e08bd",
+  "checkpointSha256": "53b35d3475b2c7caa134f89ca71aaaf6180800438f3f05189631e95acecbd7fa",
+  "ownedChildrenSha256": "56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385"
+}
