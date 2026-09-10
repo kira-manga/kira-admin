@@ -1,4 +1,4 @@
-"""Private focused Backend tutorial/auth PostgreSQL/static batch; executable, never import as a library."""
+"""Private focused Backend7 auth/Redis/PostgreSQL/static batch; executable, never import as a library."""
 import hashlib, json, os, re, shutil, signal, subprocess, tarfile, time
 from pathlib import Path, PurePosixPath
 from xml.etree import ElementTree as ET
@@ -16,9 +16,20 @@ TARGETS = json.loads((ADMIN / 'ci/backend4-tutorials.targets.json').read_text())
 CLASSES = TARGETS['classes']
 
 AUTH_CLASSES = {
-    'me.manga.kira.backend.user.LoginAuditIdentifierIT',
-    'me.manga.kira.backend.user.EmailNormalizationBoundaryTest',
-    'me.manga.kira.backend.user.AuthFlowIT',
+    'me.manga.kira.backend.security.AuthAdmissionConcurrencyTest': 3,
+    'me.manga.kira.backend.security.AuthAttemptCallerTest': 6,
+    'me.manga.kira.backend.security.AuthThrottleServiceTest': 9,
+    'me.manga.kira.backend.security.ClientIpResolutionIT': 9,
+    'me.manga.kira.backend.security.RedisCoordinationFailureTest': 6,
+    'me.manga.kira.backend.security.RedisCoordinationIT': 14,
+    'me.manga.kira.backend.config.AuthThrottleBindingTest': 1,
+    'me.manga.kira.backend.user.EmailNormalizationBoundaryTest': 2,
+    'me.manga.kira.backend.user.CredentialVerifierTest': 1,
+    'me.manga.kira.backend.security.PasswordHashingTest': 2,
+    'me.manga.kira.backend.security.TrustedIngressIdentityTest': 6,
+    'me.manga.kira.backend.user.AuthenticationRateLimitIT': 4,
+    'me.manga.kira.backend.user.LoginAuditIdentifierIT': 5,
+    'me.manga.kira.backend.sourceconfig.admin.AdminStepUpIT': 2,
 }
 PREFIX = 'review/working/app-29-w01-local-dependencies-20260905/'
 ARCHIVE_SHA = 'da94218f74eb0f5831241c8606c8f82142e49b818acfaff027a78f2efe77faab'
@@ -65,7 +76,7 @@ result, started, before, cleanup_failed, project_caches = 1, False, None, False,
 try:
     OWNER = OwnedChildren()  # Refuse unavailable subreaping before the first command.
     target = TARGETS['backend_sha']
-    require(1 <= len(CLASSES) <= 3 and all((re.fullmatch(r'me\.manga\.kira\.backend\.tutorial\.(?:[A-Za-z]+IT|TutorialValidatorTest)', name) or name in AUTH_CLASSES) and type(count) is int and 1 <= count <= 128 for name, count in CLASSES.items()), 'Invalid focused tutorial/auth class/count binding')
+    require(CLASSES == AUTH_CLASSES and all(type(count) is int for count in CLASSES.values()), 'Invalid exact Backend7 auth class/count binding')
     require(bool(TARGETS['source_hashes']), 'Missing reviewed source hashes')
     for relative, expected in TARGETS['source_hashes'].items():
         path = PurePosixPath(relative)

@@ -1,4 +1,4 @@
-name: Backend4 targeted tutorial PostgreSQL validation (private)
+name: Backend7 focused auth Redis PostgreSQL validation (private)
 on:
   push:
     branches: [remediation/app-29-backend-complaints]
@@ -13,6 +13,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   tutorial-postgres:
+    name: Backend7 auth with real Redis and PostgreSQL
     if: github.event.repository.private == true && github.repository == 'kira-manga/kira-admin'
     runs-on: ubuntu-24.04
     timeout-minutes: 25
@@ -31,7 +32,7 @@ jobs:
           import json, os, re
           from pathlib import Path
           value = json.loads(Path('admin/ci/backend4-tutorials.targets.json').read_text())['backend_sha']
-          assert re.fullmatch('[0-9a-f]{40}', value) and value != '0' * 40, 'Unbound Backend4 target'
+          assert re.fullmatch('[0-9a-f]{40}', value) and value != '0' * 40, 'Unbound Backend7 target'
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               output.write('sha=' + value + '\n')
           PY
@@ -46,17 +47,17 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Run only reviewed tutorial classes with real PostgreSQL and statics
+      - name: Run only 14 reviewed auth classes with real Redis PostgreSQL and statics
         id: validation
         env:
-          BACKEND4_RUN: ${{ runner.temp }}/backend4-${{ github.run_id }}-${{ github.run_attempt }}
+          BACKEND4_RUN: ${{ runner.temp }}/backend7-${{ github.run_id }}-${{ github.run_attempt }}
         run: python3 -B admin/ci/backend4-tutorials.py
       - name: Retain private focused results only
         if: always() && steps.validation.outcome != 'skipped'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: backend4-${{ github.run_id }}-${{ github.run_attempt }}
+          name: backend7-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            ${{ runner.temp }}/backend4-${{ github.run_id }}-${{ github.run_attempt }}/reports/
+            ${{ runner.temp }}/backend7-${{ github.run_id }}-${{ github.run_attempt }}/reports/
           retention-days: 3
           if-no-files-found: error
