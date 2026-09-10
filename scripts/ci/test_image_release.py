@@ -330,6 +330,30 @@ class CandidateTests(OfflineCase):
 
 
 class PolicyTests(OfflineCase):
+    def test_native_branch_policy_marker_preserves_fingerprint_in_either_order(self):
+        environment, branches, protection = policy_fixture()
+        expected = release.validate_policy(environment, branches, protection)
+        reviewer = environment['protection_rules'][0]
+        marker = {'id': 25, 'type': 'branch_policy'}
+        for rules in ([reviewer, marker], [marker, reviewer]):
+            with self.subTest(rules=rules):
+                environment['protection_rules'] = rules
+                self.assertEqual(expected, release.validate_policy(environment, branches, protection))
+        branches['branch_policies'][0]['name'] = '*'
+        with self.assertRaises(release.Refused):
+            release.validate_policy(environment, branches, protection)
+
+    def test_duplicate_unknown_and_malformed_native_rules_are_refused(self):
+        environment, branches, protection = policy_fixture()
+        reviewer = environment['protection_rules'][0]
+        marker = {'type': 'branch_policy'}
+        for rules in (None, [marker], [reviewer, reviewer], [reviewer, marker, marker],
+                      [reviewer, {'type': 'wait_timer', 'wait_timer': 30}],
+                      [reviewer, None], [reviewer, {'type': []}]):
+            with self.subTest(rules=rules), self.assertRaises(release.Refused):
+                environment['protection_rules'] = rules
+                release.validate_policy(environment, branches, protection)
+
     def test_native_policy_normalizes_only_enforced_fields(self):
         environment, branches, protection = policy_fixture()
         expected = release.validate_policy(environment, branches, protection)
