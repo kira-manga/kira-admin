@@ -26,7 +26,7 @@ gradle.taskGraph.whenReady { graph ->
             throw new GradleException('Unexpected or stale App3 task receipt path')
         }
         def outputs = task.outputs.files.files.findAll { it.exists() }.collect {
-            task.rootProject.relativePath(it)
+            task.project.rootProject.relativePath(it)
         }.sort()
         if (outputs.isEmpty()) throw new GradleException('Compilation produced no declared outputs')
         proof.text = JsonOutput.prettyPrint(JsonOutput.toJson([
