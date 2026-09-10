@@ -173,11 +173,26 @@ runtime_prefixes=(/usr/bin /usr/sbin /usr/lib/x86_64-linux-gnu /usr/lib64 /usr/l
 for path in /usr /usr/lib "${runtime_prefixes[@]}" /usr/lib/python3.12/encodings /usr/lib/python3.12/lib-dynload; do
   [[ -d "$path" && ! -L "$path" && $(readlink -e "$path") == "$path" ]] || fail_layout "$path must be a direct directory"
 done
-for pair in /bin:usr/bin /sbin:usr/sbin /lib:usr/lib /lib64:usr/lib64 /usr/bin/python3:python3.12 \
-  /usr/lib64/ld-linux-x86-64.so.2:/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2; do
+for pair in /bin:usr/bin /sbin:usr/sbin /lib:usr/lib /lib64:usr/lib64 /usr/bin/python3:python3.12; do
   path=${pair%%:*}; target=${pair#*:}
   [[ -L "$path" && $(readlink "$path") == "$target" ]] || fail_layout "$path must link to $target"
 done
+loader_destination_allowed() {
+  case "$1" in
+    /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2|/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2|../lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+      [[ "$2" == /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 ]] ;;
+    *) return 1 ;;
+  esac
+}
+loader_link=/usr/lib64/ld-linux-x86-64.so.2
+[[ -L "$loader_link" ]] || fail_layout "$loader_link observed spelling unavailable: must be a symlink"
+# The sentinel preserves exact readlink bytes, including any trailing newlines.
+loader_spelling=$(readlink -n "$loader_link" && printf .) || fail_layout "$loader_link observed spelling unavailable: readlink failed"
+loader_spelling=${loader_spelling%.}
+loader_canonical=$(readlink -e -n "$loader_link" && printf .) || fail_layout "$loader_link observed spelling '$loader_spelling'; canonical destination unavailable"
+loader_canonical=${loader_canonical%.}
+loader_destination_allowed "$loader_spelling" "$loader_canonical" ||
+  fail_layout "$loader_link observed spelling '$loader_spelling', canonical destination '$loader_canonical'; expected an approved direct spelling to /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"
 for path in /usr/bin/python3.12 /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2; do
   [[ -f "$path" && -x "$path" && ! -L "$path" ]] || fail_layout "$path must be a regular executable"
 done
@@ -217,7 +232,7 @@ printf 'app8:x:%s:\nkvm:x:%s:app8\n' "$gid" "$kvm_gid" > "$root/etc/group"
 run ip link set lo up
 run mount -o remount,bind,ro "$root"
 set -o noclobber
-cat > "$reports/runtime-profile.json" <<'APP8_RUNTIME_PROFILE'
+cat > "$reports/runtime-profile.json" <<APP8_RUNTIME_PROFILE
 {
   "schema": "app8-android-runtime-prefix-v1",
   "profile": "ubuntu-24.04-x86_64-python3.12",
@@ -228,7 +243,8 @@ cat > "$reports/runtime-profile.json" <<'APP8_RUNTIME_PROFILE'
   "mountFlags": ["ro", "nosuid", "nodev"],
   "mergedUsrLinks": {"/bin": "usr/bin", "/sbin": "usr/sbin", "/lib": "usr/lib", "/lib64": "usr/lib64"},
   "python3LinkTarget": "python3.12",
-  "loaderLinkTarget": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+  "loaderLinkTarget": "$loader_spelling",
+  "loaderCanonicalTarget": "$loader_canonical",
   "layoutValidated": true,
   "prefixMountsApplied": true,
   "nativeDependencyClosure": "unproved",
