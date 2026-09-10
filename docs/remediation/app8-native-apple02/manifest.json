@@ -1,0 +1,64 @@
+{
+  "status": "UNEXECUTED PRIVATE DRAFT",
+  "excludes": [
+    "manifest.json",
+    "SHA256SUMS"
+  ],
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 18803,
+      "sha256": "f4e4fafe13064666aa2ea15353f36424e832ef74a5a7c0a3dbfc292a878e7eea"
+    },
+    {
+      "path": "android/AndroidManifest.xml",
+      "bytes": 940,
+      "sha256": "bfd58cde5883d74e4c70ffaa3b794b89bdd4da85ace95c3144890c9ea0db4cb0"
+    },
+    {
+      "path": "android/TransportProbe.java",
+      "bytes": 7756,
+      "sha256": "9e53a8fc5459ae60c485983099876f711c1cc9e57902a386969d7761bc05b502"
+    },
+    {
+      "path": "fixture/no_forward_proxy.py",
+      "bytes": 7662,
+      "sha256": "99e6ee15a2b77ca702fd3bacd0d3eac5c160aad38ec90f9855454810d5954765"
+    },
+    {
+      "path": "ios/TransportProbe.swift",
+      "bytes": 10217,
+      "sha256": "1e3988e8541047223cfb594d43470e7ef48db39f4e3077c67d706d418422ef72"
+    },
+    {
+      "path": "policy-inputs/allow/Info.plist",
+      "bytes": 4160,
+      "sha256": "708ca4944a642ef0304608f3fe7615563d0ec703b453256169157951d836c50a"
+    },
+    {
+      "path": "policy-inputs/allow/network_security_config.xml",
+      "bytes": 230,
+      "sha256": "03d8bc818916ef40f4ba440aab50100c170a216acab814957d74fbf41f434b6a"
+    },
+    {
+      "path": "policy-inputs/deny/Info.plist",
+      "bytes": 3796,
+      "sha256": "c0c2f75b51066e4ebc3b1e62296be449ba731ac299b6c7cd117130ba335224df"
+    },
+    {
+      "path": "policy-inputs/deny/network_security_config.xml",
+      "bytes": 146,
+      "sha256": "dea35ebed76536c24c13f74036f02dc874f944147cb3a49c2ad0550f71e3e0c7"
+    },
+    {
+      "path": "policy-inputs.json",
+      "bytes": 2772,
+      "sha256": "a84203915c0db3cd3c1edd4731634cd5d93c34c0ce0df6cf0a010a443c63da0d"
+    },
+    {
+      "path": "provenance.json",
+      "bytes": 1955,
+      "sha256": "21269d2e9961c3609528e758ede86d76bda18ae0e95c860400ddba8b41d90d1f"
+    }
+  ]
+}

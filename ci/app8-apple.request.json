@@ -3,7 +3,7 @@
   "authorization": "APP8_APPLE_SINGLE_RUN_AUTHORIZED",
   "issueSha": "cebc952602fb69e03eb654dab30937e2f830a239",
   "historicalSha": "2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c",
-  "probeManifestSha256": "b5f0070646575c99a2f9ef5b46d2550b949c6810459ac7ab7788c29e42baf6b0",
+  "probeManifestSha256": "881dfc6e82754f3082d868a65f157dee54e4620fb1b23f084cbe998cf5a42bcf",
   "policySha256": {
     "allow": "708ca4944a642ef0304608f3fe7615563d0ec703b453256169157951d836c50a",
     "deny": "c0c2f75b51066e4ebc3b1e62296be449ba731ac299b6c7cd117130ba335224df"
@@ -13,8 +13,8 @@
   "acceptedSourceGuardResultSha256": "c33add8f6fc647a9186e5e06affb433a174077601c4fb04c10ca4ef7bc2841a6",
   "pfDisposableAmendmentSha256": "6d8060b5cba21386326c8cafc96827ef0cb4abad9f3981cb96cdfc15f478109e",
   "exclusiveDisposableJobVm": true,
-  "orchestratorSha256": "64246a580f01557d1a5be6e8c516c30bdf7696beed9ec157ceac858273f790a5",
-  "checkpointProvenanceSha256": "23b49a980f1340d32d7b3df2475cf43577f53db136178c9cdeacc516eb51bc0e",
+  "orchestratorSha256": "99a5df3fbfb0b67bb948c04edf87828d6de12f8c2ab1560443764532c3309e49",
+  "checkpointProvenanceSha256": "2bb6f9def633d05f96056399b0be8809c02e69cedcb0ad3e99f0ee5f687dca6a",
   "toolchain": {
     "developerDir": "/Applications/Xcode_26.4.1.app/Contents/Developer",
     "sdkVersion": "26.4",

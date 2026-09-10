@@ -20,7 +20,7 @@ import time
 
 ISSUE = 'cebc952602fb69e03eb654dab30937e2f830a239'
 BASE = '2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c'
-MANIFEST = 'b5f0070646575c99a2f9ef5b46d2550b949c6810459ac7ab7788c29e42baf6b0'
+MANIFEST = '881dfc6e82754f3082d868a65f157dee54e4620fb1b23f084cbe998cf5a42bcf'
 GUARD_HASH = 'c33add8f6fc647a9186e5e06affb433a174077601c4fb04c10ca4ef7bc2841a6'
 BUILD_HASH = '1068ab565071844513c06e1cfa7b8580bc4d9278dd2a8661aac903c45082533c'
 POLICY_PATH = 'iosApp/iosApp/Info.plist'
@@ -396,7 +396,7 @@ def verify_owned_pf(commands, label, token, firewall, cleaning=False):
 
 
 def bind_inputs(source, run, request):
-    payload, inputs = source.parent.parent / 'docs/remediation/app8-native', run / 'inputs'
+    payload, inputs = source.parent.parent / 'docs/remediation/app8-native-apple02', run / 'inputs'
     require(digest(payload / 'manifest.json') == MANIFEST, 'Frozen native manifest mismatch')
     manifest = read_json(payload / 'manifest.json')
     entries = {row['path']: row for row in manifest['files']}

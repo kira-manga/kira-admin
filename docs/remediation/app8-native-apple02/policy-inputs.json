@@ -1,0 +1,74 @@
+{
+  "author": "/root/d05_completion",
+  "preparedAtUTC": "2026-09-10T07:15:13.589591+00:00",
+  "status": "PRIVATE UNEXECUTED SDK-ONLY DRAFT",
+  "sourceWorktree": "/root/projects/Kira/.worktrees/kira-app-8",
+  "base": "2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c",
+  "inputs": [
+    {
+      "phase": "allow",
+      "path": "policy-inputs/allow/network_security_config.xml",
+      "sourcePath": "app/src/main/res/xml/network_security_config.xml",
+      "sourceVersion": "2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c",
+      "bytes": 230,
+      "sha256": "03d8bc818916ef40f4ba440aab50100c170a216acab814957d74fbf41f434b6a"
+    },
+    {
+      "phase": "allow",
+      "path": "policy-inputs/allow/Info.plist",
+      "sourcePath": "iosApp/iosApp/Info.plist",
+      "sourceVersion": "2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c",
+      "bytes": 4160,
+      "sha256": "708ca4944a642ef0304608f3fe7615563d0ec703b453256169157951d836c50a"
+    },
+    {
+      "phase": "deny",
+      "path": "policy-inputs/deny/network_security_config.xml",
+      "sourcePath": "app/src/main/res/xml/network_security_config.xml",
+      "sourceVersion": "frozen App8 worktree after source edit",
+      "bytes": 146,
+      "sha256": "dea35ebed76536c24c13f74036f02dc874f944147cb3a49c2ad0550f71e3e0c7"
+    },
+    {
+      "phase": "deny",
+      "path": "policy-inputs/deny/Info.plist",
+      "sourcePath": "iosApp/iosApp/Info.plist",
+      "sourceVersion": "frozen App8 worktree after source edit",
+      "bytes": 3796,
+      "sha256": "c0c2f75b51066e4ebc3b1e62296be449ba731ac299b6c7cd117130ba335224df"
+    }
+  ],
+  "currentBuildInputsReadDirectly": [
+    {
+      "path": "app/build.gradle.kts",
+      "bytes": 11380,
+      "sha256": "fb1929a19efcac2e9d843bd3f1946f2573ff486747abf514fcf76f5f80b55889"
+    },
+    {
+      "path": "app/src/main/AndroidManifest.xml",
+      "bytes": 5774,
+      "sha256": "fc86dea1b63549f7df4c0cb289e6be2dd207c1520ed90616b8e251d122da22a9"
+    },
+    {
+      "path": "iosApp/project.yml",
+      "bytes": 13403,
+      "sha256": "1068ab565071844513c06e1cfa7b8580bc4d9278dd2a8661aac903c45082533c"
+    }
+  ],
+  "android": {
+    "minSdk": 26,
+    "targetSdk": 36,
+    "compileSdk": 37,
+    "sourceLines": "app/build.gradle.kts:126-134",
+    "manifestAssociation": "@xml/network_security_config"
+  },
+  "ios": {
+    "deploymentTarget": "15.0",
+    "sourceLines": "iosApp/project.yml:7,72",
+    "shippingPlistBinding": "iosApp/Info.plist",
+    "minimumOSRuntimeNotClaimed": true
+  },
+  "productPatchSha256": "46d0639e372da3b5a318cdd7d1b20d150e6e17362c370af7c5342010e7b225d6",
+  "nativeBuildOrExecutionPerformed": false,
+  "sourceGuardExecution": "Only previously approved python3 -B scripts/check_transport_policy.py --self-test, exit 0; separately retained in app-8-authored/guard-results.json"
+}

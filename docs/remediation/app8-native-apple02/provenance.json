@@ -1,0 +1,31 @@
+{
+  "author": "/root/d05_completion",
+  "frozenAtUTC": "2026-09-10T07:36:47.351732+00:00",
+  "status": "UNEXECUTED PRIVATE NATIVE DRAFT FOR PRIMARY/INDEPENDENT REVIEW",
+  "nativeDraftFrozen": true,
+  "nativeBuildSyntaxCheckInstallLaunchFixtureOrCIExecuted": false,
+  "productFilesStillMatchFrozenAfterHashes": true,
+  "productBase": "2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c",
+  "productPatchSha256": "46d0639e372da3b5a318cdd7d1b20d150e6e17362c370af7c5342010e7b225d6",
+  "sourceGuardResultSha256": "c33add8f6fc647a9186e5e06affb433a174077601c4fb04c10ca4ef7bc2841a6",
+  "independentProductReviewSha256": "90df4d8887737a929d02971cb4c34be44f4eb171d703678ccf1bdc370db5a0b7",
+  "authorLedgerSnapshot": {
+    "path": "../app-8-authored/author-command-ledger.json",
+    "sha256": "e1fd95e268750ddb83044077f2dcb0471c11922bb05009a290ff4c00f83be910",
+    "boundary": "Snapshot ends before its export and final metadata/checksum writes"
+  },
+  "policyInputsSha256": "a84203915c0db3cd3c1edd4731634cd5d93c34c0ce0df6cf0a010a443c63da0d",
+  "executionRequiresPrimaryCoordination": true,
+  "unresolvedPreExecutionConditions": [
+    "Independent native-draft and minimal primary-owned runner review",
+    "Effective no-DNS/no-external/no-direct-fallback isolation covering native app, not only simctl or receiver byte counts",
+    "Installed pinned SDK/tool/image availability and SDK compilation/packaging/signing compatibility",
+    "Actual old-policy canned response and native candidate policy rejection on both platforms",
+    "Owned process/device/mapping cleanup with no forced/error outcome"
+  ],
+  "scopeLimits": [
+    "SDK-only copied-policy hosts, not production APK/IPA merge or whole-app certification",
+    "API26/target36 Android; iOS15.0 deployment on a recorded modern ARM simulator is not minimum-iOS15-runtime proof",
+    "No added runner/workflow/supervisor, Engine/Admin helper modification, source-config change, commit, push, upload or closure"
+  ]
+}
