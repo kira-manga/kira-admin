@@ -24,10 +24,106 @@ dependency changes; the committed lockfile currently resolves with zero known vu
 
 ## Production deployment
 
-Pushes to `main` first run the full CI and read-only container smoke test. Only a successful CI run
-may start the protected `production` deployment, which builds the exact verified commit and streams
-`kira-admin:<40-character-sha>` through server3's restricted deployment gateway. The server
-health-gates the new container and restores the previously configured image on failure.
+**Deployment is currently externally blocked, not operationally protected.** The 2026-09-09 policy
+receipts show a private repository with no production reviewers or deployment-ref policy, admin
+bypass enabled, and an unavailable main-protection API. Source changes and fixture tests do not fix
+account enforcement. An owner-authorized, supported private-repository approval/protection setup
+is required; **Pro alone does not provide the required private reviewer/bypass features**. Do not
+make the repository public, change settings/plans, or provision credentials merely to pass a gate.
+
+This release path removes automatic deployment. Main-push CI builds once, smoke-tests the actual
+image ID, confirms `kira-admin:<40-character-sha>` still resolves to it, exports that tag once, and
+scans that exact export. The image and bounded receipt become one immutable private artifact.
+The existing production npm audit remains a separate, complementary gate.
+
+Promotion is manual through **Deploy server3**, from literal `main`, with four explicit inputs:
+
+- `run_id`: completed, successful **push/main CI** producer run ID.
+- `run_attempt`: its exact successful attempt; a later rerun makes the old attempt ineligible.
+- `artifact_id`: the immutable `admin-image-<run_id>-<run_attempt>` artifact ID.
+- `zip_sha256`: the outer artifact ZIP SHA-256, 64 lowercase hexadecimal characters.
+
+Preflight authenticates/rechecks the run, source SHA/tree, artifact and current-main release-contract
+bytes, then displays a frozen candidate summary **before native production-environment approval**.
+Dispatch is not approval. Old producer and old promotion/checker revisions cannot approve one
+another after the current-main contract changes. A deleted, expired, replaced, ambiguous or
+newly rerun candidate fails; a promotion rerun must reuse exactly the selected artifact or fail,
+never resolve “latest” or rebuild a substitute.
+
+The credentialed job uses only its trusted promotion revision, rechecks the frozen candidate and
+native policy after approval, loads/inspects the image ID/platform/revision/tag, and streams the
+**original verified gzip bytes** through the fixed `deploy admin <40hex>` gateway. It does not
+install dependencies, build, scan, or run candidate code/containers. SSH uses pinned known hosts,
+bounded commands and private owned scratch/key cleanup, never shared `~/.ssh` files. The existing
+server gateway health-gates deployment and restores the prior image on failure; installed behavior
+and the actual remote running-image identity still require separate authorized verification.
+
+### External protection and read authority
+
+Both preflight and the post-approval policy step require repository secret
+`ADMIN8_POLICY_READ_TOKEN`: an **owner-authorized, single-repository, read-only** credential with
+Administration:read and the required environment/metadata read capabilities. Ordinary
+`GITHUB_TOKEN` contents/actions:read must not be assumed sufficient for full main-protection reads.
+Only the policy API step receives this separate token, not download, build, scanner or SSH commands.
+Its authorization and actual API visibility are external prerequisites; no token is provisioned here.
+
+The narrow checker requires all of the following, with complete readable API responses:
+
+- Native production human reviewers as the sole protection rule, self-review prevented, admin bypass
+  disabled; exactly one custom environment policy `{type: branch, name: main}` with no extra ref/tag.
+- Explicit **User** reviewers. Teams are unsupported by this narrow checker, not inherently insecure.
+- Main protection enforcing PR approval, dismissing stale reviews, requiring last-push approval,
+  applying to admins, with no PR-review bypass, force-push or deletion allowance.
+- Strict required `verify` and `container` checks bound to the GitHub Actions app.
+
+Missing credentials, unsupported/unknown fields, incomplete lists and API errors fail closed.
+Metadata checks are not substitute approvals and cannot make revocation atomic. Account support,
+real native approval/self-review/bypass enforcement and revocation races remain **external
+verification required**, even after an offline suite or no-deploy rehearsal succeeds.
+
+### Artifact and scan contract
+
+The helper distinguishes the **outer ZIP digest**, **inner `image.tar.gz` digest**, and **Docker
+image ID**; these are different identities. Authenticated ZIP download never forwards the API token
+to signed storage. Only regular `image.tar.gz`, `receipt.json`, and `scan.json` ZIP members are
+accepted; actual byte limits are 512 MiB each for ZIP/gzip, 2 GiB expanded Docker tar, 16 KiB receipt,
+and 8 MiB scan report. ZIP64/comments/extra entries are unsupported. These are initial fail-safe
+ceilings, not measured image sizes; do not automatically relax them. Artifacts have three-day private
+retention, compression level zero and no overwrite. A receipt is not an independent signature: its
+authority depends on the protected producer, authenticated artifact identity and native approval.
+
+Grype **0.118.0**, checksum-pinned in `scripts/ci/image_release.py`, scans the exported runtime image
+with explicit `scripts/ci/grype.yaml`. HIGH/CRITICAL findings **including unfixed**, every nonzero tool
+exit and DB failures block receipt publication. DB update checks, hash validation and a maximum
+120-hour DB age are mandatory; ignores, VEX, exclusions and only-fixed fallbacks are forbidden.
+Implicit kernel-header ignore rules are explicitly disabled. The receipt binds actual tool/DB/scan
+metadata and report digest. This is an identified CI-time scan, not a current-at-deployment rescan
+or proof of no vulnerabilities; bundled application discovery can be incomplete. Bounded failed
+scan diagnostics may be retained separately, but are never promotion candidates.
+
+### Offline checks and no-deploy rehearsal
+
+On Linux with Python 3.11+, the focused standard-library suite is:
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/ci -p 'test_*.py'
+```
+
+The separately authorized **CI** manual input `purpose: no-deploy-rehearsal` uses one producer and
+one fresh secretless consumer job. The consumer downloads/verifies/loads/smokes the **same immutable
+artifact twice**, without rebuilding. The manual path skips the outer UI verification job because
+the unchanged Dockerfile already runs `npm run verify`; it retains the production npm audit.
+Manual/feature rehearsal receipts are **never** production candidates. There is no production
+environment, policy token, SSH secret or deployment in this rehearsal.
+
+Workflow registration/dispatch availability on a private nondefault ref must be checked by the
+coordinating owner. Do not merge to main or change the default branch merely to register dispatch,
+and do not invent another trigger to bypass a concrete API restriction. Fixture success does not
+prove GitHub ZIP metadata, real scanner output, Docker image-ID compatibility, or production policy.
+The one authorized real-image rehearsal must record source/tree, run/attempt, artifact ID/ZIP digest,
+image ID/platform, gzip digest and observed sizes; real scan failures remain blocking findings.
+
+### Server configuration
 
 The GitHub `production` Environment contains `SERVER3_HOST`, `SERVER3_PORT`, and `SERVER3_USER`
 variables plus `SERVER3_SSH_PRIVATE_KEY` and `SERVER3_KNOWN_HOSTS` secrets. Runtime configuration

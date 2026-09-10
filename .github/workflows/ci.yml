@@ -6,9 +6,19 @@ on:
     branches:
       - main
       - "feature/**"
+  workflow_dispatch:
+    inputs:
+      purpose:
+        description: Secretless exact-image rehearsal; never a production candidate
+        required: true
+        type: choice
+        options: [no-deploy-rehearsal]
 
 permissions:
   contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
 
 concurrency:
   group: kira-admin-ci-${{ github.ref }}
@@ -16,11 +26,17 @@ concurrency:
 
 jobs:
   verify:
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Check out source
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Verify release policy and artifact integrity boundaries
+        run: python3 -m unittest discover -s scripts/ci -p 'test_*.py'
 
       - name: Set up Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -39,21 +55,51 @@ jobs:
 
   container:
     needs: verify
+    if: >-
+      always() && !cancelled() &&
+      (needs.verify.result == 'success' ||
+       (github.event_name == 'workflow_dispatch' && inputs.purpose == 'no-deploy-rehearsal'))
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
+    outputs:
+      artifact_id: ${{ steps.artifact.outputs.artifact-id }}
+      zip_sha256: ${{ steps.artifact.outputs.artifact-digest }}
     steps:
       - name: Check out source
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      # Rehearsal skips the outer UI/source job: Dockerfile already runs npm verify.
+      - name: Verify rehearsal integrity boundaries
+        if: github.event_name == 'workflow_dispatch'
+        run: python3 -m unittest discover -s scripts/ci -p 'test_*.py'
+
+      - name: Set up Node for the rehearsal lock audit
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+
+      - name: Retain the production dependency audit in the rehearsal
+        if: github.event_name == 'workflow_dispatch'
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Allocate owned release scratch
+        id: scratch
+        run: python3 scripts/ci/image_release.py scratch
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: Build exact-SHA production image
+        id: build
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: .
           load: true
           push: false
+          platforms: linux/amd64
           tags: kira-admin:${{ github.sha }}
           build-args: |
             VERSION=${{ github.sha }}
@@ -62,24 +108,90 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Smoke-test the read-only runtime container
-        shell: bash
-        run: |
-          set -euo pipefail
-          container=kira-admin-smoke
-          trap 'docker rm --force "$container" >/dev/null 2>&1 || true' EXIT
-          docker run --detach --name "$container" \
-            --read-only --tmpfs /tmp:size=16m \
-            --env KIRA_BACKEND_URL=https://api.kiramanga.me \
-            --env KIRA_ADMIN_ORIGIN=http://127.0.0.1:18082 \
-            --publish 127.0.0.1:18082:8080 \
-            "kira-admin:${GITHUB_SHA}"
-          for attempt in {1..30}; do
-            if curl --fail --silent --show-error --max-time 3 \
-              http://127.0.0.1:18082/ >/dev/null; then
-              exit 0
-            fi
-            sleep 2
-          done
-          docker logs "$container"
-          exit 1
+      - name: Smoke noncandidate CI images by their actual image ID
+        if: github.event_name != 'workflow_dispatch' && github.ref != 'refs/heads/main'
+        env:
+          SCRATCH: ${{ steps.scratch.outputs.path }}
+          BUILT_IMAGE_ID: ${{ steps.build.outputs.imageid }}
+        run: python3 scripts/ci/image_release.py smoke
+
+      - name: Smoke, export once, and scan the exact image
+        id: produce
+        if: >-
+          (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+          (github.event_name == 'workflow_dispatch' && inputs.purpose == 'no-deploy-rehearsal')
+        env:
+          SCRATCH: ${{ steps.scratch.outputs.path }}
+          BUILT_IMAGE_ID: ${{ steps.build.outputs.imageid }}
+        run: python3 scripts/ci/image_release.py produce
+
+      - name: Retain the immutable attempt-specific image receipt
+        id: artifact
+        if: steps.produce.outcome == 'success'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: admin-image-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ steps.scratch.outputs.path }}/image.tar.gz
+            ${{ steps.scratch.outputs.path }}/receipt.json
+            ${{ steps.scratch.outputs.path }}/scan.json
+          retention-days: 3
+          compression-level: 0
+          if-no-files-found: error
+          overwrite: false
+
+      - name: Retain a bounded failed scan for investigation, never as a candidate
+        if: failure() && steps.produce.outcome == 'failure'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: admin-scan-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ steps.scratch.outputs.path }}/scan.json
+            ${{ steps.scratch.outputs.path }}/scan-error.log
+          retention-days: 3
+          compression-level: 0
+          if-no-files-found: ignore
+          overwrite: false
+
+      - name: Remove only owned release scratch and image tag
+        if: always() && steps.scratch.outputs.path != ''
+        env:
+          SCRATCH: ${{ steps.scratch.outputs.path }}
+        run: python3 scripts/ci/image_release.py cleanup
+
+  rehearsal:
+    needs: container
+    if: >-
+      always() && !cancelled() && needs.container.result == 'success' &&
+      github.event_name == 'workflow_dispatch' && inputs.purpose == 'no-deploy-rehearsal'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Check out this secretless rehearsal revision, not downloaded candidate code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Allocate owned consumer scratch
+        id: scratch
+        run: python3 scripts/ci/image_release.py scratch
+
+      - name: Verify, load and smoke the same immutable artifact twice without rebuilding
+        env:
+          SCRATCH: ${{ steps.scratch.outputs.path }}
+          GITHUB_TOKEN: ${{ github.token }}
+          CANDIDATE_RUN_ID: ${{ github.run_id }}
+          CANDIDATE_ATTEMPT: ${{ github.run_attempt }}
+          CANDIDATE_ARTIFACT_ID: ${{ needs.container.outputs.artifact_id }}
+          CANDIDATE_ZIP_SHA256: ${{ needs.container.outputs.zip_sha256 }}
+        run: python3 scripts/ci/image_release.py rehearse
+
+      - name: Remove only owned rehearsal scratch and image tag
+        if: always() && steps.scratch.outputs.path != ''
+        env:
+          SCRATCH: ${{ steps.scratch.outputs.path }}
+        run: python3 scripts/ci/image_release.py cleanup

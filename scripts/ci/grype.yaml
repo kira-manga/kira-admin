@@ -1,0 +1,25 @@
+# Trusted explicit policy; caller clears inherited scanner configuration/environment.
+check-for-app-update: false
+fail-on-severity: high
+only-fixed: false
+only-notfixed: false
+ignore-wontfix: ""
+# Grype otherwise appends implicit kernel-header ignore rules, even with ignore: [].
+match-upstream-kernel-headers: true
+ignore: []
+exclude: []
+vex-documents: []
+vex-add: []
+timestamp: true
+search:
+  scope: squashed
+db:
+  auto-update: true
+  require-update-check: true
+  validate-age: true
+  validate-by-hash-on-start: true
+  max-allowed-built-age: 120h
+  max-update-check-frequency: 0s
+  update-available-timeout: 30s
+  update-download-timeout: 180s
+  update-url: https://grype.anchore.io/databases/v6/latest.json
