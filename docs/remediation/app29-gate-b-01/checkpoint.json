@@ -1,0 +1,21 @@
+{
+  "schema": "app29-gate-b-clean-checkpoint-v1",
+  "source_accepted": true,
+  "backend_sha": "49da0919d9ec3091cb7bb041009dc9bd5f3e090f",
+  "source_bundle": {
+    "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+    "ref": "refs/heads/remediation/app-29-backend-complaints",
+    "source_path": "review/working/app-29-gate-b-private-checkpoint-01/backend.bundle",
+    "path": "docs/remediation/app29-gate-b-01/inputs/backend.bundle",
+    "sha256": "76d2e78f24813a9bf2cecf0c1a35c6f0e810864b23921c8c7c4528e5667ef9cc",
+    "bytes": 138895
+  },
+  "manifest_path": "review/working/app-29-w03-integrated-driver-gate-b-hosted-01/manifest.json",
+  "manifest_sha256": "211c1834c42d8f5578f42f2a62960c0c7db98776b2f17e8372bd394bf96b5bf0",
+  "local_v3_preflight": {
+    "manifest_sha256": "211c1834c42d8f5578f42f2a62960c0c7db98776b2f17e8372bd394bf96b5bf0",
+    "tool_sha256": "e8c6a48fc26c634fbccbb081651631fb5c767099b1143ab4dbe8439f6060d0fe",
+    "receipt_path": "review/working/app-29-w03-integrated-driver-gate-b-hosted-01/hosted-local-preflight.json",
+    "receipt_sha256": "8803e7892129f8078e089a4d11233cf4478a128251955a5b64c2a8d630bd6db5"
+  }
+}

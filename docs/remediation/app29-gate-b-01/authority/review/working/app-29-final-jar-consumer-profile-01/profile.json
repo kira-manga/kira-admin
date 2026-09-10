@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "profile_id": "app-29-final-jar-consumer-profile-01",
+  "java_home": "/usr/lib/jvm/java-21-openjdk-amd64",
+  "test_class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+  "test_method": "required adapter resolves all22 exact descriptors and rejects missing changed or foreign helper",
+  "test_display_name": "required adapter resolves all22 exact descriptors and rejects missing changed or foreign helper()",
+  "test_selector": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.required*",
+  "task_args": [
+    "test",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.required*",
+    "ktlintCheck",
+    "detekt",
+    "--continue"
+  ],
+  "final_jar": {
+    "path": "review/working/app-29-driver-cut-native-build-02/artifacts/postgresql-42.7.12-kira.1-osgi.jar",
+    "sha256": "f1a6dad0aa9ee3288c1a57cb230336fab96ca183b648976d68012caf9413395c",
+    "bytes": 1195540
+  },
+  "checker": {
+    "path": "review/working/app-29-final-jar-consumer-profile-01/inputs/checker-qual-3.55.1.jar",
+    "sha256": "857658c8bdcbff794949a8d9922f88d63ee3751c203c7cd7d21ea97f9e745288",
+    "bytes": 241885
+  },
+  "removed_stock": {
+    "group": "org.postgresql",
+    "module": "postgresql",
+    "version": "42.7.12",
+    "sha256": "31fbf6f06b2217fb51d5100cee51b22625cc81640da0679b47914e54c1e6377c"
+  },
+  "original_init": {
+    "path": "review/working/app-29-w01-local-dependencies.init.gradle",
+    "sha256": "429961b98254b89f7ce1d7ba1efa61b8cba28a3bae35353bf3a8ba85f4a1c839"
+  },
+  "origin_classes": [
+    "org.postgresql.Driver",
+    "org.postgresql.jdbc.KiraOwnedJdbcCut",
+    "org.postgresql.jdbc.KiraOwnedJdbcCut$1",
+    "org.postgresql.jdbc.KiraOwnedJdbcCut$Opening",
+    "org.postgresql.jdbc.KiraOwnedJdbcCut$Root",
+    "org.postgresql.jdbc.KiraOwnedJdbcCut$Owner",
+    "org.postgresql.jdbc.KiraOwnedJdbcCut$Life",
+    "org.postgresql.jdbc.KiraOwnedJdbcCut$Invocation",
+    "org.postgresql.util.DriverInfo",
+    "org.postgresql.util.LazyCleanerImpl",
+    "org.postgresql.util.LazyCleanerImpl$CleanableWrapper",
+    "org.postgresql.shaded.com.ongres.scram.client.ScramClient"
+  ],
+  "checker_class": "org.checkerframework.checker.nullness.qual.NonNull"
+}

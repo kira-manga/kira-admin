@@ -1,0 +1,29 @@
+{
+  "schema": "app-29-gate-b-hosted-01",
+  "authorized": true,
+  "attempts": 1,
+  "backend_sha": "49da0919d9ec3091cb7bb041009dc9bd5f3e090f",
+  "checkpoint_sha256": "95318d20cb2a0a2b3ee5d9ee4aeeac3c39967c3865eb2773cde6d999fa841f71",
+  "source_bundle": {
+    "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+    "ref": "refs/heads/remediation/app-29-backend-complaints",
+    "source_path": "review/working/app-29-gate-b-private-checkpoint-01/backend.bundle",
+    "path": "docs/remediation/app29-gate-b-01/inputs/backend.bundle",
+    "sha256": "76d2e78f24813a9bf2cecf0c1a35c6f0e810864b23921c8c7c4528e5667ef9cc",
+    "bytes": 138895
+  },
+  "budgets": {
+    "job_minutes": 25,
+    "controller_seconds": 1200,
+    "preflight_seconds": 120,
+    "validation_seconds": 900,
+    "cleanup_seconds": 180
+  },
+  "tool_sha256": {
+    "ci/app29-gate-b.py": "54012bd9a74b4cb1ede67ec461ffa64d9ff4c98b833fa4ecd3c97c4bbb375182",
+    "ci/app29-gate-b.profile.json": "8ec74a1f9b79643b6bee623611e060d972755f806be53dfeaced19eaadc591b1",
+    "ci/app29-gate-b.init.gradle": "18043383dfa80dcae0989fa6bab1a60f4ca85921383f190f7a1995a5ecbdd966",
+    ".github/workflows/app29-gate-b.yml": "1d5daff682f7e12372de207773b16b4315f06f4fc7f79255a49b3a2209ffeab5",
+    "ci/app29_owned_children.py": "56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385"
+  }
+}
