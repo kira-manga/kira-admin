@@ -530,15 +530,15 @@ def outside():
             require(shutil.which(tool, path=env['PATH']), 'Missing installed isolation prerequisite: ' + tool)
         tools = request['toolchain']
         require(tools == {'javaHomeEnvironment': 'JAVA_HOME_17_X64', 'buildTools': '36.0.0', 'compilePlatform': 'android-37',
-                          'systemImage': IMAGE, 'missingImagePreparationSeconds': 120}, 'Unsupported toolchain request')
+                          'systemImage': IMAGE, 'missingSdkPreparationSeconds': 120}, 'Unsupported toolchain request')
         sdk = Path(os.environ['ANDROID_HOME']).resolve()
         jdk = Path(os.environ['JAVA_HOME_17_X64']).resolve()
         require(':' not in str(sdk) + str(jdk) + str(run), 'Unsupported path separator')
         expected_tools = ['platform-tools/adb', 'emulator/emulator', 'build-tools/36.0.0/aapt2', 'build-tools/36.0.0/d8',
                           'build-tools/36.0.0/zipalign', 'build-tools/36.0.0/apksigner', 'platforms/android-37/android.jar',
                           'cmdline-tools/latest/bin/sdkmanager', 'cmdline-tools/latest/bin/avdmanager']
-        for relative in expected_tools:
-            require((sdk / relative).is_file(), 'Missing installed SDK tool/platform: ' + relative)
+        for relative in ('cmdline-tools/latest/bin/sdkmanager', 'cmdline-tools/latest/bin/avdmanager'):
+            require((sdk / relative).is_file(), 'Missing installed SDK command-line tool: ' + relative)
         require((jdk / 'bin/javac').is_file() and (jdk / 'bin/keytool').is_file(), 'Missing installed JDK17')
         payload = source.parent.parent / 'docs/remediation/app8-native'
         require(digest(payload / 'manifest.json') == MANIFEST, 'Frozen native manifest mismatch')
@@ -583,10 +583,23 @@ def outside():
         # No preparation, namespace or native command precedes immutable input binding.
         commands.env = dict(env, JAVA_HOME=str(jdk), ANDROID_HOME=str(sdk), ANDROID_SDK_ROOT=str(sdk))
         image = sdk / 'system-images/android-26/google_apis/x86_64'
-        prepared = not (image / 'source.properties').exists()
-        if prepared:
-            commands.run([sdk / 'cmdline-tools/latest/bin/sdkmanager', '--sdk_root=' + str(sdk), IMAGE], 'prepare-only-api26', seconds=120)
+        package_inputs = {
+            'emulator': ('emulator/emulator',),
+            'platform-tools': ('platform-tools/adb',),
+            'build-tools;36.0.0': ('build-tools/36.0.0/aapt2', 'build-tools/36.0.0/d8',
+                                 'build-tools/36.0.0/zipalign', 'build-tools/36.0.0/apksigner'),
+            'platforms;android-37': ('platforms/android-37/android.jar',),
+            IMAGE: ('system-images/android-26/google_apis/x86_64/source.properties',),
+        }
+        missing_packages = [package for package, required in package_inputs.items()
+                            if any(not (sdk / relative).is_file() for relative in required)]
+        prepared = IMAGE in missing_packages
+        if missing_packages:
+            commands.run([sdk / 'cmdline-tools/latest/bin/sdkmanager', '--sdk_root=' + str(sdk), *missing_packages],
+                         'prepare-missing-declared-sdk', seconds=120)
         require(commands.dispose('preparation'), 'SDK preparation left abnormal/forced descendants; refusing isolation')
+        for relative in expected_tools:
+            require((sdk / relative).is_file(), 'Missing required SDK tool/platform after preparation: ' + relative)
         properties = dict(line.split('=', 1) for line in (image / 'source.properties').read_text().splitlines() if '=' in line)
         properties = {key.strip(): value.strip() for key, value in properties.items()}
         require(properties.get('AndroidVersion.ApiLevel') == '26' and properties.get('SystemImage.Abi') == 'x86_64'
@@ -599,6 +612,7 @@ def outside():
                    'nonce': nonce, 'avd': 'App8-' + nonce, 'workDeadline': deadline - 70, 'cleanupDeadline': deadline - 10,
                    'hostNamespaces': namespace_identity('self'), 'sdkHashes': sdk_hashes,
                    'jdkJavacSha256': digest(jdk / 'bin/javac'), 'imageProperties': properties, 'imagePrepared': prepared,
+                   'sdkPreparedPackages': missing_packages,
                    'probeManifestSha256': MANIFEST, 'sourceGuardRerun': False}
         save(inputs / 'runtime.json', runtime)
         commands.env = env  # Never inherit Actions tokens/proxies/agents into the namespace.
