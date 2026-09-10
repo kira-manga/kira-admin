@@ -384,9 +384,14 @@ def validate_policy(environment, branches, protection):
     need(type(branches.get('total_count')) is int and branches['total_count'] == 1 and type(policies) is list and len(policies) == 1
          and policies[0].get('name') == 'main' and policies[0].get('type') == 'branch', 'extra or unsupported deployment ref')
     rules = environment.get('protection_rules')
-    need(type(rules) is list and len(rules) == 1 and rules[0].get('type') == 'required_reviewers'
-         and rules[0].get('prevent_self_review') is True, 'non-self human approval required')
-    reviewers = rules[0].get('reviewers')
+    # GitHub may also report its native branch_policy marker here; the complete
+    # exact-main policy is checked independently above, never inferred from it.
+    need(type(rules) is list and 1 <= len(rules) <= 2
+         and all(type(rule) is dict and rule.get('type') in ('required_reviewers', 'branch_policy') for rule in rules),
+         'unsupported environment protection rules')
+    approval = [rule for rule in rules if rule['type'] == 'required_reviewers']
+    need(len(approval) == 1 and approval[0].get('prevent_self_review') is True, 'non-self human approval required')
+    reviewers = approval[0].get('reviewers')
     need(type(reviewers) is list and 1 <= len(reviewers) <= 6, 'missing human reviewer identities')
     users = []
     for entry in reviewers:
