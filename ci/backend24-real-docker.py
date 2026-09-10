@@ -1,6 +1,7 @@
 """One private, disposable Web-only real-Docker gate. No product build, SSH or retry."""
 
 import argparse
+from contextlib import contextmanager
 import fcntl
 import hashlib
 import importlib.util
@@ -31,6 +32,7 @@ SYNTHETIC_SHA = '2424242424242424242424242424242424242424'
 TAG = 'kira-web:' + SYNTHETIC_SHA
 LABEL = 'me.kira.backend24-gate-owner'
 ROOT = Path('/opt/kira')
+OPT = Path('/opt')
 RECEIVER = Path('/usr/local/sbin/kira-deploy')
 HELPER = Path('/usr/local/libexec/kira-image-release.py')
 LOCK = Path('/run/lock/kira-deploy.lock')
@@ -68,17 +70,58 @@ def read_json(path):
     return json.loads(regular_bytes(path, 4 * 1024 * 1024), object_pairs_hook=unique)
 
 
-def write_json(path, value, public=False):
+def write_json(path, value, public=False, durable=False):
     raw = (json.dumps(value, sort_keys=True, indent=2) + '\n').encode()
     require(len(raw) <= 128 * 1024, 'Compact receipt limit exceeded')
-    with tempfile.NamedTemporaryFile(dir=path.parent, prefix=path.name + '.', delete=False) as stream:
-        temporary = Path(stream.name)
-        stream.write(raw)
+    temporary = None
     try:
-        temporary.chmod(0o644 if public else 0o600)
+        with tempfile.NamedTemporaryFile(dir=path.parent, prefix=path.name + '.', delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(raw)
+            temporary.chmod(0o644 if public else 0o600)
+            if durable:
+                stream.flush()
+                os.fsync(stream.fileno())
         os.replace(temporary, path)
+        if durable:
+            fd = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+            try:
+                os.fsync(fd)
+            finally:
+                os.close(fd)
     finally:
-        temporary.unlink(missing_ok=True)
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
+def process_identity(pid=None):
+    pid = os.getpid() if pid is None else pid
+    require(type(pid) is int and pid > 0, 'Invalid metadata-lease process identity')
+    raw = Path('/proc/' + str(pid) + '/stat').read_text()
+    end = raw.rfind(')')
+    fields = raw[end + 2:].split()
+    require(raw.startswith(str(pid) + ' (') and end > 0 and len(fields) > 19 and fields[19].isdigit(),
+            'Unknown metadata-lease process identity')
+    return {'pid': pid, 'startTicks': int(fields[19])}
+
+
+@contextmanager
+def opt_directory():
+    fd = os.open(OPT, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    try:
+        yield fd
+    finally:
+        os.close(fd)
+
+
+def opt_metadata(fd):
+    held, named = os.fstat(fd), OPT.lstat()
+    require(stat.S_ISDIR(held.st_mode) and stat.S_ISDIR(named.st_mode) and OPT.resolve(strict=True) == OPT,
+            'Noncanonical /opt directory')
+    require(all(getattr(held, field) == getattr(named, field)
+                for field in ('st_dev', 'st_ino', 'st_uid', 'st_gid', 'st_mode')), 'Substituted /opt directory')
+    return ({'device': held.st_dev, 'inode': held.st_ino, 'uid': held.st_uid, 'gid': held.st_gid},
+            stat.S_IMODE(held.st_mode))
 
 
 def request():
@@ -178,14 +221,20 @@ class Gate:
         # Drain only AFTER helper.command() returns/raises, never concurrently with its single wait owner.
         self.children = owner_module.OwnedChildren()
 
-    def save_lease(self):
-        write_json(self.path / 'owner.json', self.lease)
+    def save_lease(self, durable=False):
+        write_json(self.path / 'owner.json', self.lease, durable=durable)
 
     def save(self):
         write_json(self.report, self.result, public=True)
 
     def command(self, name, argv, seconds=10, expected=0, stdin=None, output=None, maximum=256 * 1024):
         require(self.cleaning or not CANCELLED, 'Gate cancelled')
+        metadata = self.lease.get('hostedOptMode')
+        if metadata is not None:
+            require(metadata['childOwner'] == process_identity(), 'Previous metadata-lease process still owns commands')
+            if metadata['childrenAbsent']:
+                metadata['childrenAbsent'] = False  # Invalidate any prior drain BEFORE another command can start.
+                self.save_lease(durable=True)
         budget = min(seconds, self.deadline - time.monotonic() - 12)  # R2's four + existing drain's eight.
         require(budget > 0, 'Gate phase deadline expired')
         captured = io.BytesIO() if output is None else output
@@ -238,6 +287,64 @@ class Gate:
         path.chmod(mode)
         self.claim(path)
 
+    def prepare_opt_mode(self):
+        require('hostedOptMode' not in self.lease and str(OPT) not in self.lease['paths'],
+                'Metadata parent must not be acquired twice or owned for deletion')
+        with opt_directory() as fd:
+            identity, mode = opt_metadata(fd)
+            if identity['uid'] == 0 and not mode & 0o022:
+                return  # Already trusted by the original parent predicate: do not change metadata.
+            require(identity['uid'] == identity['gid'] == 0 and mode == 0o777,
+                    'Only the observed root-owned /opt 0777 may be normalized')
+            metadata = {'path': str(OPT), 'identity': identity, 'originalMode': mode, 'temporaryMode': 0o755,
+                        'childOwner': process_identity(), 'childrenAbsent': False}
+            self.lease['hostedOptMode'] = metadata  # Separate from destructive lease['paths']; outside scratch.
+            self.save_lease(durable=True)  # File AND containing directory fsync must precede fchmod.
+            require(opt_metadata(fd) == (identity, mode), '/opt changed after durable intent')
+            os.fchmod(fd, metadata['temporaryMode'])
+            require(opt_metadata(fd) == (identity, 0o755), '/opt normalization verification failed')
+
+    def begin_opt_cleanup(self):
+        require(str(OPT) not in self.lease['paths'], '/opt metadata lease is never deletion ownership')
+        metadata = self.lease.get('hostedOptMode')
+        if metadata is None:
+            return None
+        require(metadata['path'] == str(OPT) and metadata['originalMode'] == 0o777 and
+                metadata['temporaryMode'] == 0o755 and metadata['identity']['uid'] == metadata['identity']['gid'] == 0,
+                'Unexpected /opt metadata lease')
+        current, previous = process_identity(), metadata['childOwner']
+        previous_absent = None
+        if previous != current:
+            # A fresh subreaper's empty set proves NOTHING about a killed prior owner's descendants.
+            require(metadata['childrenAbsent'] is True, 'Previous owner child absence was never proved')
+            require(set(previous) == {'pid', 'startTicks'} and type(previous['startTicks']) is int and
+                    previous['startTicks'] >= 0, 'Invalid previous metadata-lease process identity')
+            try:
+                previous_absent = process_identity(previous['pid']) != previous
+            except FileNotFoundError:
+                previous_absent = True
+            require(previous_absent, 'Previous metadata-lease process is still alive')
+        metadata.update(childOwner=current, childrenAbsent=False)
+        self.save_lease(durable=True)  # A failed/new cleanup must not leave a stale previous-owner proof.
+        return previous_absent
+
+    def restore_opt_mode(self):
+        metadata = self.lease.get('hostedOptMode')
+        if metadata is None:
+            return {'state': 'unleased-no-change', 'originalModeVerified': None}
+        require(metadata['childrenAbsent'] is True and metadata['childOwner'] == process_identity(),
+                'Current owner children are not proven absent')
+        with opt_directory() as fd:
+            identity, mode = opt_metadata(fd)
+            require(identity == metadata['identity'] and mode in (0o777, 0o755),
+                    'Unknown /opt identity, owner or mode; do not restore')
+            if mode == 0o755:
+                os.fchmod(fd, metadata['originalMode'])
+            require(opt_metadata(fd) == (identity, 0o777), '/opt original-mode verification failed')
+        # Retain the lease for an independently reopened same-object second verification.
+        return {'state': 'restored' if mode == 0o755 else 'already-original', 'identity': identity,
+                'path': str(OPT), 'originalMode': '0o777', 'originalModeVerified': True}
+
     def preflight(self):
         release = Path('/etc/os-release').read_text()
         require('\nID=ubuntu\n' in '\n' + release and '\nVERSION_ID="24.04"\n' in '\n' + release,
@@ -249,6 +356,7 @@ class Gate:
         require(Path('/usr/bin/python3').is_file() and stat.S_ISSOCK(socket.st_mode) and socket.st_uid == 0
                 and Path('/var/run/docker.sock').resolve() == Path('/run/docker.sock'),
                 'Default local Docker socket is required')
+        self.prepare_opt_mode()  # Protected exercise(), after authorization/root/host checks, before the original guard.
         for parent in (ROOT.parent, RECEIVER.parent, HELPER.parent.parent):
             info = parent.lstat()
             self.result.setdefault('installationParents', []).append({
@@ -442,10 +550,12 @@ class Gate:
         self.cleaning, self.deadline = True, time.monotonic() + 45
         receipt = {'containersAbsent': False, 'fixtureImageIdsAbsent': False,
                    'composeNetworksVolumesAbsent': False, 'ownedPathsAbsent': False,
-                   'scratchAbsent': False, 'ok': False}
+                   'scratchAbsent': False, 'ownedChildrenAbsent': False,
+                   'previousOwnerAbsent': None, 'hostedOptMode': {'originalModeVerified': False}, 'ok': False}
         self.result.setdefault('cleanup', []).append(receipt)
         lock = None
         try:
+            receipt['previousOwnerAbsent'] = self.begin_opt_cleanup()
             # Hold the inherited receiver lock THROUGH cleanup, not merely an earlier absence observation.
             if str(LOCK) in self.lease['paths'] and os.path.lexists(LOCK):
                 info = LOCK.lstat()
@@ -474,6 +584,11 @@ class Gate:
                 receipt['composeNetworksVolumesAbsent'] = True
             else:
                 receipt.update(containersAbsent=None, fixtureImageIdsAbsent=None, composeNetworksVolumesAbsent=None)
+            joined = self.children.drain()  # Final same-owner /proc + ECHILD proof, after every cleanup command.
+            receipt['ownedChildrenAbsent'] = joined['ok']
+            self.result['lifecycleNormal'] = self.result.get('lifecycleNormal', True) and (
+                joined['ok'] and not joined['term'] and not joined['kill'])
+            require(joined['ok'], 'Owned descendants remain; do not widen /opt permissions')
             for name, identity in sorted(self.lease['paths'].items(), key=lambda item: len(item[0]), reverse=True):
                 path = Path(name)
                 if not os.path.lexists(path):
@@ -498,7 +613,14 @@ class Gate:
             receipt['ownedPathsAbsent'] = True
             shutil.rmtree(self.work)
             receipt['scratchAbsent'] = not self.work.exists()
-            receipt['ok'] = receipt['scratchAbsent']
+            require(receipt['scratchAbsent'], 'Owned scratch remains')
+            if 'hostedOptMode' in self.lease:
+                self.lease['hostedOptMode']['childrenAbsent'] = True
+                self.save_lease(durable=True)
+            receipt['hostedOptMode'] = self.restore_opt_mode()
+            receipt['ok'] = (receipt['ownedPathsAbsent'] and receipt['scratchAbsent'] and receipt['ownedChildrenAbsent'] and
+                             (receipt['hostedOptMode']['originalModeVerified'] is True or
+                              receipt['hostedOptMode'].get('state') == 'unleased-no-change'))
         except Exception as failure:
             receipt['failureClass'] = type(failure).__name__  # Never arbitrary exception text.
         finally:

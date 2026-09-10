@@ -1,0 +1,18 @@
+{
+  "authorization": "BACKEND21_ONE_TARGETED_BATCH_AUTHORIZED",
+  "backend_sha": "bc7e540decdbf541d55973eff96490f477c3ddff",
+  "classes": {
+    "me.manga.kira.backend.sourceconfig.validation.SourceConfigValidatorTest": 25,
+    "me.manga.kira.backend.sourceconfig.validation.SourceConfigValidatorFilterTest": 14,
+    "me.manga.kira.backend.sourceconfig.validation.SourceConfigValidatorHeaderFilterTest": 34,
+    "me.manga.kira.backend.sourceconfig.admin.PublicConfigSecretsRejectedIT": 1,
+    "me.manga.kira.backend.sourceconfig.admin.ImportBundledIT": 1,
+    "me.manga.kira.backend.sourceconfig.admin.SourceEditorDraftIT": 1
+  },
+  "methods": {
+    "me.manga.kira.backend.sourceconfig.admin.PublicConfigSecretsRejectedIT": "unsafe header drafts retain content and safe diagnostics but cannot change public v1 or v2",
+    "me.manga.kira.backend.sourceconfig.admin.ImportBundledIT": "unsafe header filters reject a mixed create and update import before any public mutation",
+    "me.manga.kira.backend.sourceconfig.admin.SourceEditorDraftIT": "unsafe header quick publish rolls back its new revision and preserves editor and public state"
+  },
+  "status": "PRIMARY AUTHORIZED ONE TARGETED VALIDATION: 76 expected cases plus statics; source checkpoint, not integration, release or package publication."
+}
