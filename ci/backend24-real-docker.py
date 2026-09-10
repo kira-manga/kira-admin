@@ -251,6 +251,12 @@ class Gate:
                 'Default local Docker socket is required')
         for parent in (ROOT.parent, RECEIVER.parent, HELPER.parent.parent):
             info = parent.lstat()
+            self.result.setdefault('installationParents', []).append({
+                'path': str(parent), 'uid': info.st_uid, 'gid': info.st_gid,
+                'mode': oct(stat.S_IMODE(info.st_mode)), 'directory': stat.S_ISDIR(info.st_mode),
+                'canonicalPath': str(parent.resolve()),
+            })
+            self.save()
             require(stat.S_ISDIR(info.st_mode) and info.st_uid == 0 and not info.st_mode & 0o022
                     and parent.resolve() == parent, 'Unsafe fixed installation parent')
         if HELPER.parent.exists():
