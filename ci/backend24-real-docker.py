@@ -89,6 +89,77 @@ def receiver_reason(status, captured, maximum):
     return RECEIVER_REFUSALS.get(lines[-1], 'UNKNOWN')
 
 
+# Exact fixed refusals reachable from the bound helper's Web archive action, plus its generic exception.
+# No receive/producer/command diagnostics or Backend-only image policy; never inferred filesystem causes.
+ARCHIVE_HELPER_REFUSALS = {
+    b'Image operation refused: archive requires component, source and fixed archive path': 'INVALID_ARCHIVE_ARGUMENTS',
+    b'Image operation refused: invalid component': 'INVALID_COMPONENT',
+    b'Image operation refused: invalid numeric identity': 'INVALID_NUMERIC_IDENTITY',
+    b'Image operation refused: invalid digest': 'INVALID_DIGEST',
+    b'Image operation refused: invalid image ID': 'INVALID_IMAGE_ID',
+    b'Image operation refused: JSON byte limit': 'JSON_BYTE_LIMIT',
+    b'Image operation refused: duplicate JSON field': 'DUPLICATE_JSON_FIELD',
+    b'Image operation refused: invalid JSON number': 'INVALID_JSON_NUMBER',
+    b'Image operation refused: nonfinite JSON number': 'NONFINITE_JSON_NUMBER',
+    b'Image operation refused: invalid JSON': 'INVALID_JSON',
+    b'Image operation refused: unexpected object fields': 'UNEXPECTED_OBJECT_FIELDS',
+    b'Image operation refused: stream byte limit': 'STREAM_BYTE_LIMIT',
+    b'Image operation refused: nonregular archive': 'NONREGULAR_ARCHIVE',
+    b'Image operation refused: operation deadline exceeded': 'OPERATION_DEADLINE_EXCEEDED',
+    b'Image operation refused: invalid Docker tar size': 'INVALID_DOCKER_TAR_SIZE',
+    b'Image operation refused: truncated Docker tar': 'TRUNCATED_DOCKER_TAR',
+    b'Image operation refused: missing tar EOF': 'MISSING_TAR_EOF',
+    b'Image operation refused: data after tar EOF': 'DATA_AFTER_TAR_EOF',
+    b'Image operation refused: unsupported Docker tar member': 'UNSUPPORTED_DOCKER_TAR_MEMBER',
+    b'Image operation refused: nonempty tar directory': 'NONEMPTY_TAR_DIRECTORY',
+    b'Image operation refused: truncated tar member': 'TRUNCATED_TAR_MEMBER',
+    b'Image operation refused: invalid tar padding': 'INVALID_TAR_PADDING',
+    b'Image operation refused: missing or oversized image metadata': 'MISSING_OR_OVERSIZED_IMAGE_METADATA',
+    b'Image operation refused: truncated metadata': 'TRUNCATED_METADATA',
+    b'Image operation refused: archive must contain exactly one image': 'ARCHIVE_IMAGE_COUNT_INVALID',
+    b'Image operation refused: wrong or additional image tag/parent': 'WRONG_OR_ADDITIONAL_IMAGE_TAG_OR_PARENT',
+    b'Image operation refused: invalid image paths': 'INVALID_IMAGE_PATHS',
+    b'Image operation refused: config path/ID mismatch': 'CONFIG_PATH_ID_MISMATCH',
+    b'Image operation refused: invalid image config': 'INVALID_IMAGE_CONFIG',
+    b'Image operation refused: invalid image layer chain': 'INVALID_IMAGE_LAYER_CHAIN',
+    b'Image operation refused: layer bytes/DiffID mismatch': 'LAYER_BYTES_DIFF_ID_MISMATCH',
+    b'Image operation refused: invalid image platform': 'INVALID_IMAGE_PLATFORM',
+    b'Image operation refused: invalid image labels': 'INVALID_IMAGE_LABELS',
+    b'Image operation refused: alternative image descriptor mismatch': 'ALTERNATIVE_IMAGE_DESCRIPTOR_MISMATCH',
+    b'Image operation refused: alternative platform mismatch': 'ALTERNATIVE_PLATFORM_MISMATCH',
+    b'Image operation refused: alternative tag mismatch': 'ALTERNATIVE_TAG_MISMATCH',
+    b'Image operation refused: unexpected layer sources': 'UNEXPECTED_LAYER_SOURCES',
+    b'Image operation refused: unsupported OCI layout': 'UNSUPPORTED_OCI_LAYOUT',
+    b'Image operation refused: additional OCI image subject': 'ADDITIONAL_OCI_IMAGE_SUBJECT',
+    b'Image operation refused: inconsistent OCI image': 'INCONSISTENT_OCI_IMAGE',
+    b'Image operation refused: alternative repository/tag mismatch': 'ALTERNATIVE_REPOSITORY_TAG_MISMATCH',
+    b'Image operation refused: too many compatibility records': 'TOO_MANY_COMPATIBILITY_RECORDS',
+    b'Image operation refused: unknown compatibility version': 'UNKNOWN_COMPATIBILITY_VERSION',
+    b'Image operation refused: additional image config/subject': 'ADDITIONAL_IMAGE_CONFIG_OR_SUBJECT',
+    b'Image operation refused: ambiguous compatibility config': 'AMBIGUOUS_COMPATIBILITY_CONFIG',
+    b'Image operation refused: unknown compatibility path': 'UNKNOWN_COMPATIBILITY_PATH',
+    b'Image operation refused: unreferenced image directories/configs': 'UNREFERENCED_IMAGE_DIRECTORIES_OR_CONFIGS',
+    b'Image operation refused: gzip stream digest mismatch': 'GZIP_STREAM_DIGEST_MISMATCH',
+    b'Image operation refused: archive image ID mismatch': 'ARCHIVE_IMAGE_ID_MISMATCH',
+    b'Image operation refused: malformed input, unavailable operation or cleanup failure': 'GENERIC_OPERATION_FAILURE',
+}
+
+
+def predecessor_archive_helper_reason(status, captured, maximum):
+    """Fixed observation only, from a completed capture; no helper line is not an owned-file verdict."""
+    if status != 70:
+        return 'NOT_APPLICABLE'
+    if receiver_reason(status, captured, maximum) != 'PREDECESSOR_ARCHIVE_INVALID':
+        return 'UNKNOWN'
+    lines = captured.split(b'\n')[:-1]
+    if len(lines) == 1:
+        return 'NOT_OBSERVED'
+    # Only exact helper + terminal predecessor-refusal lines qualify. Any additional/noisy line is unknown.
+    if len(lines) != 2:
+        return 'UNKNOWN'
+    return ARCHIVE_HELPER_REFUSALS.get(lines[0], 'UNKNOWN')
+
+
 class GateFailure(Exception):
     pass
 
@@ -289,16 +360,19 @@ class Gate:
         captured = io.BytesIO() if output is None else output
         entry = {'check': name, 'exit': None, 'ownedCommandCompleted': False}
         if receiver_diagnostic:
-            entry.update(expectedExit=expected, receiverReason='UNKNOWN')
+            entry.update(expectedExit=expected, receiverReason='UNKNOWN', predecessorArchiveHelperReason='UNKNOWN')
         self.result.setdefault('commands', []).append(entry)
         started = time.monotonic()
         try:
             code = self.helper.command(argv, seconds=budget, stdin=subprocess.DEVNULL if stdin is None else stdin, output=captured,
                                        maximum=maximum, return_status=True)
+            if receiver_diagnostic:
+                raw = captured.getvalue()
+                entry.update(receiverReason=receiver_reason(code, raw, maximum),
+                             predecessorArchiveHelperReason=predecessor_archive_helper_reason(code, raw, maximum))
             entry.update(exit=code, ownedCommandCompleted=True)
             if receiver_diagnostic:
-                entry['receiverReason'] = receiver_reason(code, captured.getvalue(), maximum)
-                self.save()  # Fixed expected/actual/identifier receipt precedes the unchanged exit gate.
+                self.save()  # Both fixed identifiers and actual/expected exit precede the unchanged exit gate.
             require(expected is None or code == expected, 'Unexpected command exit: ' + name)
             require(self.cleaning or not CANCELLED, 'Gate cancelled')
             return code, captured.getvalue() if output is None else b''
@@ -513,7 +587,7 @@ class Gate:
         self.save()
         return identity, archive, compressed['sha256']
 
-    def snapshot(self, identity, archive_digest):
+    def snapshot(self, identity, archive_digest, observe_archive=False):
         model = '{{.Id}} {{.Image}} {{.State.Running}} {{.State.Health.Status}} ' + \
                 '{{index .Config.Labels "com.docker.compose.project"}} ' + \
                 '{{index .Config.Labels "com.docker.compose.service"}} {{index .Config.Labels "' + LABEL + '"}}'
@@ -531,9 +605,16 @@ class Gate:
                 'Unexpected archive, pending marker or incoming scratch remains')
         archive = releases / (archive_digest + '.tar.gz')
         require(digest(archive, MAX_GZIP) == archive_digest, 'Retained A archive bytes changed')
-        return {'containerId': fields[0], 'imageId': identity, 'health': 'healthy', 'persistedImageId': identity,
-                'activationSha256': digest(releases / 'activation'), 'retainedArchiveSha256': archive_digest,
-                'archiveInode': archive.stat().st_ino, 'pendingAndIncomingAbsent': True}
+        snapshot = {'containerId': fields[0], 'imageId': identity, 'health': 'healthy', 'persistedImageId': identity,
+                    'activationSha256': digest(releases / 'activation'), 'retainedArchiveSha256': archive_digest,
+                    'archiveInode': archive.stat().st_ino, 'pendingAndIncomingAbsent': True}
+        if observe_archive:
+            info = archive.lstat()  # Pre-B local observation only, not an atomic receipt for the receiver's later guard.
+            snapshot['retainedArchiveMetadata'] = {
+                'uid': info.st_uid, 'permissionBits': stat.S_IMODE(info.st_mode),
+                'regular': stat.S_ISREG(info.st_mode), 'nonsymlink': not stat.S_ISLNK(info.st_mode),
+            }
+        return snapshot
 
     def deploy(self, variant, archive, expected):
         with archive.open('rb') as stream:
@@ -559,9 +640,10 @@ class Gate:
         self.result['beforeFirstLoad'] = {'fixtureImageIdsAbsent': [a_id, b_id], 'containersAbsent': not self.docker_ids('container')}
         require(self.result['beforeFirstLoad']['containersAbsent'], 'A container appeared before initial load')
         self.result['activationAExit'] = self.deploy('A', a_archive, 0)
-        first = self.snapshot(a_id, a_digest)
+        first = self.snapshot(a_id, a_digest, observe_archive=True)
         require(self.image(TAG) == a_id, 'Initial A tag did not load from the archive')
         self.result['activationA'] = first
+        self.save()  # Persist the explanatory pre-B snapshot; later snapshot equality/gates remain unchanged.
         since = str(int(time.time()) - 1)
         self.result['failedBExit'] = self.deploy('B', b_archive, 71)
         restored = self.snapshot(a_id, a_digest)
