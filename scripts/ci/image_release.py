@@ -603,7 +603,7 @@ def smoke(expected):
                     with OPENER.open('http://127.0.0.1:18082/', timeout=2) as response:
                         if response.status == 200:
                             return
-                except urllib.error.URLError:
+                except OSError:
                     pass
                 time.sleep(2)
         raise Refused('exact-image runtime smoke failed')

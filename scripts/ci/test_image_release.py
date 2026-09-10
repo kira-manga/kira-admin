@@ -8,6 +8,7 @@ import base64
 import contextlib
 import copy
 import datetime as dt
+import http.client
 import io
 import json
 import os
@@ -568,6 +569,77 @@ class ApiTests(OfflineCase):
             helper.symlink_to(root / 'Dockerfile')
             with self.assertRaises(release.Refused):
                 release.local_contract()
+
+
+class SmokeProbeTests(OfflineCase):
+    @contextlib.contextmanager
+    def probe_fixture(self):
+        image, owner = Fixture().receipt['image'], 'f' * 32
+        name = 'kira-admin8-smoke-' + owner
+        self.network.reset_mock()
+        self.process.reset_mock()
+        self.process.side_effect = [inspected(image), b'created', b'started',
+                                    release.canonical([{'Config': {'Labels': {'kira.admin8.smoke': owner}}}]), b'removed']
+        with mock.patch.object(release.uuid, 'uuid4', return_value=mock.Mock(hex=owner)), \
+             mock.patch.object(release.time, 'sleep') as sleeps, \
+             mock.patch.object(release.signal, 'signal') as alarms, \
+             mock.patch.object(release.signal, 'setitimer') as timer:
+            yield image, sleeps, alarms
+            self.assertEqual(timer.call_args_list, [mock.call(signal.ITIMER_REAL, 70), mock.call(signal.ITIMER_REAL, 0)])
+        self.assertEqual(self.process.call_count, 5)
+        self.assertEqual(self.process.call_args_list[1].args[0][-1], IMAGE)
+        self.assertEqual(self.process.call_args_list[2], mock.call(['docker', 'start', name], seconds=30))
+        self.assertEqual(self.process.call_args_list[-2:], [
+            mock.call(['docker', 'container', 'inspect', name], seconds=30),
+            mock.call(['docker', 'rm', '--force', name], seconds=30),
+        ])
+
+    def test_url_and_representative_bare_os_probe_failures_retry_until_200(self):
+        response = io.BytesIO()
+        response.status = 200
+        with self.probe_fixture() as (image, sleeps, _alarms):
+            # Representative paths, not an attribution of the historical OSError subtype.
+            self.network.side_effect = [urllib.error.URLError('synthetic'), OSError('synthetic'),
+                                        ConnectionResetError('synthetic'), http.client.RemoteDisconnected('synthetic'), response]
+            self.assertIsNone(release.smoke(image))
+            self.assertEqual(self.network.call_args_list, [mock.call('http://127.0.0.1:18082/', timeout=2)] * 5)
+            self.assertEqual(sleeps.call_args_list, [mock.call(2)] * 4)
+            self.assertTrue(response.closed)
+
+    def test_persistent_os_failures_and_non_200_responses_exhaust_the_attempt_bound(self):
+        for outcome in ('os', 'non-200'):
+            with self.subTest(outcome=outcome), self.probe_fixture() as (image, sleeps, _alarms):
+                def probe(*_args, **_kwargs):
+                    if outcome == 'os':
+                        raise OSError('synthetic persistent failure')
+                    response = io.BytesIO()
+                    response.status = 204
+                    return response
+
+                self.network.side_effect = probe
+                with self.assertRaisesRegex(release.Refused, '^exact-image runtime smoke failed$'):
+                    release.smoke(image)
+                self.assertEqual(self.network.call_args_list, [mock.call('http://127.0.0.1:18082/', timeout=2)] * 30)
+                self.assertEqual(sleeps.call_args_list, [mock.call(2)] * 30)
+
+    def test_non_os_protocol_and_deadline_refusals_propagate_without_retry_and_with_cleanup(self):
+        for failure in ('protocol', 'deadline'):
+            with self.subTest(failure=failure), self.probe_fixture() as (image, sleeps, alarms):
+                def expired(*_args, **_kwargs):
+                    # Invoke the real deadline callback without scheduling a process-wide alarm.
+                    alarms.call_args_list[0].args[1](signal.SIGALRM, None)
+
+                protocol_error = http.client.BadStatusLine('synthetic protocol error')
+                self.network.side_effect = protocol_error if failure == 'protocol' else expired
+                expected = http.client.BadStatusLine if failure == 'protocol' else release.Refused
+                with self.assertRaises(expected) as raised:
+                    release.smoke(image)
+                if failure == 'protocol':
+                    self.assertIs(raised.exception, protocol_error)
+                else:
+                    self.assertEqual(str(raised.exception), 'network operation timed out')
+                self.network.assert_called_once_with('http://127.0.0.1:18082/', timeout=2)
+                sleeps.assert_not_called()
 
 
 class RuntimeAndTransferTests(OfflineCase):
