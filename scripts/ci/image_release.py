@@ -440,9 +440,11 @@ def validate_scan(report, expected_image, now=None):
          and db_config.get('update-url') == GRYPE_DB_URL
          and db_config.get('max-update-check-frequency') in (0, '0s'),
          'scanner database policy mismatch')
-    db = descriptor.get('db', {})
+    database = descriptor.get('db')
+    need(type(database) is dict and type(database.get('status')) is dict, 'invalid scanner database metadata')
+    db = database['status']  # Grype 0.118.0 reports status separately from provider metadata.
     need(db.get('valid') is True and not db.get('error') and isinstance(db.get('schemaVersion'), str)
-         and re.fullmatch(r'6(?:\.[0-9]+){0,2}', db['schemaVersion'])
+         and re.fullmatch(r'v6(?:\.[0-9]+){0,2}', db['schemaVersion'])
          and isinstance(db.get('from'), str) and db['from'].startswith('https://grype.anchore.io/databases/'),
          'invalid scanner database metadata')
     need(0 <= scanned - timestamp(db.get('built')) <= MAX_DB_AGE, 'scanner database was stale at scan time')
@@ -585,6 +587,40 @@ def inspect_image(expected):
          and expected['tag'] in item.get('RepoTags', []), 'loaded image/tag/platform/labels do not match')
 
 
+def inspect_runtime(name):
+    # Fixed read-only probe in the existing container; bound APK reads and process output/time.
+    script = r"""
+const fs = require('node:fs');
+const fd = fs.openSync('/lib/apk/db/installed', 'r');
+const metadata = fs.fstatSync(fd);
+if (!metadata.isFile() || metadata.size < 1 || metadata.size > 262144) throw new Error('invalid APK inventory');
+const data = Buffer.alloc(metadata.size);
+if (fs.readSync(fd, data, 0, data.length, 0) !== data.length) throw new Error('incomplete APK inventory');
+fs.closeSync(fd);
+const apk = data.toString('utf8').split(/\n\n+/)
+  .map(block => [block.match(/^P:(.+)$/m)?.[1], block.match(/^V:(.+)$/m)?.[1]])
+  .filter(([name]) => name === 'libcrypto3' || name === 'libssl3')
+  .sort(([a], [b]) => a.localeCompare(b));
+const paths = [
+  '/usr/local/lib/node_modules/npm', '/usr/local/lib/node_modules/corepack', '/opt/yarn-v1.22.22',
+  '/usr/local/bin/npm', '/usr/local/bin/npx', '/usr/local/bin/corepack', '/usr/local/bin/yarn', '/usr/local/bin/yarnpkg',
+];
+process.stdout.write(JSON.stringify({
+  node: process.versions.node, openssl: process.versions.openssl, uid: process.getuid(), euid: process.geteuid(), apk,
+  tool_paths_present: paths.filter(path => fs.lstatSync(path, {throwIfNoEntry: false}) !== undefined),
+}));
+"""
+    inventory = parse_json(command(['docker', 'exec', name, '/usr/local/bin/node', '--eval', script],
+                                   seconds=15, maximum=4096), 4096)
+    need(type(inventory) is dict and set(inventory) == {'node', 'openssl', 'uid', 'euid', 'apk', 'tool_paths_present'}
+         and inventory['node'] == '24.21.0' and inventory['openssl'] == '3.5.8'
+         and all(type(inventory[field]) is int and 0 < inventory[field] < 2**32 for field in ('uid', 'euid'))
+         and inventory['apk'] == [['libcrypto3', '3.5.8-r0'], ['libssl3', '3.5.8-r0']]
+         and inventory['tool_paths_present'] == [], 'exact-image runtime inventory mismatch')
+    print('PASS exact-image runtime inventory:', canonical(inventory).decode())
+    return inventory
+
+
 def smoke(expected):
     inspect_image(expected)
     owner = uuid.uuid4().hex
@@ -597,6 +633,7 @@ def smoke(expected):
                  '--publish', '127.0.0.1:18082:8080', expected['id']], seconds=30)
         created = True
         command(['docker', 'start', name], seconds=30)
+        inspect_runtime(name)
         with deadline(70):
             for _ in range(30):
                 try:

@@ -76,12 +76,18 @@ def scan_report():
                        'validate-by-hash-on-start': True, 'max-allowed-built-age': 432000000000000,
                        'update-url': release.GRYPE_DB_URL, 'max-update-check-frequency': 0},
             },
-            'db': {'schemaVersion': '6.0.0', 'built': at(-3600), 'valid': True,
-                   'from': 'https://grype.anchore.io/databases/v6/fixture.tar.zstd'},
+            'db': {'status': {'schemaVersion': 'v6.1.9', 'built': at(-3600), 'valid': True,
+                              'from': 'https://grype.anchore.io/databases/v6/fixture.tar.zstd'},
+                   'providers': {}},
         },
         'source': {'type': 'image', 'target': {'imageID': IMAGE}},
         'matches': [{'vulnerability': {'severity': 'Medium', 'fix': {'state': 'not-fixed'}}}],
     }
+
+
+def runtime_report():
+    return {'node': '24.21.0', 'openssl': '3.5.8', 'uid': 1000, 'euid': 1000,
+            'apk': [['libcrypto3', '3.5.8-r0'], ['libssl3', '3.5.8-r0']], 'tool_paths_present': []}
 
 
 def inspected(image):
@@ -131,8 +137,8 @@ class Fixture:
             'scan': {'bytes': len(raw_scan), 'sha256': release.digest(raw_scan), 'result': 'pass',
                      'policy': release.SCAN_POLICY,
                      'tool': {'name': 'grype', 'version': release.GRYPE_VERSION, 'archive_sha256': release.GRYPE_SHA},
-                     'database': {'schemaVersion': '6.0.0', 'built': at(-3600), 'valid': True,
-                                  'from': self.scan['descriptor']['db']['from'], 'scanned_at': at(-60)}},
+                     'database': {'schemaVersion': 'v6.1.9', 'built': at(-3600), 'valid': True,
+                                  'from': self.scan['descriptor']['db']['status']['from'], 'scanned_at': at(-60)}},
         }
         self.files = {'image.tar.gz': compressed, 'scan.json': raw_scan}
         self.render_receipt()
@@ -425,6 +431,7 @@ class ArchiveAndScanTests(OfflineCase):
                      (['image', 'id'], 'sha256:' + 'b' * 64), (['image', 'revision'], CONSUMER_SHA),
                      (['archive', 'sha256'], 'f' * 64), (['archive', 'expanded_sha256'], 'f' * 64),
                      (['scan', 'sha256'], 'f' * 64), (['scan', 'result'], 'failure'),
+                     (['scan', 'database', 'schemaVersion'], '6.1.9'),
                      (['scan', 'tool', 'archive_sha256'], 'f' * 64), (['unexpected'], True)]
         for index, (path, value) in enumerate(mutations):
             with self.subTest(path=path):
@@ -458,9 +465,12 @@ class ArchiveAndScanTests(OfflineCase):
 
     def test_scanner_version_database_update_age_hash_and_no_suppression_are_mandatory(self):
         cases = [(['descriptor', 'version'], '0.1.0'), (['descriptor', 'timestamp'], at(1)),
-                 (['descriptor', 'timestamp'], at(-4 * 86400)), (['descriptor', 'db', 'valid'], False),
-                 (['descriptor', 'db', 'error'], 'database failed'), (['descriptor', 'db', 'built'], at(-6 * 86400)),
-                 (['descriptor', 'db', 'from'], 'https://untrusted.invalid/db'),
+                 (['descriptor', 'timestamp'], at(-4 * 86400)), (['descriptor', 'db', 'status', 'valid'], False),
+                 (['descriptor', 'db', 'status', 'valid'], 1),
+                 (['descriptor', 'db', 'status', 'error'], 'database failed'),
+                 (['descriptor', 'db', 'status', 'built'], at(-6 * 86400)),
+                 (['descriptor', 'db', 'status', 'built'], at(-30)),
+                 (['descriptor', 'db', 'status', 'from'], 'https://untrusted.invalid/db'),
                  (['source', 'target', 'imageID'], 'sha256:' + 'b' * 64)]
         cases += [(['descriptor', 'configuration', field], value) for field, value in
                   [('only-fixed', True), ('only-notfixed', True), ('ignore-wontfix', 'not-fixed'),
@@ -478,6 +488,32 @@ class ArchiveAndScanTests(OfflineCase):
                 change(report, path, value)
                 with self.assertRaises(release.Refused):
                     release.validate_scan(report, IMAGE)
+
+    def test_database_requires_nested_status_and_never_falls_back_to_flat_metadata(self):
+        report = scan_report()
+        del report['descriptor']['db']
+        with self.assertRaises(release.Refused):
+            release.validate_scan(report, IMAGE)
+        flat = scan_report()['descriptor']['db']['status']
+        for database in (None, [], True, {}, flat, {'status': None}, {'status': []}, {'status': 'valid'},
+                         {'status': {}}, {**flat, 'status': {'valid': False}}):
+            with self.subTest(database=database):
+                report = scan_report()
+                report['descriptor']['db'] = database
+                with self.assertRaises(release.Refused):
+                    release.validate_scan(report, IMAGE)
+
+    def test_database_schema_is_explicit_numeric_v6_and_preserved_in_receipts(self):
+        for version in ('v6', 'v6.1', 'v6.1.9'):
+            report = scan_report()
+            report['descriptor']['db']['status']['schemaVersion'] = version
+            with self.subTest(version=version):
+                self.assertEqual(release.validate_scan(report, IMAGE)['schemaVersion'], version)
+        for version in (None, 6, True, [], '6.1.9', 'v5.1.9', 'v7.0.0', 'v6.', 'v6.1.x', 'v6.1.9.0', 'v6.1.9\n'):
+            report = scan_report()
+            report['descriptor']['db']['status']['schemaVersion'] = version
+            with self.subTest(version=version), self.assertRaises(release.Refused):
+                release.validate_scan(report, IMAGE)
 
 
 class ApiTests(OfflineCase):
@@ -578,7 +614,7 @@ class SmokeProbeTests(OfflineCase):
         name = 'kira-admin8-smoke-' + owner
         self.network.reset_mock()
         self.process.reset_mock()
-        self.process.side_effect = [inspected(image), b'created', b'started',
+        self.process.side_effect = [inspected(image), b'created', b'started', release.canonical(runtime_report()),
                                     release.canonical([{'Config': {'Labels': {'kira.admin8.smoke': owner}}}]), b'removed']
         with mock.patch.object(release.uuid, 'uuid4', return_value=mock.Mock(hex=owner)), \
              mock.patch.object(release.time, 'sleep') as sleeps, \
@@ -586,9 +622,11 @@ class SmokeProbeTests(OfflineCase):
              mock.patch.object(release.signal, 'setitimer') as timer:
             yield image, sleeps, alarms
             self.assertEqual(timer.call_args_list, [mock.call(signal.ITIMER_REAL, 70), mock.call(signal.ITIMER_REAL, 0)])
-        self.assertEqual(self.process.call_count, 5)
+        self.assertEqual(self.process.call_count, 6)
         self.assertEqual(self.process.call_args_list[1].args[0][-1], IMAGE)
         self.assertEqual(self.process.call_args_list[2], mock.call(['docker', 'start', name], seconds=30))
+        self.assertEqual(self.process.call_args_list[3].args[0][:5], ['docker', 'exec', name, '/usr/local/bin/node', '--eval'])
+        self.assertEqual(self.process.call_args_list[3].kwargs, {'seconds': 15, 'maximum': 4096})
         self.assertEqual(self.process.call_args_list[-2:], [
             mock.call(['docker', 'container', 'inspect', name], seconds=30),
             mock.call(['docker', 'rm', '--force', name], seconds=30),
@@ -640,6 +678,71 @@ class SmokeProbeTests(OfflineCase):
                     self.assertEqual(str(raised.exception), 'network operation timed out')
                 self.network.assert_called_once_with('http://127.0.0.1:18082/', timeout=2)
                 sleeps.assert_not_called()
+
+    def test_inventory_reads_fixed_bounded_metadata_and_detects_dangling_tool_links(self):
+        self.process.side_effect = None
+        self.process.return_value = release.canonical(runtime_report())
+        name = 'kira-admin8-smoke-' + 'f' * 32
+        self.assertEqual(release.inspect_runtime(name), runtime_report())
+        self.process.assert_called_once()
+        call = self.process.call_args
+        self.assertEqual(call.args[0][:5], ['docker', 'exec', name, '/usr/local/bin/node', '--eval'])
+        self.assertEqual(call.kwargs, {'seconds': 15, 'maximum': 4096})
+        script = call.args[0][5]
+        # Offline fixtures do not execute Node; preserve the critical fixed-probe operations.
+        self.assertIn("fs.openSync('/lib/apk/db/installed', 'r')", script)
+        self.assertIn('metadata.size > 262144', script)
+        self.assertIn('fs.lstatSync(path, {throwIfNoEntry: false})', script)
+        self.assertNotIn('existsSync', script)  # Following a dangling link would incorrectly report absence.
+        self.assertNotIn('process.env', script)
+        for path in ('/usr/local/lib/node_modules/npm', '/usr/local/lib/node_modules/corepack', '/opt/yarn-v1.22.22',
+                     '/usr/local/bin/npm', '/usr/local/bin/npx', '/usr/local/bin/corepack',
+                     '/usr/local/bin/yarn', '/usr/local/bin/yarnpkg'):
+            self.assertIn(repr(path), script)
+
+    def test_inventory_rejects_wrong_versions_root_malformed_or_retained_payload_without_echo(self):
+        cases = [(['node'], '24.18.0'), (['openssl'], '3.5.7'), (['uid'], 0), (['uid'], True),
+                 (['euid'], 0), (['euid'], True), (['uid'], '1000'), (['apk'], []), (['apk', 0, 1], '3.5.7-r0'),
+                 (['apk', 1, 1], '3.5.7-r0'), (['apk', 1, 0], 'libcrypto3'),
+                 (['unexpected'], 'synthetic-private-value')]
+        cases += [(['tool_paths_present'], [path]) for path in
+                  ('/usr/local/lib/node_modules/npm', '/usr/local/lib/node_modules/corepack', '/opt/yarn-v1.22.22',
+                   '/usr/local/bin/npm', '/usr/local/bin/npx', '/usr/local/bin/corepack',
+                   '/usr/local/bin/yarn', '/usr/local/bin/yarnpkg')]
+        raw_cases = [b'null', b'[]', b'{}', b'{"uid":1000,"uid":0}', b'x' * 4097]
+        for path, value in cases:
+            report = runtime_report()
+            change(report, path, value)
+            raw_cases.append(release.canonical(report))
+        self.process.side_effect = None
+        for index, raw in enumerate(raw_cases):
+            with self.subTest(index=index), mock.patch('builtins.print') as printed:
+                self.process.return_value = raw
+                with self.assertRaises(release.Refused):
+                    release.inspect_runtime('kira-admin8-smoke-' + 'f' * 32)
+                printed.assert_not_called()
+
+    def test_inventory_refusal_or_command_failure_skips_readiness_but_keeps_owned_cleanup(self):
+        image, owner = Fixture().receipt['image'], 'f' * 32
+        name = 'kira-admin8-smoke-' + owner
+        for result, message in ((release.Refused('injected inventory failure'), 'injected inventory failure'),
+                                (release.canonical({**runtime_report(), 'openssl': '3.5.7'}),
+                                 'exact-image runtime inventory mismatch')):
+            with self.subTest(message=message), mock.patch.object(release.uuid, 'uuid4', return_value=mock.Mock(hex=owner)):
+                self.process.reset_mock()
+                self.process.side_effect = [inspected(image), b'created', b'started', result,
+                                           release.canonical([{'Config': {'Labels': {'kira.admin8.smoke': owner}}}]), b'removed']
+                with self.assertRaisesRegex(release.Refused, '^' + message + '$'):
+                    release.smoke(image)
+                self.network.assert_not_called()
+                self.assertEqual(self.process.call_count, 6)
+                self.assertEqual(self.process.call_args_list[1].args[0][-1], IMAGE)
+                self.assertEqual(self.process.call_args_list[3].args[0][:5],
+                                 ['docker', 'exec', name, '/usr/local/bin/node', '--eval'])
+                self.assertEqual(self.process.call_args_list[-2:], [
+                    mock.call(['docker', 'container', 'inspect', name], seconds=30),
+                    mock.call(['docker', 'rm', '--force', name], seconds=30),
+                ])
 
 
 class RuntimeAndTransferTests(OfflineCase):
@@ -848,7 +951,7 @@ class ProducerTests(OfflineCase):
                             raise release.Refused('injected scanner nonzero')
                         report = copy.deepcopy(fixture.scan)
                         if result == 'database-error':
-                            report['descriptor']['db']['valid'] = False
+                            report['descriptor']['db']['status']['valid'] = False
                         kwargs['output'].write(release.canonical(report))
                     return b''
 
@@ -864,6 +967,7 @@ class ProducerTests(OfflineCase):
                         self.assertEqual(receipt['image'], fixture.receipt['image'])
                         self.assertEqual(receipt['archive'], fixture.receipt['archive'])
                         self.assertEqual(receipt['scan']['result'], 'pass')
+                        self.assertEqual(receipt['scan']['database'], fixture.receipt['scan']['database'])
                     else:
                         with self.assertRaises(release.Refused):
                             release.produce(directory, ctx, IMAGE)
