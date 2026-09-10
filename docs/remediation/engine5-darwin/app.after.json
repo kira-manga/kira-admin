@@ -1,0 +1,122 @@
+[
+  {
+    "path": "composeApp/build.gradle.kts",
+    "change": "modified",
+    "before_sha256": "457798800fb581a9271dadbcfcb14af92f5423750f57c5a27109aa19acb7f0e6",
+    "after_sha256": "3b825de052e136eb9ec225630750cc699e67e488e00add4de2233ea36acb59af",
+    "before_lines": 386,
+    "after_lines": 397
+  },
+  {
+    "path": "composeApp/src/commonMain/kotlin/me/manga/kira/di/SourcesGenericModule.kt",
+    "change": "modified",
+    "before_sha256": "35b61153f95135b27c0927851854d81f1580f676d87892476e6e2b90853fffa9",
+    "after_sha256": "189878e2ee46e2517a04eb3f46a46f8fcc4c506270c5869aadb5e0b2af97ac6d",
+    "before_lines": 146,
+    "after_lines": 148
+  },
+  {
+    "path": "composeApp/src/commonMain/kotlin/me/manga/kira/sources/runtime/KtorHttpExecutor.kt",
+    "change": "modified",
+    "before_sha256": "c0d1362c641e950c0db61a7b71fd059ec7a92d2a628b4eb9818832df3ab09974",
+    "after_sha256": "b1db127a8c5842fd4960fe2dd9c657d42a5352a60fb73920202b6dd3f8774131",
+    "before_lines": 62,
+    "after_lines": 87
+  },
+  {
+    "path": "composeApp/src/commonTest/kotlin/me/manga/kira/sources/runtime/GenericSourceHttpBoundaryTest.kt",
+    "change": "added",
+    "before_sha256": null,
+    "after_sha256": "483a6bd993e13568ec912d04f054c67141195f7e9a0a745868cd42f8183247e3",
+    "before_lines": 0,
+    "after_lines": 193
+  },
+  {
+    "path": "composeApp/src/commonTest/kotlin/me/manga/kira/sources/runtime/KtorHttpExecutorTest.kt",
+    "change": "added",
+    "before_sha256": null,
+    "after_sha256": "fe8682fb461a60b8b9a08612decb7af6856dfdc2f7a9ba2a0336cede96b27ee2",
+    "before_lines": 0,
+    "after_lines": 164
+  },
+  {
+    "path": "composeApp/src/commonTest/kotlin/me/manga/kira/sources/runtime/KtorSourceClientOwnershipTest.kt",
+    "change": "added",
+    "before_sha256": null,
+    "after_sha256": "ded611deedcd4f2012420eee7d6db56d012ec10d26c97dbac0ab44e71d3fd4bb",
+    "before_lines": 0,
+    "after_lines": 112
+  },
+  {
+    "path": "composeApp/src/commonTest/kotlin/me/manga/kira/sources/runtime/SourceHttpLoopback.kt",
+    "change": "added",
+    "before_sha256": null,
+    "after_sha256": "b7a52c4c0e71afc8e422d7b6d63776888f539488fa2024981dd945d21150fc1d",
+    "before_lines": 0,
+    "after_lines": 143
+  },
+  {
+    "path": "composeApp/src/commonTest/kotlin/me/manga/kira/sources/runtime/SourceHttpLoopbackCases.kt",
+    "change": "added",
+    "before_sha256": null,
+    "after_sha256": "eb2876182d24390b68273bd1f5c5e836b04c04975043af4df55045b630c6bd11",
+    "before_lines": 0,
+    "after_lines": 116
+  },
+  {
+    "path": "composeApp/src/commonTest/kotlin/me/manga/kira/sources/runtime/SourceHttpTestFixture.kt",
+    "change": "added",
+    "before_sha256": null,
+    "after_sha256": "56e7cf2f2db0cb3f79fabec662166bbd76f59628feda71d2002dd013804dd13b",
+    "before_lines": 0,
+    "after_lines": 118
+  },
+  {
+    "path": "composeApp/src/desktopTest/kotlin/me/manga/kira/sources/runtime/KtorSourceDesktopBoundaryTest.kt",
+    "change": "added",
+    "before_sha256": null,
+    "after_sha256": "55c9200e5001539d66911bf2d77349811efcf131fdbb5322bfd1b487c65f4ae4",
+    "before_lines": 0,
+    "after_lines": 84
+  },
+  {
+    "path": "composeApp/src/iosTest/kotlin/me/manga/kira/sources/runtime/KtorSourceDarwinBoundaryTest.kt",
+    "change": "added",
+    "before_sha256": null,
+    "after_sha256": "1995b0606961879f07d260dcc074ff13dadb532f38cea1c387be0e10d605641b",
+    "before_lines": 0,
+    "after_lines": 13
+  },
+  {
+    "path": "data/remote/src/commonMain/kotlin/me/manga/kira/data/remote/di/RemoteModule.kt",
+    "change": "modified",
+    "before_sha256": "3ac1b617ce79082754877d1b8a1e74359cc7a67431f855b44e5b6f000ddb4714",
+    "after_sha256": "15c5c46bc9338a8b0f7b51ad064607f98296ae9a76612b130de15b05bc2b1f0f",
+    "before_lines": 20,
+    "after_lines": 21
+  },
+  {
+    "path": "gradle/libs.versions.toml",
+    "change": "modified",
+    "before_sha256": "02c792404bfd8b2cf7fe9a96fbf8352285360aca7705a12f7042d273a193926c",
+    "after_sha256": "c6db1d03b2cc021b8d58fd49ff61553cb51cdbf8dc1acd2ed44bdc89e4a75109",
+    "before_lines": 245,
+    "after_lines": 246
+  },
+  {
+    "path": "sources/contracts/src/commonMain/kotlin/me/manga/kira/sources/contracts/Ports.kt",
+    "change": "modified",
+    "before_sha256": "52cd07fece3baf439c32577120eee64f5072b1b8f3a9f23d364b0991681b5ee8",
+    "after_sha256": "438fa07446cef235a1aaca2f765abcee040496b3b22d3576d67be39ec012acbe",
+    "before_lines": 88,
+    "after_lines": 94
+  },
+  {
+    "path": "sources/contracts/src/commonMain/kotlin/me/manga/kira/sources/contracts/model/SourceConfig.kt",
+    "change": "modified",
+    "before_sha256": "bd5de68548519ed0bc5305b041a1090d01fd2a5c6408a1e001108672a85bcbf8",
+    "after_sha256": "2a8cb0a31cba13d6ce07fc00cdbf346d29368b4320c6361d8724ee0a1b4fadbb",
+    "before_lines": 319,
+    "after_lines": 326
+  }
+]

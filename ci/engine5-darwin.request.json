@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "lane": "engine5-darwin-one-test",
+  "neutral": {
+    "baseSha": "fc55c149398068d1f47c2fb08597dbc08f0bf28a",
+    "patchSha256": "28e6f5df04b5514b76b04ad43ce8a667f80cfc9059db506137a9e1888c28baff",
+    "manifestSha256": "a2a8270df4c39db59edeaabac70a44d2903512359124bb0a588f574e9c9ff5cb",
+    "archiveSha256": "f2a0fb799801d0166abaa01b8056869b832611d7ad0a16edec2f8703ad7b5746",
+    "files": 58
+  },
+  "app": {
+    "baseSha": "c0db2f63c916932dbed1a3314c9a06d30c1696b5",
+    "baselinePatchSha256": "5c4e739191cdf8b5bca0b5c20d65dd7df27feb69c609a069561651952a0bf428",
+    "baselineManifestSha256": "2db3aa3bf6373e9debf80c51b47c73e9d129f2e49a418f33915a1276228730b9",
+    "manifestSha256": "77e3421d5dc999ef01f6fcc4c419a4089de6d0c732decd7bdb04047c98af5653",
+    "writerCorrection": {
+      "path": "composeApp/src/commonTest/kotlin/me/manga/kira/sources/runtime/SourceHttpLoopback.kt",
+      "beforeSha256": "be63b5eff16382b5d3e39b0f2a7bd5dc4552fb7e6b0be23a8a6f9c9bdffe6091",
+      "afterSha256": "b7a52c4c0e71afc8e422d7b6d63776888f539488fa2024981dd945d21150fc1d",
+      "patchSha256": "5ae20d2ef9415f47b971e5e18401de42b5be1663a6b349bbdbac4a08c79f927d",
+      "manifestSha256": "0cc99c2675e9d94dee4f043f266c489975f4e7404afe564ba1796774d173ec5a",
+      "reviewSha256": "4d91e0f277bd71b2ca74d69ef66ec4c1eb6bda7290b3eefe4976c2a1f64159cb"
+    },
+    "archiveSha256": "91055f773053ffde3bd59334ff1ed4475a2716805ee29fa77e349ce55a954cdc",
+    "files": 2768
+  }
+}

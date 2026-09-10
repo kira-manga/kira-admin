@@ -1,0 +1,127 @@
+{
+  "snapshot_kind": "Uncommitted author source snapshot; not independent review or test evidence",
+  "repository": "/root/projects/Kira/.worktrees/kira-source-engine-5",
+  "branch": "remediation/source-engine-5-captured-header-hosts",
+  "base_head": "fc55c149398068d1f47c2fb08597dbc08f0bf28a",
+  "agreement_sha256": "22c7a605c339590914981f698d414e80bd72433035ea6db62d22a279b57b67d6",
+  "changed_files": [
+    {
+      "path": "source-contract/src/commonMain/kotlin/me/manga/kira/sources/contracts/Execution.kt",
+      "status": "modified",
+      "before_sha256": "64a45f44a86d37ffd6f8542c235e9c509cb9fa38d2735a369dcd58c5bba3bf42",
+      "after_sha256": "f9e72282506563be7203f55113b6594fe25fc32da4ae6a51b7c24a597336d1eb"
+    },
+    {
+      "path": "source-contract/src/commonMain/kotlin/me/manga/kira/sources/contracts/model/SourceConfig.kt",
+      "status": "modified",
+      "before_sha256": "04e38d50118a4b5234abcf2e3b4ba232dbec1670c2e2d8fa4ab76c3fd0ec8e5d",
+      "after_sha256": "11be8d4cf5847921df37f0fa2e9fab172cf206e8afd9a36481a7b57f2bd44230"
+    },
+    {
+      "path": "source-engine/src/commonMain/kotlin/me/manga/kira/sources/engine/GenericSourceEngine.kt",
+      "status": "modified",
+      "before_sha256": "7b3b3ae34a47ea09eb4c9854e884db15c102c4b4415778be766d584f8f598926",
+      "after_sha256": "73e5e86f97b5e033099c70fa8cc6e86e1c0afc9c0872462bffbc46dd5772511d"
+    },
+    {
+      "path": "source-engine/src/commonMain/kotlin/me/manga/kira/sources/engine/internal/HttpDestination.kt",
+      "status": "added",
+      "before_sha256": null,
+      "after_sha256": "66d58714aff0918ce5fcbfe46d755e671fc8fe6e4abdb25b84a478e4acd23c54"
+    },
+    {
+      "path": "source-engine/src/commonMain/kotlin/me/manga/kira/sources/engine/internal/HttpReference.kt",
+      "status": "added",
+      "before_sha256": null,
+      "after_sha256": "1d6abd30bcc22ad5131b9a87527ec168945a6172e6719d7fc73ad30d5485cdf5"
+    },
+    {
+      "path": "source-engine/src/commonMain/kotlin/me/manga/kira/sources/engine/internal/SourceHeaderPolicy.kt",
+      "status": "added",
+      "before_sha256": null,
+      "after_sha256": "fa9c6520a73a57d6c85ad63fe4f119fd962a3aeac935e2c0c8f799acf5f280e1"
+    },
+    {
+      "path": "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/GenericSourceEngineCredentialTest.kt",
+      "status": "added",
+      "before_sha256": null,
+      "after_sha256": "bb7db0ceebfa4b222d711f7012c5e08c6cd1b44fc8388aa23c2835ead54b36e1"
+    },
+    {
+      "path": "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/GenericSourceEngineRedirectTest.kt",
+      "status": "added",
+      "before_sha256": null,
+      "after_sha256": "53e306e75bc67d6267cd778a16c043f5fd3f2023aedbcb8d1066d9de0efc9470"
+    },
+    {
+      "path": "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/internal/HttpDestinationTest.kt",
+      "status": "added",
+      "before_sha256": null,
+      "after_sha256": "d3310b1088f127c7d9380dfceb8eb61c2e663e1f243ae6287432e3933ac081b1"
+    },
+    {
+      "path": "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/internal/SourceHeaderPolicyTest.kt",
+      "status": "added",
+      "before_sha256": null,
+      "after_sha256": "03ef841f9ba3fbf7a388600596e3365528f4bd9719bfb5477ec017654ff70bf8"
+    }
+  ],
+  "unchanged_originally_tracked_count": 48,
+  "unchanged_originally_tracked_sha256": {
+    ".github/workflows/ci.yml": "26a52d371466c5d7209348c25a5073667a5e91f7c6d1d3822203aba3589fed6f",
+    ".github/workflows/publish.yml": "cc79cc6885605157dc140b795fd8d135aa497cd0e4b8405da31e09fbd982750a",
+    ".gitignore": "bc309b09636bd39b27ee08e6c403f21eab0a24c6addd91f8d10b915b2c066ce7",
+    "AGENTS.md": "b93ab05b86e7f16e766f470813cb49163f1547a2c77dd991719414291c080e46",
+    "README.md": "59292673cf80ca4c6c360bae2cf616ffef95eb0110a103fc2b7e7227c027158c",
+    "build.gradle.kts": "609cef402ddba6ebf083cd3cbbc89c202171a4dd3749fece8bcd46cf3abe5b28",
+    "gradle.properties": "56f1fa1ecfc78a68940462d50794a0d3165027841dba0a9502df8e03df4a8bd9",
+    "gradle/libs.versions.toml": "cebe923affad01ff26806e9dad867d69d155e0bc67afc3466e9ac293116bad5b",
+    "gradle/wrapper/gradle-wrapper.jar": "9687bf4e8beb2c293cfd1393cbf2854ef68f921757302116033f476289abf7b0",
+    "gradle/wrapper/gradle-wrapper.properties": "1d126b2f29d1a87825e57ae7a7a1b1cc06f8dcbc89dd614dc6a5b493244ba2cc",
+    "gradlew": "734b3879d3501dce471cf0522d3bcbafe76873d9fc5129345b67fb43bd15e933",
+    "gradlew.bat": "2209f919a22528af59a2af2ad97e8d056cca18e39f7d87aa3fd549a73b180150",
+    "settings.gradle.kts": "314080eaa2dbc822fe3cce39b5e86c4412f5b3f373b0f970959958221768b6a9",
+    "source-contract/build.gradle.kts": "28f5ee3121fc228093bc316d7d517ebfca861e7a956bb4eee99f37eed31c9334",
+    "source-contract/src/commonMain/kotlin/me/manga/kira/sources/contracts/SourceBaseUrl.kt": "8c42dfe7a969fae3c4dd8a39a31eabf50e256f38471781a9e99e575c59efc9c0",
+    "source-contract/src/commonMain/kotlin/me/manga/kira/sources/contracts/SourceConfigParser.kt": "c777e81a8509310bfa7d5251d8d7a1f15d393a0ae905b7d0a812eca00d76c30a",
+    "source-contract/src/commonMain/kotlin/me/manga/kira/sources/contracts/SourceEngine.kt": "ced8f6af76f6e06089aa09a01ae524159ef9a73296cf271eb37bd6769e1f72c1",
+    "source-contract/src/commonMain/kotlin/me/manga/kira/sources/contracts/Strategies.kt": "3328f377efdd03357337691091940db4ae33887c1c1302d4d714c2b873ac3b5e",
+    "source-contract/src/commonMain/kotlin/me/manga/kira/sources/contracts/Validation.kt": "e76cb2256634a18f4b0c5d12d4d92ddcc8de6eb15fc94936c8825efbec750367",
+    "source-contract/src/commonTest/kotlin/me/manga/kira/sources/contracts/SourceBaseUrlTest.kt": "e03fc3b8b1caa21a419c2df05d596764e72f57c10fc2d78cb07f576a88e1b30b",
+    "source-engine/build.gradle.kts": "f134f850e25b2508c9914c04f5f7e1917c546c667467969c01b21c8497a952a4",
+    "source-engine/src/commonMain/kotlin/me/manga/kira/sources/engine/DefaultSourceConfigValidator.kt": "3adf68b8de90c6296ca407c13cc5bbd207911c202a5835f51023a0ea73621e9f",
+    "source-engine/src/commonMain/kotlin/me/manga/kira/sources/engine/DefaultStrategyRegistry.kt": "9b23d28fd7f197313aadd73f0b438ea0950dca00ecb92a6b777afe51e8b04f5a",
+    "source-engine/src/commonMain/kotlin/me/manga/kira/sources/engine/internal/DateStrategies.kt": "f77a0039b69bb9ff1711e6cf018f54a88ea39ae11c4bc89a46c2877c6888e14d",
+    "source-engine/src/commonMain/kotlin/me/manga/kira/sources/engine/internal/Extractor.kt": "03f67ae856a58c00b8d8e8cecc1e5c9f68296542a65e876eeb3866d9d65ab7c9",
+    "source-engine/src/commonMain/kotlin/me/manga/kira/sources/engine/internal/FilterRequestComposer.kt": "fab14186017c29cf251783a126a3ce8c598fe3aa2ee658325b8d963eed8de454",
+    "source-engine/src/commonMain/kotlin/me/manga/kira/sources/engine/internal/JsonEscape.kt": "ad5ab1a695f82881294dadf5df6af6e09b3fb61db815912c97007a9868890121",
+    "source-engine/src/commonMain/kotlin/me/manga/kira/sources/engine/internal/JsonPath.kt": "496d69d18998cb6ae1c9f884950420af4be245b6d3b151435e88c2af9e18dfdd",
+    "source-engine/src/commonMain/kotlin/me/manga/kira/sources/engine/internal/Templates.kt": "9c108931e0a42068fb380dcea441a65a1fa460c12fc3dcf869350cbf7422e937",
+    "source-engine/src/commonMain/kotlin/me/manga/kira/sources/engine/internal/Transforms.kt": "887aeefd7b54746a68ae31790aaa1f2ef0eb78d0ee93b6a2fb2f801f089dfea0",
+    "source-engine/src/commonMain/kotlin/me/manga/kira/sources/engine/internal/UrlEncode.kt": "63cee872944212966257893d9a14ed55c0c940455414c556ca586afd95f9d541",
+    "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/DefaultSourceConfigValidatorFilterTest.kt": "3a54a3532170c7d902835ae2433431d30f55c85c185d8ccf348367ee7de8b43f",
+    "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/DefaultSourceConfigValidatorTest.kt": "143de8d1f784c5b0371776e33e0267d4970d526b76ffda2113d2e437ffbcc45e",
+    "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/GenericSourceClientBlacklistTest.kt": "9813e9e81e82aab67c8a31899e6773702fa68db51e80867780828b82a36bb880",
+    "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/GenericSourceClientChapterPaginationTest.kt": "d7912fd4e69c574c4f35e4fd37860fc57b9bd0505bd870dd213035686311329a",
+    "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/GenericSourceClientFilterRequestTest.kt": "2cfa0952d58e66cc5005a8e5679148b1d9c18e318ceb3c36c61ffcdcfde6bdd3",
+    "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/GenericSourceClientHtmlGoldenTest.kt": "6f191d9dc5685584884e0af6e9340ad6e1a643667b4d65c494addd1507657fc2",
+    "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/GenericSourceClientJsonGoldenTest.kt": "14e73be3db193e02a2092cbfafaf6a4291742fad3df29cfdc2ca2c99fc811784",
+    "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/GenericSourceClientPostJsonFilterRootTest.kt": "681f50bbe2a746c11a95ff66f66955b53791e87a595014efc8d8b1be11c18076",
+    "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/GenericSourceClientScriptJsonTest.kt": "2d3c98879955a57bd7eaec845868e09499d1ce5f485356afe02f555814f88fe5",
+    "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/GenericSourceClientSeparateChaptersTest.kt": "1135996287cc3e232085eb06a4b9a488d36d6e1ebb71389f120828e20d7b2cac",
+    "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/GoldenFixtures.kt": "7305d193aed06c11370d4ca5a8e51061b85b74a810c493b22472dc4936eaf333",
+    "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/internal/FilterRequestComposerTest.kt": "214e357bcb35e016f6e5da431285a3fa2982e4237e2e8685758c8d51e053813a",
+    "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/internal/JsonPathTest.kt": "979190612398e43c7df104efe5e4e948fadbc146e831f032a2655cbf5341ba12",
+    "source-engine/src/commonTest/kotlin/me/manga/kira/sources/engine/internal/TransformsTest.kt": "0a3a2703008b3197d615a4fd3ea08e22d2a33b0166dd1fb8157a526a392db1a4",
+    "source-testkit/build.gradle.kts": "2a7c1aca30b226c7e9481c2489768b9618fcfb19cffc64eb38b4d72c6b1ba9cb",
+    "source-testkit/src/commonMain/kotlin/me/manga/kira/sources/testkit/FixtureTransport.kt": "2af1420ed6c1c6177761d0c3f19fc4cdd0adb61db64bc71e408692853a745bde",
+    "source-testkit/src/commonTest/kotlin/me/manga/kira/sources/testkit/FixtureTransportTest.kt": "26593192732af6ed1c6574fac9f65a619f8c8f1f37b4dd5bc4fffdf95c8cf185"
+  },
+  "actual_patch": {
+    "path": "author-source.diff",
+    "sha256": "28e6f5df04b5514b76b04ad43ce8a667f80cfc9059db506137a9e1888c28baff",
+    "bytes": 84700
+  },
+  "tests_builds_run": false,
+  "workers_started": []
+}

@@ -1,0 +1,98 @@
+# R1 DRAFT ONLY. Primary installs on the existing private remediation branch after review.
+name: Engine5 one-test Darwin validation (private)
+on:
+  push:
+    branches: [remediation/app-29-backend-complaints]
+    paths: [ci/engine5-darwin.request.json]
+permissions:
+  contents: read
+concurrency:
+  group: engine5-private-darwin
+  cancel-in-progress: false
+jobs:
+  darwin:
+    if: github.event.repository.private == true && github.repository == 'kira-manga/kira-admin'
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - name: Check out the exact private carrier, without reusable credentials
+        timeout-minutes: 2
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.sha }}
+          path: control
+          persist-credentials: false
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        timeout-minutes: 2
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Bind owned paths, reviewed archives and actual ARM/Xcode tools
+        id: prepare
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          export ENGINE5_RUN="$RUNNER_TEMP/engine5-darwin-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          printf 'ENGINE5_RUN=%s\n' "$ENGINE5_RUN" >> "$GITHUB_ENV"
+          python3 -B control/ci/engine5-darwin.py prepare
+      - name: Publish only root and simulator variants, then compile/link/run one Darwin test
+        id: validation
+        timeout-minutes: 29
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          v="0.1.0-engine5-darwin-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          init="$GITHUB_WORKSPACE/control/ci/engine5-darwin.init.gradle"
+          allowed=(env -i "PATH=$PATH" "HOME=$HOME" "JAVA_HOME=$JAVA_HOME"
+            "ANDROID_HOME=${ANDROID_HOME:-}" "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
+            "GRADLE_USER_HOME=$ENGINE5_RUN/gradle-home" "KONAN_DATA_DIR=$ENGINE5_RUN/konan"
+            "TMPDIR=$ENGINE5_RUN/tmp/" CI=true LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+            KIRA_SOURCE_CONFIG_BASE_URL= KIRA_SOURCE_CONFIG_PINNED_KEYS= KIRA_APP_VERSION=1.0.5)
+          common=(--no-daemon --no-parallel --max-workers=1 --no-build-cache
+            --no-configuration-cache --console=plain --stacktrace --info
+            -Pkotlin.compiler.execution.strategy=in-process -Pkotlin.native.parallelThreads=1
+            -Porg.gradle.java.installations.auto-download=false -Dorg.gradle.vfs.watch=false
+            "-Dorg.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=768m -Duser.home=$ENGINE5_RUN/home -Djava.io.tmpdir=$ENGINE5_RUN/tmp -Dengine5.darwin.owner=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+            -I "$init" "-Pengine5Version=$v" "-Pengine5Repository=$ENGINE5_RUN/repository"
+            "-Pengine5Reports=$ENGINE5_RUN/reports" "-Pengine5Plist=$ENGINE5_RUN/test-Info.plist")
+          cd "$ENGINE5_RUN/neutral"
+          gtimeout --signal=TERM --kill-after=10s 8m "${allowed[@]}" \
+            DEVELOPER_DIR=/Applications/Xcode_26.0.1.app/Contents/Developer \
+            ./gradlew "${common[@]}" -Pengine5Role=neutral "-PVERSION_NAME=$v" \
+            :source-contract:publishKotlinMultiplatformPublicationToEngine5CandidateRepository \
+            :source-contract:publishIosSimulatorArm64PublicationToEngine5CandidateRepository \
+            :source-engine:publishKotlinMultiplatformPublicationToEngine5CandidateRepository \
+            :source-engine:publishIosSimulatorArm64PublicationToEngine5CandidateRepository \
+            2>&1 | python3 -B "$GITHUB_WORKSPACE/control/ci/engine5-darwin.py" capture "$ENGINE5_RUN/reports/neutral.log"
+          cd "$GITHUB_WORKSPACE"
+          python3 -B control/ci/engine5-darwin.py published
+          python3 -B control/ci/engine5-darwin.py simulator
+          udid=$(python3 -B -c 'import json,os; print(json.load(open(os.environ["ENGINE5_RUN"]+"/simulator.json"))["udid"])')
+          cd "$ENGINE5_RUN/app"
+          gtimeout --signal=TERM --kill-after=10s 18m "${allowed[@]}" \
+            DEVELOPER_DIR=/Applications/Xcode_26.4.1.app/Contents/Developer \
+            ./gradlew "${common[@]}" -Pengine5Role=app "-Pengine5Device=$udid" \
+            :composeApp:iosSimulatorArm64Test \
+            --tests me.manga.kira.sources.runtime.KtorSourceDarwinBoundaryTest.darwin_single_hop_bridge_cancellation_and_managed_closure \
+            --device "$udid" 2>&1 | python3 -B "$GITHUB_WORKSPACE/control/ci/engine5-darwin.py" capture "$ENGINE5_RUN/reports/darwin.log"
+      - name: Require actual candidate link inputs, simulator executable and exactly one passing XML case
+        if: always() && steps.prepare.outcome != 'skipped'
+        timeout-minutes: 1
+        env:
+          ENGINE5_VALIDATION_OUTCOME: ${{ steps.validation.outcome }}
+        run: python3 -B control/ci/engine5-darwin.py collect
+      - name: Stop only owned workers/device and remove only owned scratch
+        if: always() && steps.prepare.outcome != 'skipped'
+        timeout-minutes: 3
+        run: python3 -B control/ci/engine5-darwin.py cleanup
+      - name: Retain private diagnostic receipts only, never source archives or binaries
+        if: always() && steps.prepare.outcome != 'skipped'
+        timeout-minutes: 1
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: engine5-darwin-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 3
+          if-no-files-found: error
+          path: ${{ env.ENGINE5_RUN }}/reports/upload/

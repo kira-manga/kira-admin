@@ -1,0 +1,147 @@
+// R1 DRAFT, only for the two exact task selections in engine5-darwin.yml. No product edit.
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import org.gradle.api.GradleException
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.publish.PublishingExtension
+import java.security.MessageDigest
+
+def opt = gradle.startParameter.projectProperties
+def role = opt['engine5Role']
+def version = opt['engine5Version']
+def require = { ok, message -> if (!ok) throw new GradleException(message) }
+require(role in ['neutral', 'app'], 'Explicit Engine5 role required')
+require(version ==~ /0\.1\.0-engine5-darwin-[0-9]+-[0-9]+/, 'Unique Darwin candidate required')
+['engine5Repository', 'engine5Reports', 'engine5Plist'].each {
+    require(opt[it], "Missing ${it}")
+}
+def repo = new File(opt['engine5Repository']).canonicalFile
+def reports = new File(opt['engine5Reports']).canonicalFile
+def plist = new File(opt['engine5Plist']).canonicalFile
+def group = 'me.manga.kira.source'
+def modules = ['source-contract', 'source-engine']
+def selector = 'me.manga.kira.sources.runtime.KtorSourceDarwinBoundaryTest.darwin_single_hop_bridge_cancellation_and_managed_closure'
+def sha = { File f -> MessageDigest.getInstance('SHA-256').digest(f.bytes).encodeHex().toString() }
+def save = { name, value ->
+    def bytes = (JsonOutput.prettyPrint(JsonOutput.toJson(value)) + '\n').getBytes('UTF-8')
+    if (bytes.length > 1024 * 1024) {
+        new File(reports, name + '.limit.json').text = JsonOutput.toJson(
+            [status: 'FAIL', file: name, omitted: true, limitBytes: 1024 * 1024, observedBytes: bytes.length]) + '\n'
+        throw new GradleException("Oversized required receipt; refuse partial ${name}")
+    }
+    new File(reports, name).bytes = bytes
+}
+def attributes = { a -> a.keySet().sort { it.name }.collectEntries { [(it.name): a.getAttribute(it).toString()] } }
+def expectedTasks = role == 'app' ? [':composeApp:iosSimulatorArm64Test'] : modules.collectMany { m ->
+    ['KotlinMultiplatform', 'IosSimulatorArm64'].collect { v ->
+        ":${m}:publish${v}PublicationToEngine5CandidateRepository".toString()
+    }
+}
+// Gradle may retain task-specific CLI options in the requested argument list.
+def appArguments = expectedTasks + ['--tests', selector, '--device', opt['engine5Device']]
+require(gradle.startParameter.taskNames == expectedTasks ||
+    (role == 'app' && gradle.startParameter.taskNames == appArguments), 'Refusing a different task selection')
+require(!gradle.startParameter.dryRun, 'A dry run is not a Darwin execution')
+
+gradle.settingsEvaluated { settings ->
+    if (role == 'app') {
+        settings.dependencyResolutionManagement.repositories.exclusiveContent {
+            forRepository {
+                settings.dependencyResolutionManagement.repositories.maven {
+                    name = 'Engine5Candidate'; url = repo.toURI()
+                }
+            }
+            filter { includeGroup(group) }
+        }
+    }
+}
+gradle.beforeProject { p ->
+    if (role == 'neutral') {
+        p.pluginManager.withPlugin('maven-publish') {
+            p.extensions.getByType(PublishingExtension).repositories.maven {
+                name = 'Engine5Candidate'; url = repo.toURI()
+            }
+        }
+    } else {
+        p.configurations.configureEach { c ->
+            c.resolutionStrategy.eachDependency { d ->
+                if (d.requested.group == group) {
+                    d.useVersion(version)
+                    d.because('Exact private reviewed Engine5 Darwin candidate')
+                }
+            }
+        }
+    }
+    if (role != 'app' || p.path != ':composeApp') return
+
+    // Name matching avoids importing KGP classes through the init-script classloader.
+    p.tasks.matching { it.name == 'linkDebugTestIosSimulatorArm64' }.configureEach { t ->
+        require(plist.isFile(), 'Missing test-only ATS plist')
+        def configurationName = t.binary.compilation.compileDependencyConfigurationName
+        def nativeTarget = t.binary.target.konanTarget.name
+        t.binary.linkerOpts('-sectcreate', '__TEXT', '__info_plist', plist.absolutePath)
+        t.inputs.file(plist)
+        t.doFirst {
+            def c = p.configurations.getByName(configurationName)
+            def components = c.incoming.resolutionResult.allComponents.findAll {
+                it.id instanceof ModuleComponentIdentifier && it.id.group == group
+            }
+            require(!components.empty && components.every { it.id.version == version }, 'Wrong source component version')
+            def artifacts = c.incoming.artifacts.artifacts.findAll {
+                it.id.componentIdentifier instanceof ModuleComponentIdentifier && it.id.componentIdentifier.group == group
+            }
+            require(artifacts.size() == 2, 'Expected two resolved neutral native artifacts')
+            def linked = t.libraries.files.collect { it.canonicalFile }
+            def receipts = modules.collect { m ->
+                def leaf = m + '-iossimulatorarm64'
+                def published = new File(repo, "me/manga/kira/source/${leaf}/${version}")
+                    .listFiles()?.findAll { it.name.endsWith('.klib') }
+                require(published?.size() == 1, "Missing unique ${leaf} publication")
+                def matches = artifacts.findAll { it.id.componentIdentifier.module in [m, leaf] }
+                require(matches.size() == 1, "Wrong artifact selection for ${m}")
+                def a = matches.first()
+                def attrs = attributes(a.variant.attributes)
+                require(attrs['org.jetbrains.kotlin.platform.type'] == 'native' &&
+                    attrs['org.jetbrains.kotlin.native.target'] == 'ios_simulator_arm64', 'Wrong native variant')
+                require(a.file.isFile() && linked.contains(a.file.canonicalFile) && sha(a.file) == sha(published.first()),
+                    "Actual linker input is not published ${leaf}")
+                [component: a.id.componentIdentifier.displayName, variant: a.variant.displayName,
+                 attributes: attrs, resolvedFile: a.file.absolutePath, linkedFile: a.file.canonicalPath,
+                 publishedFile: published.first().absolutePath, sha256: sha(a.file)]
+            }
+            save('link-inputs.json', [task: t.path, configuration: c.name, attributes: attributes(c.attributes),
+                target: nativeTarget, candidate: version, artifacts: receipts,
+                components: components.collect { component ->
+                    [id: component.id.displayName, variants: component.variants.collect {
+                        [name: it.displayName, attributes: attributes(it.attributes)]
+                    }]
+                }])
+        }
+        t.doLast {
+            File binary = t.outputFile.get()
+            require(binary.isFile() && nativeTarget == 'ios_simulator_arm64', 'Missing actual simulator test executable')
+            save('linked-binary.json', [task: t.path, file: binary.canonicalPath, sha256: sha(binary),
+                target: nativeTarget, plistSha256: sha(plist), linkerOpts: t.linkerOpts])
+        }
+    }
+    p.tasks.matching { it.name == 'iosSimulatorArm64Test' }.configureEach { t ->
+        t.standalone.set(false) // The lane owns boot, shutdown and deletion of exactly one simulator.
+        t.filter.failOnNoMatchingTests = true // KotlinTest defaults this to false.
+        t.ignoreFailures = false
+        t.ignoreRunFailures = false
+        t.reports.junitXml.required.set(true)
+        t.reports.junitXml.outputLocation.set(new File(reports, 'xml'))
+        t.outputs.upToDateWhen { false }
+        t.doFirst {
+            require(t.includePatterns == ([selector] as Set), 'Refusing missing/broader native test selector')
+            require(t.excludePatterns.empty && t.args.empty, 'Refusing hidden native filters/arguments')
+            require(opt['engine5Device'] && t.device.get() == opt['engine5Device'], 'Wrong owned simulator')
+            def linked = new JsonSlurper().parse(new File(reports, 'linked-binary.json'))
+            require(t.executable.canonicalPath == linked.file && sha(t.executable) == linked.sha256,
+                'Test executable differs from linked binary')
+            save('test-invocation.json', [task: t.path, selector: selector, device: t.device.get(),
+                standalone: t.standalone.get(), targetName: t.targetName,
+                executable: t.executable.canonicalPath, sha256: sha(t.executable)])
+        }
+    }
+}
