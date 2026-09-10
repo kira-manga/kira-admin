@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Private SDK-only probe, not the shipping manifest. No application SDKs. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="me.manga.kira.transportprobe"
+    android:versionCode="1"
+    android:versionName="1">
+    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="36" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application
+        android:allowBackup="false"
+        android:debuggable="false"
+        android:hasCode="true"
+        android:label="App8 transport probe"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:testOnly="true" />
+    <instrumentation
+        android:name="me.manga.kira.transportprobe.TransportProbe"
+        android:targetPackage="me.manga.kira.transportprobe"
+        android:functionalTest="true"
+        android:handleProfiling="false" />
+</manifest>

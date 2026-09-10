@@ -1,0 +1,7 @@
+{
+  "purpose": "One read-only App8 PF inventory; no native or firewall-mutation authority",
+  "request": "PRIMARY_AUTHORIZED_SINGLE_READ_ONLY_INVENTORY_20260910",
+  "app8IssueCommitForContextOnly": "cebc952602fb69e03eb654dab30937e2f830a239",
+  "baselineAssessment": "NOT_PERFORMED",
+  "note": "This example does not match the trigger path. Only the primary may create or change ci/app8-pf-read-inventory.request.json. Its bytes are not fetched or interpreted by the no-checkout workflow; the carrier commit and run identity are retained."
+}

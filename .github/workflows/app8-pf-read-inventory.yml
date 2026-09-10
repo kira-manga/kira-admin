@@ -1,0 +1,214 @@
+# PRIVATE SOURCE-ONLY DRAFT. Independent source review required before primary installation/request.
+name: App8 read-only PF inventory (private; not native validation)
+on:
+  push:
+    branches: [remediation/app-29-backend-complaints]
+    paths: [ci/app8-pf-read-inventory.request.json]
+permissions: {}
+concurrency:
+  group: app8-private-pf-read-inventory
+  cancel-in-progress: false
+jobs:
+  read-inventory:
+    if: github.event.repository.private == true && github.repository == 'kira-manga/kira-admin' && github.run_attempt == 1
+    runs-on: macos-26
+    timeout-minutes: 2
+    steps:
+      - name: Observe only fixed local metadata and read-only PF/network views
+        id: inventory
+        timeout-minutes: 1
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          python3 -I -S -B - <<'PY'
+          import hashlib, json, os, re, selectors, signal, subprocess, sys, time
+          from pathlib import Path
+
+          start = time.monotonic()
+          # Reserve three seconds for final receipt writes inside the 60-second step.
+          until = start + 57
+          RAW_LIMIT, INDEX_LIMIT = 192 * 1024, 48 * 1024
+          owner = os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT']
+          if not re.fullmatch(r'[0-9]+-[0-9]+', owner):
+              raise RuntimeError('Invalid run identity; no commands started')
+          out = Path(os.environ['RUNNER_TEMP']).resolve(strict=True) / ('app8-pf-read-inventory-' + owner)
+          out.mkdir(mode=0o700, exist_ok=False)
+          interrupted, retained = [], 0
+          for sig in (signal.SIGTERM, signal.SIGINT):
+              signal.signal(sig, lambda number, _frame: interrupted.append(number) if not interrupted else None)
+          report = {
+              'purpose': 'Read-only host inventory; not policy or native validation',
+              'baselineAssessment': 'NOT_PERFORMED', 'records': [], 'captureComplete': False,
+              'metadata': {key: os.environ.get(key, '')[:200] for key in (
+                  'GITHUB_REPOSITORY', 'GITHUB_REF', 'GITHUB_SHA', 'GITHUB_RUN_ID',
+                  'GITHUB_RUN_ATTEMPT', 'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_ARCH',
+                  'ImageOS', 'ImageVersion')},
+              'python': sys.version[:200], 'budgetSeconds': 60, 'commandWindowSeconds': 57,
+              'toolLimitSeconds': 5, 'rawLimitBytes': RAW_LIMIT, 'indexLimitBytes': INDEX_LIMIT,
+              'artifactLimitBytes': 256 * 1024, 'errors': [],
+          }
+          def save():
+              data = (json.dumps(report, indent=2) + '\n').encode()
+              if len(data) > INDEX_LIMIT:
+                  raise RuntimeError('Receipt budget exceeded; do not present partial JSON as complete')
+              pending = out / '.index.pending'
+              pending.write_bytes(data)
+              pending.replace(out / 'index.json')
+
+          # No inherited credentials/proxies, user man configuration or network-capable pager.
+          env = dict(PATH='/usr/bin:/bin:/usr/sbin:/sbin', HOME='/var/empty', LANG='C',
+                     LC_ALL='C', TERM='dumb', MANPATH='/usr/share/man',
+                     PAGER='/bin/cat', MANPAGER='/bin/cat', MANWIDTH='100')
+          pf = ['/usr/bin/sudo', '-n', '/sbin/pfctl']
+          commands = [
+              ('os-version', ['/usr/bin/sw_vers']),
+              ('architecture', ['/usr/bin/uname', '-m']),
+              ('kernel-release', ['/usr/bin/uname', '-r']),
+              ('pfctl-hash', ['/usr/bin/shasum', '-a', '256', '/sbin/pfctl']),
+              ('pfctl-installed-manual', ['/usr/bin/man', '-P', '/bin/cat', '8', 'pfctl']),
+              ('pf-status-before', pf + ['-s', 'info']),
+              ('pf-references-before', pf + ['-s', 'References']),
+              ('pf-root-rules', pf + ['-s', 'rules']),
+              ('pf-nat', pf + ['-s', 'nat']),
+              ('pf-anchors', pf + ['-s', 'Anchors']),
+              ('pf-states-numeric', pf + ['-s', 'states']),
+              ('pf-interface-skips', pf + ['-v', '-s', 'Interfaces']),
+              ('pf-timeouts', pf + ['-s', 'timeouts']),
+              ('pf-memory', pf + ['-s', 'memory']),
+              ('interfaces-verbose', ['/sbin/ifconfig', '-a', '-v']),
+              ('routes-ipv4-numeric', ['/usr/sbin/netstat', '-rn', '-f', 'inet']),
+              ('routes-ipv6-numeric', ['/usr/sbin/netstat', '-rn', '-f', 'inet6']),
+              ('pf-status-after', pf + ['-s', 'info']),
+              ('pf-references-after', pf + ['-s', 'References']),
+          ]
+          def capture(name, argv):
+              global retained
+              began = time.monotonic()
+              limit = min(began + 5, until)
+              cap = 48 * 1024 if name == 'pfctl-installed-manual' else 16 * 1024
+              row = dict(name=name, argv=argv, pid=None, actualExit=None, leaderReaped=False,
+                         streamsComplete=False, forced=False, reason=None, errors=[],
+                         stdoutObservedAtLeast=0, stderrObservedAtLeast=0,
+                         stdoutRetained=0, stderrRetained=0, outputLimitBytes=cap)
+              report['records'].append(row)
+              save()  # Intent before spawn. Signal handlers do not raise across assignment.
+              child, natural, selector, logs = None, False, selectors.DefaultSelector(), {}
+              try:
+                  for stream in ('stdout', 'stderr'):
+                      logs[stream] = (out / (name + '.' + stream)).open('xb')
+                  child = subprocess.Popen(argv, env=env, stdin=subprocess.DEVNULL,
+                                           stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                           close_fds=True, start_new_session=True)
+                  row['pid'] = child.pid
+                  for stream, pipe in (('stdout', child.stdout), ('stderr', child.stderr)):
+                      os.set_blocking(pipe.fileno(), False)
+                      selector.register(pipe, selectors.EVENT_READ, stream)
+                  while True:
+                      # The fifth second is reserved for owned-session kill/reap on failure.
+                      if interrupted or time.monotonic() >= limit - 1:
+                          row['reason'] = 'interrupted' if interrupted else 'tool-or-inventory-deadline'
+                          break
+                      for key, _ in selector.select(0.02):
+                          stream = key.data
+                          block = os.read(key.fd, 8192)
+                          if not block:
+                              selector.unregister(key.fileobj)
+                              continue
+                          row[stream + 'ObservedAtLeast'] += len(block)
+                          room = min(RAW_LIMIT - retained, cap - row['stdoutRetained'] - row['stderrRetained'])
+                          chunk = block[:max(0, room)]
+                          logs[stream].write(chunk)
+                          row[stream + 'Retained'] += len(chunk)
+                          retained += len(chunk)
+                          if len(chunk) != len(block):
+                              row['reason'] = 'output-cap; only raw prefixes retained'
+                              break
+                      if row['reason']:
+                          break
+                      exited = os.waitid(os.P_PID, child.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+                      if exited is not None and not selector.get_map():
+                          natural = True
+                          row['streamsComplete'] = True
+                          break
+              except BaseException as error:
+                  row['errors'].append(type(error).__name__ + ': ' + str(error)[:300])
+              finally:
+                  if child is not None:
+                      may_wait = natural
+                      if not natural:
+                          try:
+                              # Do not reap/poll before any group signal: the leader pins this PGID.
+                              os.waitid(os.P_PID, child.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+                              may_wait = True
+                              row['forced'] = True
+                              row['signalAttempt'] = dict(pgid=child.pid, signal='SIGKILL', outcome='planned')
+                              try:
+                                  save()
+                              except BaseException as error:
+                                  row['errors'].append('signal-intent receipt: ' + str(error)[:300])
+                              try:
+                                  os.killpg(child.pid, signal.SIGKILL)
+                                  row['signalAttempt']['outcome'] = 'sent'
+                              except ProcessLookupError:
+                                  row['signalAttempt']['outcome'] = 'already-gone'
+                          except BaseException as error:
+                              row['errors'].append('ownership/signal: ' + str(error)[:300])
+                      if may_wait:
+                          try:
+                              row['actualExit'] = child.wait(timeout=max(0.001, limit - time.monotonic()))
+                              row['leaderReaped'] = True
+                          except BaseException as error:
+                              row['errors'].append('reap: ' + str(error)[:300])
+                      child.stdout.close()
+                      child.stderr.close()
+                  selector.close()
+                  for stream, log in logs.items():
+                      log.close()
+                      row[stream + 'Sha256'] = hashlib.sha256((out / (name + '.' + stream)).read_bytes()).hexdigest()
+                  row['elapsedSeconds'] = time.monotonic() - began
+                  save()
+              return child is None or row['leaderReaped']
+
+          save()
+          try:
+              if sys.platform != 'darwin' or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted':
+                  raise RuntimeError('Requires the disposable hosted macOS VM; no fallback')
+              if not all(hasattr(os, key) for key in ('waitid', 'P_PID', 'WEXITED', 'WNOHANG', 'WNOWAIT', 'killpg')):
+                  raise RuntimeError('Installed Python lacks non-reaping ownership APIs; do not install a replacement')
+              if signal.getsignal(signal.SIGCHLD) != signal.SIG_DFL:
+                  raise RuntimeError('Unexpected SIGCHLD reaper; no commands started')
+              for name, argv in commands:
+                  if interrupted or time.monotonic() >= until - 1 or retained >= RAW_LIMIT:
+                      break
+                  if not capture(name, argv):
+                      break  # Do not start another tool after unproven leader reap.
+          except BaseException as error:
+              report['errors'].append(type(error).__name__ + ': ' + str(error)[:300])
+          finally:
+              report['notRun'] = [name for name, _ in commands[len(report['records']):]]
+              report['interruptedBy'] = interrupted
+              report['rawRetainedBytes'] = retained
+              report['elapsedSeconds'] = time.monotonic() - start
+              report['captureComplete'] = not report['notRun'] and not interrupted and not report['errors'] and all(
+                  row['leaderReaped'] and row['streamsComplete'] and not row['forced'] and not row['errors']
+                  for row in report['records'])
+              # No output is parsed into a baseline verdict. ENOENT remains an actual nonzero result.
+              report['allToolsExitZero'] = bool(report['records']) and all(row['actualExit'] == 0 for row in report['records'])
+              save()
+              print('Read-only receipts:', out.name, '; baseline assessment: NOT_PERFORMED')
+          sys.exit(0 if report['captureComplete'] and report['allToolsExitZero'] else 1)
+          PY
+      - name: Retain bounded raw observations, even when a read-only tool failed
+        if: always() && steps.inventory.outcome != 'skipped'
+        timeout-minutes: 1
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: app8-pf-read-inventory-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 3
+          if-no-files-found: error
+          compression-level: 0
+          path: |
+            ${{ runner.temp }}/app8-pf-read-inventory-${{ github.run_id }}-${{ github.run_attempt }}/index.json
+            ${{ runner.temp }}/app8-pf-read-inventory-${{ github.run_id }}-${{ github.run_attempt }}/*.stdout
+            ${{ runner.temp }}/app8-pf-read-inventory-${{ github.run_id }}-${{ github.run_attempt }}/*.stderr

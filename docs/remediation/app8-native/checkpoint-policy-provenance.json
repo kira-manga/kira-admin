@@ -1,0 +1,14 @@
+{
+  "schema": "app8-source-checkpoint-v1",
+  "issueSha": "cebc952602fb69e03eb654dab30937e2f830a239",
+  "historicalSha": "2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c",
+  "shippingPolicyPath": "app/src/main/res/xml/network_security_config.xml",
+  "policySha256": {
+    "allow": "03d8bc818916ef40f4ba440aab50100c170a216acab814957d74fbf41f434b6a",
+    "deny": "dea35ebed76536c24c13f74036f02dc874f944147cb3a49c2ad0550f71e3e0c7"
+  },
+  "shippingBuildInputSha256": "fb1929a19efcac2e9d843bd3f1946f2573ff486747abf514fcf76f5f80b55889",
+  "shippingManifestSha256": "fc86dea1b63549f7df4c0cb289e6be2dd207c1520ed90616b8e251d122da22a9",
+  "probeManifestSha256": "b5f0070646575c99a2f9ef5b46d2550b949c6810459ac7ab7788c29e42baf6b0",
+  "acceptedSourceGuardResultSha256": "c33add8f6fc647a9186e5e06affb433a174077601c4fb04c10ca4ef7bc2841a6"
+}
