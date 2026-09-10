@@ -157,7 +157,7 @@ class Commands:
         return normal_drain(receipt, self.joined)
 
 
-# Fixed Ubuntu merged-/usr bootstrap, not a host-firewall/resolver restoration tool.
+# Fixed Ubuntu24.04 runtime-prefix profile, not a host-firewall/resolver restoration tool.
 # Only private mounts are changed; namespace lifetime is the fence. No networking
 # handle, service socket, host /proc, TAP/veth or shared /dev/shm enters the root.
 BOOTSTRAP = r'''
@@ -165,16 +165,37 @@ set -euo pipefail
 umask 022
 root=$1; sdk=$2; jdk=$3; inputs=$4; work=$5; reports=$6; uid=$7; gid=$8; kvm_gid=$9
 [[ $uid =~ ^[1-9][0-9]*$ && $gid =~ ^[1-9][0-9]*$ && $kvm_gid =~ ^[1-9][0-9]*$ ]]
-[[ $(readlink /bin) == usr/bin && $(readlink /sbin) == usr/sbin && $(readlink /lib) == usr/lib ]]
+fail_layout() { printf 'Unsupported declared runtime layout: %s\n' "$1" >&2; exit 1; }
+[[ -f /etc/os-release ]] || fail_layout '/etc/os-release must be a regular file'
+grep -Fxq 'ID=ubuntu' /etc/os-release || fail_layout '/etc/os-release must declare ID=ubuntu'
+grep -Fxq 'VERSION_ID="24.04"' /etc/os-release || fail_layout '/etc/os-release must declare VERSION_ID="24.04"'
+runtime_prefixes=(/usr/bin /usr/sbin /usr/lib/x86_64-linux-gnu /usr/lib64 /usr/lib/python3.12 /usr/lib/locale)
+for path in /usr /usr/lib "${runtime_prefixes[@]}" /usr/lib/python3.12/encodings /usr/lib/python3.12/lib-dynload; do
+  [[ -d "$path" && ! -L "$path" && $(readlink -e "$path") == "$path" ]] || fail_layout "$path must be a direct directory"
+done
+for pair in /bin:usr/bin /sbin:usr/sbin /lib:usr/lib /lib64:usr/lib64 /usr/bin/python3:python3.12 \
+  /usr/lib64/ld-linux-x86-64.so.2:/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2; do
+  path=${pair%%:*}; target=${pair#*:}
+  [[ -L "$path" && $(readlink "$path") == "$target" ]] || fail_layout "$path must link to $target"
+done
+for path in /usr/bin/python3.12 /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2; do
+  [[ -f "$path" && -x "$path" && ! -L "$path" ]] || fail_layout "$path must be a regular executable"
+done
+[[ -f /usr/lib/python3.12/os.py && ! -L /usr/lib/python3.12/os.py ]] || fail_layout '/usr/lib/python3.12/os.py must be a regular file'
 run() { timeout --signal=TERM --kill-after=1s 10s "$@"; }
 run mount --make-rprivate /
 run mount --bind "$root" "$root"
-for path in usr sdk jdk inputs work reports proc sys dev dev/shm tmp run var var/tmp etc; do
+for path in usr usr/lib sdk jdk inputs work reports proc sys dev dev/shm tmp run var var/tmp etc; do
   mkdir -p "$root/$path"; chown "$uid:$gid" "$root/$path"
 done
 ln -s usr/bin "$root/bin"; ln -s usr/sbin "$root/sbin"; ln -s usr/lib "$root/lib"
-if [[ -L /lib64 ]]; then [[ $(readlink /lib64) == usr/lib64 ]]; ln -s usr/lib64 "$root/lib64"; fi
-for pair in "/usr:usr" "$sdk:sdk" "$jdk:jdk" "$inputs:inputs" "$work:work" "$reports:reports"; do
+ln -s usr/lib64 "$root/lib64"
+for prefix in "${runtime_prefixes[@]}"; do
+  mkdir -p "$root$prefix"
+  run mount --bind "$prefix" "$root$prefix"
+  run mount -o remount,bind,ro,nosuid,nodev "$root$prefix"
+done
+for pair in "$sdk:sdk" "$jdk:jdk" "$inputs:inputs" "$work:work" "$reports:reports"; do
   source=${pair%:*}; target=${pair##*:}; run mount --bind "$source" "$root/$target"
   if [[ $target != work && $target != reports ]]; then run mount -o remount,bind,ro,nosuid,nodev "$root/$target"; fi
 done
@@ -195,6 +216,25 @@ printf 'app8:x:%s:%s::/work/home:/bin/sh\n' "$uid" "$gid" > "$root/etc/passwd"
 printf 'app8:x:%s:\nkvm:x:%s:app8\n' "$gid" "$kvm_gid" > "$root/etc/group"
 run ip link set lo up
 run mount -o remount,bind,ro "$root"
+set -o noclobber
+cat > "$reports/runtime-profile.json" <<'APP8_RUNTIME_PROFILE'
+{
+  "schema": "app8-android-runtime-prefix-v1",
+  "profile": "ubuntu-24.04-x86_64-python3.12",
+  "stage": "bootstrap-before-full-ipc-scan",
+  "usrView": "synthetic",
+  "readOnlyRuntimePrefixes": ["/usr/bin", "/usr/sbin", "/usr/lib/x86_64-linux-gnu", "/usr/lib64", "/usr/lib/python3.12", "/usr/lib/locale"],
+  "recursiveBind": false,
+  "mountFlags": ["ro", "nosuid", "nodev"],
+  "mergedUsrLinks": {"/bin": "usr/bin", "/sbin": "usr/sbin", "/lib": "usr/lib", "/lib64": "usr/lib64"},
+  "python3LinkTarget": "python3.12",
+  "loaderLinkTarget": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+  "layoutValidated": true,
+  "prefixMountsApplied": true,
+  "nativeDependencyClosure": "unproved",
+  "scanPerformance": "unproved"
+}
+APP8_RUNTIME_PROFILE
 exec chroot "$root" /usr/bin/setpriv --reuid="$uid" --regid="$gid" --groups="$gid,$kvm_gid" \
   --bounding-set=-all --inh-caps=-all --ambient-caps=-all --no-new-privs \
   /usr/bin/env -i PATH=/usr/bin:/bin:/usr/sbin:/sbin HOME=/work/home TMPDIR=/tmp LANG=C.UTF-8 \

@@ -14,7 +14,7 @@
   "shippingCompileSdk": 37,
   "shippingManifestSha256": "fc86dea1b63549f7df4c0cb289e6be2dd207c1520ed90616b8e251d122da22a9",
   "acceptedSourceGuardResultSha256": "c33add8f6fc647a9186e5e06affb433a174077601c4fb04c10ca4ef7bc2841a6",
-  "orchestratorSha256": "43dddfc568e88ce8048c2ee1d0cf46c2558035043846eda7af0c3814b98e5b5b",
+  "orchestratorSha256": "645b78bc783df49ea36ca8d4a7a52f134a9c88087b0d205b91f108ee388b381c",
   "checkpointProvenanceSha256": "116dcc3211fcf240e2c1e83869b5c24e1cd1a6c1c48b1355cb7a5b0f208c79f1",
   "toolchain": {
     "javaHomeEnvironment": "JAVA_HOME_17_X64",
