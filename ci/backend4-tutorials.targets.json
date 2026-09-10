@@ -1,14 +1,17 @@
 {
-  "backend_sha": "a4601cf2ba9298e911c2dc696dce3f6edbb84ed9",
+  "backend_sha": "d287a86f2dc65f095045f40610d9be184ffd33ef",
   "classes": {
-    "me.manga.kira.backend.tutorial.TutorialLifecycleIT": 8
+    "me.manga.kira.backend.tutorial.TutorialSlugBoundaryIT": 4,
+    "me.manga.kira.backend.tutorial.TutorialValidatorTest": 3
   },
   "source_hashes": {
-    "docs/TUTORIALS.md": "757fc814430b18a2d74c3d8c8bab64012b2af99b8dd919c6ecb7da35ad3a010c",
-    "src/main/kotlin/me/manga/kira/backend/tutorial/application/TutorialService.kt": "4552b4d21a28f8e873c925ca8dd74a9e3435c64ba6fe5d255bc33664dd3bd802",
-    "src/main/kotlin/me/manga/kira/backend/tutorial/application/TutorialSeed.kt": "26129593df7abd14c1586c4573a0b3e9b6436cb1f1f9273a7538cd0df709b23d",
-    "src/test/kotlin/me/manga/kira/backend/tutorial/TutorialLifecycleIT.kt": "91155aacf66bedcf9494c354cda47803540d3b8dc1ee73790829aee1c2a83b33",
-    "src/test/kotlin/me/manga/kira/backend/tutorial/TutorialCategoryRestartIT.kt": "2dd4bcecc1f2083461b5a651b7b4286729dca413d32a9b7efe51f06d30afb453"
+    "src/main/kotlin/me/manga/kira/backend/tutorial/domain/TutorialValidator.kt": "f7c05c068f5638eea854455eb004b97194ce25eff8e29217410e74a2137dbeb8",
+    "src/main/kotlin/me/manga/kira/backend/tutorial/application/TutorialService.kt": "1332aae0d631050ea4960792c546a00dabb2b003168a7c153c03c32cc369e940",
+    "src/main/kotlin/me/manga/kira/backend/tutorial/api/TutorialDtos.kt": "fc206f267c457585bf50218233dbbf46bd31560b38b2e692c88ab2b5487b3f09",
+    "src/main/kotlin/me/manga/kira/backend/tutorial/api/AdminTutorialController.kt": "b388a636327cb0e5f3e31fa78e949df39ab3bc8fb178771eee191d7f8ddc0539",
+    "src/test/kotlin/me/manga/kira/backend/tutorial/TutorialValidatorTest.kt": "7c5ca3068511b2d1f5501655b50a6ca2ba982867e2253dd891fc6232580e2e42",
+    "src/test/kotlin/me/manga/kira/backend/tutorial/TutorialSlugBoundaryIT.kt": "eecdf019238e1af297fa5ab1a3abcb2202449f150f24b6e6ace69d0e515e0b04",
+    "docs/TUTORIALS.md": "6ebc200da9453ce875d2ecead62dcd3583b3d0ecc25bf18bb35df7aa3fee7dcb"
   },
-  "status": "SOURCE_REVIEWED; corrected Lifecycle8 validation pending; reuse unchanged run34392910971 restart1 PASS; not integrated"
+  "status": "Backend6 source independently reviewed e7944775; focused HTTP4 + validator3/compile/statics pending, not integrated. Reuse unchanged Backend4 lifecycle/restart."
 }

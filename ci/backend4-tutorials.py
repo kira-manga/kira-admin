@@ -59,7 +59,7 @@ result, started, before, cleanup_failed, project_caches = 1, False, None, False,
 try:
     OWNER = OwnedChildren()  # Refuse unavailable subreaping before the first command.
     target = TARGETS['backend_sha']
-    require(1 <= len(CLASSES) <= 3 and all(re.fullmatch(r'me\.manga\.kira\.backend\.tutorial\.[A-Za-z]+IT', name) and type(count) is int and 1 <= count <= 128 for name, count in CLASSES.items()), 'Invalid focused tutorial class/count binding')
+    require(1 <= len(CLASSES) <= 3 and all(re.fullmatch(r'me\.manga\.kira\.backend\.tutorial\.(?:[A-Za-z]+IT|TutorialValidatorTest)', name) and type(count) is int and 1 <= count <= 128 for name, count in CLASSES.items()), 'Invalid focused tutorial class/count binding')
     require(bool(TARGETS['source_hashes']), 'Missing reviewed source hashes')
     for relative, expected in TARGETS['source_hashes'].items():
         path = PurePosixPath(relative)
