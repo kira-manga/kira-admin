@@ -35,6 +35,7 @@ PF_HASH = '675449d18fdca83c4e892b719215832092f8362d193fe9c72cd230918b5d150b'
 PF_RULES = 'set skip on lo0\nblock drop quick all\n'
 PF = ['/usr/bin/sudo', '-n', '/sbin/pfctl']
 PS = ['/bin/ps', '-axww', '-o', 'pid=,uid=,ppid=,pgid=,stat=,comm=,args=']
+GROUP_PS = ['/bin/ps', '-axww', '-o', 'pid=,uid=,ppid=,pgid=,stat=']
 PACKAGE, EXECUTABLE = 'me.manga.kira.transportprobe', 'App8TransportProbe'
 HOSTS = ('raijinscan.co', 'app8-probe.raijinscan.co')
 OLD_ATS = {'NSExceptionDomains': {'raijinscan.co': {
@@ -91,7 +92,7 @@ def save(path, value, limit=131072):
 
 
 def deadline_capabilities():
-    require(all(hasattr(os, name) for name in ('waitid', 'P_PID', 'WEXITED', 'WNOHANG', 'WNOWAIT', 'CLD_EXITED', 'killpg')),
+    require(all(hasattr(os, name) for name in ('waitid', 'P_PID', 'WEXITED', 'WNOHANG', 'WNOWAIT', 'CLD_EXITED', 'CLD_KILLED', 'CLD_DUMPED', 'killpg')),
             'Installed Python lacks Darwin non-reaping ownership APIs; no installation/fallback')
     require(signal.getsignal(signal.SIGCHLD) == signal.SIG_DFL, 'Automatic child reaping would lose group ownership')
 
@@ -99,13 +100,14 @@ def deadline_capabilities():
 class Commands:
     """Finite local argv recipe: unreaped leaders pin groups through all signals.
 
-    The fixed /bin/ps census is the same trusted leaf-tool exception as the
-    Darwin reference. Its raw whole-host argv stays in private scratch, never
-    in uploaded logs; only already-owned identities are retained.
+    Only the two exact ps projections are trusted leaves. All-UID observations
+    are local to one barrier; whole-host argv remains private scratch.
     """
     def __init__(self, run, env, end):
         self.run, self.reports, self.env, self.end = run, run / 'reports', env, end
-        self.tasks, self.audit_failed = [], False
+        self.tasks, self.audit_failed, self.observer = [], False, None
+        self.epoch, self.progress, self.failed_observer_progress = 0, 0, None
+        self.owner = {'pid': os.getpid(), 'realUid': os.getuid(), 'effectiveUid': os.geteuid()}
 
     def checkpoint(self):
         try:
@@ -123,85 +125,196 @@ class Commands:
         limit = min(self.end, time.monotonic() + seconds, self.end if end is None else end)
         require((cleaning or not CANCELLED) and time.monotonic() < limit, 'Cancelled/expired before child launch')
         require(cleaning or self.within_cap(), 'Output cap exceeded before child launch')
-        leaf = argv == PS
+        leaf = argv in (PS, GROUP_PS)
+        require(not leaf or self.observer is None or self.observer['process'] is None
+                or self.observer['receipt']['leaderReaped'], 'Prior observer is still owned/unreaped')
         log = (self.run / 'work' if leaf else self.reports) / f'{len(self.tasks) + 1:03d}-{label}.log'
         receipt = {'argv': argv, 'label': label, 'pid': None, 'deadline': limit,
                    'started': time.monotonic(), 'actualExit': None, 'leaderReaped': False,
                    'groupQuiet': False, 'forced': False, 'timedOut': False, 'ownershipLost': False,
-                   'signalAttempts': [], 'errors': [], 'normalJoin': False,
+                   'signalAttempts': [], 'errors': [], 'normalJoin': False, 'owner': self.owner,
                    'output': 'private census; not retained' if leaf else log.name}
-        task = {'process': None, 'log': log, 'receipt': receipt, 'leaf': leaf, 'signalingClosed': False}
+        task = {'process': None, 'log': log, 'receipt': receipt, 'leaf': leaf, 'signalingClosed': False, 'identity': None}
+        self.epoch += 1  # Every launch intent invalidates older observations, including failed launches.
         self.tasks.append(task)
-        self.checkpoint()  # Intent before spawn; handlers cannot interrupt assignment.
-        with log.open('xb') as output:
-            receipt['launched'] = time.monotonic()
-            require((cleaning or not CANCELLED) and receipt['launched'] < limit
-                    and (launch_by is None or receipt['launched'] <= launch_by), 'Launch/window deadline expired')
-            task['process'] = subprocess.Popen(argv, env=dict(self.env, **(extra or {})), cwd=self.env['HOME'],
-                                               stdin=subprocess.DEVNULL, stdout=output, stderr=subprocess.STDOUT,
-                                               close_fds=True, start_new_session=True)
-        receipt['pid'] = task['process'].pid
-        receipt['spawnReturned'] = time.monotonic()
-        self.checkpoint()
-        require((cleaning or not CANCELLED) and receipt['spawnReturned'] < limit
-                and (launch_by is None or receipt['spawnReturned'] <= launch_by), 'Child creation missed its launch cap')
-        return task
+        if leaf:
+            self.observer = task  # Register even a child whose launch/checkpoint subsequently fails.
+        try:
+            self.checkpoint()
+            with log.open('xb') as output:
+                receipt['launched'] = time.monotonic()
+                require((cleaning or not CANCELLED) and receipt['launched'] < limit
+                        and (launch_by is None or receipt['launched'] <= launch_by), 'Launch/window deadline expired')
+                task['process'] = subprocess.Popen(argv, env=dict(self.env, **(extra or {})), cwd=self.env['HOME'],
+                                                   stdin=subprocess.DEVNULL, stdout=output, stderr=subprocess.STDOUT,
+                                                   close_fds=True, start_new_session=True)
+                receipt['pid'] = task['process'].pid
+                task['identity'] = {'pid': receipt['pid'], 'ppid': self.owner['pid'], 'pgid': receipt['pid']}
+                receipt['identity'] = task['identity']
+                if not leaf:
+                    self.progress += 1
+            receipt['spawnReturned'] = time.monotonic()
+            self.checkpoint()
+            require((cleaning or not CANCELLED) and receipt['spawnReturned'] < limit
+                    and (launch_by is None or receipt['spawnReturned'] <= launch_by), 'Child creation missed its launch cap')
+            return task
+        except Exception as error:
+            self.failed(task, error)
+            raise
+
+    def failed(self, task, error):
+        receipt = task['receipt']
+        receipt['normalJoin'] = False
+        receipt['timedOut'] |= time.monotonic() >= min(receipt['deadline'], self.end)
+        receipt['errors'].append(str(error)[:500])
 
     def peek(self, task):
-        require(not task['receipt']['leaderReaped'], 'Cannot inspect/re-signal a reaped leader')
+        receipt, process = task['receipt'], task['process']
+        require(process is not None and not receipt['leaderReaped'] and not receipt['ownershipLost'],
+                'Missing/reaped/lost leader; refuse recycled-PGID signaling')
         try:
-            return os.waitid(os.P_PID, task['process'].pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+            info = os.waitid(os.P_PID, process.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
         except ChildProcessError:
-            task['receipt']['ownershipLost'] = True
+            receipt['ownershipLost'] = True
             raise RuntimeError('Leader unexpectedly reaped; refuse recycled-PGID signaling')
+        if info is not None:
+            if (task['identity'] != {'pid': process.pid, 'ppid': self.owner['pid'], 'pgid': process.pid}
+                    or receipt['pid'] != process.pid or info.si_pid != process.pid
+                    or info.si_code not in (os.CLD_EXITED, os.CLD_KILLED, os.CLD_DUMPED)):
+                receipt['ownershipLost'] = True
+                raise RuntimeError('Non-reaping exit identity/status mismatch')
+            if not task['leaf'] and 'lastExitObservation' not in receipt:
+                self.progress += 1  # Real target exit, never observer creation/reaping, permits a retry.
+            receipt['lastExitObservation'] = {'pid': info.si_pid, 'uid': info.si_uid, 'code': info.si_code,
+                                              'status': info.si_status, 'at': time.monotonic()}
+        return info
+
+    def await_exit(self, task, cleaning=False, limit=None):
+        limit = min(self.end, task['receipt']['deadline'] if limit is None else limit)
+        while time.monotonic() < limit and (cleaning or not CANCELLED):
+            require(cleaning or self.within_cap(), 'Diagnostic output cap exceeded')
+            info = self.peek(task)
+            if info is not None:
+                return info
+            time.sleep(0.025)
+        task['receipt']['timedOut'] |= time.monotonic() >= limit
+        raise RuntimeError('Child cancelled or exceeded its cap: ' + task['receipt']['label'])
+
+    def reap(self, task, info, end=None):
+        receipt, process = task['receipt'], task['process']
+        require(info is not None and info.si_pid == process.pid and not receipt['ownershipLost']
+                and not receipt['leaderReaped'], 'No matching owned exit to settle')
+        require(task['leaf'] or (receipt['groupQuiet'] and receipt.get('groupObservationEpoch') == self.epoch),
+                'Non-leaf exit lacks fresh group proof')
+        limit = min(self.end, self.end if end is None else end)
+        require(time.monotonic() < limit, 'No bounded reap window; retain fence')
+        task['signalingClosed'] = True
+        receipt['actualExit'] = process.wait(timeout=min(2, max(0, limit - time.monotonic())))
+        receipt['leaderReaped'], receipt['groupQuiet'] = True, True
+        receipt['ended'] = time.monotonic()
+        # Lifetime settlement alone never changes normalJoin, prior failures or timeouts.
+
+    def output(self, task, cleaning=False):
+        receipt = task['receipt']
+        require(receipt['leaderReaped'] and receipt['groupQuiet'] and receipt['actualExit'] == 0
+                and receipt['ended'] < min(receipt['deadline'], self.end) and (cleaning or not CANCELLED)
+                and not receipt['timedOut'] and not receipt['forced'] and not receipt['errors'],
+                'Child failed, cancelled or exceeded its cap: ' + receipt['label'])
+        require(cleaning or self.within_cap(), 'Diagnostic output cap exceeded at child exit')
+        require(task['log'].stat().st_size <= 1048576, 'Oversized tool output')
+        raw = task['log'].read_text(errors='strict' if task['leaf'] else 'replace')
+        receipt['normalJoin'] = True
+        return raw
+
+    def fresh(self, observation):
+        require(observation is not None and observation['owner'] is self and observation['epoch'] == self.epoch
+                and observation['observer']['receipt']['normalJoin'] and not self.audit_failed,
+                'Missing/stale/failed process observation')
+
+    def observe(self, cleaning=False, full=False, end=None):
+        require(self.failed_observer_progress != self.progress, 'Observer failed without relevant target progress')
+        before = len(self.tasks)
+        self.failed_observer_progress = self.progress  # Clear only after a wholly successful observer/receipt.
+        task = None
+        try:
+            task = self.start(PS if full else GROUP_PS, 'owned-census' if full else 'owned-groups',
+                              seconds=1, end=end, cleaning=cleaning)
+            self.reap(task, self.await_exit(task, cleaning), end=task['receipt']['deadline'])
+            raw = self.output(task, cleaning)
+            require(raw.endswith('\n') and raw.strip(), 'Empty/truncated owned-process census')
+            rows, seen = [], set()
+            for line in raw.splitlines():
+                fields = line.split(None, 6) if full else line.split()
+                require((len(fields) in (6, 7) if full else len(fields) == 5)
+                        and all(re.fullmatch(r'[0-9]+', value) for value in fields[:4])
+                        and re.fullmatch(r'[IRSTUZ][<AELNOSTVWXs+>]*', fields[4]), 'Malformed owned-process census')
+                row = dict(zip(('pid', 'uid', 'ppid', 'pgid'), map(int, fields[:4])), state=fields[4])
+                require(row['pid'] not in seen, 'Duplicate process census identity')
+                seen.add(row['pid'])
+                if full:
+                    row.update(executable=Path(fields[5]).name,
+                               command=fields[5] + ' ' + (fields[6] if len(fields) == 7 else ''))
+                rows.append(row)
+            require(len(rows) <= 8192, 'Oversized process census')
+            require(any(all(row[key] == value for key, value in task['identity'].items()) for row in rows),
+                    'Missing/mismatched observer identity in census')
+            require(time.monotonic() < task['receipt']['deadline'] and self.within_cap(),
+                    'Late/oversized process observation')
+            task['receipt']['outputBytesAtLastRead'] = task['log'].stat().st_size
+            task['log'].unlink()
+            self.checkpoint()
+            require(time.monotonic() < task['receipt']['deadline'], 'Observer receipt exceeded its cap')
+        except Exception as error:
+            self.failed_observer_progress = self.progress
+            if len(self.tasks) > before:
+                task = self.tasks[before]
+                self.failed(task, error)
+                if task['log'].exists():
+                    task['receipt']['outputBytesAtLastRead'] = task['log'].stat().st_size
+                    if task['receipt']['leaderReaped']:
+                        task['log'].unlink()
+                try:
+                    self.checkpoint()
+                except Exception:
+                    pass
+            raise
+        self.failed_observer_progress = None
+        return {'owner': self, 'epoch': self.epoch, 'rows': rows, 'full': full, 'observer': task, 'drained': False}
 
     def census(self, cleaning=False):
-        task = self.start(PS, 'owned-census', seconds=1, cleaning=cleaning)
-        raw = self.wait(task, cleaning=cleaning)
-        task['log'].unlink()  # This fixed leaf was reaped; no whole-host argv is an artifact.
-        result = []
-        for line in raw.splitlines():
-            fields = line.split(None, 6)
-            require(len(fields) >= 6 and all(v.isdigit() for v in fields[:4]), 'Malformed owned-process census')
-            result.append({'pid': int(fields[0]), 'uid': int(fields[1]), 'ppid': int(fields[2]),
-                           'pgid': int(fields[3]), 'state': fields[4], 'executable': Path(fields[5]).name,
-                           'command': fields[5] + ' ' + (fields[6] if len(fields) == 7 else '')})
-        require(len(result) <= 8192, 'Oversized process census')
-        return result
+        return self.observe(cleaning=cleaning, full=True)['rows']
 
-    def group_quiet(self, task, cleaning=False):
-        if task['leaf']:
-            return True  # Fixed trusted ps is a leaf; no recursive census supervisor.
-        rows = [row for row in self.census(cleaning) if row['pgid'] == task['process'].pid]
-        task['receipt']['lastGroup'] = [{k: v for k, v in row.items() if k != 'command'} for row in rows[:32]]
+    def group_quiet(self, task, observation):
+        receipt = task['receipt']
+        receipt['groupQuiet'] = False  # A failed fresh barrier cannot leave an old true value.
+        self.fresh(observation)
+        require(not receipt['leaderReaped'] and not receipt['ownershipLost'] and task['identity'] is not None,
+                'No pinned group identity')
+        rows = [row for row in observation['rows'] if row['pgid'] == task['identity']['pgid']]
+        receipt['lastGroup'] = [{key: row[key] for key in ('pid', 'uid', 'ppid', 'pgid', 'state')} for row in rows[:32]]
+        receipt['groupObserverPid'] = observation['observer']['receipt']['pid']
         require(len(rows) <= 32, 'Unexpectedly large owned tool group')
-        return not any(not row['state'].startswith('Z') for row in rows)
+        if not any(all(row[key] == value for key, value in task['identity'].items()) for row in rows):
+            receipt['ownershipLost'] = True
+            raise RuntimeError('Pinned leader omitted/mismatched in all-UID group observation')
+        receipt['groupObservationEpoch'] = self.epoch
+        receipt['groupQuiet'] = all(row['state'].startswith('Z') for row in rows)
+        return receipt['groupQuiet']
 
     def wait(self, task, cleaning=False):
-        receipt, process = task['receipt'], task['process']
-        require(process is not None and not receipt['leaderReaped'], 'Missing/already joined child')
-        limit = min(receipt['deadline'], self.end)
+        receipt = task['receipt']
         try:
+            info = self.await_exit(task, cleaning)
+            limit = min(receipt['deadline'], self.end)
             while time.monotonic() < limit and (cleaning or not CANCELLED):
-                require(cleaning or self.within_cap(), 'Diagnostic output cap exceeded')
-                info = self.peek(task)
-                if info is not None and self.group_quiet(task, cleaning):
-                    receipt['groupQuiet'] = True
-                    task['signalingClosed'] = True
-                    receipt['actualExit'] = process.wait(timeout=min(2, max(0, limit - time.monotonic())))
-                    receipt['leaderReaped'] = True
-                    receipt['ended'] = time.monotonic()
-                    require(receipt['actualExit'] == 0 and receipt['ended'] < limit and (cleaning or not CANCELLED),
-                            'Child failed, cancelled or exceeded its cap: ' + receipt['label'])
-                    require(cleaning or self.within_cap(), 'Diagnostic output cap exceeded at child exit')
-                    receipt['normalJoin'] = True
-                    require(task['log'].stat().st_size <= 1048576, 'Oversized tool output')
-                    return task['log'].read_text(errors='replace')
+                if task['leaf'] or self.group_quiet(task, self.observe(cleaning=cleaning, end=limit)):
+                    self.reap(task, info, end=limit)
+                    return self.output(task, cleaning)
                 time.sleep(0.025)
-            receipt['timedOut'] = time.monotonic() >= limit
-            raise RuntimeError('Child cancelled or exceeded its cap: ' + receipt['label'])
+            receipt['timedOut'] |= time.monotonic() >= limit
+            raise RuntimeError('Group cancelled or exceeded its cap: ' + receipt['label'])
         except Exception as error:
-            receipt['errors'].append(str(error)[:500])
+            self.failed(task, error)
             raise
         finally:
             if task['log'].exists():
@@ -211,52 +324,110 @@ class Commands:
     def call(self, argv, label, seconds=30, end=None, extra=None, cleaning=False):
         return self.wait(self.start(argv, label, seconds, end, extra, cleaning), cleaning)
 
-    def force(self, task):
+    def force(self, task, observation=None):
         receipt, process = task['receipt'], task['process']
         if process is None or receipt['leaderReaped']:
             return
-        require(not task['signalingClosed'] and not receipt['ownershipLost'], 'No safe owned group signal remains')
-        self.peek(task)  # WNOWAIT: even an exit-0 leader pins the PGID until signaling closes.
-        require(time.monotonic() + 12 < self.end, 'No bounded TERM/KILL/reap window; retain fence')
-        receipt['forced'] = True
-        receipt['signalAttempts'] = [{'signal': sig.name, 'outcome': 'planned'} for sig in (signal.SIGTERM, signal.SIGKILL)]
         try:
-            self.checkpoint()
-        except Exception:
-            pass  # A failed receipt cannot abandon the already-owned group.
-        try:
-            for index, sig in enumerate((signal.SIGTERM, signal.SIGKILL)):
-                try:
-                    os.killpg(process.pid, sig)
-                    receipt['signalAttempts'][index]['outcome'] = 'sent'
-                except ProcessLookupError:
-                    receipt['signalAttempts'][index]['outcome'] = 'alreadyGone'
-                except OSError as error:
-                    receipt['signalAttempts'][index]['outcome'] = str(error)[:500]
-                    receipt['errors'].append('Group signal failed')
-                if index == 0:
-                    time.sleep(10)  # Existing fixed Darwin grace; no census/reap between TERM and KILL.
+            receipt['timedOut'] |= time.monotonic() >= receipt['deadline']
+            info = self.peek(task)
+            if info is not None and (task['leaf'] or (observation is not None and self.group_quiet(task, observation))):
+                self.reap(task, info)  # No signals, observer or 12s reservation for an already-resolved leaf/group.
+                return
+            require(not task['signalingClosed'] and not receipt['ownershipLost'], 'No safe owned group signal remains')
+            require(time.monotonic() + 12 < self.end, 'No bounded TERM/KILL/reap window; retain fence')
+            receipt['forced'] = True
+            receipt['signalAttempts'] = [{'signal': sig.name, 'outcome': 'planned'} for sig in (signal.SIGTERM, signal.SIGKILL)]
+            try:
+                self.checkpoint()
+            except Exception:
+                pass  # Failed receipts never abandon an already-owned group.
+            try:
+                for index, sig in enumerate((signal.SIGTERM, signal.SIGKILL)):
+                    self.peek(task)  # Retain/match the unreaped child through every permitted signal.
+                    self.epoch += 1
+                    receipt['groupQuiet'] = False
+                    try:
+                        os.killpg(process.pid, sig)
+                        receipt['signalAttempts'][index]['outcome'] = 'sent'
+                        if not task['leaf']:
+                            self.progress += 1
+                    except ProcessLookupError:
+                        receipt['signalAttempts'][index]['outcome'] = 'alreadyGone'
+                    except OSError as error:
+                        receipt['signalAttempts'][index]['outcome'] = str(error)[:500]
+                        receipt['errors'].append('Group signal failed')
+                    if index == 0:
+                        time.sleep(10)  # Existing fixed grace, only for unresolved live/unknown work.
+            finally:
+                task['signalingClosed'] = True
+            if task['leaf']:
+                end = min(self.end, time.monotonic() + 2)
+                self.reap(task, self.await_exit(task, cleaning=True, limit=end), end=end)
+            # Non-leaves remain pinned: drain obtains one shared post-signal observation before reaping.
         finally:
-            task['signalingClosed'] = True
-        try:
-            receipt['groupQuiet'] = self.group_quiet(task, cleaning=True)
-        finally:
-            receipt['actualExit'] = process.wait(timeout=2)
-            receipt['leaderReaped'] = True
             self.checkpoint()
 
-    def drain(self):
-        for task in list(self.tasks):
-            if task['process'] is None or task['receipt']['leaderReaped']:
+    def retire_observer(self):
+        task = self.observer
+        if task is not None and task['process'] is not None and not task['receipt']['leaderReaped']:
+            try:
+                self.force(task)
+            except Exception as error:
+                self.failed(task, error)
+
+    def settle_groups(self, pending, observation):
+        for task in pending:
+            if task['receipt']['leaderReaped']:
                 continue
             try:
-                # Fixtures keep their original 30s bound and may complete naturally during cleanup.
-                self.wait(task, cleaning=True)
-            except Exception:
+                info = self.peek(task)
+                quiet = self.group_quiet(task, observation)
+                if info is not None and quiet:
+                    self.reap(task, info)
+                    if not task['receipt']['forced']:
+                        self.output(task, cleaning=True)  # Preserves any earlier failure, even after lifetime settlement.
+            except Exception as error:
+                self.failed(task, error)
+
+    def drain(self, observation=None):
+        if observation is not None:
+            self.fresh(observation)
+            require(not observation['drained'], 'Process observation already consumed by another drain barrier')
+            observation['drained'] = True
+        self.retire_observer()  # No observer creation here, and no recursive wait/census cleanup.
+        pending = [task for task in self.tasks if not task['leaf'] and task['process'] is not None
+                   and not task['receipt']['leaderReaped']]
+        for task in pending:
+            if not task['receipt']['errors'] and not task['receipt']['forced']:
                 try:
-                    self.force(task)
+                    self.await_exit(task, cleaning=True)  # Fixtures retain their original natural 30s bound.
                 except Exception as error:
-                    task['receipt']['errors'].append('cleanup: ' + str(error)[:500])
+                    self.failed(task, error)
+        if pending:
+            try:
+                if observation is None:
+                    observation = self.observe(cleaning=True)
+                self.settle_groups(pending, observation)
+            except Exception as error:
+                for task in pending:
+                    self.failed(task, error)
+            self.retire_observer()
+            before_signals = self.epoch
+            for task in pending:
+                if not task['receipt']['leaderReaped'] and not task['signalingClosed']:
+                    try:
+                        self.force(task)
+                    except Exception as error:
+                        self.failed(task, error)
+            if self.epoch != before_signals:
+                try:
+                    self.settle_groups(pending, self.observe(cleaning=True))
+                except Exception as error:
+                    for task in pending:
+                        if not task['receipt']['leaderReaped']:
+                            self.failed(task, error)
+                self.retire_observer()  # Settle a failed final observer, but never retry it in a loop.
         self.checkpoint()
         return all(task['process'] is None or (task['receipt']['leaderReaped'] and task['receipt']['groupQuiet']
                    and not task['receipt']['ownershipLost']) for task in self.tasks)
@@ -546,9 +717,13 @@ def app_inventory(commands, udid, label, cleaning=False):
     return value
 
 
-def owned_workers(commands, state, cleaning=False):
+def owned_workers(commands, state, cleaning=False, observation=None):
+    if observation is None:
+        observation = commands.observe(cleaning=cleaning, full=True)
+    commands.fresh(observation)
+    require(observation['full'], 'Escaped-worker proof requires the full all-UID inventory')
     rows = []
-    for row in commands.census(cleaning):
+    for row in observation['rows']:
         if row['pid'] == os.getpid() or row['state'].startswith('Z'):
             continue
         native = row['executable'] == EXECUTABLE
@@ -560,6 +735,27 @@ def owned_workers(commands, state, cleaning=False):
             rows.append({key: value for key, value in row.items() if key != 'command'})
     require(len(rows) <= 32, 'Unexpectedly large owned-worker census')
     return rows
+
+
+def absence_barrier(commands, state, cleanup, fixtures):
+    # Clear before any fresh work; exceptions must not preserve cached release flags.
+    keys = ('nativeAbsent', 'fixturesAbsent', 'commandsAbsent', 'workersAbsent', 'receiptSaved')
+    cleanup.update(dict.fromkeys(keys, False))
+    commands.retire_observer()  # Settle an owned leaf before a new observation can be refused.
+    observation = commands.observe(cleaning=True, full=True)
+    workers = owned_workers(commands, state, cleaning=True, observation=observation)
+    commands_absent = commands.drain(observation)
+    commands.fresh(observation)  # A drain launch/signal invalidates the preceding escaped-worker view.
+    cleanup.update(workers=workers, nativeAbsent=not any(row['executable'] == EXECUTABLE for row in workers),
+                   workersAbsent=not workers, commandsAbsent=commands_absent,
+                   fixturesAbsent=all(task['receipt']['leaderReaped'] and task['receipt']['groupQuiet']
+                                      and not task['receipt']['ownershipLost'] for task in fixtures),
+                   receiptSaved=not commands.audit_failed)
+    try:
+        save(commands.reports / 'cleanup.json', cleanup)
+    except Exception:
+        cleanup['receiptSaved'] = False
+        raise
 
 
 def accept_phase(native, ready, receipt, phase, nonce, fixture_pid, started, ended):
@@ -801,15 +997,7 @@ def main():
         except Exception as error:
             cleanup['errors'].append('owned simulator/native cleanup: ' + str(error))
         try:
-            workers = owned_workers(commands, state, cleaning=True)
-            cleanup['workers'] = workers
-            cleanup['nativeAbsent'] = not any(row['executable'] == EXECUTABLE for row in workers)
-            cleanup['workersAbsent'] = not workers
-            cleanup['commandsAbsent'] = commands.drain()
-            cleanup['fixturesAbsent'] = all(task['receipt']['leaderReaped'] and task['receipt']['groupQuiet']
-                                           and not task['receipt']['ownershipLost'] for task in fixtures)
-            cleanup['receiptSaved'] = not commands.audit_failed
-            save(reports / 'cleanup.json', cleanup)
+            absence_barrier(commands, state, cleanup, fixtures)
         except Exception as error:
             cleanup['receiptSaved'] = False
             cleanup['errors'].append('absence proof: ' + str(error))
@@ -817,8 +1005,11 @@ def main():
         try:
             token_record = read_json(run / 'pf-owned-token.json') if firewall['tokenPersisted'] else None
             if may_release(token_record, token, firewall['ownershipVerified'], cleanup) and not commands.audit_failed:
+                cleanup['commandsAbsent'], cleanup['receiptSaved'] = False, False
                 verify_owned_pf(commands, 'pf-before-owned-release', token, firewall, cleaning=True)
-                require(commands.drain() and not commands.audit_failed, 'Final local command absence/receipt failed; retain fence')
+                absence_barrier(commands, state, cleanup, fixtures)
+                require(may_release(token_record, token, firewall['ownershipVerified'], cleanup) and not commands.audit_failed,
+                        'Final fresh absence/receipt failed; retain fence')
                 require(read_json(run / 'pf-owned-token.json') == token_record, 'Persisted PF token changed; retain fence')
                 firewall['releaseAttempted'] = True
                 save(reports / 'pf-lifecycle.json', firewall)
@@ -834,7 +1025,7 @@ def main():
             cleanup['errors'].append('owned PF release/readback: ' + str(error))
         scratch_removed = False
         try:
-            cleanup['commandsAbsent'] = commands.drain()
+            absence_barrier(commands, state, cleanup, fixtures)
             require(all(cleanup[key] for key in ('nativeAbsent', 'fixturesAbsent', 'commandsAbsent', 'workersAbsent', 'simulatorRemoved')),
                     'Incomplete owned absence; retain scratch')
             require(not firewall['enableAttempted'] or firewall['disabledAfterRelease'], 'PF token/final state unresolved; retain scratch')
