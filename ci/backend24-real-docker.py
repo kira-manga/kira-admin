@@ -40,6 +40,54 @@ MAX_TAR = 32 * 1024 * 1024
 MAX_GZIP = 8 * 1024 * 1024
 CANCELLED = False
 
+# Only the hosted receiver child redirects stderr, then replaces itself without a second PID/wait owner.
+RECEIVER_EXEC = ('import os, sys; os.dup2(1, 2, inheritable=True); '
+                 'os.execv(sys.argv[1], sys.argv[1:])')
+# Exact pre-transaction deploy refusals from the SOURCE_HASHES-bound receiver. No recovery/adoption text.
+RECEIVER_REFUSALS = {
+    b'kira-deploy: invalid exact deploy command; legacy Backend three-token command is retired': 'INVALID_DEPLOY_COMMAND',
+    b'kira-deploy: deployment lock deadline exceeded': 'LOCK_ACQUISITION_REFUSED',
+    b'kira-deploy: revision must be a full Git SHA': 'INVALID_REVISION',
+    b'kira-deploy: root receiver required': 'ROOT_REQUIRED',
+    b'kira-deploy: unsafe or missing installed files/ownership': 'INSTALLED_FILES_UNSAFE',
+    b'kira-deploy: image configuration byte limit': 'IMAGE_CONFIGURATION_TOO_LARGE',
+    b'kira-deploy: ingress.env may not override image targets': 'INGRESS_IMAGE_OVERRIDE',
+    b'kira-deploy: unsafe release directory': 'RELEASE_DIRECTORY_UNSAFE',
+    b'kira-deploy: unsafe component release directory': 'COMPONENT_DIRECTORY_UNSAFE',
+    b'kira-deploy: incomplete prior transaction; operator reconciliation required': 'PENDING_TRANSACTION_PRESENT',
+    b'kira-deploy: missing, duplicate or ambiguous configured image target': 'CONFIGURED_IMAGE_INVALID',
+    b'kira-deploy: cannot establish owned runtime identity': 'RUNTIME_IDENTITY_UNAVAILABLE',
+    b'kira-deploy: existing runtime is not healthy; operator recovery required': 'PREDECESSOR_UNHEALTHY',
+    b'kira-deploy: configured image cannot be resolved before load': 'CONFIGURED_IMAGE_UNRESOLVED',
+    b'kira-deploy: runtime/configured image drift; operator reconciliation required': 'RUNTIME_CONFIGURATION_DRIFT',
+    b'kira-deploy: invalid activation record; operator reconciliation required': 'ACTIVATION_RECORD_INVALID',
+    b'kira-deploy: predecessor has no matching record; root-only legacy archive adoption required': 'PREDECESSOR_RECORD_UNMATCHED',
+    b'kira-deploy: predecessor archive missing or mismatched; STOP before load': 'PREDECESSOR_ARCHIVE_INVALID',
+    b'kira-deploy: previous distinct archive missing or mismatched': 'PREVIOUS_ARCHIVE_INVALID',
+    b'kira-deploy: record exists without its runtime; explicit operator recovery required': 'RECORD_WITHOUT_RUNTIME',
+    b'kira-deploy: cannot allocate incoming scratch': 'INCOMING_ALLOCATION_FAILED',
+    b'kira-deploy: bounded image receive failed': 'IMAGE_RECEIVE_FAILED',
+    b'kira-deploy: archive validation failed before Docker load': 'CANDIDATE_ARCHIVE_INVALID',
+    b'kira-deploy: invalid archive checker result': 'ARCHIVE_CHECK_RESULT_INVALID',
+    b'kira-deploy: quiet Compose configuration preflight failed': 'COMPOSE_PREFLIGHT_FAILED',
+}
+
+
+def receiver_reason(status, captured, maximum):
+    """Explanatory fixed identifier only; never decode, return or raise captured text."""
+    if status != 70:
+        return 'NOT_APPLICABLE'
+    if (type(captured) is not bytes or not captured or len(captured) > maximum or
+            not captured.isascii() or not captured.endswith(b'\n') or
+            any(value < 32 and value not in (9, 10) or value == 127 for value in captured)):
+        return 'UNKNOWN'
+    lines = captured.split(b'\n')[:-1]
+    # Count padded/unknown receiver-like lines only to refuse ambiguity, never to repair a match.
+    diagnostics = [line for line in lines if re.fullmatch(rb'[ \t]*kira-deploy.*', line)]
+    if len(diagnostics) != 1 or diagnostics[0] != lines[-1]:
+        return 'UNKNOWN'
+    return RECEIVER_REFUSALS.get(lines[-1], 'UNKNOWN')
+
 
 class GateFailure(Exception):
     pass
@@ -227,7 +275,8 @@ class Gate:
     def save(self):
         write_json(self.report, self.result, public=True)
 
-    def command(self, name, argv, seconds=10, expected=0, stdin=None, output=None, maximum=256 * 1024):
+    def command(self, name, argv, seconds=10, expected=0, stdin=None, output=None, maximum=256 * 1024,
+                receiver_diagnostic=False):
         require(self.cleaning or not CANCELLED, 'Gate cancelled')
         metadata = self.lease.get('hostedOptMode')
         if metadata is not None:
@@ -239,12 +288,17 @@ class Gate:
         require(budget > 0, 'Gate phase deadline expired')
         captured = io.BytesIO() if output is None else output
         entry = {'check': name, 'exit': None, 'ownedCommandCompleted': False}
+        if receiver_diagnostic:
+            entry.update(expectedExit=expected, receiverReason='UNKNOWN')
         self.result.setdefault('commands', []).append(entry)
         started = time.monotonic()
         try:
             code = self.helper.command(argv, seconds=budget, stdin=subprocess.DEVNULL if stdin is None else stdin, output=captured,
                                        maximum=maximum, return_status=True)
             entry.update(exit=code, ownedCommandCompleted=True)
+            if receiver_diagnostic:
+                entry['receiverReason'] = receiver_reason(code, captured.getvalue(), maximum)
+                self.save()  # Fixed expected/actual/identifier receipt precedes the unchanged exit gate.
             require(expected is None or code == expected, 'Unexpected command exit: ' + name)
             require(self.cleaning or not CANCELLED, 'Gate cancelled')
             return code, captured.getvalue() if output is None else b''
@@ -483,8 +537,9 @@ class Gate:
 
     def deploy(self, variant, archive, expected):
         with archive.open('rb') as stream:
-            return self.command('deploy-' + variant, [str(RECEIVER), 'deploy', 'web', SYNTHETIC_SHA],
-                                seconds=65, stdin=stream, expected=expected)[0]
+            return self.command('deploy-' + variant, ['/usr/bin/python3', '-I', '-B', '-c', RECEIVER_EXEC,
+                                str(RECEIVER), 'deploy', 'web', SYNTHETIC_SHA],
+                                seconds=65, stdin=stream, expected=expected, receiver_diagnostic=True)[0]
 
     def exercise(self):
         self.preflight()
