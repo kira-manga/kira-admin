@@ -1,5 +1,5 @@
-# One primary-bound targeted validation batch; no release or deployment.
-name: Backend29 selected-bundle restore PostgreSQL validation (private)
+# One primary-bound new source13.1 case plus exact-IT statics; no release or deployment.
+name: Backend29 source13.1 restore PostgreSQL validation (private)
 'on':
   push:
     branches: [remediation/app-29-backend-complaints]
@@ -32,8 +32,18 @@ jobs:
           from pathlib import Path
           value = json.loads(Path('admin/ci/backend29-backup-restore.request.json').read_text())
           sha = value.get('backend_sha', '')
-          if value.get('authorization') != 'BACKEND29_ONE_TARGETED_BATCH_AUTHORIZED' or not re.fullmatch('[0-9a-f]{40}', sha) or sha == '0' * 40:
-              raise SystemExit('Unbound or unauthorized Backend29 request; no Backend checkout/build permitted')
+          expected_class = 'me.manga.kira.backend.database.DatabaseBackupRestoreIT'
+          expected_selector = expected_class + '.sourceThirteenOnePreservesCredentialsBeforeReleaseValidation'
+          expected_file = 'src/test/kotlin/me/manga/kira/backend/database/DatabaseBackupRestoreIT.kt'
+          expected_hash = '38295bfb332989f117ddbf4e9af25366ab093aa390ffc9ef2a84d10ee81ba975'
+          fields = {'authorization', 'backend_sha', 'classes', 'selectors', 'static_files', 'status'}
+          if (set(value) != fields or value.get('authorization') != 'BACKEND29_V13_1_ONE_CASE_AUTHORIZED'
+                  or not re.fullmatch('[0-9a-f]{40}', sha) or sha != 'e2293085c062bf0610f328845b6bdfb4f4ae8eca'
+                  or value.get('classes') != {expected_class: 1}
+                  or type(value['classes'].get(expected_class)) is not int
+                  or value.get('selectors') != [expected_selector]
+                  or value.get('static_files') != {expected_file: expected_hash}):
+              raise SystemExit('Unbound, broadened or unauthorized Backend29 v13.1 request; no Backend checkout/build permitted')
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               output.write('sha=' + sha + '\n')
           PY
@@ -51,7 +61,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Run seven restore cases with affected source checks once
+      - name: Run only the source13.1 case and exact IT-file static checks once
         id: validation
         timeout-minutes: 35
         env:

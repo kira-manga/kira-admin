@@ -1,8 +1,14 @@
 {
-  "authorization": "BACKEND29_ONE_TARGETED_BATCH_AUTHORIZED",
-  "backend_sha": "8e33572594fab0e02e48ce0f854f3abb78cc41c1",
+  "authorization": "BACKEND29_V13_1_ONE_CASE_AUTHORIZED",
+  "backend_sha": "e2293085c062bf0610f328845b6bdfb4f4ae8eca",
   "classes": {
-    "me.manga.kira.backend.database.DatabaseBackupRestoreIT": 7
+    "me.manga.kira.backend.database.DatabaseBackupRestoreIT": 1
   },
-  "status": "Primary-authorized one targeted seven-case real-PG17.6 batch: two real backup.sh producer-to-restore successes plus five existing restore cases. Exact reviewed public-safe checkpoint; ordinary compilation, affected script syntax, test Ktlint and Detekt. No integration, deployment, release or unchanged rerun authorization."
+  "selectors": [
+    "me.manga.kira.backend.database.DatabaseBackupRestoreIT.sourceThirteenOnePreservesCredentialsBeforeReleaseValidation"
+  ],
+  "static_files": {
+    "src/test/kotlin/me/manga/kira/backend/database/DatabaseBackupRestoreIT.kt": "38295bfb332989f117ddbf4e9af25366ab093aa390ffc9ef2a84d10ee81ba975"
+  },
+  "status": "Primary-authorized ONE new source13.1 real-PG17.6 credential-preserving restore case on exact e2293085; normal compilation and exact IT-file Ktlint/Detekt. Reuse prior seven runtime and unchanged script syntax evidence, no replay. Source-only reviews accepted; actual execution/results remain pending. No deployment, signing, release, main merge or issue closure."
 }
