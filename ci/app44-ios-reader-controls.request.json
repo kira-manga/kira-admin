@@ -1,0 +1,24 @@
+{
+  "schema": "app44-ios-reader-controls-private-v1",
+  "authorization": "APP44_APPLE_ONE_ATTEMPT_AUTHORIZED",
+  "sourceRepository": "kira-manga/kira-app",
+  "sourceSha": "9a2c87e33e3a0db60460b258c3f6f5fc25e7df70",
+  "nativeInputs": {
+    "iosApp/iosApp/NativeReader/ReaderChromeView.swift": "bf9bad6dcc21a5c284fd448be270012df9f3feffaca7b58d44859172b697c6ae",
+    "iosApp/reader-controls-tests/ReaderChromeBarsTests.swift": "00521a691a65c1a419df289fabef2f727f877f751ac3075369c549d5b4eb67ae",
+    "iosApp/reader-controls-tests/project.yml": "7347aafc7e9c10662ab02664aedd8ed25a75ad866aa94bfc7ce6bfc272b5d084",
+    "iosApp/reader-controls-tests/.gitignore": "71560d61d40d33d0b45905f47b600fac842947f43310422b5c61b0012fe7de4e"
+  },
+  "target": "ReaderChromeControlsTests",
+  "class": "ReaderChromeBarsTests",
+  "methods": [
+    "testSinglePageChapterButtonsKeepEnablementAndEnabledActions",
+    "testEmptyChapterKeepsChapterButtonsAndSliderHidden",
+    "testOneManyOneTransitionsKeepFiniteLayoutAndChapterRelativeSeeking"
+  ],
+  "expectedRunAttempt": 1,
+  "developerDir": "/Applications/Xcode_26.4.1.app/Contents/Developer",
+  "ownerSha256": "b7c9e9b16cc0bc6975b9c34cdd136f09c8ca224a934da3ac341ebc3758345f8b",
+  "controllerSha256": "4906460a1f5e45661a962aea3d8ac35fecc2c247948dc5e94aa8218570aff7ca",
+  "workflowSha256": "7dd65fb6e2337402b86e7bd23fed30eba8d931f7d0b7831026ea30aef374fb0c"
+}

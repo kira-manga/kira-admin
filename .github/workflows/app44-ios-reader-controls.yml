@@ -1,0 +1,56 @@
+# SOURCE-ONLY UNAPPROVED DRAFT. Primary review/import and an exact issue binding precede any launch.
+name: App44 three-method UIKit evidence (private; primary review required)
+on:
+  push:
+    branches: [remediation/app-29-backend-complaints]
+    paths: [ci/app44-ios-reader-controls.request.json]
+permissions:
+  contents: read
+concurrency:
+  group: app44-private-reader-controls
+  cancel-in-progress: false
+jobs:
+  native-reader-controls:
+    if: >-
+      ${{ github.repository == 'kira-manga/kira-admin' &&
+          github.event.repository.private == true && github.event_name == 'push' &&
+          github.ref == 'refs/heads/remediation/app-29-backend-complaints' &&
+          github.run_attempt == 1 }}
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - name: Exact private carrier without persisted credentials
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        timeout-minutes: 2
+        with:
+          ref: ${{ github.sha }}
+          path: control
+          persist-credentials: false
+      - name: Require explicit one-attempt primary source binding
+        id: request
+        timeout-minutes: 1
+        run: python3 -B control/ci/app44-ios-reader-controls.py request
+      - name: Exact reviewed app issue commit without persisted credentials
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        timeout-minutes: 2
+        with:
+          repository: kira-manga/kira-app
+          ref: ${{ steps.request.outputs.source_sha }}
+          path: app44-source
+          persist-credentials: false
+      - name: Run three real UIKit methods and collect evidence; no native acceptance
+        id: native
+        timeout-minutes: 21
+        env:
+          APP44_RUN: ${{ runner.temp }}/app44-reader-controls-${{ github.run_id }}-${{ github.run_attempt }}
+        run: python3 -B control/ci/app44-ios-reader-controls.py native
+      - name: Retain bounded xcresult and raw schemas/results for primary review
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always() && steps.native.outcome != 'skipped'
+        timeout-minutes: 2
+        with:
+          name: app44-reader-controls-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/app44-reader-controls-${{ github.run_id }}-${{ github.run_attempt }}/upload/
+          include-hidden-files: true
+          retention-days: 3
+          if-no-files-found: error
