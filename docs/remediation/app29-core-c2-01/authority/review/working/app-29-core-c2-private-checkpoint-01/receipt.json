@@ -1,0 +1,188 @@
+{
+  "at_utc": "2026-09-11T18:53:44.251738+00:00",
+  "status": "LOCAL_PRIVATE_REVIEWED_SOURCE_CHECKPOINT_AND_V2_BUNDLE_CREATED_NOT_RUNTIME_ACCEPTED",
+  "private_only": true,
+  "public_push_authorized": false,
+  "source_scope": "Exact27 reviewed composition for focused development validation; NOT validated fix/Core/native/actor/W03 acceptance",
+  "previous_private_head": "49da0919d9ec3091cb7bb041009dc9bd5f3e090f",
+  "public_prerequisite": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+  "integration_aliases_at_checkpoint": "62f985043305a589deecda9298bbeb38a7262c3c",
+  "source_bindings": {
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardCall.kt": {
+      "sha256": "44d1945e376ecba2c20355aad2905c241ce5edcd78eaca6bac09abab81c901bf",
+      "bytes": 11229,
+      "group": "C2/profile03"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt": {
+      "sha256": "c3c2095193dac21bae09219e75a50b79b2da6ed5512db4ad0168da88676b30c0",
+      "bytes": 19966,
+      "group": "C2/profile03"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLifecycleOwner.kt": {
+      "sha256": "7c20e32a16f0818b80f3dacf29232d3ad08b7a2088e26815e8ee64cccc1a263f",
+      "bytes": 2173,
+      "group": "C2/profile03"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceManagedObserver.kt": {
+      "sha256": "392f637a22ca16f967ee028cbf0731f8c93622560556fa4bbef7e47657d63b23",
+      "bytes": 2975,
+      "group": "C2/profile03"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt": {
+      "sha256": "5bee8dc7f22219542a6ff28df8230e401268884c4711289afebf397c39d2d334",
+      "bytes": 13495,
+      "group": "C2/profile03"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutAccess.kt": {
+      "sha256": "4141070d8e4332dd8e5cddccf7ab6d3cdf906682cd6092aa96d9ce7b4acf4f5c",
+      "bytes": 25955,
+      "group": "C2/profile03"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt": {
+      "sha256": "bc52f1465041db567ea08baee1ec9e223d472d1d6915f7b278fecf2ddc040cf9",
+      "bytes": 11641,
+      "group": "C2/profile03"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt": {
+      "sha256": "f7127c8d922a1a17f34e7230b6ae715ec36f99e819e5bb35a907f347f40c337d",
+      "bytes": 35424,
+      "group": "C2/profile03"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcFacade.kt": {
+      "sha256": "a58c7aedd83c96dc572f94351fe77387922c949a066ca5a49f80744b569b6c74",
+      "bytes": 13783,
+      "group": "C2/profile03"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PreparedPoolConnection.kt": {
+      "sha256": "1f184fdd95401e528b4fc9900fc532448f8ceae7d07bd77b1b824b2cf47a9a79",
+      "bytes": 2977,
+      "group": "C2/profile03"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt": {
+      "sha256": "a6730fbc65d378713dd89bd0794b5514a764320f1186c681c4b44efabd1d09c7",
+      "bytes": 6585,
+      "group": "C2/profile03"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PrivateJdbcDataSource.kt": {
+      "sha256": "57d702ce9988b0bdd650387dd604d47edd0a4d3640f4f0071f6ad6311467a691",
+      "bytes": 2734,
+      "group": "C2/profile03"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt": {
+      "sha256": "0e6acaf9ca87a5f16672c3efa090c2dde8491c3e80e7b8cc19e6fb78f56f698f",
+      "bytes": 5029,
+      "group": "C2/profile03"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt": {
+      "sha256": "dd73ba8b486e285ac76c16e56d98bdac475027c86fed9eb5ffe3f7c1a5a820fd",
+      "bytes": 13504,
+      "group": "C2/profile03"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcPoolTransfer.kt": {
+      "sha256": "04ff9655211046f13af24395eb9bb489c3375702fc3dd057f225792da11e3b49",
+      "bytes": 6557,
+      "group": "C2/profile03"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcTransaction.kt": {
+      "sha256": "55e1393e113e750a49572b39ca4217b5b701ecc4fa7edb8c338e72c7dd1fb462",
+      "bytes": 3021,
+      "group": "C2/profile03"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendantsTest.kt": {
+      "sha256": "0997dd22f9c2ee5f36c837559a113134c0c3a59f17b4087b0746989b331407c6",
+      "bytes": 35316,
+      "group": "C2/profile03"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt": {
+      "sha256": "d6dea7bad3160f0fcece9afc6d1508a8032e42a423f23ccf5ad30b62925de796",
+      "bytes": 117662,
+      "group": "C2/profile03"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseRecipe.kt": {
+      "sha256": "59c151faec761164dae849abc8b408fd6dd956ca43a368bcbfadfc8d07ce734f",
+      "bytes": 7047,
+      "group": "C2/profile03"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbe.kt": {
+      "sha256": "b7d0df49b6d27c7d2f21ca801ba80b419dcf9a46277705cd4c609bd66a10a424",
+      "bytes": 4679,
+      "group": "C2/profile03"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbeProcess.kt": {
+      "sha256": "b115bbde5d83873d0dfa63a88571a2da601a0dbaf91c4db9c7cac1c73b09cf3a",
+      "bytes": 15432,
+      "group": "C2/profile03"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt": {
+      "sha256": "def7c6ef36145b6d1dcf71342a5e6c1956f6f40055464e231e946eff05ade9f2",
+      "bytes": 27810,
+      "group": "actor5"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt": {
+      "sha256": "0e45d75ee8a2421b6db238ced31298b7a5012db4ad3232e8675ae0f889e8c857",
+      "bytes": 11187,
+      "group": "actor5"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt": {
+      "sha256": "2cbd7a055d12000953c37301a7d08839df739d391b4fafa453e8acb62944963e",
+      "bytes": 4530,
+      "group": "actor5"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt": {
+      "sha256": "f5f194f46eddb89b32ba1142fcbedd5617255abae5b3ffe0bd507b26449c0665",
+      "bytes": 25447,
+      "group": "actor5"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt": {
+      "sha256": "7ddc9fac7597febfb42de44c041e4c2ccfdc01bc864e973346738a5ffd0209fa",
+      "bytes": 22929,
+      "group": "actor5"
+    },
+    "vendor/pgjdbc-owned-cut/ABI.md": {
+      "sha256": "3179fac9a31893e84f7a767f516e77c6c14c69ad0a470db7240bd1afc92b5d6f",
+      "bytes": 12627,
+      "group": "ABI1"
+    }
+  },
+  "authority_manifests": {
+    "review/working/app-29-real-pool-return-adaptation-c2-01/source-manifest.json": "e8f783786c058b39094483488a0a49045a74f81de99733a0bad00051a54d897a",
+    "review/working/app-29-real-pool-actors-resumed-01/manifest.json": "6776e02a52c52535ba05c92d08adac218c204866f360019bd3ec053a7ef362e1",
+    "review/working/app-29-real-pool-actor-storage-01/manifest.json": "2cf95e5f04b8e4d043a213a0103d6ce197c2f1703d0b777ab7fe5613f4611517",
+    "review/working/app-29-real-pool-native-retention-02/source-manifest.json": "599744a4d59814528e576f87295c82f5f5d3f83a5a5abf28a0025fbef01b71ef"
+  },
+  "independent_reviews": {
+    "review/remediation/app-29-real-pool-return-adaptation-c2-01-independent-review.md": "08bf7d11e4108f2704db1ea5778934b0c2027240e6e5fad0482ab79ea2982f35",
+    "review/remediation/app-29-real-pool-pending-probes-01-independent-review.md": "a1cf24d7c4c6cbf698044f622c932e9a9afe14e7d944e3a3f6ce936bef48c87b",
+    "review/remediation/app-29-final-jar-consumer-profile-03-independent-review.md": "eb2ce070a3c1602454a26d016a0b020e46c805d15b217cd945dd653ef9ef6d48",
+    "review/remediation/app-29-real-pool-actors-resumed-01-independent-review.md": "0e04e24e546c5500b34c7dc1ea04f0599b30f01cd9ee9e1606722ab8658effd0",
+    "review/remediation/app-29-real-pool-actor-storage-01-independent-review.md": "fd6260433e2f7b06ee54631ec8857550badf7add0b202cbce18f8d14c9f7e05f",
+    "review/remediation/app-29-native-retention02-independent-actual-review.md": "ff066786119c5618cbb593f3ae2bc1723d995b172bac7529ce43d413ad1c1860",
+    "review/remediation/app-29-gate-b-hosted-draft04-independent-actual-review.md": "ba93c5f794cedcc41cd955ee99db7f4a80aff853497d9e76f7058fbe4f629624"
+  },
+  "source_file_count": 27,
+  "source_bytes": 461714,
+  "remaining": "Full-v3 freeze/genuine validation receipt, sensitive staging bindings, one47-case execution and actual result review; broader native/actor/P3/W03 gates remain open.",
+  "backend_sha": "926927ab805a2a3b78957862f3b744d0fe399ac5",
+  "backend_tree": "f920236bb6f70541c1fb9a374929e295cca9d772",
+  "parent_chain": [
+    "926927ab805a2a3b78957862f3b744d0fe399ac5",
+    "49da0919d9ec3091cb7bb041009dc9bd5f3e090f",
+    "3d839130c807f6a0a9b1c896c1c6cca4b41c4538"
+  ],
+  "source_bundle": {
+    "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+    "private_parent_sha": "49da0919d9ec3091cb7bb041009dc9bd5f3e090f",
+    "ref": "refs/heads/remediation/app-29-backend-complaints",
+    "source_path": "review/working/app-29-core-c2-private-checkpoint-01/backend.bundle",
+    "path": "docs/remediation/app29-core-c2-01/inputs/backend.bundle",
+    "sha256": "80cb7bdd3be021bed65b67b1890913192d7c06baf9c725865727c9e02c452fe7",
+    "bytes": 197481
+  },
+  "bundle_header": [
+    "# v2 git bundle",
+    "-3d839130c807f6a0a9b1c896c1c6cca4b41c4538 Checkpoint reviewed App29 development21 diagnostics and ownership foundation",
+    "926927ab805a2a3b78957862f3b744d0fe399ac5 refs/heads/remediation/app-29-backend-complaints"
+  ],
+  "bundle_verify_exit": 0,
+  "bundle_list_heads": "926927ab805a2a3b78957862f3b744d0fe399ac5 refs/heads/remediation/app-29-backend-complaints"
+}
