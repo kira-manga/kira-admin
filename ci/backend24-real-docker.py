@@ -22,8 +22,8 @@ CONTROL = Path(__file__).resolve().parents[1]
 BACKEND = CONTROL.parent / 'backend'
 AUTHORIZATION = 'BACKEND24_ONE_REAL_DOCKER_GATE_AUTHORIZED'
 SOURCE_HASHES = {
-    'deploy/server3/kira-deploy': 'fa0fbbff16e6bf4067de55ea6add651d7860c7e665708efbb6f61c34d6695f17',
-    'scripts/ci/image_release.py': 'c9492de4168fcdcddd1c1856ab54a78c8d1bc43771259a34c7a80fada2016c18',
+    'deploy/server3/kira-deploy': '074c53206c1490a22ebe2d312f84ef9431a31124227c610d792d0fcc4e6fd1da',
+    'scripts/ci/image_release.py': '72c17fc26d1c100d5f07a081687c1e205d70a12170a096fb770633d5d8889145',
 }
 OWNED_CHILDREN_SHA256 = '56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385'
 BASE = 'docker.io/library/busybox@sha256:29989570aeecad61a019f684218ea74d4b8c1c74f9e0abeb34ca926b81174ee1'
@@ -554,15 +554,17 @@ class Gate:
         self.install(ROOT / 'compose.yaml', compose.encode())
 
     def build_export(self, variant):
+        require(variant in ('A', 'B', 'C'), 'Unknown fixed fixture variant')
         context = self.work / variant
         context.mkdir(mode=0o700)
         dockerfile = ('FROM ' + BASE + '\nLABEL ' + LABEL + '="' + self.owner + '"\n'
+                      'LABEL me.kira.backend24-gate-variant="' + variant + '"\n'
                       'LABEL org.opencontainers.image.revision="' + SYNTHETIC_SHA + '"\n'
                       'COPY health /fixture-health\nUSER 65534:65534\n'
                       'HEALTHCHECK --interval=1s --timeout=1s --retries=1 CMD ["/bin/sh", "/fixture-health"]\n'
                       'CMD ["/bin/sleep", "600"]\n')
         (context / 'Dockerfile').write_text(dockerfile)
-        (context / 'health').write_text('exit ' + ('0' if variant == 'A' else '1') + '\n')
+        (context / 'health').write_text('exit ' + ('1' if variant == 'B' else '0') + '\n')
         (context / 'health').chmod(0o444)  # COPY preserves mode; nonroot health checks must be able to read it.
         self.command('build-' + variant, ['docker', 'build', '--platform', 'linux/amd64', '--pull=false',
                      '--no-cache', '--network', 'none', '--quiet', '--tag', TAG, str(context)], seconds=45)
@@ -587,7 +589,7 @@ class Gate:
         self.save()
         return identity, archive, compressed['sha256']
 
-    def snapshot(self, identity, archive_digest, observe_archive=False):
+    def snapshot(self, identity, archive_digest, observe_archive=False, previous=None):
         model = '{{.Id}} {{.Image}} {{.State.Running}} {{.State.Health.Status}} ' + \
                 '{{index .Config.Labels "com.docker.compose.project"}} ' + \
                 '{{index .Config.Labels "com.docker.compose.service"}} {{index .Config.Labels "' + LABEL + '"}}'
@@ -599,21 +601,37 @@ class Gate:
         require({path.name for path in ROOT.iterdir()} == {'compose.yaml', 'images.env', 'ingress.env', 'releases'},
                 'Unexpected Web-only fixture state or temporary persistence file remains')
         releases = ROOT / 'releases/web'
-        activation = ('active ' + SYNTHETIC_SHA + ' ' + identity + ' ' + archive_digest + '\nprevious - - -\n').encode()
-        require(regular_bytes(releases / 'activation') == activation, 'Activation record did not preserve A')
-        require({path.name for path in releases.iterdir()} == {'activation', archive_digest + '.tar.gz'},
+        previous_line = 'previous - - -\n'
+        archives = {archive_digest}
+        if previous is not None:
+            previous_id, previous_digest = previous
+            require(previous_id != identity and previous_digest != archive_digest, 'Previous must be distinct')
+            previous_line = 'previous ' + SYNTHETIC_SHA + ' ' + previous_id + ' ' + previous_digest + '\n'
+            archives.add(previous_digest)
+        activation = ('active ' + SYNTHETIC_SHA + ' ' + identity + ' ' + archive_digest + '\n' + previous_line).encode()
+        require(regular_bytes(releases / 'activation') == activation, 'Activation record differs from exact expected pair')
+        require({path.name for path in releases.iterdir()} == {'activation', *(value + '.tar.gz' for value in archives)},
                 'Unexpected archive, pending marker or incoming scratch remains')
-        archive = releases / (archive_digest + '.tar.gz')
-        require(digest(archive, MAX_GZIP) == archive_digest, 'Retained A archive bytes changed')
+        retained = {}
+        for value in sorted(archives):
+            archive = releases / (value + '.tar.gz')
+            info = archive.lstat()
+            require(info.st_uid == 0 and stat.S_ISREG(info.st_mode) and not stat.S_ISLNK(info.st_mode) and
+                    stat.S_IMODE(info.st_mode) == 0o600, 'Retained archive is not private root-owned regular data')
+            require(digest(archive, MAX_GZIP) == value, 'Retained archive bytes changed')
+            retained[value] = {'sha256': value, 'inode': info.st_ino, 'uid': info.st_uid,
+                               'permissionBits': stat.S_IMODE(info.st_mode), 'regular': True, 'nonsymlink': True}
         snapshot = {'containerId': fields[0], 'imageId': identity, 'health': 'healthy', 'persistedImageId': identity,
                     'activationSha256': digest(releases / 'activation'), 'retainedArchiveSha256': archive_digest,
-                    'archiveInode': archive.stat().st_ino, 'pendingAndIncomingAbsent': True}
+                    'archiveInode': retained[archive_digest]['inode'], 'pendingAndIncomingAbsent': True}
+        if previous is not None:
+            snapshot['previousImageId'] = previous[0]
+            snapshot['previousArchiveSha256'] = previous[1]
+            snapshot['retainedArchives'] = retained
         if observe_archive:
-            info = archive.lstat()  # Pre-B local observation only, not an atomic receipt for the receiver's later guard.
-            snapshot['retainedArchiveMetadata'] = {
-                'uid': info.st_uid, 'permissionBits': stat.S_IMODE(info.st_mode),
-                'regular': stat.S_ISREG(info.st_mode), 'nonsymlink': not stat.S_ISLNK(info.st_mode),
-            }
+            # Local metadata observation, not an atomic receipt for the receiver's later guard.
+            snapshot['retainedArchiveMetadata'] = {key: retained[archive_digest][key]
+                                                   for key in ('uid', 'permissionBits', 'regular', 'nonsymlink')}
         return snapshot
 
     def deploy(self, variant, archive, expected):
@@ -631,13 +649,16 @@ class Gate:
         require(self.image(BASE) == BASE_ID, 'Pinned base config/platform identity changed')
         a_id, a_archive, a_digest = self.build_export('A')
         b_id, b_archive, b_digest = self.build_export('B')
-        require(a_id != b_id and a_digest != b_digest and self.image(TAG) == b_id, 'Fixture A/B identities not distinct')
+        c_id, c_archive, c_digest = self.build_export('C')
+        require(len({a_id, b_id, c_id}) == len({a_digest, b_digest, c_digest}) == 3 and self.image(TAG) == c_id,
+                'Fixture A/B/C identities not distinct')
         owned = self.docker_ids('image', owned=True)
-        require({a_id, b_id} <= owned, 'Fixture image ownership unavailable before first load')
+        require({a_id, b_id, c_id} <= owned, 'Fixture image ownership unavailable before first load')
         self.command('remove-exported-fixture-identities', ['docker', 'image', 'rm', '--force', *sorted(owned)], seconds=15)
-        require(not self.docker_ids('image', owned=True) and not ({a_id, b_id} & self.docker_ids('image')),
+        require(not self.docker_ids('image', owned=True) and not ({a_id, b_id, c_id} & self.docker_ids('image')),
                 'Daemon fixture identities remain before archive loading')
-        self.result['beforeFirstLoad'] = {'fixtureImageIdsAbsent': [a_id, b_id], 'containersAbsent': not self.docker_ids('container')}
+        self.result['beforeFirstLoad'] = {'fixtureImageIdsAbsent': [a_id, b_id, c_id],
+                                        'containersAbsent': not self.docker_ids('container')}
         require(self.result['beforeFirstLoad']['containersAbsent'], 'A container appeared before initial load')
         self.result['activationAExit'] = self.deploy('A', a_archive, 0)
         first = self.snapshot(a_id, a_digest, observe_archive=True)
@@ -673,6 +694,33 @@ class Gate:
         require(repeat == restored and self.image(TAG) == b_id, 'Identical A was not a retaining no-op')
         self.result['identicalA'] = {'unchangedRuntimeAndRecord': True, 'unchangedArchiveInode': True,
                                      'tagStillB': True, 'receiverExit': 0}
+        self.result['activationCExit'] = self.deploy('C', c_archive, 0)
+        current_c = self.snapshot(c_id, c_digest, previous=(a_id, a_digest))
+        require(self.image(TAG) == c_id and current_c['containerId'] != restored['containerId'] and
+                current_c['retainedArchives'][a_digest]['inode'] == first['archiveInode'],
+                'Distinct C activation or original A retention not proved')
+        self.result['activationC'] = current_c
+        self.save()
+        # Remove only the unused owned A image, never its original recovery archive or a live container.
+        require(self.docker_ids('container') == self.docker_ids('container', owned=True) == {current_c['containerId']} and
+                a_id in self.docker_ids('image', owned=True), 'Unexpected container or missing A image ownership')
+        self.command('remove-unused-A-image', ['docker', 'image', 'rm', a_id], seconds=15)
+        require(a_id not in self.docker_ids('image') and self.image(TAG) == c_id and
+                self.snapshot(c_id, c_digest, previous=(a_id, a_digest)) == current_c,
+                'A image absence or unchanged C/retained archives not proved')
+        self.result['beforeExplicitActivation'] = {'recordedPreviousImageIdAbsent': a_id,
+                                                  'unchangedCAndArchives': True, 'stdin': 'DEVNULL'}
+        self.save()
+        self.result['explicitActivationAExit'] = self.command(
+            'activate-recorded-A', ['/usr/bin/python3', '-I', '-B', '-c', RECEIVER_EXEC,
+                                    str(RECEIVER), 'activate', 'web', a_id],
+            seconds=65, expected=0, receiver_diagnostic=True)[0]
+        activated = self.snapshot(a_id, a_digest, previous=(c_id, c_digest))
+        require(self.image(TAG) == a_id and a_id in self.docker_ids('image', owned=True) and
+                activated['containerId'] not in {current_c['containerId'], first['containerId'], restored['containerId']} and
+                activated['retainedArchives'] == current_c['retainedArchives'],
+                'Explicit recorded A reload/transition or original archive retention not proved')
+        self.result['explicitActivationA'] = activated
         for relative, expected in SOURCE_HASHES.items():
             require(digest(BACKEND / relative) == expected, 'Source changed during the gate')
         require(digest(RECEIVER) == SOURCE_HASHES['deploy/server3/kira-deploy'] and

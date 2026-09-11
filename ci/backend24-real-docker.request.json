@@ -1,15 +1,15 @@
 {
   "schema": "backend24-one-real-docker-v1",
   "authorization": "BACKEND24_ONE_REAL_DOCKER_GATE_AUTHORIZED",
-  "backendSha": "be9e5646b3e2c3bf67468f1e444b976e562c7479",
+  "backendSha": "f983a5c4f46799dd2e0db03e5bc011b740dfc815",
   "sourceSha256": {
-    "deploy/server3/kira-deploy": "fa0fbbff16e6bf4067de55ea6add651d7860c7e665708efbb6f61c34d6695f17",
-    "scripts/ci/image_release.py": "c9492de4168fcdcddd1c1856ab54a78c8d1bc43771259a34c7a80fada2016c18"
+    "deploy/server3/kira-deploy": "074c53206c1490a22ebe2d312f84ef9431a31124227c610d792d0fcc4e6fd1da",
+    "scripts/ci/image_release.py": "72c17fc26d1c100d5f07a081687c1e205d70a12170a096fb770633d5d8889145"
   },
   "base": "docker.io/library/busybox@sha256:29989570aeecad61a019f684218ea74d4b8c1c74f9e0abeb34ca926b81174ee1",
   "syntheticSha": "2424242424242424242424242424242424242424",
-  "scriptSha256": "8908f80b17e720fe9a7a47e463af0c028d7a03fa6699ac61896bb0cca7c79de1",
-  "workflowSha256": "50ae6a815eb83e5dc863e3627efde6c994f046b865a0260d8439ef650a8e08bd",
-  "checkpointSha256": "53b35d3475b2c7caa134f89ca71aaaf6180800438f3f05189631e95acecbd7fa",
+  "scriptSha256": "9dda374a402a55ee7cecd320b7020dfdc9573d1767dce4d181866679cdb55680",
+  "workflowSha256": "b757663013cb9df31345da9569b957086e21b942a6bcc4e2670f4342c8020511",
+  "checkpointSha256": "c419da24ab1f2b87e95b6b7c2435740ee89940307fca749782d534e40516371f",
   "ownedChildrenSha256": "56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385"
 }

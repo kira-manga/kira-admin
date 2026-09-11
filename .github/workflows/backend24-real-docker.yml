@@ -34,7 +34,7 @@ jobs:
           ref: ${{ steps.request.outputs.backend_sha }}
           path: backend
           persist-credentials: false
-      - name: Run the one tiny A, failed B, identical A receiver sequence
+      - name: Run tiny A, failed B, identical A, C and explicit retained-A recovery
         id: validation
         timeout-minutes: 5
         shell: bash

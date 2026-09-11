@@ -2,10 +2,10 @@
   "schema": "backend24-real-docker-checkpoint-v1",
   "authorization": "BACKEND24_ONE_REAL_DOCKER_GATE_AUTHORIZED",
   "sourceAccepted": true,
-  "backendSha": "be9e5646b3e2c3bf67468f1e444b976e562c7479",
+  "backendSha": "f983a5c4f46799dd2e0db03e5bc011b740dfc815",
   "sourceSha256": {
-    "deploy/server3/kira-deploy": "fa0fbbff16e6bf4067de55ea6add651d7860c7e665708efbb6f61c34d6695f17",
-    "scripts/ci/image_release.py": "c9492de4168fcdcddd1c1856ab54a78c8d1bc43771259a34c7a80fada2016c18"
+    "deploy/server3/kira-deploy": "074c53206c1490a22ebe2d312f84ef9431a31124227c610d792d0fcc4e6fd1da",
+    "scripts/ci/image_release.py": "72c17fc26d1c100d5f07a081687c1e205d70a12170a096fb770633d5d8889145"
   },
   "base": "docker.io/library/busybox@sha256:29989570aeecad61a019f684218ea74d4b8c1c74f9e0abeb34ca926b81174ee1",
   "syntheticSha": "2424242424242424242424242424242424242424",
