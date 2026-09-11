@@ -741,7 +741,7 @@ def absence_barrier(commands, state, cleanup, fixtures):
     # Clear before any fresh work; exceptions must not preserve cached release flags.
     keys = ('nativeAbsent', 'fixturesAbsent', 'commandsAbsent', 'workersAbsent', 'receiptSaved')
     cleanup.update(dict.fromkeys(keys, False))
-    commands.retire_observer()  # Settle an owned leaf before a new observation can be refused.
+    commands.drain()  # Settle cleanup-created work before proof; this result is not absence evidence.
     observation = commands.observe(cleaning=True, full=True)
     workers = owned_workers(commands, state, cleaning=True, observation=observation)
     commands_absent = commands.drain(observation)

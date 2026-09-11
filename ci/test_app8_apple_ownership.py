@@ -269,6 +269,104 @@ class Ownership(unittest.TestCase):
     def test_cleanup_and_fresh_pf_barriers_refuse_unknown_permission_or_budget(self):
         keys = ('nativeAbsent', 'fixturesAbsent', 'commandsAbsent', 'workersAbsent', 'simulatorRemoved', 'receiptSaved')
         record = {'token': '42', 'policySha256': DRAFT.hashlib.sha256(DRAFT.PF_RULES.encode()).hexdigest()}
+        for case in ('settled-then-failed-full', 'eperm', 'budget'):
+            with self.subTest(cleanup_created=case), Host() as host:
+                cleanup = dict.fromkeys(keys, True)
+                state = {'udid': 'mock-created-device', 'name': 'mock-owned-simulator'}
+                self.assertTrue(host.commands.drain())  # Main's initial empty drain precedes disposal.
+                host.plan(exit_at=None)
+                with self.assertRaisesRegex(RuntimeError, 'Child cancelled or exceeded its cap: devices'):
+                    DRAFT.dispose_simulator(host.commands, state, cleanup)
+                target = host.commands.tasks[0]
+                self.assertFalse(target['leaf'])
+                deadline, target_errors = target['receipt']['deadline'], list(target['receipt']['errors'])
+                self.assertTrue(target['receipt']['timedOut'] and target_errors)
+                host.plan(exit_at=None)
+                with self.assertRaisesRegex(RuntimeError, 'Child cancelled or exceeded its cap: owned-groups'):
+                    host.commands.observe(cleaning=True)
+                observer = host.commands.observer
+                observer_errors = list(observer['receipt']['errors'])
+                progress, sleeps = host.commands.progress, list(host.sleeps)
+                self.assertEqual(host.commands.failed_observer_progress, progress)
+                observer['process'].exit_at = host.now  # Only the failed observer exits, not the target.
+                self.assertNotIn('lastExitObservation', target['receipt'])
+                self.assertEqual(host.commands.progress, progress)
+                if case == 'eperm':
+                    host.signal_error = PermissionError(1, 'mock EPERM')
+                elif case == 'budget':
+                    host.commands.end = host.now + 0.5
+                else:
+                    host.plan()  # Normal numeric post-signal group proof, if the drain is reached.
+                    host.plan(raw='bad cleanup full census\n')  # Settlement is not full absence.
+                end = host.commands.end
+                for entry in range(2):  # Later absence and scratch entries must not renew/retry work.
+                    with self.assertRaises(RuntimeError) as failure:
+                        DRAFT.absence_barrier(host.commands, state, cleanup, [])
+                    self.assertEqual((host.commands.end, target['receipt']['deadline']), (end, deadline))
+                    self.assertTrue(observer['receipt']['leaderReaped'] and observer['receipt']['groupQuiet'])
+                    self.assertEqual(observer['receipt']['actualExit'], 0)
+                    self.assertEqual(observer['receipt']['errors'], observer_errors)
+                    self.assertTrue(observer['receipt']['timedOut'])
+                    self.assertFalse(observer['receipt']['normalJoin'] or observer['receipt']['forced'])
+                    self.assertEqual(len(observer['process'].waits), 1)
+                    self.assertTrue(target['receipt']['timedOut'])
+                    self.assertEqual(target['receipt']['errors'][:len(target_errors)], target_errors)
+                    self.assertFalse(any(cleanup[key] for key in keys if key != 'simulatorRemoved'))
+                    self.assertFalse(DRAFT.may_release(record, '42', True, cleanup) or host.commands.normal())
+                    expected_signals = [] if case == 'budget' else [
+                        (target['process'].pid, DRAFT.signal.SIGTERM), (target['process'].pid, DRAFT.signal.SIGKILL)]
+                    self.assertEqual(host.signals, expected_signals)
+                    self.assertEqual(host.sleeps, sleeps + ([] if case == 'budget' else [10]))
+                    self.assertEqual(target['receipt']['forced'], case != 'budget')
+                    self.assertEqual(target['signalingClosed'], case != 'budget')
+                    self.assertFalse(target['receipt']['ownershipLost'])
+                    self.assertEqual(host.commands.failed_observer_progress, host.commands.progress)
+                    if case == 'settled-then-failed-full':
+                        self.assertTrue(target['receipt']['leaderReaped'] and target['receipt']['groupQuiet'])
+                        self.assertEqual(len(target['process'].waits), 1)
+                        self.assertGreater(host.commands.progress, progress)
+                        self.assertEqual([item['outcome'] for item in target['receipt']['signalAttempts']], ['sent', 'sent'])
+                        self.assertEqual([child.argv for child in host.children[1:]],
+                                         [DRAFT.GROUP_PS, DRAFT.GROUP_PS, DRAFT.PS])
+                        group, full = host.commands.tasks[-2:]
+                        self.assertTrue(group['receipt']['normalJoin'])
+                        self.assertEqual(target['receipt']['groupObserverPid'], group['receipt']['pid'])
+                        self.assertFalse(full['receipt']['normalJoin'])
+                        expected_error = 'Malformed owned-process census' if entry == 0 else 'Observer failed without relevant target progress'
+                    else:
+                        self.assertFalse(target['receipt']['leaderReaped'] or target['receipt']['groupQuiet'])
+                        self.assertNotIn('lastExitObservation', target['receipt'])
+                        self.assertNotIn('lastGroup', target['receipt'])
+                        self.assertEqual((target['process'].waits, host.commands.progress, len(host.children)), ([], progress, 2))
+                        if case == 'eperm':
+                            self.assertEqual(len(target['receipt']['signalAttempts']), 2)
+                            self.assertTrue(all('EPERM' in item['outcome'] for item in target['receipt']['signalAttempts']))
+                        else:
+                            self.assertEqual(target['receipt']['signalAttempts'], [])
+                        expected_error = 'Observer failed without relevant target progress'
+                    self.assertEqual(str(failure.exception), expected_error)
+                    self.assertFalse(any('-X' in child.argv for child in host.children))
+        with Host() as host:
+            cleanup, observations = dict.fromkeys(keys, True), []
+            observe = host.commands.observe
+            def cleanup_launch_before_full(cleaning=False, full=False, end=None):
+                if full:
+                    host.target(exit_at=None)  # Registered after pre-drain; real post-proof drain must act.
+                observation = observe(cleaning=cleaning, full=full, end=end)
+                observations.append(observation)
+                return observation
+            with mock.patch.object(host.commands, 'observe', side_effect=cleanup_launch_before_full):
+                with self.assertRaisesRegex(RuntimeError, 'Missing/stale/failed process observation'):
+                    DRAFT.absence_barrier(host.commands, {}, cleanup, [])
+            full, post_signal = observations
+            self.assertTrue(full['full'] and full['drained'])
+            self.assertFalse(post_signal['full'])
+            self.assertGreater(post_signal['epoch'], full['epoch'])
+            target = host.commands.tasks[0]
+            self.assertTrue(target['receipt']['leaderReaped'] and target['receipt']['forced'])
+            self.assertFalse(any(cleanup[key] for key in keys if key != 'simulatorRemoved'))
+            self.assertFalse(DRAFT.may_release(record, '42', True, cleanup) or host.commands.normal())
+            self.assertFalse(any('-X' in child.argv for child in host.children))
         with Host() as host:
             cleanup = dict.fromkeys(keys, True)
             host.plan(exit_at=None)
