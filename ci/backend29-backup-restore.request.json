@@ -1,0 +1,8 @@
+{
+  "authorization": "BACKEND29_ONE_TARGETED_BATCH_AUTHORIZED",
+  "backend_sha": "8e33572594fab0e02e48ce0f854f3abb78cc41c1",
+  "classes": {
+    "me.manga.kira.backend.database.DatabaseBackupRestoreIT": 7
+  },
+  "status": "Primary-authorized one targeted seven-case real-PG17.6 batch: two real backup.sh producer-to-restore successes plus five existing restore cases. Exact reviewed public-safe checkpoint; ordinary compilation, affected script syntax, test Ktlint and Detekt. No integration, deployment, release or unchanged rerun authorization."
+}
