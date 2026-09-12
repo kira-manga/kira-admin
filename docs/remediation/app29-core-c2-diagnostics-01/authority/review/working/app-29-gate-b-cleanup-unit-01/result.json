@@ -1,0 +1,19 @@
+{
+  "at_utc": "2026-09-12T00:31:27.847871+00:00",
+  "status": "PASS_ISOLATED4",
+  "exit": 0,
+  "test_pass_count": 4,
+  "command": [
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "/root/projects/Kira/review/working/app-29-gate-b-hosted-draft-05/tests/test_failed_capture_cleanup.py",
+    "-v"
+  ],
+  "log_sha256": "10d8e658c0d7bc196afd4e1f8c8d59a58bd2bc5a7486264131dd1eec1f1f4e98",
+  "child_pid": 19553,
+  "child_absent": true,
+  "temporary_output_absent": true,
+  "source_unchanged": true,
+  "limitations": "Synthetic capture/guard/file-disposition only; actual hosted ownership/provenance/Core47 unproved; draft remains NOT_INSTALL_READY"
+}

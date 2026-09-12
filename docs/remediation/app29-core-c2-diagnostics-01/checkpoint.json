@@ -1,0 +1,22 @@
+{
+  "schema": "app29-core-c2-clean-checkpoint-v1",
+  "source_accepted": true,
+  "backend_sha": "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc",
+  "source_bundle": {
+    "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+    "private_parent_sha": "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+    "ref": "refs/heads/remediation/app-29-backend-complaints",
+    "source_path": "review/working/app-29-core-c2-diagnostics-private-checkpoint-02/backend.bundle",
+    "path": "docs/remediation/app29-core-c2-diagnostics-01/inputs/backend.bundle",
+    "sha256": "36e84a965720f325ac0b91b3807f9dcc95793268a4e7a2f6a802a5b333f25e41",
+    "bytes": 200148
+  },
+  "manifest_path": "review/working/app-29-w03-integrated-driver-core-c2-diagnostics-01/manifest.json",
+  "manifest_sha256": "2e6ba4a28bdc628d42937c3ed0f7f435c835b61d4e6f73702b50e6a2edd85511",
+  "local_v3_preflight": {
+    "manifest_sha256": "2e6ba4a28bdc628d42937c3ed0f7f435c835b61d4e6f73702b50e6a2edd85511",
+    "tool_sha256": "e8c6a48fc26c634fbccbb081651631fb5c767099b1143ab4dbe8439f6060d0fe",
+    "receipt_path": "review/working/app-29-w03-integrated-driver-core-c2-diagnostics-01/hosted-local-preflight.json",
+    "receipt_sha256": "3b6e6541725e1cd8569aa04d34782120ad3e6439e70c9eafaf728cf3b0083a1a"
+  }
+}

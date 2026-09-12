@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "profile_id": "app-29-core-c2-diagnostics-profile-01",
+  "scope": "TWO_CASE_SHUTDOWN_DIAGNOSTICS_ONLY; no consumer, Native05, full47 or W03 qualification",
+  "test_classes": [
+    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest"
+  ],
+  "task_args": [
+    "test",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.throwing original RETURN override leaves F G T free and retires its exact source without a second return",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.failed post consent real Hikari tail seals actor admission but cannot retire the successor epoch"
+  ],
+  "expected_test_count": 2,
+  "expected_tests": [
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "throwing original RETURN override leaves F G T free and retires its exact source without a second return",
+      "display_name": "throwing original RETURN override leaves F G T free and retires its exact source without a second return()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "failed post consent real Hikari tail seals actor admission but cannot retire the successor epoch",
+      "display_name": "failed post consent real Hikari tail seals actor admission but cannot retire the successor epoch()"
+    }
+  ],
+  "report_directory": "reports/core-c2-diagnostics-01",
+  "witness_property_file": "worker-runtime.txt",
+  "expected_witnesses": [],
+  "original_provider_gate": "app-29-gate-b-hosted-01",
+  "original_provider_gate_note": "Retained compatibility property only. Its original-provider method and both positive-witness methods are unselected; no worker witness or consumer acceptance is expected.",
+  "final_jar": {
+    "path": "review/working/app-29-driver-cut-native-build-05/artifacts/postgresql-42.7.12-kira.1-osgi.jar",
+    "sha256": "50f7dc4a6314cc5105f4990be26ba8be65ae242e1f7e62652cc60d6a2c0e03df",
+    "bytes": 1200036,
+    "source_path": "review/working/app-29-driver-cut-native-build-05/artifacts/postgresql-42.7.12-kira.1-osgi.jar",
+    "qualification": "UNQUALIFIED",
+    "candidate_id": "app-29-driver-cut-native-build-05-isolation-getter-source-01"
+  },
+  "checker": {
+    "path": "review/working/app-29-final-jar-consumer-profile-01/inputs/checker-qual-3.55.1.jar",
+    "sha256": "857658c8bdcbff794949a8d9922f88d63ee3751c203c7cd7d21ea97f9e745288",
+    "bytes": 241885,
+    "source_path": "review/working/app-29-final-jar-consumer-profile-01/inputs/checker-qual-3.55.1.jar"
+  },
+  "removed_stock": {
+    "group": "org.postgresql",
+    "module": "postgresql",
+    "version": "42.7.12",
+    "sha256": "31fbf6f06b2217fb51d5100cee51b22625cc81640da0679b47914e54c1e6377c"
+  },
+  "original_init": {
+    "path": "review/working/app-29-w01-local-dependencies.init.gradle",
+    "sha256": "429961b98254b89f7ce1d7ba1efa61b8cba28a3bae35353bf3a8ba85f4a1c839"
+  },
+  "jdk": {
+    "feature": 21,
+    "distribution": "temurin",
+    "implementor": "Eclipse Adoptium",
+    "home": "Bound hosted JAVA_HOME; actual Gradle/Test context and JDK binary/modules hashes remain controller obligations, not positive consumer-loader proof."
+  },
+  "source_inventory": {
+    "path": "review/working/app-29-real-pool-return-adaptation-c2-01/test-source-inventory.json",
+    "sha256": "823f49b359b8dec60d1b024c2bfd4e3d2d6822a42fed1a8c8d0e905b5ba87650",
+    "kind": "Historical47 textual declarations only, NOT this run's executed selection. Names remain stable; only the two selected bodies enable the accepted shared-fixture diagnostics. Historical45 passes are not rerun or relabelled."
+  },
+  "core_source_manifest": {
+    "path": "review/working/app-29-real-pool-return-adaptation-c2-01/source-manifest.json",
+    "sha256": "e8f783786c058b39094483488a0a49045a74f81de99733a0bad00051a54d897a"
+  },
+  "binding_test": {
+    "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt",
+    "before_sha256": "2be392d5768db39dce43832be3eb12d3b6d724b60d7a569f51c8be9b704aba7a",
+    "after_sha256": "09ff840b9b3c4532c33ce24c09a60a2b0479084b480ed29f6d21478751e78f99",
+    "checkpoint_before_sha256": "a92f7a1bc152576c0bc2cd55d3dea49614ca073aea3868c2929e5bf1fea48017",
+    "proposal_path": "review/working/app-29-core-c2-diagnostics-preparation-01/proposed-source/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt",
+    "patch_path": "review/remediation/app-29-core-c2-two-case-shutdown-diagnostics-admin01.diff",
+    "patch_sha256": "9b3f80e5c18d3c82d31671d033713b71c00a16625c52bacd10e93e59b9d10338"
+  },
+  "current_source_freeze": {
+    "path": "review/working/app-29-w03-integrated-driver-core-c2-hosted-02/manifest.json",
+    "sha256": "40000ce7fc95efec6ba4ce966deedb41df4e7d99731cf1e92947909d3781a6d5",
+    "backend_sha": "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+    "source_count": 466,
+    "historical_seed_path_count": 348,
+    "snapshot_count": 199,
+    "proposed_delta": "Only binding_test.path gets binding_test.after_sha256; every other source hash, path and removal remains exact. Fresh genuine full-v3 freeze/local preflight is required."
+  },
+  "predecessor_profile": {
+    "path": "review/working/app-29-gate-b-hosted-draft-06/profile/profile.json",
+    "sha256": "e54bd9d407f7add0275c245ac6eea6e82921ff3291f264447693762d37c372df"
+  },
+  "historical_result": {
+    "run_id": "34672394928",
+    "carrier_sha": "b25f6adcdb37b25b44b4efb783889f06c02c85d9",
+    "backend_sha": "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+    "passed": 45,
+    "failed": 2,
+    "scope": "HISTORICAL_HOSTED02_ONLY_NOT_RERUN_NOT_CURRENT47_PASS"
+  },
+  "diagnostic_authority": {
+    "review/remediation/app-29-core-c2-two-case-shutdown-diagnostics-admin01.md": "8e2ba4024e71968f33c2d4fba1ca6ad7e796554f78d383cba53393ea04a58282",
+    "review/remediation/app-29-core-c2-two-case-shutdown-diagnostics-independent-review.md": "bdcc3fdb02daa8250346b1b846db8c87324816e029ed35ebe34f54a4ceb0ee90",
+    "review/working/app-29-core-c2-diagnostics-private-checkpoint-01/checkpoint.json": "ecd9e8ffcfeac7cc5fe51dd7b8e6a68c0840a2a7b7834e92b686a99042521a9f",
+    "review/remediation/app-29-core-c2-hosted02-independent-actual-result-review.md": "9a04d2b6d23a491f1b9d6f9f24d8a90a37b653ec4d0cdaea4e2cd4cae3b24f52",
+    "review/working/app-29-core-c2-hosted-launch-02/artifact/result.json": "103b93f13e89a298653319497468b544d15a47970e1c2b9fcc1230decfca36eb",
+    "review/working/app-29-core-c2-hosted-launch-02/artifact/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.xml": "465024fa05e267de6ec2eae2a8189363e397422baf7e2004f7286992f28b816f",
+    "review/working/app-29-core-c2-hosted-launch-02/artifact/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest.xml": "ee2bfcbb25e2386967c0215e587873b730ec585d2532413d50db22c66f7ecf8c"
+  },
+  "native_candidate_evidence": {
+    "review/remediation/app-29-native05-primary-admission.json": "f52566b9899c49999326e43d8d68346abd7f35bd5bd7f584e939b4c1e7e39d00",
+    "review/remediation/app-29-native05-independent-result-review.md": "7fc76ba1751a3db51f268449457be8ae1140711e31f1e92874facef637d5cb1c",
+    "review/remediation/app-29-core-c2-isolation-getter-primary-agreement.md": "322ac807f43a3c69011f0ae0978136853cc4fccc9dffbbc43ce2ab03da36833d",
+    "review/remediation/app-29-core-c2-isolation-getter-independent-review.md": "4f6b03f4167b12894eac04a41f67609c292803cb7c68a5c3e0ddbd260af34b9a",
+    "review/working/app-29-driver-cut-native-build-05/result.json": "93663b4ab678b90d8e4680ec9e1a10313cbdd9d6d596f2c289accd0b35296c06",
+    "review/working/app-29-driver-cut-native-build-05/primary-result-collection.json": "61e733c0236d1f01ed7676bd63cd8fc5acccae90bc2987d6fd764ed03412070c",
+    "review/working/app-29-driver-cut-native-build-05/sources-after.json": "e3ae4b1579c4e46a7571f7d0c80fd15f9ff946d4056e0089c204a70cbac0d57e",
+    "review/working/app-29-driver-cut-native-build-05/vendor-inputs.json": "45893288a3ca0d820b134e54c670b9a85175ea43930c9e9d8544ed3fd7a7bcbe",
+    "review/working/app-29-core-c2-isolation-getter-source-01/SEAL.sha256": "529c90aea9e37bbf54ed9a51cab698c877b8297c4f18b7a8427fae1ad5d5755a",
+    "review/working/app-29-core-c2-isolation-getter-source-01/source-delta.patch": "5be5cd1adb568dc796a01f7756b070cc7fead7c64d99ee925c12530ab8e772ae"
+  },
+  "limits": [
+    "One Test task, one worker, exactly two methods; no wildcard, backtick or parentheses in argv selectors. Compilation is not limited to these methods.",
+    "Raw fixed-case scalar lines are best-effort and non-atomic, not causal or lifecycle-completion evidence. Missing/UNAVAILABLE output is not diagnostic success.",
+    "Record actual FAIL/ERROR/SKIP outcomes; Gradle and owned-child nonzero exits remain sticky. No retry, expected-state, timeout or cleanup waiver.",
+    "No positive worker-witness expectations. Effective classpath and retained class-load logs are context only; Native05 remains UNQUALIFIED.",
+    "Historical45 passes remain hosted02-only. This attempt cannot become a new full47/consumer/native qualification.",
+    "Preserve all466 current paths, all348 historical seed paths, all199 snapshot subjects, old authorities and old evidence.",
+    "D05 PARTIAL / D06 unreviewed; W03/native/full qualification remain open. No execution authorized by this preparation."
+  ]
+}

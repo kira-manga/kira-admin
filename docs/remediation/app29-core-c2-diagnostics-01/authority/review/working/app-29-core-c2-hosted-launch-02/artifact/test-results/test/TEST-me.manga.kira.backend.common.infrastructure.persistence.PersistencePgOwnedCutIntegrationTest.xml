@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" tests="31" skipped="0" failures="2" errors="0" timestamp="2026-09-12T04:17:39.357Z" hostname="runnervmlun5p" time="55.649">
+  <properties/>
+  <testcase name="throwing original RETURN override leaves F G T free and retires its exact source without a second return()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="31.624">
+    <failure message="me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryException: Persistence boundary rejected: TIME_BUDGET_EXHAUSTED." type="me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryException">me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryException: Persistence boundary rejected: TIME_BUDGET_EXHAUSTED.
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryFailureKt.rejectPersistenceBoundary(PersistenceBoundaryFailure.kt:28)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistenceTimeBudget.remainingMillis(PersistenceTimeBudget.kt:27)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleTestScopeKt.awaitLifecycleFact(PgLifecycleTestScope.kt:86)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleTestScopeKt.awaitLifecycleFact$default(PgLifecycleTestScope.kt:84)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.OwnedCutPool.close(PersistencePgOwnedCutIntegrationTest.kt:1265)
+	at app//kotlin.jdk7.AutoCloseableKt.closeFinally(AutoCloseableJVM.kt:42)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTestKt.withOwnedCutPool(PersistencePgOwnedCutIntegrationTest.kt:1241)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.throwing original RETURN override leaves F G T free and retires its exact source without a second return(PersistencePgOwnedCutIntegrationTest.kt:730)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="original provider retains a real opening capsule without inventing tracked transport evidence()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.157"/>
+  <testcase name="consented real Hikari recycle tail retains no successor eviction or abort authority()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.088"/>
+  <testcase name="real pooled TypeInfo cache and unexposed describe shell survive fresh roots and receive own terminal first closes()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.161"/>
+  <testcase name="throwing overriding original checkout sample cannot orphan its captured handle or future return right()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.076"/>
+  <testcase name="actual RETURN interruption defeats a false override while outer actor custody survives held restoration()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.085"/>
+  <testcase name="failed post consent real Hikari tail seals actor admission but cannot retire the successor epoch()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="18.07">
+    <failure message="me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryException: Persistence boundary rejected: TIME_BUDGET_EXHAUSTED." type="me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryException">me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryException: Persistence boundary rejected: TIME_BUDGET_EXHAUSTED.
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryFailureKt.rejectPersistenceBoundary(PersistenceBoundaryFailure.kt:28)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistenceTimeBudget.remainingMillis(PersistenceTimeBudget.kt:27)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleTestScopeKt.awaitLifecycleFact(PgLifecycleTestScope.kt:86)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleTestScopeKt.awaitLifecycleFact$default(PgLifecycleTestScope.kt:84)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.OwnedCutPool.close(PersistencePgOwnedCutIntegrationTest.kt:1265)
+	at app//kotlin.jdk7.AutoCloseableKt.closeFinally(AutoCloseableJVM.kt:42)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTestKt.withOwnedCutPool(PersistencePgOwnedCutIntegrationTest.kt:1241)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.failed post consent real Hikari tail seals actor admission but cannot retire the successor epoch(PersistencePgOwnedCutIntegrationTest.kt:576)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="metadata type cache hidden statement receives its own first close after real producer drain()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.082"/>
+  <testcase name="RETURN InterruptedException adaptation throwing another InterruptedException never retries restoration after actor end()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.062"/>
+  <testcase name="actual checkout interruption beats a false override and restores only after source refusal under retained acquisition()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.068"/>
+  <testcase name="real lease return expiry before actor entry revokes only its unused future right and retains physical retirement()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="1.159"/>
+  <testcase name="throwing RETURN interrupt restoration cannot undo retirement or erase its actor failure()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.056"/>
+  <testcase name="ownership lock refusal precedes any real lease return issuance and does not orphan the future right()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.054"/>
+  <testcase name="RETURN InterruptedException adaptation throwing Error preserves that error without a late restoration callback()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.053"/>
+  <testcase name="throwing checkout interrupt restoration preserves refused source and authentic acquisition cleanup()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.055"/>
+  <testcase name="real post commit Blob work cannot silently commit through Hikari auto commit reset()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.099"/>
+  <testcase name="RETURN override InterruptedException publishes source failure before an overriding self interrupt can block()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.055"/>
+  <testcase name="real Array result hidden plain parent denies reuse and retires without losing its own native custody()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.107"/>
+  <testcase name="real commit failure retains unknown outcome and refuses reset before native auto commit()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.056"/>
+  <testcase name="blocked overriding final RETURN sample spends the same real allowance and cannot commit after expiry()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="1.045"/>
+  <testcase name="injected missing refcursor makes real first close fail and duplicate success cannot heal it()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.068"/>
+  <testcase name="genuine throwing RETURN TL entry restores the authentic lineage and revokes only its still unused future right()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.073"/>
+  <testcase name="genuine RETURN core TL failure after native actual end keeps its last producer through witnessed process only exit()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="1.017"/>
+  <testcase name="genuine checkout acquisition end TL failure keeps undelivered custody through witnessed process only exit()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.903"/>
+  <testcase name="real native finalizers end before the held core last count and a racing terminal seal still denies return()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.067"/>
+  <testcase name="blocked overriding original checkout sample retains its real holder with F G T free before successful delivery()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.054"/>
+  <testcase name="required adapter resolves all22 exact descriptors and rejects missing changed or foreign helper()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.07"/>
+  <testcase name="prepared describe temporary result is not certified by parent close and is genuinely closed at terminal()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.034"/>
+  <testcase name="real native first close remains in progress through its actual lock and duplicate lease close cannot consume the return()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.052"/>
+  <testcase name="lost core returned receipt skips speculative capsule cleanup while real terminal close ends unknown()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.033"/>
+  <testcase name="already admitted native stream read survives seal while foreign cancel preserves its original lineage()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="0.037"/>
+  <system-out><![CDATA[04:17:39.556 [Test worker] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+04:17:39.569 [Test worker] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+04:17:39.583 [Test worker] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 1.21.4
+04:17:40.296 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with Environment variables, system properties and defaults. Resolved dockerHost=unix:///var/run/docker.sock
+04:17:40.298 [Test worker] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+04:17:40.333 [Test worker] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 28.0.4
+  API Version: 1.48
+  Operating System: Ubuntu 24.04.5 LTS
+  Total Memory: 7937 MB
+04:17:40.385 [Test worker] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling docker image: testcontainers/ryuk:0.12.0. Please be patient; this may take some time but only needs to be done once.
+04:17:40.388 [Test worker] INFO org.testcontainers.utility.RegistryAuthLocator -- Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: testcontainers/ryuk:latest, configFile: /home/runner/work/_temp/app29-core-c2-02-34672394928-1/home/.docker/config.json, configEnv: DOCKER_AUTH_CONFIG). Falling back to docker-java default behaviour. Exception message: Status 404: No config supplied. Checked in order: /home/runner/work/_temp/app29-core-c2-02-34672394928-1/home/.docker/config.json (file not found), DOCKER_AUTH_CONFIG (not set)
+04:17:41.112 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Starting to pull image
+04:17:41.136 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  0 pending,  0 downloaded,  0 extracted, (0 bytes/0 bytes)
+04:17:41.647 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  2 pending,  1 downloaded,  0 extracted, (142 KB/? MB)
+04:17:41.717 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  1 pending,  2 downloaded,  0 extracted, (2 MB/? MB)
+04:17:41.747 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  0 pending,  3 downloaded,  0 extracted, (2 MB/11 MB)
+04:17:41.827 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  0 pending,  3 downloaded,  1 extracted, (5 MB/11 MB)
+04:17:42.329 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  0 pending,  3 downloaded,  2 extracted, (6 MB/11 MB)
+04:17:42.449 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  0 pending,  3 downloaded,  3 extracted, (11 MB/11 MB)
+04:17:42.460 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pull complete. 3 layers, pulled in 1s (downloaded 11 MB at 11 MB/s)
+04:17:42.460 [Test worker] INFO tc.testcontainers/ryuk:0.12.0 -- Image testcontainers/ryuk:0.12.0 pull took PT2.07518597S
+04:17:42.497 [Test worker] INFO tc.testcontainers/ryuk:0.12.0 -- Creating container for image: testcontainers/ryuk:0.12.0
+04:17:42.609 [Test worker] INFO tc.testcontainers/ryuk:0.12.0 -- Container testcontainers/ryuk:0.12.0 is starting: 05103ae8fbc052bdd03b07e122c803061458d0f12e7aaf62b85dfb6bf51aa010
+04:17:42.901 [Test worker] INFO tc.testcontainers/ryuk:0.12.0 -- Container testcontainers/ryuk:0.12.0 started in PT0.4041493S
+04:17:42.905 [Test worker] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+04:17:42.906 [Test worker] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+04:17:42.906 [Test worker] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+04:17:42.909 [Test worker] INFO tc.postgres:17.6-alpine -- Pulling docker image: postgres:17.6-alpine. Please be patient; this may take some time but only needs to be done once.
+04:17:43.600 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Starting to pull image
+04:17:43.601 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending,  0 downloaded,  0 extracted, (0 bytes/0 bytes)
+04:17:44.020 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  9 pending,  1 downloaded,  0 extracted, (968 bytes/? MB)
+04:17:44.122 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  8 pending,  2 downloaded,  0 extracted, (63 KB/? MB)
+04:17:44.166 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  7 pending,  3 downloaded,  0 extracted, (1 MB/? MB)
+04:17:44.222 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  6 pending,  4 downloaded,  0 extracted, (1 MB/? MB)
+04:17:44.281 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  6 pending,  4 downloaded,  1 extracted, (3 MB/? MB)
+04:17:44.459 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  5 pending,  5 downloaded,  1 extracted, (3 MB/? MB)
+04:17:44.461 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  4 pending,  6 downloaded,  1 extracted, (3 MB/? MB)
+04:17:44.465 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  4 pending,  6 downloaded,  2 extracted, (3 MB/? MB)
+04:17:44.539 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  4 pending,  6 downloaded,  3 extracted, (4 MB/? MB)
+04:17:44.554 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  4 pending,  6 downloaded,  4 extracted, (4 MB/? MB)
+04:17:44.663 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  3 pending,  7 downloaded,  4 extracted, (8 MB/? MB)
+04:17:44.677 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  2 pending,  8 downloaded,  4 extracted, (8 MB/? MB)
+04:17:44.874 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  1 pending,  9 downloaded,  4 extracted, (76 MB/? MB)
+04:17:44.928 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  4 extracted, (76 MB/105 MB)
+04:17:50.120 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  5 extracted, (105 MB/105 MB)
+04:17:50.142 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  6 extracted, (105 MB/105 MB)
+04:17:50.175 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  7 extracted, (105 MB/105 MB)
+04:17:50.191 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  8 extracted, (105 MB/105 MB)
+04:17:50.204 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  9 extracted, (105 MB/105 MB)
+04:17:50.221 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded, 10 extracted, (105 MB/105 MB)
+04:17:50.228 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pull complete. 10 layers, pulled in 6s (downloaded 105 MB at 17 MB/s)
+04:17:50.228 [Test worker] INFO tc.postgres:17.6-alpine -- Image postgres:17.6-alpine pull took PT7.318316738S
+04:17:50.231 [Test worker] INFO tc.postgres:17.6-alpine -- Creating container for image: postgres:17.6-alpine
+04:17:50.251 [Test worker] INFO tc.postgres:17.6-alpine -- Container postgres:17.6-alpine is starting: bef7f46656117d3c9deb0b25d1980a26af7c6ac8aa9e315d4fc568751e790c63
+04:17:52.354 [Test worker] INFO tc.postgres:17.6-alpine -- Container postgres:17.6-alpine started in PT2.122340151S
+04:17:52.355 [Test worker] INFO tc.postgres:17.6-alpine -- Container is started (JDBC URL: jdbc:postgresql://localhost:32769/w03_lifecycle?loggerLevel=OFF)
+04:17:52.775 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-1 - Starting...
+04:17:52.786 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-1 - Start completed.
+OWNED_CALLER_SCOPE_EXIT thread_ids=[48] all_terminated=true
+04:17:52.960 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-1 - Shutdown initiated...
+04:18:02.963 [Test worker] WARN com.zaxxer.hikari.pool.HikariPool -- Timed-out waiting for close connection executor to shutdown
+04:18:02.963 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-1 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+PG_LIFECYCLE_ROOT_CLEANUP result=DRIVER_CONTRACT_ONLY_ENDED actors=11 all_terminated=true proof=REAL_COMPOSITION
+04:18:11.156 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-2 - Starting...
+04:18:11.157 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-2 - Start completed.
+FACTORY_SCOPE_EXIT factory_threads=[] caller_threads=[76] all_terminated=true
+04:18:11.214 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-2 - Shutdown initiated...
+04:18:11.216 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-2 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:11.247 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-3 - Starting...
+04:18:11.248 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-3 - Start completed.
+04:18:11.379 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-3 - Shutdown initiated...
+04:18:11.382 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-3 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:11.409 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-4 - Starting...
+04:18:11.410 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-4 - Start completed.
+OWNED_CALLER_SCOPE_EXIT thread_ids=[109] all_terminated=true
+04:18:11.441 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-4 - Shutdown initiated...
+04:18:11.468 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-4 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:11.489 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-5 - Starting...
+04:18:11.490 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-5 - Start completed.
+OWNED_CALLER_SCOPE_EXIT thread_ids=[125] all_terminated=true
+04:18:11.530 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-5 - Shutdown initiated...
+04:18:11.555 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-5 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:11.566 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-6 - Starting...
+04:18:11.567 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-6 - Start completed.
+FACTORY_SCOPE_EXIT factory_threads=[] caller_threads=[142] all_terminated=true
+04:18:11.605 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-6 - Shutdown initiated...
+04:18:21.623 [Test worker] WARN com.zaxxer.hikari.pool.HikariPool -- Timed-out waiting for close connection executor to shutdown
+04:18:21.623 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-6 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=11 all_terminated=true proof=REAL_COMPOSITION
+04:18:29.721 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-7 - Starting...
+04:18:29.722 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-7 - Start completed.
+OWNED_CALLER_SCOPE_EXIT thread_ids=[170] all_terminated=true
+04:18:29.748 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-7 - Shutdown initiated...
+04:18:29.769 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-7 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:29.783 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-8 - Starting...
+04:18:29.784 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-8 - Start completed.
+OWNED_CALLER_SCOPE_EXIT thread_ids=[186] all_terminated=true
+04:18:29.816 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-8 - Shutdown initiated...
+04:18:29.840 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-8 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:29.853 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-9 - Starting...
+04:18:29.855 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-9 - Start completed.
+FACTORY_SCOPE_EXIT factory_threads=[] caller_threads=[202] all_terminated=true
+04:18:30.989 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-9 - Shutdown initiated...
+04:18:30.990 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-9 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:31.013 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-10 - Starting...
+04:18:31.014 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-10 - Start completed.
+OWNED_CALLER_SCOPE_EXIT thread_ids=[218] all_terminated=true
+04:18:31.036 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-10 - Shutdown initiated...
+04:18:31.059 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-10 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:31.069 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-11 - Starting...
+04:18:31.070 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-11 - Start completed.
+04:18:31.085 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-11 - Shutdown initiated...
+04:18:31.115 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-11 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:31.125 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-12 - Starting...
+04:18:31.126 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-12 - Start completed.
+OWNED_CALLER_SCOPE_EXIT thread_ids=[250] all_terminated=true
+04:18:31.146 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-12 - Shutdown initiated...
+04:18:31.169 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-12 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:31.179 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-13 - Starting...
+04:18:31.181 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-13 - Start completed.
+OWNED_CALLER_SCOPE_EXIT thread_ids=[266] all_terminated=true
+04:18:31.201 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-13 - Shutdown initiated...
+04:18:31.224 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-13 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:31.233 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-14 - Starting...
+04:18:31.235 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-14 - Start completed.
+04:18:31.301 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-14 - Shutdown initiated...
+04:18:31.322 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-14 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:31.334 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-15 - Starting...
+04:18:31.336 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-15 - Start completed.
+OWNED_CALLER_SCOPE_EXIT thread_ids=[298] all_terminated=true
+04:18:31.355 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-15 - Shutdown initiated...
+04:18:31.379 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-15 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:31.391 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-16 - Starting...
+04:18:31.392 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-16 - Start completed.
+04:18:31.459 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-16 - Shutdown initiated...
+04:18:31.486 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-16 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:31.494 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-17 - Starting...
+04:18:31.495 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-17 - Start completed.
+04:18:31.529 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-17 - Shutdown initiated...
+04:18:31.543 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-17 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:31.554 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-18 - Starting...
+04:18:31.555 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-18 - Start completed.
+OWNED_CALLER_SCOPE_EXIT thread_ids=[346] all_terminated=true
+04:18:32.577 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-18 - Shutdown initiated...
+04:18:32.578 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-18 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:32.600 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-19 - Starting...
+04:18:32.601 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-19 - Start completed.
+04:18:32.632 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-19 - Shutdown initiated...
+04:18:32.656 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-19 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=UNKNOWN actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:32.671 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-20 - Starting...
+04:18:32.673 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-20 - Start completed.
+04:18:32.700 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-20 - Shutdown initiated...
+04:18:32.728 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-20 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+PG_POOL_PENDING_RETAINED mode=POOL_CORE_LAST_COUNT_TL_FAILURE lane=ORDINARY recipe=DEFAULT q=0 nonce=ba1f8811-f90b-46dd-963c-a8c5353e4e2a cut=RETURN_CORE_LAST_COUNT_TL native_actual_end=true core_producer_ended=false future_entries=0 transfer_consented=false caller_terminated=true product_end=false
+PG_POOL_PENDING_EXIT_REQUESTED mode=POOL_CORE_LAST_COUNT_TL_FAILURE lane=ORDINARY recipe=DEFAULT q=0 nonce=ba1f8811-f90b-46dd-963c-a8c5353e4e2a cleanup=PROCESS_ONLY product_end=false
+
+PG_DATABASE_CHILD_CLEANUP mode=POOL_CORE_LAST_COUNT_TL_FAILURE lane=ORDINARY recipe=DEFAULT q=0 nonce=ba1f8811-f90b-46dd-963c-a8c5353e4e2a pid=3210 alive=false forced=false reader_joined=true streams_closed=true output_bytes=483 output_overflow=false output_read_failed=false output_eof=true reader_alive=false reader_state=TERMINATED
+PG_POOL_PENDING_PROCESS_OBSERVED mode=POOL_CORE_LAST_COUNT_TL_FAILURE lane=ORDINARY recipe=DEFAULT q=0 nonce=ba1f8811-f90b-46dd-963c-a8c5353e4e2a cleanup=PROCESS_ONLY product_end=false
+PG_POOL_PENDING_RETAINED mode=POOL_ACQUISITION_END_TL_FAILURE lane=ORDINARY recipe=DEFAULT q=0 nonce=bf154150-327e-431d-96da-f87554e5db6f cut=ACQUISITION_END_TL acquisition=ENDING active_acquisitions=1 delivered=false future_entries=0 pool_close_claimed=false caller_terminated=true product_end=false
+PG_POOL_PENDING_EXIT_REQUESTED mode=POOL_ACQUISITION_END_TL_FAILURE lane=ORDINARY recipe=DEFAULT q=0 nonce=bf154150-327e-431d-96da-f87554e5db6f cleanup=PROCESS_ONLY product_end=false
+
+PG_DATABASE_CHILD_CLEANUP mode=POOL_ACQUISITION_END_TL_FAILURE lane=ORDINARY recipe=DEFAULT q=0 nonce=bf154150-327e-431d-96da-f87554e5db6f pid=3245 alive=false forced=false reader_joined=true streams_closed=true output_bytes=484 output_overflow=false output_read_failed=false output_eof=true reader_alive=false reader_state=TERMINATED
+PG_POOL_PENDING_PROCESS_OBSERVED mode=POOL_ACQUISITION_END_TL_FAILURE lane=ORDINARY recipe=DEFAULT q=0 nonce=bf154150-327e-431d-96da-f87554e5db6f cleanup=PROCESS_ONLY product_end=false
+04:18:34.663 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-21 - Starting...
+04:18:34.665 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-21 - Start completed.
+FACTORY_SCOPE_EXIT factory_threads=[] caller_threads=[397] all_terminated=true
+04:18:34.700 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-21 - Shutdown initiated...
+04:18:34.720 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-21 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+04:18:34.729 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-22 - Starting...
+04:18:34.730 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-22 - Start completed.
+OWNED_CALLER_SCOPE_EXIT thread_ids=[414] all_terminated=true
+04:18:34.748 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-22 - Shutdown initiated...
+04:18:34.773 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-22 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=11 all_terminated=true proof=REAL_COMPOSITION
+04:18:34.890 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-23 - Starting...
+04:18:34.891 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-23 - Start completed.
+FACTORY_SCOPE_EXIT factory_threads=[] caller_threads=[443] all_terminated=true
+04:18:34.906 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-23 - Shutdown initiated...
+04:18:34.934 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-23 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+PG_LIFECYCLE_ROOT_CLEANUP result=UNKNOWN actors=11 all_terminated=true proof=REAL_COMPOSITION
+FACTORY_SCOPE_EXIT factory_threads=[] caller_threads=[469] all_terminated=true
+PG_LIFECYCLE_ROOT_CLEANUP result=UNKNOWN actors=11 all_terminated=true proof=REAL_COMPOSITION
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
