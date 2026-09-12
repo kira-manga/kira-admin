@@ -1,6 +1,6 @@
 {
   "authorization": "BACKEND11_ONE_TARGETED_BATCH_AUTHORIZED",
-  "backend_sha": "301044381cc8841c1de8460efb524eff8a0181f1",
+  "backend_sha": "f9bd412ac1c6d2f0ecf495346ddfe01b46250cfa",
   "classes": {
     "me.manga.kira.backend.completion.CompletionExecutionOwnershipTest": 12,
     "me.manga.kira.backend.completion.CompletionLifecycleTest": 15,
@@ -95,5 +95,5 @@
       "queue timeout persists a failure returns 503 and cancels queued provider work"
     ]
   },
-  "status": "PRIMARY AUTHORIZED: one first targeted physical-owner batch on exact public issue commit301044381cc8841c1de8460efb524eff8a0181f1; 51 exact methods/78 source-derived cases/13 classes, normal compilation, source-set statics, real Redis/PostgreSQL and actual test-classpath Lua witness. UNEXECUTED at admission; no provider enablement, integration or full Backend11 acceptance."
+  "status": "PRIMARY AUTHORIZED: one focused followup after actual hosted01 compile/static failure, exact corrected public issue commitf9bd412ac1c6d2f0ecf495346ddfe01b46250cfa; unchanged51 exact methods/78 cases/13 classes, normal compilation, source-set statics, real Redis/PostgreSQL and actual test-classpath Lua witness. UNEXECUTED at admission; completion remains disabled, no integration or Backend11 acceptance."
 }
