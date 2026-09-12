@@ -6,4 +6,9 @@ export default defineConfig({
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
+  test: {
+    environmentOptions: {
+      jsdom: { runScripts: 'outside-only', url: 'http://localhost:3100' },
+    },
+  },
 });
