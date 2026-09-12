@@ -1,0 +1,17 @@
+{
+  "created_utc": "2026-09-12T05:18:08.240967+00:00",
+  "status": "PRIVATE_CHECKPOINT_ONLY_NOT_VALIDATED",
+  "branch": "remediation/app-29-backend-complaints",
+  "head": "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc",
+  "parent": "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+  "source_path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt",
+  "source_sha256": "09ff840b9b3c4532c33ce24c09a60a2b0479084b480ed29f6d21478751e78f99",
+  "bundle_path": "review/working/app-29-core-c2-diagnostics-private-checkpoint-01/backend.bundle",
+  "bundle_sha256": "fe24a5aaac0ef30ae59b0c44ca4c70e5636f7a3e9f93705578d84b04b74e4a11",
+  "bundle_bytes": 2223216,
+  "bundle_refs": "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc refs/heads/remediation/app-29-backend-complaints",
+  "public_push_authorized": false,
+  "private_vendor_ancestry": true,
+  "review_sha256": "bdcc3fdb02daa8250346b1b846db8c87324816e029ed35ebe34f54a4ceb0ee90",
+  "scope": "Two fixed-case test-only scalar diagnostics; production budgets/assertions unchanged; compilation/runtime unverified. No Git push."
+}

@@ -1,0 +1,15 @@
+--- a/ci/app29-gate-b.py
++++ b/ci/app29-gate-b.py
+@@ -46,10 +46,10 @@
+ PREVIOUS_PRIVATE_PARENT = '926927ab805a2a3b78957862f3b744d0fe399ac5'
+ SOURCE_BUNDLE = {'public_prerequisite_sha': PUBLIC_PREREQUISITE, 'private_parent_sha': PRIVATE_PARENT,
+                  'ref': 'refs/heads/' + BACKEND_BRANCH,
+-                 'source_path': 'review/working/app-29-core-c2-diagnostics-private-checkpoint-01/backend.bundle',
++                 'source_path': 'review/working/app-29-core-c2-diagnostics-private-checkpoint-02/backend.bundle',
+                  'path': 'docs/remediation/app29-core-c2-diagnostics-01/inputs/backend.bundle'}
+ BUNDLE_MAX_BYTES = 8 * 1024**2
+-DEPLOYMENTS = {f'review/working/app-29-core-c2-diagnostics-preparation-01/{p}': p for p in (
++DEPLOYMENTS = {f'review/working/app-29-core-c2-diagnostics-preparation-02/{p}': p for p in (
+     'ci/app29-gate-b.py', '.github/workflows/app29-gate-b.yml')}
+ DEPLOYMENTS[PROFILE_FILE] = PROFILE_FILE
+ DEPLOYMENTS[PROFILE_INIT] = PROFILE_INIT

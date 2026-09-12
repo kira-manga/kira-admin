@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" tests="2" skipped="0" failures="2" errors="0" timestamp="2026-09-12T06:31:52.903Z" hostname="runnervmlun5p" time="46.02">
+  <properties/>
+  <testcase name="throwing original RETURN override leaves F G T free and retires its exact source without a second return()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="27.875">
+    <failure message="me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryException: Persistence boundary rejected: TIME_BUDGET_EXHAUSTED." type="me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryException">me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryException: Persistence boundary rejected: TIME_BUDGET_EXHAUSTED.
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryFailureKt.rejectPersistenceBoundary(PersistenceBoundaryFailure.kt:28)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistenceTimeBudget.remainingMillis(PersistenceTimeBudget.kt:27)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleTestScopeKt.awaitLifecycleFact(PgLifecycleTestScope.kt:86)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleTestScopeKt.awaitLifecycleFact$default(PgLifecycleTestScope.kt:84)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.OwnedCutPool.close(PersistencePgOwnedCutIntegrationTest.kt:1282)
+	at app//kotlin.jdk7.AutoCloseableKt.closeFinally(AutoCloseableJVM.kt:42)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTestKt.withOwnedCutPool(PersistencePgOwnedCutIntegrationTest.kt:1246)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.throwing original RETURN override leaves F G T free and retires its exact source without a second return(PersistencePgOwnedCutIntegrationTest.kt:732)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="failed post consent real Hikari tail seals actor admission but cannot retire the successor epoch()" classname="me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest" time="18.143">
+    <failure message="me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryException: Persistence boundary rejected: TIME_BUDGET_EXHAUSTED." type="me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryException">me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryException: Persistence boundary rejected: TIME_BUDGET_EXHAUSTED.
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryFailureKt.rejectPersistenceBoundary(PersistenceBoundaryFailure.kt:28)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistenceTimeBudget.remainingMillis(PersistenceTimeBudget.kt:27)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleTestScopeKt.awaitLifecycleFact(PgLifecycleTestScope.kt:86)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleTestScopeKt.awaitLifecycleFact$default(PgLifecycleTestScope.kt:84)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.OwnedCutPool.close(PersistencePgOwnedCutIntegrationTest.kt:1282)
+	at app//kotlin.jdk7.AutoCloseableKt.closeFinally(AutoCloseableJVM.kt:42)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTestKt.withOwnedCutPool(PersistencePgOwnedCutIntegrationTest.kt:1246)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.failed post consent real Hikari tail seals actor admission but cannot retire the successor epoch(PersistencePgOwnedCutIntegrationTest.kt:577)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[06:31:53.108 [Test worker] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+06:31:53.118 [Test worker] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+06:31:53.131 [Test worker] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 1.21.4
+06:31:53.877 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with Environment variables, system properties and defaults. Resolved dockerHost=unix:///var/run/docker.sock
+06:31:53.879 [Test worker] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+06:31:53.907 [Test worker] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 28.0.4
+  API Version: 1.48
+  Operating System: Ubuntu 24.04.5 LTS
+  Total Memory: 7942 MB
+06:31:53.969 [Test worker] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling docker image: testcontainers/ryuk:0.12.0. Please be patient; this may take some time but only needs to be done once.
+06:31:53.974 [Test worker] INFO org.testcontainers.utility.RegistryAuthLocator -- Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: testcontainers/ryuk:latest, configFile: /home/runner/work/_temp/app29-core-c2-diagnostics-01-34678157417-1/home/.docker/config.json, configEnv: DOCKER_AUTH_CONFIG). Falling back to docker-java default behaviour. Exception message: Status 404: No config supplied. Checked in order: /home/runner/work/_temp/app29-core-c2-diagnostics-01-34678157417-1/home/.docker/config.json (file not found), DOCKER_AUTH_CONFIG (not set)
+06:31:54.239 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Starting to pull image
+06:31:54.305 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  0 pending,  0 downloaded,  0 extracted, (0 bytes/0 bytes)
+06:31:54.366 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  2 pending,  1 downloaded,  0 extracted, (827 KB/? MB)
+06:31:54.379 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  1 pending,  2 downloaded,  0 extracted, (896 KB/? MB)
+06:31:54.451 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  0 pending,  3 downloaded,  0 extracted, (913 KB/11 MB)
+06:31:54.576 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  0 pending,  3 downloaded,  1 extracted, (4 MB/11 MB)
+06:31:54.774 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  0 pending,  3 downloaded,  2 extracted, (4 MB/11 MB)
+06:31:54.822 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  0 pending,  3 downloaded,  3 extracted, (11 MB/11 MB)
+06:31:54.827 [Test worker] INFO tc.testcontainers/ryuk:0.12.0 -- Image testcontainers/ryuk:0.12.0 pull took PT0.856982344S
+06:31:54.882 [Test worker] INFO tc.testcontainers/ryuk:0.12.0 -- Creating container for image: testcontainers/ryuk:0.12.0
+06:31:55.021 [Test worker] INFO tc.testcontainers/ryuk:0.12.0 -- Container testcontainers/ryuk:0.12.0 is starting: 5481a5dfc11961208c1ef301eae92ea2120a3c52348326457d079f7222c8ea30
+06:31:55.518 [Test worker] INFO tc.testcontainers/ryuk:0.12.0 -- Container testcontainers/ryuk:0.12.0 started in PT0.63629162S
+06:31:55.528 [Test worker] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+06:31:55.529 [Test worker] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+06:31:55.529 [Test worker] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+06:31:55.535 [Test worker] INFO tc.postgres:17.6-alpine -- Pulling docker image: postgres:17.6-alpine. Please be patient; this may take some time but only needs to be done once.
+06:31:55.740 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Starting to pull image
+06:31:55.742 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending,  0 downloaded,  0 extracted, (0 bytes/0 bytes)
+06:31:55.855 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  9 pending,  1 downloaded,  0 extracted, (63 KB/? MB)
+06:31:55.872 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  8 pending,  2 downloaded,  0 extracted, (63 KB/? MB)
+06:31:55.877 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  7 pending,  3 downloaded,  0 extracted, (80 KB/? MB)
+06:31:55.904 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  6 pending,  4 downloaded,  0 extracted, (90 KB/? MB)
+06:31:55.923 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  5 pending,  5 downloaded,  0 extracted, (90 KB/? MB)
+06:31:55.959 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  4 pending,  6 downloaded,  0 extracted, (90 KB/? MB)
+06:31:55.979 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  3 pending,  7 downloaded,  0 extracted, (91 KB/? MB)
+06:31:55.988 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  2 pending,  8 downloaded,  0 extracted, (1 MB/? MB)
+06:31:56.040 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  1 pending,  9 downloaded,  0 extracted, (4 MB/? MB)
+06:31:56.045 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  1 pending,  9 downloaded,  1 extracted, (4 MB/? MB)
+06:31:56.086 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  1 pending,  9 downloaded,  2 extracted, (4 MB/? MB)
+06:31:56.136 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  1 pending,  9 downloaded,  3 extracted, (5 MB/? MB)
+06:31:56.152 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  1 pending,  9 downloaded,  4 extracted, (12 MB/? MB)
+06:31:56.967 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  4 extracted, (96 MB/105 MB)
+06:32:00.464 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  5 extracted, (105 MB/105 MB)
+06:32:00.484 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  6 extracted, (105 MB/105 MB)
+06:32:00.504 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  7 extracted, (105 MB/105 MB)
+06:32:00.521 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  8 extracted, (105 MB/105 MB)
+06:32:00.538 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  9 extracted, (105 MB/105 MB)
+06:32:00.552 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded, 10 extracted, (105 MB/105 MB)
+06:32:00.562 [Test worker] INFO tc.postgres:17.6-alpine -- Image postgres:17.6-alpine pull took PT5.026153531S
+06:32:00.562 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pull complete. 10 layers, pulled in 4s (downloaded 105 MB at 26 MB/s)
+06:32:00.565 [Test worker] INFO tc.postgres:17.6-alpine -- Creating container for image: postgres:17.6-alpine
+06:32:00.581 [Test worker] INFO tc.postgres:17.6-alpine -- Container postgres:17.6-alpine is starting: 6af7d7a315982db9a050c9ff4dc2d57a9980b732a5e5df73df82a40003fc1a1f
+06:32:02.103 [Test worker] INFO tc.postgres:17.6-alpine -- Container postgres:17.6-alpine started in PT1.538694178S
+06:32:02.105 [Test worker] INFO tc.postgres:17.6-alpine -- Container is started (JDBC URL: jdbc:postgresql://localhost:32769/w03_lifecycle?loggerLevel=OFF)
+06:32:02.522 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-1 - Starting...
+06:32:02.531 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-1 - Start completed.
+OWNED_CALLER_SCOPE_EXIT thread_ids=[48] all_terminated=true
+OWNED_CUT_SHUTDOWN_DIAGNOSTIC case=RETURN_SAMPLE phase=BEFORE_SHUTDOWN status=CAPTURED budget_remaining_ms=9999 invocation_result=NOT_RETURNED first_close=NOT_INVOKED observation=NOT_OBSERVED actor_capacity=64 actor_retained=2 actor_constructing=0 actor_retired=0 actor_factory_sealed=true actor_fault=BOOKKEEPING_FAILED future_lease_entries=0 active_operations=0 close_queue_size=0 close_pool_size=0 close_active_count=0 close_completed_tasks=0 close_shutdown=false close_terminated=false
+06:32:02.753 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-1 - Shutdown initiated...
+06:32:12.755 [Test worker] WARN com.zaxxer.hikari.pool.HikariPool -- Timed-out waiting for close connection executor to shutdown
+06:32:12.756 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-1 - Shutdown completed.
+OWNED_CUT_SHUTDOWN_DIAGNOSTIC case=RETURN_SAMPLE phase=AFTER_SHUTDOWN status=CAPTURED budget_remaining_ms=0 invocation_result=RETURNED first_close=RETURNED observation=NOT_OBSERVED actor_capacity=64 actor_retained=2 actor_constructing=0 actor_retired=0 actor_factory_sealed=true actor_fault=BOOKKEEPING_FAILED future_lease_entries=0 active_operations=0 close_queue_size=1 close_pool_size=0 close_active_count=0 close_completed_tasks=0 close_shutdown=true close_terminated=false
+OWNED_CUT_SHUTDOWN_DIAGNOSTIC case=RETURN_SAMPLE phase=OBSERVATION_FAILED status=CAPTURED budget_remaining_ms=0 invocation_result=RETURNED first_close=RETURNED observation=PENDING actor_capacity=64 actor_retained=2 actor_constructing=0 actor_retired=0 actor_factory_sealed=true actor_fault=BOOKKEEPING_FAILED future_lease_entries=0 active_operations=0 close_queue_size=1 close_pool_size=0 close_active_count=0 close_completed_tasks=0 close_shutdown=true close_terminated=false
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+06:32:20.802 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-2 - Starting...
+06:32:20.803 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-2 - Start completed.
+FACTORY_SCOPE_EXIT factory_threads=[] caller_threads=[64] all_terminated=true
+OWNED_CUT_SHUTDOWN_DIAGNOSTIC case=FAILED_POST_CONSENT_TAIL phase=BEFORE_SHUTDOWN status=CAPTURED budget_remaining_ms=9999 invocation_result=NOT_RETURNED first_close=NOT_INVOKED observation=NOT_OBSERVED actor_capacity=64 actor_retained=2 actor_constructing=0 actor_retired=0 actor_factory_sealed=true actor_fault=BOOKKEEPING_FAILED future_lease_entries=0 active_operations=0 close_queue_size=1 close_pool_size=0 close_active_count=0 close_completed_tasks=0 close_shutdown=false close_terminated=false
+06:32:20.919 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-2 - Shutdown initiated...
+06:32:30.920 [Test worker] WARN com.zaxxer.hikari.pool.HikariPool -- Timed-out waiting for close connection executor to shutdown
+06:32:30.920 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-2 - Shutdown completed.
+OWNED_CUT_SHUTDOWN_DIAGNOSTIC case=FAILED_POST_CONSENT_TAIL phase=AFTER_SHUTDOWN status=CAPTURED budget_remaining_ms=0 invocation_result=RETURNED first_close=RETURNED observation=NOT_OBSERVED actor_capacity=64 actor_retained=2 actor_constructing=0 actor_retired=0 actor_factory_sealed=true actor_fault=BOOKKEEPING_FAILED future_lease_entries=0 active_operations=0 close_queue_size=1 close_pool_size=0 close_active_count=0 close_completed_tasks=0 close_shutdown=true close_terminated=false
+OWNED_CUT_SHUTDOWN_DIAGNOSTIC case=FAILED_POST_CONSENT_TAIL phase=OBSERVATION_FAILED status=CAPTURED budget_remaining_ms=0 invocation_result=RETURNED first_close=RETURNED observation=PENDING actor_capacity=64 actor_retained=2 actor_constructing=0 actor_retired=0 actor_factory_sealed=true actor_fault=BOOKKEEPING_FAILED future_lease_entries=0 active_operations=0 close_queue_size=1 close_pool_size=0 close_active_count=0 close_completed_tasks=0 close_shutdown=true close_terminated=false
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

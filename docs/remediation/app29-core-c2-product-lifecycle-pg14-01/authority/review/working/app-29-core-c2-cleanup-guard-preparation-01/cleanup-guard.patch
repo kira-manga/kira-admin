@@ -1,0 +1,19 @@
+diff --git a/ci/app29-gate-b.py b/ci/app29-gate-b.py
+--- a/ci/app29-gate-b.py
++++ b/ci/app29-gate-b.py
+@@ -501,13 +501,13 @@
+                 created[cid] = labels
+             else:
+                 destroyed.add(cid)
+-        require(len(created) == 3 and sum(r['image'] == 'postgres:17.6-alpine' for r in created.values()) == 2
++        require(len(created) == 2 and sum(r['image'] == 'postgres:17.6-alpine' for r in created.values()) == 1
+                 and sum(r['image'] == 'testcontainers/ryuk:0.12.0' for r in created.values()) == 1
+                 and destroyed <= created.keys() and remaining <= created.keys(), 'Incomplete/unexpected container journal')
+         pg = [r for r in created.values() if r['image'] == 'postgres:17.6-alpine']
+         ryuk = next(r for r in created.values() if r['image'] != 'postgres:17.6-alpine')
+         sessions = {row.get('org.testcontainers.sessionId', '') for row in pg}
+-        require(len(sessions) == 1, 'Both class fixtures must belong to the one Test worker session')
++        require(len(sessions) == 1, 'The selected class fixture must belong to the one Test worker session')
+         session = sessions.pop()
+         require(re.fullmatch('[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}', session)
+                 and ryuk.get('name') == 'testcontainers-ryuk-' + session, 'Unknown fixture/Ryuk session')

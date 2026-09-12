@@ -1,0 +1,53 @@
+{
+  "at_utc": "2026-09-12T10:33:00.484991+00:00",
+  "runner_status": "FAIL",
+  "session58165_collected_exit": 1,
+  "generated_paths_absent": [
+    ".kira-validation/backend-linux/backend-build",
+    "kira-backend/build",
+    "kira-backend/buildSrc/build"
+  ],
+  "all_command_pids_absent": true,
+  "baseline_daemon_logs_unchanged": 40,
+  "owned_daemon_logs_archived_and_removed": [
+    {
+      "path": "review/working/app-29-core-c2-product-lifecycle-linux-01/owned-daemon-logs/daemon-19225.out.log",
+      "sha256": "c7a0b81c68f40dbe39bb86fc8809941e95f3bc8fdc7f07a3303f333c9a4a48ca",
+      "bytes": 72323,
+      "pid_absent": true
+    }
+  ],
+  "actual_xml": [
+    {
+      "path": "review/working/app-29-core-c2-product-lifecycle-linux-01/reports/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolActorCustodyTest.xml",
+      "sha256": "22ac2503267f33c6cd1168a187bb7fbfcd9ecc8610fdf599debc01296996f17d",
+      "name": "me.manga.kira.backend.common.infrastructure.persistence.PoolActorCustodyTest",
+      "tests": "19",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "path": "review/working/app-29-core-c2-product-lifecycle-linux-01/reports/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest.xml",
+      "sha256": "ca17be23d1286761028147e8bf18a2126f57809f4c40f5e4477515bf54e8c91d",
+      "name": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+      "tests": "19",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    }
+  ],
+  "runner_cleanup": {
+    "child_scope_restored": true,
+    "capture_complete": true,
+    "outputs_absent": true,
+    "frozen_inputs_preserved": true,
+    "dependency_inputs_preserved": true,
+    "private_daemon_pids_after_stop": [],
+    "private_daemon_pids_after_clean": [],
+    "owned_command_pids_absent": true
+  },
+  "disk_free_bytes": 17899761664,
+  "memory_available": "MemAvailable:   62437600 kB",
+  "note": "Actual38 tests nominally PASS and normal compilation performed; owning static failures keep batch FAIL. Independent exact result/static triage remains pending. No unchanged rerun; privatePG10 and broader W03/Native/full remain unexecuted."
+}

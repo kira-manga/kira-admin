@@ -1,0 +1,204 @@
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt
+index 43a3c29..0edd815 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt
+@@ -102,10 +102,12 @@ internal class GuardedDataSource(
+ 
+     internal fun businessReady(): Boolean = launchProfile === PersistencePoolLaunchProfile.CONTROLLED_TEST_ONLY && lifecycle.businessReady()
+ 
+-    internal fun evictOwned(lease: PersistenceJdbcLease, handle: Connection, budget: PersistenceTimeBudget) {
++    internal fun evictOwned(lease: PersistenceJdbcLease, handle: Connection, budget: PersistenceTimeBudget): PersistenceLeaseRetirementClaim {
+         if (!lifecycle.isAuthenticPoolCaller()) PersistenceJdbcGuardContext.refuse()
+-        if (!lease.claimEviction(this, handle, budget)) return
++        val claim = lease.claimEviction(this, handle, budget)
++        if (claim !== PersistenceLeaseRetirementClaim.Claimed) return claim
+         pool.evictConnection(handle) // Exact nontransferable source retirement was claimed first.
++        return claim
+     }
+ 
+     fun requestShutdown(): PoolLifecycle.ShutdownReceipt? = lifecycle.requestShutdown()
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt
+index 62b9733..fddb2e6 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt
+@@ -113,7 +113,7 @@ internal class PersistenceJdbcLease private constructor(
+             handle.close() // No epoch foreground ancestor around this complete Hikari/return extent.
+             if (!attempt.consented()) PersistenceJdbcGuardContext.refuse()
+         } catch (problem: Throwable) {
+-            if (transfer?.consented() == true || transfer?.callerSamplingFailed() == true) operation.failBeforeEnd()
++            if (transfer?.consented() == true || transfer?.callerSamplingFailed() == true) operation.recordReturnIncidentBeforeEnd()
+             failure = problem
+         } finally {
+             try {
+@@ -127,7 +127,11 @@ internal class PersistenceJdbcLease private constructor(
+                     try {
+                         // Exact source ownership is claimed before the private Hikari eviction.
+                         // This is still inside the consumed RETURN frame, never a second ingress.
+-                        owner.evictOwned(this, handle, budget)
++                        val retirement = owner.evictOwned(this, handle, budget)
++                        if (retirement is PersistenceLeaseRetirementClaim.CallerSampleFailed) {
++                            operation.recordReturnIncidentBeforeEnd()
++                            if (failure == null) failure = retirement.failure
++                        }
+                     } catch (problem: Throwable) {
+                         operation.failBeforeEnd()
+                         if (failure == null) failure = problem
+@@ -210,10 +214,10 @@ internal class PersistenceJdbcLease private constructor(
+         lower.finishReturn(this, call)
+     }
+ 
+-    internal fun claimEviction(expectedOwner: GuardedDataSource, candidate: Connection, budget: PersistenceTimeBudget): Boolean {
++    internal fun claimEviction(expectedOwner: GuardedDataSource, candidate: Connection, budget: PersistenceTimeBudget): PersistenceLeaseRetirementClaim {
+         if (owner !== expectedOwner || handle !== candidate || Thread.currentThread() !== original || phase.get() !== Phase.RETURNING ||
+             transfer?.consented() == true || !ownership.currentPoolState(state) || !evictionClaimed.compareAndSet(false, true)
+-        ) return false
++        ) return PersistenceLeaseRetirementClaim.Refused
+         return ownership.retireLeasedState(state, budget, requireNotNull(returnCaller))
+     }
+ 
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt
+index eb03e4b..457128c 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt
+@@ -135,34 +135,39 @@ internal class PersistenceOwnership(private val entry: PersistencePhysicalEntry,
+         return true
+     }
+ 
++    @Suppress("TooGenericExceptionCaught")
+     internal fun retireLeasedState(
+         expected: PersistenceJdbcPoolEpoch,
+         budget: PersistenceTimeBudget,
+         caller: PersistenceOwnedFactoryCaller,
+-    ): Boolean {
++    ): PersistenceLeaseRetirementClaim {
+         val physical = requireNotNull(binding)
+         check(!ownershipLockHeld())
+         // The failed RETURN's original C5 caller/budget survive through this cleanup. Never
+         // recapture a cleared actual flag as a new, apparently uninterrupted allowance.
+-        while (persistenceFactoryRemainingMillis(budget) > 0L && caller.sampleActualFlag() == null && caller.sampleOutsideLocks() == null &&
+-            persistenceFactoryRemainingMillis(budget) > 0L
+-        ) {
++        while (persistenceFactoryRemainingMillis(budget) > 0L && caller.sampleActualFlag() == null) {
++            val interruption = try {
++                caller.sampleOutsideLocks()
++            } catch (failure: Throwable) {
++                return PersistenceLeaseRetirementClaim.CallerSampleFailed(failure)
++            }
++            if (interruption != null || persistenceFactoryRemainingMillis(budget) <= 0L) return PersistenceLeaseRetirementClaim.Refused
+             if (!physical.ledger.lock.tryLock()) {
+                 LockSupport.parkNanos(1_000_000)
+                 continue
+             }
+             try {
+-                if (caller.sampleActualFlag() != null || persistenceFactoryRemainingMillis(budget) == 0L) return false
+-                if (!expected.leased || !currentPoolState(expected)) return false
+-                if (physical.ledger.current(entry.record) !== entry && !entry.retirementRequested.get()) return false
++                if (caller.sampleActualFlag() != null || persistenceFactoryRemainingMillis(budget) == 0L) return PersistenceLeaseRetirementClaim.Refused
++                if (!expected.leased || !currentPoolState(expected)) return PersistenceLeaseRetirementClaim.Refused
++                if (physical.ledger.current(entry.record) !== entry && !entry.retirementRequested.get()) return PersistenceLeaseRetirementClaim.Refused
+                 entry.retirementRequested.set(true)
+                 expected.epoch.sealForTerminal()
+-                return true
++                return PersistenceLeaseRetirementClaim.Claimed
+             } finally {
+                 physical.ledger.lock.unlock()
+             }
+         }
+-        return false
++        return PersistenceLeaseRetirementClaim.Refused
+     }
+ 
+     private fun canTransfer(): Boolean = delivery === Delivery.POOL && !terminalSealed.get() && !entry.retirementRequested.get() &&
+@@ -258,3 +263,14 @@ internal class PersistenceOwnership(private val entry: PersistencePhysicalEntry,
+         private val INSTALL_CALLER_PHASES = setOf(PersistenceOwnedCallerPhase.ATTACHED, PersistenceOwnedCallerPhase.TAKEN)
+     }
+ }
++
++/** Source-retirement claim or exact caller-sample failure only; never a Hikari/native completion receipt. */
++internal sealed interface PersistenceLeaseRetirementClaim {
++    data object Refused : PersistenceLeaseRetirementClaim
++
++    data object Claimed : PersistenceLeaseRetirementClaim
++
++    class CallerSampleFailed(val failure: Throwable) : PersistenceLeaseRetirementClaim {
++        override fun toString(): String = "PersistenceLeaseRetirementClaim.CallerSampleFailed(redacted)"
++    }
++}
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt
+index 8896211..6579259 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt
+@@ -38,6 +38,13 @@ internal class PoolActorCustody(private val owner: PoolLifecycle, private val ga
+         owner.sealBusinessForActorFaultLocked()
+     }
+ 
++    /** Accounted RETURN failure denies business without revoking the existing authenticated creator closure. */
++    internal fun recordCallerIncidentLocked() {
++        check(Thread.holdsLock(gate))
++        if (firstFailure == null) firstFailure = PoolActorFault.BOOKKEEPING_FAILED
++        owner.sealBusinessForActorFaultLocked() // Never reopens an earlier hard factory seal.
++    }
++
+     internal fun failedLocked(): Boolean {
+         check(Thread.holdsLock(gate))
+         return firstFailure != null
+@@ -80,8 +87,8 @@ internal class PoolActorCustody(private val owner: PoolLifecycle, private val ga
+             unproved = true
+         }
+         if (unproved) return PoolActorObservation.UNPROVEN
+-        if (firstFailure != null) return PoolActorObservation.UNKNOWN
+         factorySealed = true // No current or future authentic creator remains under this same protocol.
++        if (firstFailure != null) return PoolActorObservation.UNKNOWN
+         return PoolActorObservation.ENDED
+     }
+ 
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt
+index a61addb..c20f04e 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt
+@@ -377,6 +377,24 @@ internal class PoolLifecycle(private val pool: HikariDataSource, private val own
+         return true
+     }
+ 
++    private fun recordReturnIncidentBeforeEnd(operation: Operation): Boolean {
++        if (owner.ownershipLockHeld()) return false
++        return synchronized(gate) {
++            val frame = operation.frame
++            val entitlement = operation.entitlement
++            if (!frame.authentic(this, issuance) || frame.kind !== PoolCallKind.RETURN || !frame.active() || PoolCallFrames.current() !== frame ||
++                !entitlement.authentic(this, issuance) || !entitlement.preparedForLocked(issuance, operation)
++            ) return@synchronized false
++            // Only the exact prepared current RETURN can reveal broken retained accounting.
++            if (!entitlement.consumedLocked(issuance) || operations <= 0L) {
++                actors.failLocked(PoolActorFault.BOOKKEEPING_FAILED)
++                return@synchronized false
++            }
++            actors.recordCallerIncidentLocked()
++            true // No holder/count/frame end, new allowance or native/epoch disposition.
++        }
++    }
++
+     private fun prepareLeaseEntitlement(ticket: Acquisition): LeaseEntitlement? {
+         if (!ticket.frame.authentic(this, issuance) || owner.ownershipLockHeld()) return null
+         val entitlement = LeaseEntitlement.prepare(this, issuance, Thread.currentThread())
+@@ -527,6 +545,10 @@ internal class PoolLifecycle(private val pool: HikariDataSource, private val own
+         internal fun canEnterLocked(authority: Any, operation: Operation): Boolean = issuance === authority &&
+             phase === EntitlementPhase.AVAILABLE && prepared === operation
+ 
++        internal fun preparedForLocked(authority: Any, operation: Operation): Boolean = issuance === authority && prepared === operation
++
++        internal fun consumedLocked(authority: Any): Boolean = issuance === authority && phase === EntitlementPhase.CONSUMED
++
+         internal fun consumeLocked(authority: Any) {
+             check(issuance === authority && phase === EntitlementPhase.AVAILABLE)
+             phase = EntitlementPhase.CONSUMED
+@@ -556,6 +578,9 @@ internal class PoolLifecycle(private val pool: HikariDataSource, private val own
+ 
+         fun failBeforeEnd(): Boolean = pool.failBeforeEnd(frame)
+ 
++        /** An accounted RETURN incident keeps its original outer extent and existing creator authority, never new business. */
++        fun recordReturnIncidentBeforeEnd(): Boolean = pool.recordReturnIncidentBeforeEnd(this)
++
+         fun end(): Boolean = pool.endFrame(frame)
+ 
+         fun actualFrameEnded(): Boolean = frame.ended()
