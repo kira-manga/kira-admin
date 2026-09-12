@@ -1,0 +1,46 @@
+{
+  "0001-native-owned-cut.patch": {
+    "sha256": "40180292afc345327ce8ae84613477fc7618007b1305b7398838eb5c1aa26c9b",
+    "bytes": 105172
+  },
+  "0002-native-lifetime-correction.patch": {
+    "sha256": "6e1289b1c8bb896467c18788215771ac87e1e5def1c17b8dbad6aac581cad3e9",
+    "bytes": 4616
+  },
+  "0003-native-owned-cut-regressions.patch": {
+    "sha256": "5192043565325ea9cc5830e292f8798749432aa7c4aeb76ebbac9db66dad7ea3",
+    "bytes": 75780
+  },
+  "0004-native-annotation-correction.patch": {
+    "sha256": "c40a13d18f0598e10ce44b964aba932430c416861e9f5ec8dc5b209abae1d231",
+    "bytes": 561
+  },
+  "ABI.md": {
+    "sha256": "3179fac9a31893e84f7a767f516e77c6c14c69ad0a470db7240bd1afc92b5d6f",
+    "bytes": 12627
+  },
+  "LICENSE.pgjdbc": {
+    "sha256": "5be1f67a4d62692cc2fc8b81a71088943fc4c1462bd76fd2f04bc0e965ca6d53",
+    "bytes": 1321
+  },
+  "README.md": {
+    "sha256": "4330c2fbf611056fe690faf73d4d505a76fadbd6eb0b9550f27b8ca0bdad41af",
+    "bytes": 6401
+  },
+  "series": {
+    "sha256": "9d5c1d038dc867124c1a72318fca1c2e325ec48c08a3659fb8da5fb46a0180ee",
+    "bytes": 106
+  },
+  "source-manifest.json": {
+    "sha256": "8b2bda22f7562c22508c5b2b09756824e202db15ba2e1ef47a817c331c6afd8b",
+    "bytes": 5465
+  },
+  "test-source-manifest.json": {
+    "sha256": "31286dd82c852edfd7d3f0304319de8b2d4e098f7f38a045e559841606b803ef",
+    "bytes": 3826
+  },
+  "upstream.lock.json": {
+    "sha256": "c5a611a2f2b2cf2f600f8131754ee8f84da457b8eae53bc424ee4277890ca86a",
+    "bytes": 1644
+  }
+}

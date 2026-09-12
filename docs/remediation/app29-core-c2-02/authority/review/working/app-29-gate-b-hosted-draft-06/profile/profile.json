@@ -1,0 +1,399 @@
+{
+  "schema_version": 1,
+  "profile_id": "app-29-final-jar-consumer-profile-04",
+  "scope": "DEVELOPMENT_CONSUMER_ONLY; Native05 getter3/build evidence accepted narrowly; candidate remains UNQUALIFIED; no Core47 or W03 acceptance",
+  "test_classes": [
+    "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest"
+  ],
+  "task_args": [
+    "test",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest"
+  ],
+  "expected_test_count": 47,
+  "expected_tests": [
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+      "method": "array result metadata generated-key and callable return graphs never expose a native parent",
+      "display_name": "array result metadata generated-key and callable return graphs never expose a native parent()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+      "method": "resource containers struct and ref attributes preserve guards and scalar array types",
+      "display_name": "resource containers struct and ref attributes preserve guards and scalar array types()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+      "method": "same owner array adaptation is private and eager across independent root call identities",
+      "display_name": "same owner array adaptation is private and eager across independent root call identities()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+      "method": "new freed or cross-physical array is refused before either input or consumer native calls",
+      "display_name": "new freed or cross-physical array is refused before either input or consumer native calls()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+      "method": "real private pool rotates fresh borrower roots on one physical session and denies stale graphs before native use",
+      "display_name": "real private pool rotates fresh borrower roots on one physical session and denies stale graphs before native use()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+      "method": "real lease preserves Properties client info defaults and declared stale and foreign failure shapes",
+      "display_name": "real lease preserves Properties client info defaults and declared stale and foreign failure shapes()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+      "method": "deferred current and queued inputs have different lifetimes and rejected preflight is not drain",
+      "display_name": "deferred current and queued inputs have different lifetimes and rejected preflight is not drain()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+      "method": "successful batch drain releases queued references but never erases still current parameters",
+      "display_name": "successful batch drain releases queued references but never erases still current parameters()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+      "method": "unknown length stream conversion is eager while a failed setter retains its actual partial binding",
+      "display_name": "unknown length stream conversion is eager while a failed setter retains its actual partial binding()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+      "method": "row aliases use base column identity and new stale input precedes even label resolution",
+      "display_name": "row aliases use base column identity and new stale input precedes even label resolution()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+      "method": "first close failure is sticky and cleanup remains admitted after business stop but not terminal seal",
+      "display_name": "first close failure is sticky and cleanup remains admitted after business stop but not terminal seal()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+      "method": "savepoint uses private exact owner structural adaptation",
+      "display_name": "savepoint uses private exact owner structural adaptation()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+      "method": "ordinary children and same-thread reentry have no small universal cap",
+      "display_name": "ordinary children and same-thread reentry have no small universal cap()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+      "method": "descendant actual completion does not need G and foreign business stays refused",
+      "display_name": "descendant actual completion does not need G and foreign business stays refused()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+      "method": "resource output is escrowed before wrapping failure and actual extent includes wrapping",
+      "display_name": "resource output is escrowed before wrapping failure and actual extent includes wrapping()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+      "method": "first stream close failure uses IOException declaration without retry or hostile diagnostics",
+      "display_name": "first stream close failure uses IOException declaration without retry or hostile diagnostics()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "required adapter resolves all22 exact descriptors and rejects missing changed or foreign helper",
+      "display_name": "required adapter resolves all22 exact descriptors and rejects missing changed or foreign helper()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "original provider retains a real opening capsule without inventing tracked transport evidence",
+      "display_name": "original provider retains a real opening capsule without inventing tracked transport evidence()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "lost core returned receipt skips speculative capsule cleanup while real terminal close ends unknown",
+      "display_name": "lost core returned receipt skips speculative capsule cleanup while real terminal close ends unknown()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "metadata type cache hidden statement receives its own first close after real producer drain",
+      "display_name": "metadata type cache hidden statement receives its own first close after real producer drain()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "prepared describe temporary result is not certified by parent close and is genuinely closed at terminal",
+      "display_name": "prepared describe temporary result is not certified by parent close and is genuinely closed at terminal()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "real pooled TypeInfo cache and unexposed describe shell survive fresh roots and receive own terminal first closes",
+      "display_name": "real pooled TypeInfo cache and unexposed describe shell survive fresh roots and receive own terminal first closes()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "real Array result hidden plain parent denies reuse and retires without losing its own native custody",
+      "display_name": "real Array result hidden plain parent denies reuse and retires without losing its own native custody()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "real native first close remains in progress through its actual lock and duplicate lease close cannot consume the return",
+      "display_name": "real native first close remains in progress through its actual lock and duplicate lease close cannot consume the return()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "injected missing refcursor makes real first close fail and duplicate success cannot heal it",
+      "display_name": "injected missing refcursor makes real first close fail and duplicate success cannot heal it()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "real native finalizers end before the held core last count and a racing terminal seal still denies return",
+      "display_name": "real native finalizers end before the held core last count and a racing terminal seal still denies return()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "consented real Hikari recycle tail retains no successor eviction or abort authority",
+      "display_name": "consented real Hikari recycle tail retains no successor eviction or abort authority()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "failed post consent real Hikari tail seals actor admission but cannot retire the successor epoch",
+      "display_name": "failed post consent real Hikari tail seals actor admission but cannot retire the successor epoch()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "real post commit Blob work cannot silently commit through Hikari auto commit reset",
+      "display_name": "real post commit Blob work cannot silently commit through Hikari auto commit reset()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "real commit failure retains unknown outcome and refuses reset before native auto commit",
+      "display_name": "real commit failure retains unknown outcome and refuses reset before native auto commit()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "real lease return expiry before actor entry revokes only its unused future right and retains physical retirement",
+      "display_name": "real lease return expiry before actor entry revokes only its unused future right and retains physical retirement()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "ownership lock refusal precedes any real lease return issuance and does not orphan the future right",
+      "display_name": "ownership lock refusal precedes any real lease return issuance and does not orphan the future right()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "blocked overriding original checkout sample retains its real holder with F G T free before successful delivery",
+      "display_name": "blocked overriding original checkout sample retains its real holder with F G T free before successful delivery()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "throwing overriding original checkout sample cannot orphan its captured handle or future return right",
+      "display_name": "throwing overriding original checkout sample cannot orphan its captured handle or future return right()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "actual checkout interruption beats a false override and restores only after source refusal under retained acquisition",
+      "display_name": "actual checkout interruption beats a false override and restores only after source refusal under retained acquisition()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "throwing checkout interrupt restoration preserves refused source and authentic acquisition cleanup",
+      "display_name": "throwing checkout interrupt restoration preserves refused source and authentic acquisition cleanup()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "blocked overriding final RETURN sample spends the same real allowance and cannot commit after expiry",
+      "display_name": "blocked overriding final RETURN sample spends the same real allowance and cannot commit after expiry()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "throwing original RETURN override leaves F G T free and retires its exact source without a second return",
+      "display_name": "throwing original RETURN override leaves F G T free and retires its exact source without a second return()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "actual RETURN interruption defeats a false override while outer actor custody survives held restoration",
+      "display_name": "actual RETURN interruption defeats a false override while outer actor custody survives held restoration()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "throwing RETURN interrupt restoration cannot undo retirement or erase its actor failure",
+      "display_name": "throwing RETURN interrupt restoration cannot undo retirement or erase its actor failure()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "RETURN override InterruptedException publishes source failure before an overriding self interrupt can block",
+      "display_name": "RETURN override InterruptedException publishes source failure before an overriding self interrupt can block()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "RETURN InterruptedException adaptation throwing another InterruptedException never retries restoration after actor end",
+      "display_name": "RETURN InterruptedException adaptation throwing another InterruptedException never retries restoration after actor end()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "RETURN InterruptedException adaptation throwing Error preserves that error without a late restoration callback",
+      "display_name": "RETURN InterruptedException adaptation throwing Error preserves that error without a late restoration callback()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "genuine throwing RETURN TL entry restores the authentic lineage and revokes only its still unused future right",
+      "display_name": "genuine throwing RETURN TL entry restores the authentic lineage and revokes only its still unused future right()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "genuine checkout acquisition end TL failure keeps undelivered custody through witnessed process only exit",
+      "display_name": "genuine checkout acquisition end TL failure keeps undelivered custody through witnessed process only exit()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "genuine RETURN core TL failure after native actual end keeps its last producer through witnessed process only exit",
+      "display_name": "genuine RETURN core TL failure after native actual end keeps its last producer through witnessed process only exit()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "already admitted native stream read survives seal while foreign cancel preserves its original lineage",
+      "display_name": "already admitted native stream read survives seal while foreign cancel preserves its original lineage()"
+    }
+  ],
+  "report_directory": "reports/final-jar-profile-04",
+  "witness_property_file": "worker-runtime.txt",
+  "expected_witnesses": [
+    {
+      "name": "required",
+      "file": "worker-runtime-required.txt",
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "required adapter resolves all22 exact descriptors and rejects missing changed or foreign helper",
+      "origin_classes": [
+        "org.postgresql.Driver",
+        "org.postgresql.jdbc.KiraOwnedJdbcCut",
+        "org.postgresql.jdbc.KiraOwnedJdbcCut$1",
+        "org.postgresql.jdbc.KiraOwnedJdbcCut$Opening",
+        "org.postgresql.jdbc.KiraOwnedJdbcCut$Root",
+        "org.postgresql.jdbc.KiraOwnedJdbcCut$Owner",
+        "org.postgresql.jdbc.KiraOwnedJdbcCut$Life",
+        "org.postgresql.jdbc.KiraOwnedJdbcCut$Invocation",
+        "org.postgresql.util.DriverInfo",
+        "org.postgresql.util.LazyCleanerImpl",
+        "org.postgresql.util.LazyCleanerImpl$CleanableWrapper",
+        "org.postgresql.shaded.com.ongres.scram.client.ScramClient"
+      ]
+    },
+    {
+      "name": "original",
+      "file": "worker-runtime-original.txt",
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "original provider retains a real opening capsule without inventing tracked transport evidence",
+      "origin_classes": [
+        "org.postgresql.Driver",
+        "org.postgresql.jdbc.KiraOwnedJdbcCut",
+        "org.postgresql.jdbc.KiraOwnedJdbcCut$1",
+        "org.postgresql.jdbc.KiraOwnedJdbcCut$Opening",
+        "org.postgresql.jdbc.KiraOwnedJdbcCut$Root",
+        "org.postgresql.jdbc.KiraOwnedJdbcCut$Owner",
+        "org.postgresql.jdbc.KiraOwnedJdbcCut$Life",
+        "org.postgresql.jdbc.KiraOwnedJdbcCut$Invocation",
+        "org.postgresql.util.DriverInfo",
+        "org.postgresql.util.LazyCleanerImpl",
+        "org.postgresql.util.LazyCleanerImpl$CleanableWrapper",
+        "org.postgresql.shaded.com.ongres.scram.client.ScramClient",
+        "org.postgresql.jdbc.PgConnection"
+      ]
+    }
+  ],
+  "original_provider_gate": "app-29-gate-b-hosted-01",
+  "original_provider_gate_note": "Unchanged original-provider test assertion only; not this run identity or historical Gate B acceptance. Both new witnesses require profile04 and the exact Native05 candidate.",
+  "final_jar": {
+    "path": "review/working/app-29-driver-cut-native-build-05/artifacts/postgresql-42.7.12-kira.1-osgi.jar",
+    "sha256": "50f7dc4a6314cc5105f4990be26ba8be65ae242e1f7e62652cc60d6a2c0e03df",
+    "bytes": 1200036,
+    "source_path": "review/working/app-29-driver-cut-native-build-05/artifacts/postgresql-42.7.12-kira.1-osgi.jar",
+    "qualification": "UNQUALIFIED",
+    "candidate_id": "app-29-driver-cut-native-build-05-isolation-getter-source-01"
+  },
+  "checker": {
+    "path": "review/working/app-29-final-jar-consumer-profile-01/inputs/checker-qual-3.55.1.jar",
+    "sha256": "857658c8bdcbff794949a8d9922f88d63ee3751c203c7cd7d21ea97f9e745288",
+    "bytes": 241885,
+    "source_path": "review/working/app-29-final-jar-consumer-profile-01/inputs/checker-qual-3.55.1.jar"
+  },
+  "removed_stock": {
+    "group": "org.postgresql",
+    "module": "postgresql",
+    "version": "42.7.12",
+    "sha256": "31fbf6f06b2217fb51d5100cee51b22625cc81640da0679b47914e54c1e6377c"
+  },
+  "original_init": {
+    "path": "review/working/app-29-w01-local-dependencies.init.gradle",
+    "sha256": "429961b98254b89f7ce1d7ba1efa61b8cba28a3bae35353bf3a8ba85f4a1c839"
+  },
+  "origin_classes": [
+    "org.postgresql.Driver",
+    "org.postgresql.jdbc.KiraOwnedJdbcCut",
+    "org.postgresql.jdbc.KiraOwnedJdbcCut$1",
+    "org.postgresql.jdbc.KiraOwnedJdbcCut$Opening",
+    "org.postgresql.jdbc.KiraOwnedJdbcCut$Root",
+    "org.postgresql.jdbc.KiraOwnedJdbcCut$Owner",
+    "org.postgresql.jdbc.KiraOwnedJdbcCut$Life",
+    "org.postgresql.jdbc.KiraOwnedJdbcCut$Invocation",
+    "org.postgresql.util.DriverInfo",
+    "org.postgresql.util.LazyCleanerImpl",
+    "org.postgresql.util.LazyCleanerImpl$CleanableWrapper",
+    "org.postgresql.shaded.com.ongres.scram.client.ScramClient",
+    "org.postgresql.jdbc.PgConnection"
+  ],
+  "checker_class": "org.checkerframework.checker.nullness.qual.NonNull",
+  "jdk": {
+    "feature": 21,
+    "distribution": "temurin",
+    "implementor": "Eclipse Adoptium",
+    "home": "Bound hosted JAVA_HOME; actual Gradle/Test home, executable, version and binary/modules hashes remain controller obligations."
+  },
+  "source_inventory": {
+    "path": "review/working/app-29-real-pool-return-adaptation-c2-01/test-source-inventory.json",
+    "sha256": "823f49b359b8dec60d1b024c2bfd4e3d2d6822a42fed1a8c8d0e905b5ba87650",
+    "kind": "Historical47 textual declarations, NOT runtime discovery. All47 names/test bodies unchanged from current C2/profile03; proposed private source replaces only the shared provenance helper profile/JAR literals."
+  },
+  "core_source_manifest": {
+    "path": "review/working/app-29-real-pool-return-adaptation-c2-01/source-manifest.json",
+    "sha256": "e8f783786c058b39094483488a0a49045a74f81de99733a0bad00051a54d897a"
+  },
+  "binding_test": {
+    "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt",
+    "before_sha256": "2be392d5768db39dce43832be3eb12d3b6d724b60d7a569f51c8be9b704aba7a",
+    "after_sha256": "a92f7a1bc152576c0bc2cd55d3dea49614ca073aea3868c2929e5bf1fea48017",
+    "checkpoint_before_sha256": "d6dea7bad3160f0fcece9afc6d1508a8032e42a423f23ccf5ad30b62925de796",
+    "proposal_path": "review/working/app-29-gate-b-hosted-draft-06/proposed-source/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt",
+    "patch_path": "review/working/app-29-gate-b-hosted-draft-06/review/provenance-only-source.patch",
+    "patch_sha256": "91f67f5429b3411e8d18160e63d88a442532f4d6e6d07ffb056f8a46aaaf79f8"
+  },
+  "limits": [
+    "One Test task, one worker, exactly47 expected cases with no duplicate/skip substitution; no launch authorized.",
+    "Two fixed CREATE_NEW witnesses, same actual worker/positive loader; class-load source:file evidence retains authentic negative-loader distinction.",
+    "Permanent-PENDING probe exit23 is PROCESS_ONLY/product_end=false, never positive lifecycle disposal.",
+    "Historical native03 stays72 pass/1 fail; native04 acceptance covers10 only; Native05 accepts getter3/build only.",
+    "Fresh private provenance-only source commit, new bundle and genuine full-v3 freeze/local preflight are primary prerequisites; preserve all466 current paths, all348 historical seed paths and199 snapshot subjects.",
+    "D05 PARTIAL / D06 unreviewed and DB03 qualification boundaries remain; W06 excluded."
+  ],
+  "predecessor_profile": {
+    "path": "review/working/app-29-final-jar-consumer-profile-03/profile.json",
+    "sha256": "ae027fc473d0c8c55665e23585b6508d59c0d803a8c76a66b694425fbc602b5b"
+  },
+  "current_source_freeze": {
+    "path": "review/working/app-29-w03-integrated-driver-core-c2-hosted-01/manifest.json",
+    "sha256": "7722db657ae06cfbc8a0dfa90975b9e355660653c157c940fabe66e9720ad6c1",
+    "backend_sha": "926927ab805a2a3b78957862f3b744d0fe399ac5",
+    "source_count": 466,
+    "historical_seed_path_count": 348,
+    "snapshot_count": 199,
+    "proposed_delta": "Only binding_test.path gets binding_test.after_sha256; every other declared source hash, path and removal remains exact."
+  },
+  "native_candidate_evidence": {
+    "review/remediation/app-29-native05-primary-admission.json": "f52566b9899c49999326e43d8d68346abd7f35bd5bd7f584e939b4c1e7e39d00",
+    "review/remediation/app-29-native05-independent-result-review.md": "7fc76ba1751a3db51f268449457be8ae1140711e31f1e92874facef637d5cb1c",
+    "review/remediation/app-29-core-c2-isolation-getter-primary-agreement.md": "322ac807f43a3c69011f0ae0978136853cc4fccc9dffbbc43ce2ab03da36833d",
+    "review/remediation/app-29-core-c2-isolation-getter-independent-review.md": "4f6b03f4167b12894eac04a41f67609c292803cb7c68a5c3e0ddbd260af34b9a",
+    "review/working/app-29-driver-cut-native-build-05/result.json": "93663b4ab678b90d8e4680ec9e1a10313cbdd9d6d596f2c289accd0b35296c06",
+    "review/working/app-29-driver-cut-native-build-05/primary-result-collection.json": "61e733c0236d1f01ed7676bd63cd8fc5acccae90bc2987d6fd764ed03412070c",
+    "review/working/app-29-driver-cut-native-build-05/sources-after.json": "e3ae4b1579c4e46a7571f7d0c80fd15f9ff946d4056e0089c204a70cbac0d57e",
+    "review/working/app-29-driver-cut-native-build-05/vendor-inputs.json": "45893288a3ca0d820b134e54c670b9a85175ea43930c9e9d8544ed3fd7a7bcbe",
+    "review/working/app-29-core-c2-isolation-getter-source-01/SEAL.sha256": "529c90aea9e37bbf54ed9a51cab698c877b8297c4f18b7a8427fae1ad5d5755a",
+    "review/working/app-29-core-c2-isolation-getter-source-01/source-delta.patch": "5be5cd1adb568dc796a01f7756b070cc7fead7c64d99ee925c12530ab8e772ae"
+  },
+  "native_candidate_limit": "Three getter tests used SHADOWED project variant plus one osgiJar build. This profile proposes a fresh separately admitted packaged-JAR consumer; it does not convert those results into packaged-runtime, ABI, whole-native/Core/W03 qualification."
+}
