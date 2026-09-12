@@ -238,7 +238,7 @@ class Commands:
         task = None
         try:
             task = self.start(PS if full else GROUP_PS, 'owned-census' if full else 'owned-groups',
-                              seconds=1, end=end, cleaning=cleaning)
+                              seconds=10, end=end, cleaning=cleaning)
             self.reap(task, self.await_exit(task, cleaning), end=task['receipt']['deadline'])
             raw = self.output(task, cleaning)
             require(raw.endswith('\n') and raw.strip(), 'Empty/truncated owned-process census')

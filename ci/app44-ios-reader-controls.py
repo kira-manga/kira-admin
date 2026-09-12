@@ -27,7 +27,7 @@ INPUTS = {
     LEAF + '/project.yml': '7347aafc7e9c10662ab02664aedd8ed25a75ad866aa94bfc7ce6bfc272b5d084',
     LEAF + '/.gitignore': '71560d61d40d33d0b45905f47b600fac842947f43310422b5c61b0012fe7de4e',
 }
-OWNER_SHA = 'b7c9e9b16cc0bc6975b9c34cdd136f09c8ca224a934da3ac341ebc3758345f8b'
+OWNER_SHA = 'eb9a1ad742809aae06fe453afc27e23461981bcf8b888c184eda348e93eae62f'
 XCODE = '/Applications/Xcode_26.4.1.app/Contents/Developer'
 XCODEGEN = {
     'version': '2.46.0',
