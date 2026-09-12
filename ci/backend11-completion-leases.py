@@ -1,6 +1,6 @@
-"""Private focused Backend11 logical-lease/Redis/static batch; never import as a library.
+"""Private focused Backend11 physical-owner/unit/Redis/PostgreSQL/static batch; never import as a library.
 
-Even PASS cannot prove the unresolved physical-provider cap or authorize enablement.
+Even PASS covers only the selected cases, not provider enablement or full Backend11 acceptance.
 """
 import hashlib, json, os, re, shutil, signal, subprocess, tarfile, time
 from pathlib import Path, PurePosixPath
@@ -17,18 +17,211 @@ ENV = dict(os.environ, GRADLE_USER_HOME=str(HOME), W01_RUN=str(W01), TMPDIR=str(
 TARGETS = json.loads((ADMIN / 'ci/backend11-completion-leases.request.json').read_text())
 CLASSES, METHODS = TARGETS['classes'], TARGETS['methods']
 
-# Source-derived invocations: 7 Redis + (7 ordinary + 3/4/4/2 parameter rows) + 2 memory.
-FULL_CLASSES = {
-    'me.manga.kira.backend.completion.RedisCompletionAdmissionIT': 7,
-    'me.manga.kira.backend.completion.CompletionAdmissionResponseTest': 20,
-    'me.manga.kira.backend.completion.InMemoryCompletionAdmissionTest': 2,
+# Source-derived selection: 51 exact methods / 78 invocations (56 unit + 16 real Redis + 6 real PG).
+EXPECTED_CLASSES = {
+    'me.manga.kira.backend.completion.CompletionExecutionOwnershipTest': 12,
+    'me.manga.kira.backend.completion.CompletionLifecycleTest': 15,
+    'me.manga.kira.backend.completion.CompletionInterruptionTest': 1,
+    'me.manga.kira.backend.completion.CompletionStartupTest': 7,
+    'me.manga.kira.backend.completion.CompletionAdmissionResponseTest': 16,
+    'me.manga.kira.backend.completion.InMemoryCompletionAdmissionTest': 1,
+    'me.manga.kira.backend.completion.CompletionDefaultModelTest': 3,
+    'me.manga.kira.backend.completion.EchoCompletionProviderTest': 1,
+    'me.manga.kira.backend.completion.RedisCompletionAdmissionIT': 12,
+    'me.manga.kira.backend.security.RedisCoordinationIT': 4,
+    'me.manga.kira.backend.completion.CompletionReleaseFailureHttpIT': 2,
+    'me.manga.kira.backend.completion.CompletionLifecycleIT': 3,
+    'me.manga.kira.backend.completion.CompletionOverloadIT': 1,
 }
-IT_METHODS = {
-    'me.manga.kira.backend.security.RedisCoordinationIT': 'completion quota and concurrency are shared by instances',
-    'me.manga.kira.backend.security.RedisCoordinationFailureTest': 'completion admission fails closed when shared Redis is unavailable',
+EXPECTED_METHODS = {
+    'me.manga.kira.backend.completion.CompletionExecutionOwnershipTest': [
+        'only the second of caller close and actual body exit releases',
+        'caller close before entry prevents late work and activation',
+        'close racing actual entry never releases an entered body',
+        'slow raw release does not hold the ownership lock',
+        'owed cleanup clears only prior interruption and restores flags even on failure',
+        'canceled or shutdown queued bodies never enter and caller close releases once',
+        'rejected submission leaves a never-entered owner owing one close',
+    ],
+    'me.manga.kira.backend.completion.CompletionLifecycleTest': [
+        'only committed overload ownership can turn an equal-looking winner into 503',
+        'persistence failure remains primary when Redis release is unconfirmed',
+        'failed or rejected RUNNING startup resolves before the queue deadline without provider work',
+        'two workers cannot replace physically running work after caller timeout or interruption',
+        'normal publication precedes slow release even when its acknowledgement fails',
+        'activation denial maps 503 only when its sanitized candidate wins',
+        'activation delay shares the original startup deadline and cancellation still forbids invocation',
+    ],
+    'me.manga.kira.backend.completion.CompletionInterruptionTest': [
+        'request interruption persists a sanitized terminal outcome before restoring interrupt',
+    ],
+    'me.manga.kira.backend.completion.CompletionStartupTest': [
+        'authorization rejects the original startup deadline including equality',
+        'timely authorization survives a descheduled caller and starts its own provider budget',
+        'an observable completed Future can win at the provider wait deadline',
+        'cancellation independently forbids both pending and post-claim authorization',
+        'activation time still consumes the original startup budget and cannot replace a prior decision',
+    ],
+    'me.manga.kira.backend.completion.CompletionAdmissionResponseTest': [
+        'Redis defined rejections preserve codes retries and their HTTP distinction',
+        'indeterminate Redis acquisition denies work without speculative release',
+        'Redis acquire transport failure is unavailable not a caller limit',
+        'malformed Redis acquisition replies deny without a speculative release',
+        'Redis acquire zero and activation one alone admit and release once',
+        'unconfirmed Redis release preserves the result and reports once per application attempt',
+        'invalid release acknowledgements and known decode failures preserve the outcome without retry',
+        'activation denies expired or indeterminate replies without speculative cleanup',
+        'unrelated Redis programming failure is not swallowed as unconfirmed cleanup',
+    ],
+    'me.manga.kira.backend.completion.InMemoryCompletionAdmissionTest': [
+        'activation is explicit single-use and cannot revive a closed reservation',
+    ],
+    'me.manga.kira.backend.completion.CompletionDefaultModelTest': [
+        'invalid defaults reject direct construction before executor metrics admission or provider work',
+        'UNKNOWN and actual HTTP providers reject before executor metrics admission or invocation',
+        'disabled service startup needs no model provider credentials or collaborators',
+    ],
+    'me.manga.kira.backend.completion.EchoCompletionProviderTest': [
+        'name is echo',
+    ],
+    'me.manga.kira.backend.completion.RedisCompletionAdmissionIT': [
+        'two instances sustain unexpired overlapping pending reservations beyond the first key deadline',
+        'expired and replayed releases cannot touch successor tokens or their deadlines',
+        'shorter pending reservations and turnover never shorten a live longer reservation',
+        'acknowledged peer pins remain persistent beyond pending deadlines and only exact release removes them',
+        'expired pending peers cannot activate and pruning never removes a pin',
+        'unknown activation acknowledgement grants nothing while the real pin remains until owned cleanup',
+        'real service pending delay past its actual deadline cannot activate or disturb a pinned successor',
+        'two real services keep a timed out physical worker pinned beyond its former TTL',
+        'legacy malformed oversized and expiring pin state is refused without repair on every operation',
+        'enabled rate state is preflighted before any earlier counter or lease mutation',
+        'token collision and invalid protocol arguments refuse before writes',
+        'exact deadline arithmetic rejects overflow and retains the greatest canonical decimal',
+    ],
+    'me.manga.kira.backend.security.RedisCoordinationIT': [
+        'later completion closes do not repeat an unconfirmed pending release',
+        'unconfirmed pin release retains capacity unless real removal happened before the transport failure',
+    ],
+    'me.manga.kira.backend.completion.CompletionReleaseFailureHttpIT': [
+        'committed HTTP outcome survives Redis release failure',
+    ],
+    'me.manga.kira.backend.completion.CompletionLifecycleIT': [
+        'cancellation wins delayed RUNNING work without relying on its interrupt bit',
+    ],
+    'me.manga.kira.backend.completion.CompletionOverloadIT': [
+        'queue timeout persists a failure returns 503 and cancels queued provider work',
+    ],
+}
+# Gradle's JUnit XML uses parameter display names, not the enclosing method name.
+# Ordinary methods retain (); parameterized identities are pinned to the reviewed source.
+EXPECTED_CASES = {
+    'me.manga.kira.backend.completion.CompletionExecutionOwnershipTest': [
+        '[1] callerFirst=false',
+        '[2] callerFirst=true',
+        'caller close before entry prevents late work and activation()',
+        'close racing actual entry never releases an entered body()',
+        'slow raw release does not hold the ownership lock()',
+        '[1] interruptedBefore=false, throws=false',
+        '[2] interruptedBefore=true, throws=false',
+        '[3] interruptedBefore=false, throws=true',
+        '[4] interruptedBefore=true, throws=true',
+        '[1] cancelQueued=false',
+        '[2] cancelQueued=true',
+        'rejected submission leaves a never-entered owner owing one close()',
+    ],
+    'me.manga.kira.backend.completion.CompletionLifecycleTest': [
+        '[1] won=false',
+        '[2] won=true',
+        'persistence failure remains primary when Redis release is unconfirmed()',
+        '[1] throwFromClaim=false',
+        '[2] throwFromClaim=true',
+        'two-worker ownership [1] interruptCaller=false',
+        'two-worker ownership [2] interruptCaller=true',
+        '[1] releaseFailure=false',
+        '[2] releaseFailure=true',
+        '[1] activation=EXPIRED, won=true',
+        '[2] activation=EXPIRED, won=false',
+        '[3] activation=UNAVAILABLE, won=true',
+        '[4] activation=UNAVAILABLE, won=false',
+        'activation startup deadline [1] interruptCaller=false',
+        'activation startup deadline [2] interruptCaller=true',
+    ],
+    'me.manga.kira.backend.completion.CompletionInterruptionTest': [
+        'request interruption persists a sanitized terminal outcome before restoring interrupt()',
+    ],
+    'me.manga.kira.backend.completion.CompletionStartupTest': [
+        '[1] at=110',
+        '[2] at=111',
+        'timely authorization survives a descheduled caller and starts its own provider budget()',
+        'an observable completed Future can win at the provider wait deadline()',
+        '[1] claimAlreadyStarted=false',
+        '[2] claimAlreadyStarted=true',
+        'activation time still consumes the original startup budget and cannot replace a prior decision()',
+    ],
+    'me.manga.kira.backend.completion.CompletionAdmissionResponseTest': [
+        '[1] result=1, status=429, code=COMPLETION_USER_RATE_LIMIT, retry=60',
+        '[2] result=2, status=429, code=COMPLETION_GLOBAL_RATE_LIMIT, retry=60',
+        '[3] result=3, status=429, code=COMPLETION_DAILY_QUOTA, retry=86400',
+        '[4] result=4, status=503, code=COMPLETION_CONCURRENCY_LIMIT, retry=1',
+        '[1] result=null',
+        '[2] result=-1',
+        '[3] result=5',
+        '[4] result=9223372036854775807',
+        'Redis acquire transport failure is unavailable not a caller limit()',
+        'malformed Redis acquisition replies deny without a speculative release()',
+        'Redis acquire zero and activation one alone admit and release once()',
+        '[1] releaseFailure=true',
+        '[2] releaseFailure=false',
+        'invalid release acknowledgements and known decode failures preserve the outcome without retry()',
+        'activation denies expired or indeterminate replies without speculative cleanup()',
+        'unrelated Redis programming failure is not swallowed as unconfirmed cleanup()',
+    ],
+    'me.manga.kira.backend.completion.InMemoryCompletionAdmissionTest': [
+        'activation is explicit single-use and cannot revive a closed reservation()',
+    ],
+    'me.manga.kira.backend.completion.CompletionDefaultModelTest': [
+        'invalid defaults reject direct construction before executor metrics admission or provider work()',
+        'UNKNOWN and actual HTTP providers reject before executor metrics admission or invocation()',
+        'disabled service startup needs no model provider credentials or collaborators()',
+    ],
+    'me.manga.kira.backend.completion.EchoCompletionProviderTest': [
+        'name is echo()',
+    ],
+    'me.manga.kira.backend.completion.RedisCompletionAdmissionIT': [
+        'two instances sustain unexpired overlapping pending reservations beyond the first key deadline()',
+        'expired and replayed releases cannot touch successor tokens or their deadlines()',
+        'shorter pending reservations and turnover never shorten a live longer reservation()',
+        'acknowledged peer pins remain persistent beyond pending deadlines and only exact release removes them()',
+        'expired pending peers cannot activate and pruning never removes a pin()',
+        'unknown activation acknowledgement grants nothing while the real pin remains until owned cleanup()',
+        'real service pending delay past its actual deadline cannot activate or disturb a pinned successor()',
+        'two real services keep a timed out physical worker pinned beyond its former TTL()',
+        'legacy malformed oversized and expiring pin state is refused without repair on every operation()',
+        'enabled rate state is preflighted before any earlier counter or lease mutation()',
+        'token collision and invalid protocol arguments refuse before writes()',
+        'exact deadline arithmetic rejects overflow and retains the greatest canonical decimal()',
+    ],
+    'me.manga.kira.backend.security.RedisCoordinationIT': [
+        'unconfirmed pending release [1] applyBeforeFailure=false',
+        'unconfirmed pending release [2] applyBeforeFailure=true',
+        'unconfirmed pinned release [1] applyBeforeFailure=false',
+        'unconfirmed pinned release [2] applyBeforeFailure=true',
+    ],
+    'me.manga.kira.backend.completion.CompletionReleaseFailureHttpIT': [
+        '[1] refused=false',
+        '[2] refused=true',
+    ],
+    'me.manga.kira.backend.completion.CompletionLifecycleIT': [
+        '[1] point=STARTUP_TIMEOUT',
+        '[2] point=BEFORE_CLAIM',
+        '[3] point=AFTER_COMMIT',
+    ],
+    'me.manga.kira.backend.completion.CompletionOverloadIT': [
+        'queue timeout persists a failure returns 503 and cancels queued provider work()',
+    ],
 }
 LUA_RESOURCE = 'redis/completion-admission.lua'
-LUA_SHA = '13e19fec2fb83508315854046ce8c111023ba7d36887e5096e47af735bebc8fe'
+LUA_SHA = '29e9cba7ef88e41883999fa4f9c59729df15203ead5cceeeeb005ef8c8a734b8'
 # This small extra init leaves the pinned dependency/ownership helper unchanged. It witnesses
 # the actual test task's classpath before its selected tests, not a Boot jar or provider run.
 LUA_INIT = r'''import groovy.json.JsonOutput
@@ -131,8 +324,8 @@ try:
     from app29_owned_children import OwnedChildren
     OWNER = OwnedChildren()  # Refuse unavailable subreaping before the first command.
     target = TARGETS['backend_sha']
-    require(CLASSES == FULL_CLASSES | {name: 1 for name in IT_METHODS} and
-            all(type(count) is int for count in CLASSES.values()) and METHODS == IT_METHODS, 'Invalid exact Backend11 class/count/method selection')
+    require(CLASSES == EXPECTED_CLASSES and all(type(count) is int for count in CLASSES.values()) and
+            METHODS == EXPECTED_METHODS, 'Invalid exact Backend11 class/count/method selection')
     note('Primary-bound request: ' + json.dumps(TARGETS, sort_keys=True))
     require(re.fullmatch('[0-9a-f]{40}', target) and target != '0' * 40, 'Unbound backend target')
     require(command(['git', 'rev-parse', 'HEAD'], 'backend-sha') == 0, 'Cannot read backend SHA')
@@ -179,7 +372,7 @@ try:
     require(not before, 'Expected a dedicated clean hosted runner; do not touch preexisting containers')
     require(not CANCELLED, 'Cancelled before validation')
     started = True
-    selectors = [name if name in FULL_CLASSES else name + '.' + METHODS[name] for name in CLASSES]
+    selectors = [name + '.' + method for name in CLASSES for method in METHODS[name]]
     tasks = ['compileKotlin', 'compileTestKotlin', 'test'] + [part for name in selectors for part in ('--tests', name)] + ['ktlintMainSourceSetCheck', 'ktlintTestSourceSetCheck', 'detekt', '--continue', '-x', 'jacocoTestReport']
     gradle_exit = command(['./gradlew', '--no-daemon', '--no-parallel', '--no-configuration-cache', '--console=plain', '--max-workers=1', '--no-build-cache', '-Dorg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=512m', '-Dorg.gradle.vfs.watch=false', '-Pkotlin.compiler.execution.strategy=in-process', '--init-script', str(W01 / 'original.init.gradle'), '--init-script', str(W01 / 'completion-lua.init.gradle'), *tasks], 'gradle-test', 18 * 60)
     result = gradle_exit
@@ -246,7 +439,7 @@ finally:
             identities = [(case.get('classname'), case.get('name')) for case in cases]
             require(len(set(identities)) == expected and all(cls == name and method for cls, method in identities), 'Wrong/duplicate testcase identity')
             require(not any(node.tag in ('failure', 'error', 'skipped') for node in suite.iter()), 'Failure/error/skip in focused XML')
-            if name in METHODS: require(identities == [(name, METHODS[name] + '()')], 'Wrong completion-only scenario: ' + name)
+            require({method for _, method in identities} == set(EXPECTED_CASES[name]), 'Wrong Backend11 testcase identities: ' + name)
         xml_verified = True
         witness = lua_observation.get('witness') or {}
         # java.io.File.toURI().toURL() spells local URLs file:/..., not pathlib's file:///....
@@ -311,5 +504,5 @@ finally:
     ownership_status = 'UNKNOWN_OR_INCOMPLETE' if process_status == 'UNKNOWN_OR_INCOMPLETE' or container_status in ('UNKNOWN', 'PRESENT') else ('FORCED' if process_status == 'FORCED' or container_status == 'FORCED' else 'COMPLETE')
     passed = result == 0 and gradle_exit == 0 and xml_verified and lua_verified and sources_clean and preserved and ownership_status == 'COMPLETE' and not cleanup_failed and not CANCELLED
     note(f'validation_result={result}; process_ownership={process_status}; container_ownership={container_status}; ownership={ownership_status}; cleanup_failed={cleanup_failed}; cancelled={CANCELLED}; job_exit={0 if passed else 1}')
-    (REPORTS / 'result.json').write_text(json.dumps({'backend_sha': TARGETS['backend_sha'], 'carrier_sha': os.environ.get('GITHUB_SHA'), 'classes': CLASSES, 'methods': METHODS, 'gradle_exit': gradle_exit, 'validation_exit': result, 'xml_verified': xml_verified, 'xml': xml_observations, 'static_reports': static_reports, 'lua_verified': lua_verified, 'lua': lua_observation, 'physical_provider_cap': 'UNRESOLVED; logical-lease validation is not enablement or full Backend11 acceptance', 'sources_clean': sources_clean, 'reports_preserved': preserved, 'drains': DRAINS, 'process_ownership_status': process_status, 'container_ownership_status': container_status, 'ownership_status': ownership_status, 'cleanup_failed': cleanup_failed, 'containers_absent': containers_absent, 'container_force_requested': container_force_requested, 'cancelled': CANCELLED, 'outputs_absent': outputs_absent, 'status': 'PASS' if passed else 'FAIL'}, indent=2) + '\n')
+    (REPORTS / 'result.json').write_text(json.dumps({'backend_sha': TARGETS['backend_sha'], 'carrier_sha': os.environ.get('GITHUB_SHA'), 'classes': CLASSES, 'methods': METHODS, 'gradle_exit': gradle_exit, 'validation_exit': result, 'xml_verified': xml_verified, 'xml': xml_observations, 'static_reports': static_reports, 'lua_verified': lua_verified, 'lua': lua_observation, 'physical_provider_cap': 'TARGETED_TEST_EVIDENCE_ONLY; not provider enablement or full Backend11 acceptance', 'sources_clean': sources_clean, 'reports_preserved': preserved, 'drains': DRAINS, 'process_ownership_status': process_status, 'container_ownership_status': container_status, 'ownership_status': ownership_status, 'cleanup_failed': cleanup_failed, 'containers_absent': containers_absent, 'container_force_requested': container_force_requested, 'cancelled': CANCELLED, 'outputs_absent': outputs_absent, 'status': 'PASS' if passed else 'FAIL'}, indent=2) + '\n')
 raise SystemExit(0 if passed else 1)

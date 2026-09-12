@@ -1,16 +1,99 @@
 {
   "authorization": "BACKEND11_ONE_TARGETED_BATCH_AUTHORIZED",
-  "backend_sha": "74f0619eea443e6727a3ae07f686f69723894216",
+  "backend_sha": "301044381cc8841c1de8460efb524eff8a0181f1",
   "classes": {
-    "me.manga.kira.backend.completion.RedisCompletionAdmissionIT": 7,
-    "me.manga.kira.backend.completion.CompletionAdmissionResponseTest": 20,
-    "me.manga.kira.backend.completion.InMemoryCompletionAdmissionTest": 2,
-    "me.manga.kira.backend.security.RedisCoordinationIT": 1,
-    "me.manga.kira.backend.security.RedisCoordinationFailureTest": 1
+    "me.manga.kira.backend.completion.CompletionExecutionOwnershipTest": 12,
+    "me.manga.kira.backend.completion.CompletionLifecycleTest": 15,
+    "me.manga.kira.backend.completion.CompletionInterruptionTest": 1,
+    "me.manga.kira.backend.completion.CompletionStartupTest": 7,
+    "me.manga.kira.backend.completion.CompletionAdmissionResponseTest": 16,
+    "me.manga.kira.backend.completion.InMemoryCompletionAdmissionTest": 1,
+    "me.manga.kira.backend.completion.CompletionDefaultModelTest": 3,
+    "me.manga.kira.backend.completion.EchoCompletionProviderTest": 1,
+    "me.manga.kira.backend.completion.RedisCompletionAdmissionIT": 12,
+    "me.manga.kira.backend.security.RedisCoordinationIT": 4,
+    "me.manga.kira.backend.completion.CompletionReleaseFailureHttpIT": 2,
+    "me.manga.kira.backend.completion.CompletionLifecycleIT": 3,
+    "me.manga.kira.backend.completion.CompletionOverloadIT": 1
   },
   "methods": {
-    "me.manga.kira.backend.security.RedisCoordinationIT": "completion quota and concurrency are shared by instances",
-    "me.manga.kira.backend.security.RedisCoordinationFailureTest": "completion admission fails closed when shared Redis is unavailable"
+    "me.manga.kira.backend.completion.CompletionExecutionOwnershipTest": [
+      "only the second of caller close and actual body exit releases",
+      "caller close before entry prevents late work and activation",
+      "close racing actual entry never releases an entered body",
+      "slow raw release does not hold the ownership lock",
+      "owed cleanup clears only prior interruption and restores flags even on failure",
+      "canceled or shutdown queued bodies never enter and caller close releases once",
+      "rejected submission leaves a never-entered owner owing one close"
+    ],
+    "me.manga.kira.backend.completion.CompletionLifecycleTest": [
+      "only committed overload ownership can turn an equal-looking winner into 503",
+      "persistence failure remains primary when Redis release is unconfirmed",
+      "failed or rejected RUNNING startup resolves before the queue deadline without provider work",
+      "two workers cannot replace physically running work after caller timeout or interruption",
+      "normal publication precedes slow release even when its acknowledgement fails",
+      "activation denial maps 503 only when its sanitized candidate wins",
+      "activation delay shares the original startup deadline and cancellation still forbids invocation"
+    ],
+    "me.manga.kira.backend.completion.CompletionInterruptionTest": [
+      "request interruption persists a sanitized terminal outcome before restoring interrupt"
+    ],
+    "me.manga.kira.backend.completion.CompletionStartupTest": [
+      "authorization rejects the original startup deadline including equality",
+      "timely authorization survives a descheduled caller and starts its own provider budget",
+      "an observable completed Future can win at the provider wait deadline",
+      "cancellation independently forbids both pending and post-claim authorization",
+      "activation time still consumes the original startup budget and cannot replace a prior decision"
+    ],
+    "me.manga.kira.backend.completion.CompletionAdmissionResponseTest": [
+      "Redis defined rejections preserve codes retries and their HTTP distinction",
+      "indeterminate Redis acquisition denies work without speculative release",
+      "Redis acquire transport failure is unavailable not a caller limit",
+      "malformed Redis acquisition replies deny without a speculative release",
+      "Redis acquire zero and activation one alone admit and release once",
+      "unconfirmed Redis release preserves the result and reports once per application attempt",
+      "invalid release acknowledgements and known decode failures preserve the outcome without retry",
+      "activation denies expired or indeterminate replies without speculative cleanup",
+      "unrelated Redis programming failure is not swallowed as unconfirmed cleanup"
+    ],
+    "me.manga.kira.backend.completion.InMemoryCompletionAdmissionTest": [
+      "activation is explicit single-use and cannot revive a closed reservation"
+    ],
+    "me.manga.kira.backend.completion.CompletionDefaultModelTest": [
+      "invalid defaults reject direct construction before executor metrics admission or provider work",
+      "UNKNOWN and actual HTTP providers reject before executor metrics admission or invocation",
+      "disabled service startup needs no model provider credentials or collaborators"
+    ],
+    "me.manga.kira.backend.completion.EchoCompletionProviderTest": [
+      "name is echo"
+    ],
+    "me.manga.kira.backend.completion.RedisCompletionAdmissionIT": [
+      "two instances sustain unexpired overlapping pending reservations beyond the first key deadline",
+      "expired and replayed releases cannot touch successor tokens or their deadlines",
+      "shorter pending reservations and turnover never shorten a live longer reservation",
+      "acknowledged peer pins remain persistent beyond pending deadlines and only exact release removes them",
+      "expired pending peers cannot activate and pruning never removes a pin",
+      "unknown activation acknowledgement grants nothing while the real pin remains until owned cleanup",
+      "real service pending delay past its actual deadline cannot activate or disturb a pinned successor",
+      "two real services keep a timed out physical worker pinned beyond its former TTL",
+      "legacy malformed oversized and expiring pin state is refused without repair on every operation",
+      "enabled rate state is preflighted before any earlier counter or lease mutation",
+      "token collision and invalid protocol arguments refuse before writes",
+      "exact deadline arithmetic rejects overflow and retains the greatest canonical decimal"
+    ],
+    "me.manga.kira.backend.security.RedisCoordinationIT": [
+      "later completion closes do not repeat an unconfirmed pending release",
+      "unconfirmed pin release retains capacity unless real removal happened before the transport failure"
+    ],
+    "me.manga.kira.backend.completion.CompletionReleaseFailureHttpIT": [
+      "committed HTTP outcome survives Redis release failure"
+    ],
+    "me.manga.kira.backend.completion.CompletionLifecycleIT": [
+      "cancellation wins delayed RUNNING work without relying on its interrupt bit"
+    ],
+    "me.manga.kira.backend.completion.CompletionOverloadIT": [
+      "queue timeout persists a failure returns 503 and cancels queued provider work"
+    ]
   },
-  "status": "PRIMARY AUTHORIZED: one first31-case logical-lease Redis/compilation/static/Lua batch on this exact public issue commit. UNEXECUTED; no integration, provider enablement or physical-lifetime acceptance."
+  "status": "PRIMARY AUTHORIZED: one first targeted physical-owner batch on exact public issue commit301044381cc8841c1de8460efb524eff8a0181f1; 51 exact methods/78 source-derived cases/13 classes, normal compilation, source-set statics, real Redis/PostgreSQL and actual test-classpath Lua witness. UNEXECUTED at admission; no provider enablement, integration or full Backend11 acceptance."
 }
