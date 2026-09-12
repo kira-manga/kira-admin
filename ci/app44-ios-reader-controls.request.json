@@ -19,6 +19,18 @@
   "expectedRunAttempt": 1,
   "developerDir": "/Applications/Xcode_26.4.1.app/Contents/Developer",
   "ownerSha256": "b7c9e9b16cc0bc6975b9c34cdd136f09c8ca224a934da3ac341ebc3758345f8b",
-  "controllerSha256": "4906460a1f5e45661a962aea3d8ac35fecc2c247948dc5e94aa8218570aff7ca",
-  "workflowSha256": "7dd65fb6e2337402b86e7bd23fed30eba8d931f7d0b7831026ea30aef374fb0c"
+  "controllerSha256": "c81b2a00e35765597caa0df572e741d78279b5c719055084505f5363d45d76d5",
+  "workflowSha256": "7dd65fb6e2337402b86e7bd23fed30eba8d931f7d0b7831026ea30aef374fb0c",
+  "xcodegenIntake": {
+    "version": "2.46.0",
+    "url": "https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.artifactbundle.zip",
+    "archiveBytes": 4286070,
+    "archiveSha256": "ef6d0a23bfb7393387f98e321ffd78a487231172e2e78c48d3c26275c263fd0c",
+    "entryCount": 47,
+    "expandedBytes": 14237480,
+    "layoutSha256": "c1083f8d7cb229bf4628f1bc141756901a4f65d2328361d1cd551305da89c42d",
+    "executable": "xcodegen.artifactbundle/xcodegen-2.46.0-macosx/bin/xcodegen",
+    "executableBytes": 14229032,
+    "executableSha256": "8774da746668bc18fe74e54cbaf10f2631a1fb05947cd374179aa912f14f99db"
+  }
 }

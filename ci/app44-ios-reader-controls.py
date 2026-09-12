@@ -1,9 +1,10 @@
 """Private App44 leaf only. Source-only draft; its unapproved request cannot launch work."""
 import hashlib
 import importlib.util
+import io
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import plistlib
 import re
 import shlex
@@ -12,6 +13,7 @@ import signal
 import stat
 import sys
 import time
+import zipfile
 
 CONTROL = Path(__file__).resolve().parents[1]
 TARGET, CLASS = 'ReaderChromeControlsTests', 'ReaderChromeBarsTests'
@@ -27,6 +29,18 @@ INPUTS = {
 }
 OWNER_SHA = 'b7c9e9b16cc0bc6975b9c34cdd136f09c8ca224a934da3ac341ebc3758345f8b'
 XCODE = '/Applications/Xcode_26.4.1.app/Contents/Developer'
+XCODEGEN = {
+    'version': '2.46.0',
+    'url': 'https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.artifactbundle.zip',
+    'archiveBytes': 4286070,
+    'archiveSha256': 'ef6d0a23bfb7393387f98e321ffd78a487231172e2e78c48d3c26275c263fd0c',
+    'entryCount': 47,
+    'expandedBytes': 14237480,
+    'layoutSha256': 'c1083f8d7cb229bf4628f1bc141756901a4f65d2328361d1cd551305da89c42d',
+    'executable': 'xcodegen.artifactbundle/xcodegen-2.46.0-macosx/bin/xcodegen',
+    'executableBytes': 14229032,
+    'executableSha256': '8774da746668bc18fe74e54cbaf10f2631a1fb05947cd374179aa912f14f99db',
+}
 RUNTIME, DEVICE = 'com.apple.CoreSimulator.SimRuntime.iOS-26-4', 'com.apple.CoreSimulator.SimDeviceType.iPhone-17'
 UUID = r'[0-9A-F]{8}(?:-[0-9A-F]{4}){3}-[0-9A-F]{12}'
 
@@ -62,7 +76,8 @@ def checked_request():
     request = read_json(CONTROL / 'ci/app44-ios-reader-controls.request.json')
     fixed = {'schema': 'app44-ios-reader-controls-private-v1', 'authorization': 'APP44_APPLE_ONE_ATTEMPT_AUTHORIZED',
              'sourceRepository': 'kira-manga/kira-app', 'nativeInputs': INPUTS, 'target': TARGET, 'class': CLASS,
-             'methods': list(METHODS), 'expectedRunAttempt': 1, 'ownerSha256': OWNER_SHA, 'developerDir': XCODE}
+             'methods': list(METHODS), 'expectedRunAttempt': 1, 'ownerSha256': OWNER_SHA, 'developerDir': XCODE,
+             'xcodegenIntake': XCODEGEN}
     require(set(request) == set(fixed) | {'sourceSha', 'controllerSha256', 'workflowSha256'}, 'Unknown/missing request field')
     require(type(request['expectedRunAttempt']) is int and all(request[key] == value for key, value in fixed.items()),
             'Unapproved or changed request')
@@ -123,27 +138,196 @@ class Leaf:
         self.source_receipt()
         require(not self.project.exists() and not self.project.is_symlink(), 'Preexisting generated project; refuse cleanup')
         self.source_ready = True
-        xcodegen = shutil.which('xcodegen')
-        require(xcodegen is not None and Path(XCODE).is_dir(), 'Preinstalled XcodeGen/Xcode required; no installer')
-        xcodegen = Path(xcodegen).resolve()
+        prerequisites = {'developerDir': XCODE, 'developerDirExists': Path(XCODE).is_dir(),
+                         'xcodegenLookup': {'status': 'NOT_OBSERVED'}, 'fallback': {'status': 'NOT_REACHED'}}
+        self.save('prerequisites.json', prerequisites)
+        try:
+            lookup = shutil.which('xcodegen')  # Observe the ambient lookup; do not broaden the child PATH.
+            prerequisites['xcodegenLookup'] = {'status': 'OBSERVED', 'found': lookup is not None,
+                                               'lookupPath': lookup, 'resolvedPath': None}
+            self.save('prerequisites.json', prerequisites)
+            installed = Path(lookup).resolve() if lookup else None
+            prerequisites['xcodegenLookup']['resolvedPath'] = str(installed) if installed else None
+        except Exception as error:
+            prerequisites['xcodegenLookup'].update(status='FAILED', error=str(error))
+            raise RuntimeError('XCODEGEN_LOOKUP_FAILED: ' + str(error)) from error
+        finally:
+            self.save('prerequisites.json', prerequisites)
+        require(prerequisites['developerDirExists'], 'PINNED_XCODE_MISSING: ' + XCODE + '; no fallback/installation')
         identities = {'developerDir': XCODE, 'python': sys.version, 'pythonExecutable': str(Path(sys.executable).resolve()),
-                      'imageVersion': os.environ.get('ImageVersion'), 'xcodegenPath': str(xcodegen), 'xcodegenSha256': digest(xcodegen)}
-        identities['xcode'] = self.call(['/usr/bin/xcodebuild', '-version'], 'xcode-version').strip()
-        identities['sdk'] = self.call(['/usr/bin/xcrun', '--sdk', 'iphonesimulator', '--show-sdk-version'], 'sdk-version').strip()
-        identities['sdkBuild'] = self.call(['/usr/bin/xcrun', '--sdk', 'iphonesimulator', '--show-sdk-build-version'], 'sdk-build').strip()
-        identities['xcodegen'] = self.call([xcodegen, '--version'], 'xcodegen-version').strip()
+                      'imageVersion': os.environ.get('ImageVersion')}
+        self.save('tools.json', identities)
+        for key, argv, label, expected in (
+            ('xcode', ['/usr/bin/xcodebuild', '-version'], 'xcode-version', 'Xcode 26.4.1\nBuild version 17E202'),
+            ('sdk', ['/usr/bin/xcrun', '--sdk', 'iphonesimulator', '--show-sdk-version'], 'sdk-version', '26.4'),
+            ('sdkBuild', ['/usr/bin/xcrun', '--sdk', 'iphonesimulator', '--show-sdk-build-version'], 'sdk-build', '23E252'),
+        ):
+            identities[key] = self.call(argv, label).strip()
+            self.save('tools.json', identities)
+            require(identities[key] == expected, 'PINNED_' + key.upper() + '_IDENTITY_MISMATCH; no fallback')
+        xcodegen = self.select_xcodegen(installed, prerequisites)
+        identities.update(xcodegenPath=str(xcodegen), xcodegenSha256=XCODEGEN['executableSha256'],
+                          xcodegenOrigin=prerequisites['selectedXcodegen']['origin'], xcodegenRelease=XCODEGEN['version'])
+        self.save('tools.json', identities)
+        try:
+            version_output = self.call([xcodegen, '--version'], 'xcodegen-version').strip()
+            require(len(version_output) <= 128, 'XCODEGEN_VERSION_OUTPUT_OVERSIZED; raw log retained')
+            identities['xcodegen'] = version_output
+            prerequisites['selectedXcodegen']['versionOutput'] = identities['xcodegen']
+            require(re.search(r'(?<![\w.])' + re.escape(XCODEGEN['version'])
+                    + r'(?![\w.])', identities['xcodegen']), 'XCODEGEN_VERSION_MISMATCH')
+        except Exception as error:
+            prerequisites['selectedXcodegen']['versionError'] = str(error)
+            raise RuntimeError('XCODEGEN_VERSION_FAILED: ' + str(error)) from error
+        finally:
+            self.save('prerequisites.json', prerequisites)
+            self.save('tools.json', identities)
         self.xcresulttool = Path(self.call(['/usr/bin/xcrun', '--find', 'xcresulttool'], 'xcresulttool-path').strip()).resolve()
         require(self.xcresulttool.is_relative_to(Path(XCODE)), 'Result tool is outside the selected Xcode')
         self.xcresulttool_sha = digest(self.xcresulttool)
         identities.update(xcresulttoolPath=str(self.xcresulttool), xcresulttoolSha256=self.xcresulttool_sha)
         self.save('tools.json', identities)
-        require(identities['xcode'] == 'Xcode 26.4.1\nBuild version 17E202' and identities['sdk'] == '26.4'
-                and identities['sdkBuild'] == '23E252' and identities['xcodegen'], 'Unbound/missing installed tools')
+        require(hashlib.sha256(self.xcodegen_bytes(xcodegen, XCODEGEN['executableBytes'], self.work_end)).hexdigest()
+                == XCODEGEN['executableSha256'], 'XCODEGEN_CHANGED_BEFORE_GENERATION')
         self.project_intended = True
         self.call([xcodegen, 'generate', '--spec', self.source / LEAF / 'project.yml', '--project', self.source / LEAF],
                   'generate-project', seconds=60)
+        require(hashlib.sha256(self.xcodegen_bytes(xcodegen, XCODEGEN['executableBytes'], self.work_end)).hexdigest()
+                == XCODEGEN['executableSha256'], 'XCODEGEN_CHANGED_DURING_GENERATION')
         self.save('project.json', {'pbxprojSha256': digest(self.project / 'project.pbxproj'),
                                   'schemeSha256': digest(self.project / 'xcshareddata/xcschemes' / (TARGET + '.xcscheme'))})
+
+    def xcodegen_bytes(self, path, limit, end):
+        require(not self.owner.CANCELLED and time.monotonic() < end and path.resolve() == path,
+                'XCODEGEN_INTAKE_LATE_OR_UNSAFE_PATH')
+        with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), 'rb') as stream:
+            before = os.fstat(stream.fileno())
+            require(stat.S_ISREG(before.st_mode) and 0 <= before.st_size <= limit <= 33554432,
+                    'XCODEGEN_INTAKE_NONREGULAR_OR_OVERSIZED_FILE')
+            data = stream.read(before.st_size + 1)
+        after = path.lstat()
+        require(not self.owner.CANCELLED and time.monotonic() < end and len(data) == before.st_size
+                and (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns, before.st_mode)
+                == (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns, after.st_mode),
+                'XCODEGEN_INTAKE_LATE_OR_CHANGED_FILE')
+        return data
+
+    def select_xcodegen(self, installed, prerequisites):
+        lookup = prerequisites['xcodegenLookup']
+        lookup.update(accepted=False, acceptancePolicy='Exact reviewed universal binary SHA-256; unknown binaries are not executed')
+        try:
+            if installed is not None:
+                require(installed.is_file() and os.access(installed, os.X_OK), 'XCODEGEN_LOOKUP_PATH_CHANGED')
+                lookup['bytes'] = installed.stat().st_size
+                if 0 <= lookup['bytes'] <= 33554432:
+                    data = self.xcodegen_bytes(installed, 33554432, min(self.work_end, time.monotonic() + 30))
+                    lookup['sha256'] = hashlib.sha256(data).hexdigest()
+                    lookup['accepted'] = lookup['sha256'] == XCODEGEN['executableSha256']
+                lookup['reason'] = 'reviewed-binary' if lookup['accepted'] else 'binary-not-reviewed-or-over-cap'
+            else:
+                lookup['reason'] = 'not-found'
+        except Exception as error:
+            lookup['acceptanceError'] = str(error)
+            raise RuntimeError('XCODEGEN_INSTALLED_IDENTITY_FAILED: ' + str(error)) from error
+        finally:
+            self.save('prerequisites.json', prerequisites)
+        if lookup['accepted']:
+            xcodegen, origin = installed, 'preinstalled-reviewed-binary'
+            prerequisites['fallback']['status'] = 'NOT_NEEDED'
+        else:
+            xcodegen, origin = self.intake_xcodegen(prerequisites), 'pinned-upstream-release'
+        prerequisites['selectedXcodegen'] = {'path': str(xcodegen), 'origin': origin, 'release': XCODEGEN['version'],
+                                             'sha256': XCODEGEN['executableSha256'], 'versionOutput': None}
+        self.save('prerequisites.json', prerequisites)
+        return xcodegen
+
+    def intake_xcodegen(self, prerequisites):
+        end = min(self.work_end, time.monotonic() + 30)
+        receipt = {'status': 'STARTED', 'stage': 'curl-identity', 'pin': XCODEGEN, 'curlPath': '/usr/bin/curl', 'secondsCap': 30,
+                   'expandedBytesCap': 33554432, 'entryCap': 64, 'retryCount': 0}
+        prerequisites['fallback'] = receipt
+        self.save('prerequisites.json', prerequisites)
+        try:
+            curl = Path('/usr/bin/curl')
+            receipt['curlSha256'] = hashlib.sha256(self.xcodegen_bytes(curl, 33554432, end)).hexdigest()
+            curl_version = self.call([curl, '-q', '--version'], 'xcodegen-curl-version', end=end).splitlines()[0]
+            require(len(curl_version) <= 512, 'Curl version header oversized; raw log retained')
+            receipt['curlVersion'] = curl_version
+            version = re.match(r'curl (\d+)\.(\d+)\.(\d+)\b', receipt['curlVersion'])
+            require(version is not None and tuple(map(int, version.groups())) >= (8, 4, 0),
+                    'Curl 8.4.0+ required for a streaming byte cap; no installation')
+            root = self.run / 'work/xcodegen-intake'
+            root.mkdir(mode=0o700)
+            archive = root / 'xcodegen.artifactbundle.zip'
+            receipt['stage'] = 'download'
+            self.save('prerequisites.json', prerequisites)
+            downloaded = self.call([curl, '-q', '--proto', '=https', '--proto-redir', '=https', '--tlsv1.2',
+                '--connect-timeout', '5', '--max-time', '30', '--max-filesize', str(XCODEGEN['archiveBytes']),
+                '--max-redirs', '3', '--retry', '0', '--fail', '--silent', '--show-error', '--location',
+                '--output', archive, '--write-out', '%{http_code} %{size_download}\n', XCODEGEN['url']],
+                'xcodegen-download', end=end).strip()
+            require(len(downloaded) <= 128, 'Unexpected download diagnostic; raw log retained')
+            receipt['downloadOutput'] = downloaded
+            require(downloaded == '200 ' + str(XCODEGEN['archiveBytes']), 'Unexpected upstream HTTP/byte receipt')
+            receipt['stage'] = 'archive-verification'
+            self.save('prerequisites.json', prerequisites)
+            data = self.xcodegen_bytes(archive, XCODEGEN['archiveBytes'], end)
+            receipt.update(archiveBytes=len(data), archiveSha256=hashlib.sha256(data).hexdigest())
+            require(len(data) == XCODEGEN['archiveBytes'] and receipt['archiveSha256'] == XCODEGEN['archiveSha256'],
+                    'Pinned upstream archive size/digest mismatch')
+            receipt['stage'] = 'safe-extraction'
+            self.save('prerequisites.json', prerequisites)
+            layout, names = [], set()
+            with zipfile.ZipFile(io.BytesIO(data)) as bundle:
+                members = bundle.infolist()
+                require(len(members) == XCODEGEN['entryCount'] <= 64
+                        and sum(item.file_size for item in members) == XCODEGEN['expandedBytes'] <= 33554432,
+                        'Unexpected/over-budget archive entry set')
+                for member in members:
+                    require(not self.owner.CANCELLED and time.monotonic() < end, 'Extraction cancelled/expired')
+                    name, mode = PurePosixPath(member.filename), member.external_attr >> 16
+                    require(member.orig_filename == member.filename and member.filename not in names
+                            and not name.is_absolute() and '..' not in name.parts and '\\' not in member.filename
+                            and str(name) + ('/' if member.is_dir() else '') == member.filename
+                            and member.compress_type in (0, 8) and not member.flag_bits & 1
+                            and stat.S_IFMT(mode) == (stat.S_IFDIR if member.is_dir() else stat.S_IFREG)
+                            and not mode & (stat.S_ISUID | stat.S_ISGID | stat.S_ISVTX), 'Unsafe ZIP member')
+                    names.add(member.filename)
+                    target = root / str(name)
+                    require(target.resolve() == target and target.is_relative_to(root), 'Unsafe extraction target')
+                    with bundle.open(member) as stream:
+                        content = stream.read(member.file_size + 1)
+                    require(len(content) == member.file_size and time.monotonic() < end, 'Late/oversized ZIP content')
+                    if member.is_dir():
+                        require(not content, 'Nonempty ZIP directory')
+                        target.mkdir(mode=0o700)
+                    else:
+                        with target.open('xb') as stream:
+                            stream.write(content)  # No archive permissions, extractall, installer or executable invocation.
+                        require(hashlib.sha256(self.xcodegen_bytes(target, member.file_size, end)).digest()
+                                == hashlib.sha256(content).digest(), 'Extracted content changed')
+                    layout.append({'path': member.filename, 'type': 'directory' if member.is_dir() else 'file',
+                                   'bytes': len(content), 'sha256': hashlib.sha256(content).hexdigest()})
+            layout_bytes = (json.dumps(sorted(layout, key=lambda row: row['path']), sort_keys=True, separators=(',', ':')) + '\n').encode()
+            receipt['layoutSha256'] = hashlib.sha256(layout_bytes).hexdigest()
+            require(receipt['layoutSha256'] == XCODEGEN['layoutSha256'], 'Reviewed archive content layout mismatch')
+            info = read_json(root / 'xcodegen.artifactbundle/info.json')
+            expected = {'version': XCODEGEN['version'], 'type': 'executable', 'variants': [{
+                'path': 'xcodegen-2.46.0-macosx/bin/xcodegen', 'supportedTriples': ['x86_64-apple-macosx', 'arm64-apple-macosx']}]}
+            require(info == {'schemaVersion': '1.0', 'artifacts': {'xcodegen': expected}}, 'Executable/version/ARM64 mapping changed')
+            executable = root / XCODEGEN['executable']
+            receipt['executableSha256'] = hashlib.sha256(self.xcodegen_bytes(executable, XCODEGEN['executableBytes'], end)).hexdigest()
+            require(receipt['executableSha256'] == XCODEGEN['executableSha256'], 'Extracted executable digest mismatch')
+            executable.chmod(0o700)  # Private owned scratch only; sibling resource bundle remains beside the binary.
+            archive.unlink()
+            require(not self.owner.CANCELLED and time.monotonic() < end, 'XcodeGen intake cancelled/expired')
+            receipt.update(status='READY', stage='complete', archiveRemoved=True)
+            return executable
+        except Exception as error:
+            receipt.update(status='FAILED', error=str(error))
+            raise RuntimeError('XCODEGEN_INTAKE_' + receipt['stage'].upper().replace('-', '_') + '_FAILED: ' + str(error)) from error
+        finally:
+            self.save('prerequisites.json', prerequisites)
 
     def devices(self, cleaning=False, end=None):
         inventory = self.owner.parse_json(self.call(['/usr/bin/xcrun', 'simctl', 'list', 'devices', '--json'],
