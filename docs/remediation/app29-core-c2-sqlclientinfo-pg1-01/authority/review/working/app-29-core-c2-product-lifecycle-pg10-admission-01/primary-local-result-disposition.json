@@ -1,0 +1,84 @@
+{
+  "at_utc": "2026-09-12T11:04:43.572053+00:00",
+  "primary_disposition": "LOCAL_BATCH_FAIL_ACKNOWLEDGED_PG10_CHANGED_SOURCE_DIAGNOSTIC_PREPARATION_APPROVED",
+  "local_runtime": {
+    "PoolLifecycleTest": 19,
+    "PoolActorCustodyTest": 19,
+    "passed": 38,
+    "failed": 0,
+    "scope": "MODEL/direct boundary only; not real PG or opaque eviction liveness"
+  },
+  "local_statics": {
+    "ktlint_main": 66,
+    "ktlint_test": 61,
+    "ktlint_script": 0,
+    "detekt_weighted": 41,
+    "status": "FAIL_ALL_FINDINGS_UNRESOLVED_NO_WAIVER"
+  },
+  "local_result": {
+    "path": "review/working/app-29-core-c2-product-lifecycle-linux-01/result.json",
+    "sha256": "eb57bdd4c4925046b6a81bbb3d8f59d42f8849dbbfb8d22d3178b83570478e07"
+  },
+  "reviews": {
+    "review/remediation/app-29-core-c2-product-lifecycle-linux01-independent-actual-result-review.md": "cf46912ac69162b7e3c628da5b69a5d57a2222cff79518a3617509f5a35f34e2",
+    "review/remediation/app-29-core-c2-product-lifecycle-pg10-01-independent-preparation-review.md": "572970afc0043fe58660cde19bf6d64c152f4167e9fb0674256a1895a6943334",
+    "review/remediation/app-29-core-c2-product-lifecycle-validation-selection.md": "0582e4ac646996f9595e9d2d062a9a07f3a1c216aad83b1ffaa822a8a29c6372"
+  },
+  "decision": "Retain accepted product5/test3 for one private durability checkpoint, genuine fixed-v3 full freeze/preflight and exact-ten real-PG binding. Static normalization follows immutable source transport; no unchanged38/full47 replay. Exact live binding and one-attempt launch admission still required.",
+  "real_pg_scope": "RETURN7 + original failed post-consent tail + ordinary tail + exact sample/adjacent-budget discriminator; original budgets/oracles unchanged",
+  "source_root": "kira-backend",
+  "source_delta": {
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt": {
+      "before_sha256": "a6730fbc65d378713dd89bd0794b5514a764320f1186c681c4b44efabd1d09c7",
+      "after_sha256": "9d9a6be8888aa67f5f908c1d53db998f17e528c52a1d3d8b5bcd05362635ca3c",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-product-01/after/GuardedDataSource.kt"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt": {
+      "before_sha256": "dd73ba8b486e285ac76c16e56d98bdac475027c86fed9eb5ffe3f7c1a5a820fd",
+      "after_sha256": "ff13d4a7ad481762c7d6d222c023cb60e3cb94e22fa50841767c5c6641cb89df",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-product-01/after/PersistenceJdbcLease.kt"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt": {
+      "before_sha256": "5bee8dc7f22219542a6ff28df8230e401268884c4711289afebf397c39d2d334",
+      "after_sha256": "2dd3236000c8f88f2ca00435036a54a5b1ba027aeb4f3e7d4ab66ca2106533f2",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-product-01/after/PersistenceOwnership.kt"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt": {
+      "before_sha256": "0e45d75ee8a2421b6db238ced31298b7a5012db4ad3232e8675ae0f889e8c857",
+      "after_sha256": "545d05d67fb0550c4fd4ea889144f7f0a49e2ac57b2d41676b04ea0d22a43d8b",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-product-01/after/PoolActorCustody.kt"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt": {
+      "before_sha256": "def7c6ef36145b6d1dcf71342a5e6c1956f6f40055464e231e946eff05ade9f2",
+      "after_sha256": "5105399988af7abbfac336f27cc4436c95a348e8032e39a0ba409f58c6a3400f",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-product-01/after/PoolLifecycle.kt"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt": {
+      "before_sha256": "09ff840b9b3c4532c33ce24c09a60a2b0479084b480ed29f6d21478751e78f99",
+      "after_sha256": "c65198c118b4102615100464c52774f9dbd1bec70fe8655337fadcda4895c350",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-tests-01/after/PersistencePgOwnedCutIntegrationTest.kt"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt": {
+      "before_sha256": "7ddc9fac7597febfb42de44c041e4c2ccfdc01bc864e973346738a5ffd0209fa",
+      "after_sha256": "4bf8c36b1ec8f01ea8a7b775ea7c769ca2fa8f837fc8d1d351d1172c860ce24e",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-tests-01/after/PoolActorCustodyTest.kt"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt": {
+      "before_sha256": "f5f194f46eddb89b32ba1142fcbedd5617255abae5b3ffe0bd507b26449c0665",
+      "after_sha256": "cf46316c372696c3aa91ca6e5455c582e40d436c82c791e586c3adce29173db1",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-tests-01/after/PoolLifecycleTest.kt"
+    }
+  },
+  "public_push_authorized": false,
+  "validated_fix_or_integration": false,
+  "source_acceptance_scope": "Reviewed candidate bytes only; not overall acceptance",
+  "retained_limits": [
+    "D05 PARTIAL/not import-ready",
+    "D06 unreviewed/unexecuted",
+    "Native05 UNQUALIFIED",
+    "Original0/2 and full45/47 retained",
+    "W03/App29 incomplete; no complaint cutover",
+    "No main,deploy,Store or old Firestore migration"
+  ],
+  "preparatory_error": "An initial read-only precondition used workspace rather than repository source root; failed before writing files/staging/committing. Correct root used here."
+}

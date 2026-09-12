@@ -1,0 +1,9 @@
+test_failed_copy_digest_holds_cleanup (__main__.FailedCaptureCleanupTests.test_failed_copy_digest_holds_cleanup) ... ok
+test_missing_required_raw_file_holds_cleanup (__main__.FailedCaptureCleanupTests.test_missing_required_raw_file_holds_cleanup) ... ok
+test_retained_failed_xml_allows_cleanup_without_erasing_failures (__main__.FailedCaptureCleanupTests.test_retained_failed_xml_allows_cleanup_without_erasing_failures) ... ok
+test_unrecognized_exception_text_is_not_retained (__main__.FailedCaptureCleanupTests.test_unrecognized_exception_text_is_not_retained) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.238s
+
+OK

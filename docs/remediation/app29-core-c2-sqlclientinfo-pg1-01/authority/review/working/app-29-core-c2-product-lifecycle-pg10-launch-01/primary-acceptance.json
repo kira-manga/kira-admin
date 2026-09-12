@@ -1,0 +1,20 @@
+{
+  "at_utc": "2026-09-12T12:21:03.743965+00:00",
+  "disposition": "ACCEPT_BOUNDED_EXACT10_ONLY",
+  "run_url": "https://github.com/kira-manga/kira-admin/actions/runs/34691665288",
+  "source_sha": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+  "carrier_sha": "67e11edb4b8a8f40e0752339ceed63d06a1c1a3b",
+  "independent_review": "review/remediation/app-29-core-c2-product-lifecycle-pg10-01-independent-actual-result-review.md",
+  "independent_review_sha256": "bfdbbd51e446814ea861ad5ec188be8efa1f21d7eaea3b2f51a5c4c9e8e81d2a",
+  "artifact_files_rehashed": 54,
+  "xml_tests": 10,
+  "failures": 0,
+  "cleanup": "Controller-unforced final absence supported; raw PostgreSQL kill signal9/die137 retained. Not graceful or zero-kill proof.",
+  "limits": [
+    "Four original captured scalar rows are non-atomic and not causality/completion proof.",
+    "Later adopted layout18/structural changes are not validated by this run.",
+    "Historical full45/47,original0/2 cleanupFAIL,local staticFAIL retained.",
+    "Native05 unqualified; D05 partial/not import-ready; D06 unreviewed/unexecuted; W03/App29 incomplete.",
+    "No integration or consumer/opaque-eviction/hard-fault/liveness/production acceptance."
+  ]
+}

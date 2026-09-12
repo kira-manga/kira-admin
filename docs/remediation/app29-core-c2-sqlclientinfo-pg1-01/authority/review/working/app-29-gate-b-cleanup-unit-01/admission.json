@@ -1,0 +1,14 @@
+{
+  "status": "ADMITTED_NOT_EXECUTED",
+  "at_utc": "2026-09-12T00:31:27.482423+00:00",
+  "pins": {
+    "ci/app29-gate-b.py": "72fc936f5ec19c3d7256f049a3fb8647cc806c9cc0d4150787388e2386e84eaa",
+    "tests/test_failed_capture_cleanup.py": "0437ff7cf1327b890509b7934d76b7b3e05e532cfd1f70624020c5355de41689",
+    "SHA256SUMS": "6d2c599e8331850b702011d931e1c22287b955710ff56f9ea54b6b25853fd7bc"
+  },
+  "review_sha256": "1986c0caeeb262bf268179065c081858a6c1b694c7257e568a6201d9ed5334c6",
+  "scope": "Four existing stdlib isolated AST-sliced capture/cleanup tests only; no controller/owner/main/CI execution",
+  "primary": "Read full controller delta and152-line test; whitelist and all synthetic paths confined to TemporaryDirectory",
+  "risk": "Preserve failed-test evidence before disposal; incomplete capture holds deletion; bounded diagnostic IDs",
+  "timeout_seconds": 30
+}

@@ -1,0 +1,89 @@
+{
+  "schema": "app29-actor-source-packet-1",
+  "created_utc": "2026-09-11T01:45:24.665992+00:00",
+  "author": "/root/backend_02_actor_author",
+  "repository": "/root/projects/Kira/kira-backend",
+  "head": "49da0919d9ec3091cb7bb041009dc9bd5f3e090f",
+  "private_local_only": true,
+  "status": "AUTHORED_NOT_RUN_NOT_INDEPENDENTLY_APPROVED",
+  "scope": "five actor-owned files only; not an aggregate connected freeze",
+  "sources": [
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt",
+      "snapshot": "source/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt",
+      "bytes": 27810,
+      "sha256": "def7c6ef36145b6d1dcf71342a5e6c1956f6f40055464e231e946eff05ade9f2"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt",
+      "snapshot": "source/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt",
+      "bytes": 11187,
+      "sha256": "0e45d75ee8a2421b6db238ced31298b7a5012db4ad3232e8675ae0f889e8c857"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt",
+      "snapshot": "source/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt",
+      "bytes": 4407,
+      "sha256": "a463529fce5a770165f6f9d0673ae640ece4734942baf68b8bca4c039dd512d8"
+    },
+    {
+      "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt",
+      "snapshot": "source/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt",
+      "bytes": 25447,
+      "sha256": "f5f194f46eddb89b32ba1142fcbedd5617255abae5b3ffe0bd507b26449c0665"
+    },
+    {
+      "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt",
+      "snapshot": "source/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt",
+      "bytes": 22929,
+      "sha256": "7ddc9fac7597febfb42de44c041e4c2ccfdc01bc864e973346738a5ffd0209fa"
+    }
+  ],
+  "patch": {
+    "path": "actor-five-path.patch",
+    "bytes": 95906,
+    "sha256": "ac23247f19b554c8c5103a2e7ff8ddd21c871f72fce428e2977d95099981c8a6",
+    "parts": [
+      {
+        "kind": "tracked",
+        "paths": [
+          "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt",
+          "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt"
+        ],
+        "bytes": 55233,
+        "sha256": "80ce64282e7e0fc8e069fce3bcae612af995620647edab880d5d3f07389dee66"
+      },
+      {
+        "kind": "addition",
+        "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt",
+        "bytes": 11893,
+        "sha256": "77e21011c20a7583dc2d30211b33a392640fcc01bb4e206e0ca895e56c581292"
+      },
+      {
+        "kind": "addition",
+        "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt",
+        "bytes": 4982,
+        "sha256": "be91910ca0440a0df4e17300497eaf1d1762754d9b02061761ca22ebe6e4a01f"
+      },
+      {
+        "kind": "addition",
+        "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt",
+        "bytes": 23798,
+        "sha256": "c274eae0d2eddc1af4fffe86d7df55d239a377b7c6a3a4873c3259c9998f7735"
+      }
+    ]
+  },
+  "report": {
+    "path": "AUTHOR_REPORT.md",
+    "bytes": 5756,
+    "sha256": "0e56262daadc1dd9d43bada0b4507be3d666ad9ecacae564ba2676e0689249f1"
+  },
+  "tests": {
+    "new_methods": 18,
+    "expected_new_invocations": 24,
+    "total_methods_in_two_files": 25,
+    "expected_total_invocations": 34,
+    "executed": 0
+  },
+  "execution": "No product build/test/static/formatter/JVM/service/CI operation"
+}

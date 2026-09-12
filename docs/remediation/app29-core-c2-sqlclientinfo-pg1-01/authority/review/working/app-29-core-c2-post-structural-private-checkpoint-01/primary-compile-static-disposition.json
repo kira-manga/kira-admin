@@ -1,0 +1,32 @@
+{
+  "created_utc": "2026-09-12T14:14:39.593147+00:00",
+  "evidence": {
+    "review/remediation/app-29-core-c2-residual-static-linux-01-independent-result-review.md": "78ba2cdd31e5fdd80103f8e4b27db8c84cf2238d4553cb586fd4707b152eb5e0",
+    "review/working/app-29-core-c2-residual-static-linux-01/post-batch-disposable-cleanup.json": "483ee4c11fe8f668cb1d177a20cd447f71fd9b9b65b577ec698d49c1c3e6f300",
+    "review/working/app-29-core-c2-residual-static-linux-01/result.json": "fc6cac007f97e3351ee79c1117e7a0817811b9dae363c51c9faca68aa1313f4c",
+    "review/working/app-29-w03-integrated-driver-core-c2-residual-static-linux-01/manifest.json": "7a48620648806214d5c4158488cd33432b57e9c234a1a5c94b76015fcf36cacf"
+  },
+  "next": "Explicit PG14 source/profile/request rebind and independent carrier review before one changed-risk real-PG run.",
+  "primary_verification": {
+    "all348_seed_paths": true,
+    "all466_source_hashes": true,
+    "compiled_classfiles11": true,
+    "ktlint_detekt": "PASS_ZERO_FINDINGS",
+    "new_runtime_tests": 0,
+    "normal_main_and_test_compilation": "PASS",
+    "owned_cleanup": "ACCEPT_CAPTURED_RECEIPTS_OUTPUT_PATHS_ABSENT",
+    "prior38_unit_passes": "UNCHANGED_CARRY_ONLY_NOT_REEXECUTED",
+    "snapshots199": true,
+    "static_reports6": true
+  },
+  "public_push_authorized": false,
+  "remaining": [
+    "Direct SQLClientInfo real-PG shape control outside one-class PG14",
+    "Original full45/47 and earlier0/2 cleanupFAIL retained",
+    "D05 PARTIAL_NOT_IMPORT_READY;D06 UNREVIEWED_UNEXECUTED;Native05 UNQUALIFIED",
+    "Opaque eviction/liveness/full/W03 gates open",
+    "Missing verification metadata means strict mode is not transitive dependency-byte proof"
+  ],
+  "scope": "Private durability of independently reviewed structural/layout corrections only; not W03 acceptance/integration or new PG qualification.",
+  "status": "ACCEPT_COMPILE_STATIC_ONLY"
+}

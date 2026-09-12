@@ -1,0 +1,2771 @@
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt
+index 0edd815..23d8512 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt
+@@ -18,7 +18,8 @@ internal class GuardedDataSource(
+     private val endpoint: ResolvedPersistenceEndpoint,
+     maximumPoolSize: Int,
+     private val launchProfile: PersistencePoolLaunchProfile = PersistencePoolLaunchProfile.UNKNOWN,
+-) : DataSource, AutoCloseable {
++) : DataSource,
++    AutoCloseable {
+     private val pool = HikariDataSource()
+     private val lifecycle = PoolLifecycle(pool, owner)
+     private val lower = PrivateJdbcDataSource(owner, endpoint, lifecycle)
+@@ -76,15 +77,7 @@ internal class GuardedDataSource(
+             try {
+                 if (!delivered) {
+                     if (obtained || endAttempted) acquisition.failBeforeEnd()
+-                    try {
+-                        facade?.deliveryFailed()
+-                    } finally {
+-                        try {
+-                            entitlement?.revoke() // This connection was never returned to a borrower.
+-                        } finally {
+-                            acquisition.handoff() // Exact state retains the handle; no guessed raw close.
+-                        }
+-                    }
++                    cleanupUndelivered(acquisition, facade, entitlement)
+                 }
+             } finally {
+                 // An ENDING failure is retained, not retried as though it were an untouched frame.
+@@ -93,6 +86,18 @@ internal class GuardedDataSource(
+         }
+     }
+ 
++    private fun cleanupUndelivered(acquisition: PoolLifecycle.Acquisition, facade: LeaseJdbcFacade?, entitlement: PoolLifecycle.LeaseEntitlement?) {
++        try {
++            facade?.deliveryFailed()
++        } finally {
++            try {
++                entitlement?.revoke() // This connection was never returned to a borrower.
++            } finally {
++                acquisition.handoff() // Exact state retains the handle; no guessed raw close.
++            }
++        }
++    }
++
+     override fun getConnection(username: String?, password: String?): Connection {
+         if (!endpoint.credentialsMatch(username, password)) PersistenceJdbcGuardContext.refuse()
+         return connection
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt
+index d2b97e0..17b8768 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt
+@@ -38,22 +38,29 @@ private class LeaseConnectionCalls(private val lease: PersistenceJdbcLease, priv
+ 
+     override fun invoke(proxy: Any, method: Method, args: Array<out Any?>?): Any? = try {
+         invokeConnection(proxy, method, args)
++    } catch (failure: SQLClientInfoException) {
++        throw failure
+     } catch (failure: SQLException) {
+         // Admission (including stale/foreign credentials), adaptation AND finally failures all
+         // obey this narrower checked declaration; the JDK proxy must not wrap them in UTE.
+-        if (method.name == "setClientInfo" && failure !is SQLClientInfoException) throw lease.state.context.clientInfo(failure)
++        if (method.name == "setClientInfo") throw lease.state.context.clientInfo(failure)
+         throw failure
+     }
+ 
+     private fun invokeConnection(proxy: Any, method: Method, args: Array<out Any?>?): Any? {
+-        if (method.declaringClass === Any::class.java) return when (method.name) {
+-            "toString" -> "LeaseJdbcConnection(redacted)"
+-            "equals" -> proxy === args?.singleOrNull()
+-            "hashCode" -> System.identityHashCode(proxy)
+-            else -> PersistenceJdbcGuardContext.refuse()
++        if (method.declaringClass === Any::class.java) {
++            return when (method.name) {
++                "toString" -> "LeaseJdbcConnection(redacted)"
++                "equals" -> proxy === args?.singleOrNull()
++                "hashCode" -> System.identityHashCode(proxy)
++                else -> PersistenceJdbcGuardContext.refuse()
++            }
+         }
+         check(method.declaringClass === Connection::class.java || method.declaringClass === Wrapper::class.java)
+-        if (method.name == "close") { lease.close(); return null }
++        if (method.name == "close") {
++            lease.close()
++            return null
++        }
+         if (method.name == "abort") {
+             lease.abort(args?.singleOrNull() as? Executor ?: PersistenceJdbcGuardContext.refuse())
+             return null
+@@ -61,9 +68,9 @@ private class LeaseConnectionCalls(private val lease: PersistenceJdbcLease, priv
+         if (method.name == "isClosed" && lease.closed()) return true
+         val dispatch = lease.enterDispatch()
+         val context = lease.state.context
+-        val call = try {
++        val call = runCatching {
+             context.enter(lease.identity, PersistenceJdbcGuardCallKind.BUSINESS)
+-        } catch (failure: Throwable) {
++        }.getOrElse { failure ->
+             dispatch.end()
+             throw failure
+         }
+@@ -78,7 +85,9 @@ private class LeaseConnectionCalls(private val lease: PersistenceJdbcLease, priv
+                             if ((arguments.singleOrNull() as? Class<*>)?.isInstance(self) != true) PersistenceJdbcGuardContext.refuse()
+                             self
+                         }
++
+                         "isWrapperFor" -> (arguments.singleOrNull() as? Class<*>)?.isInstance(self) == true
++
+                         else -> {
+                             val adapted = graph.connectionArguments(call, method, arguments)
+                             val returned = method.invoke(handle, *adapted)
+@@ -94,7 +103,11 @@ private class LeaseConnectionCalls(private val lease: PersistenceJdbcLease, priv
+                     if (!completed) call.failedBeforeBoxing(wrapping)
+                 }
+             }.getOrElse { failure ->
+-                val actual = if (failure.javaClass === InvocationTargetException::class.java) (failure as InvocationTargetException).targetException else failure
++                val actual = if (failure.javaClass === InvocationTargetException::class.java) {
++                    (failure as InvocationTargetException).targetException
++                } else {
++                    failure
++                }
+                 val reported = call.failure(actual, wrapping)
+                 if (method.name == "setClientInfo" && reported is SQLException && reported !is SQLClientInfoException) throw context.clientInfo(reported)
+                 throw reported
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt
+index 7608c68..f7a9b87 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt
+@@ -71,6 +71,7 @@ internal class PersistenceJdbcGuardContext private constructor(
+     private val driverChildren = AtomicLong()
+     private val driverFailed = AtomicBoolean()
+     private val unresolvedDriver = AtomicBoolean()
++
+     // Lease/epoch exposure, not physical-native construction counting or a weak alias index.
+     // A canonical Life must have its OWN first return even if its parent implicitly closes it.
+     private val exposedNative = IdentityHashMap<Any, PersistencePgOwnedCutAccess.Life>()
+@@ -79,7 +80,7 @@ internal class PersistenceJdbcGuardContext private constructor(
+     fun enter(identity: PersistenceJdbcGuardIdentity, kind: PersistenceJdbcGuardCallKind): PersistenceJdbcGuardCall {
+         if (!identity.matches(this) || identity.epoch !== epoch) refuse()
+         if (kind !== PersistenceJdbcGuardCallKind.CANCELLATION && !identity.originalCaller()) refuse()
+-        reconcileAncestors() // Observe genuine ancestor failure before granting a nested business token.
++        reconcileAncestors(this, frames) // Observe genuine ancestor failure before granting a nested business token.
+         if (!ownership.permitsCleanup(identity.epoch)) refuse()
+         val token = when (kind) {
+             PersistenceJdbcGuardCallKind.BUSINESS -> identity.epoch.enterForeground()
+@@ -92,7 +93,7 @@ internal class PersistenceJdbcGuardContext private constructor(
+     fun requireCurrent(identity: PersistenceJdbcGuardIdentity) {
+         val actual = identity.originalCaller() || frames.get()?.permitsCancellation(identity) == true
+         if (!identity.matches(this) || identity.epoch !== epoch || !actual) refuse()
+-        reconcileAncestors()
++        reconcileAncestors(this, frames)
+         if (!ownership.permitsCleanup(identity.epoch)) refuse()
+     }
+ 
+@@ -128,7 +129,7 @@ internal class PersistenceJdbcGuardContext private constructor(
+     /** The lower physical close/abort are closed terminal requests, not foreign foreground business. */
+     internal fun enterTerminal(): PersistenceJdbcGuardCall {
+         if (ownership.poolEpoch(pool) !== epoch) refuse()
+-        reconcileAncestors()
++        reconcileAncestors(this, frames)
+         val cleanup = epoch.cancellationCleanup() ?: refuse()
+         val identity = PersistenceJdbcGuardIdentity.prepare(this, epoch, cleanup)
+         val token = epoch.enterCleanupCancellation(cleanup) ?: refuse()
+@@ -199,13 +200,16 @@ internal class PersistenceJdbcGuardContext private constructor(
+     @Suppress("TooGenericExceptionCaught")
+     internal fun collectTransferFacts(transfer: PersistenceJdbcPoolTransfer): PersistenceJdbcTransferFacts? {
+         check(!ownership.ownershipLockHeld() && ownership.ownsTransfer(transfer, this))
+-        if (!epoch.sealedAndEnded() || graphFailed() || children.get() != 0L || hasCurrentFrame()) return null
++        if (!epoch.sealedAndEnded() || graphFailed() || children.get() != 0L) return null
++        if (hasCurrentFrame()) return null
+         val root = driverRoot.get() ?: return null
+         try {
+-            if (exposedNative.values.any { it.access.firstCloseState(it) != PersistencePgOwnedCutAccess.FIRST_RETURNED }) return null
+-            if (driverCustody?.retainedStateSafe(root) != true) return null
+-            if (transfer.requiresTransaction() && !transaction.clean()) return null
+-            return PersistenceJdbcTransferFacts.prepare(this, transfer)
++            return when {
++                exposedNative.values.any { it.access.firstCloseState(it) != PersistencePgOwnedCutAccess.FIRST_RETURNED } -> null
++                driverCustody?.retainedStateSafe(root) != true -> null
++                transfer.requiresTransaction() && !transaction.clean() -> null
++                else -> PersistenceJdbcTransferFacts.prepare(this, transfer)
++            }
+         } catch (failure: Throwable) {
+             driverFailed.set(true)
+             driverCustody?.observationFailed(failure)
+@@ -313,7 +317,7 @@ internal class PersistenceJdbcGuardContext private constructor(
+     }
+ 
+     internal fun authenticDriverObservation(authority: Any, call: PersistenceJdbcGuardCall, invocation: PersistencePgOwnedCutAccess.Invocation?): Boolean =
+-        authority === driverAuthority && authenticAncestor(call) && if (invocation == null) {
++        authority === driverAuthority && authenticAncestor(this, call, frames) && if (invocation == null) {
+             actualFrame(call)
+         } else {
+             call.ownsDriverInvocation(invocation) && invocation.callKey === call && invocation.owner.root === driverRoot.get()
+@@ -385,25 +389,6 @@ internal class PersistenceJdbcGuardContext private constructor(
+         }
+     }
+ 
+-    private fun reconcileAncestors() {
+-        var current = frames.get()
+-        while (current != null) {
+-            check(current.actualUnended(this))
+-            current.reconcileDriverFromAncestor()
+-            current = current.parentFrame()
+-        }
+-    }
+-
+-    private fun authenticAncestor(call: PersistenceJdbcGuardCall): Boolean {
+-        if (!call.actualUnended(this)) return false
+-        var current = frames.get()
+-        while (current != null) {
+-            if (current === call) return true
+-            current = current.parentFrame()
+-        }
+-        return false
+-    }
+-
+     private fun wrapToken(
+         identity: PersistenceJdbcGuardIdentity,
+         token: PersistenceProducerEpoch.Call,
+@@ -433,3 +418,22 @@ internal class PersistenceJdbcGuardContext private constructor(
+         internal fun refuse(): Nothing = throw SQLException("Persistence JDBC operation refused.")
+     }
+ }
++
++private fun reconcileAncestors(context: PersistenceJdbcGuardContext, frames: ThreadLocal<PersistenceJdbcGuardCall?>) {
++    var current = frames.get()
++    while (current != null) {
++        check(current.actualUnended(context))
++        current.reconcileDriverFromAncestor()
++        current = current.parentFrame()
++    }
++}
++
++private fun authenticAncestor(context: PersistenceJdbcGuardContext, call: PersistenceJdbcGuardCall, frames: ThreadLocal<PersistenceJdbcGuardCall?>): Boolean {
++    if (!call.actualUnended(context)) return false
++    var current = frames.get()
++    while (current != null) {
++        if (current === call) return true
++        current = current.parentFrame()
++    }
++    return false
++}
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt
+index fddb2e6..bd6fbdd 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt
+@@ -78,24 +78,7 @@ internal class PersistenceJdbcLease private constructor(
+         if (Thread.currentThread() !== original) PersistenceJdbcGuardContext.refuse()
+         if (ownership.ownershipLockHeld()) PersistenceJdbcGuardContext.refuse()
+         val budget = PersistenceTimeBudget.start(1_000)
+-        var entered = false
+-        val operation = try {
+-            returnCaller = PersistenceOwnedFactoryCaller.capture() // Metadata only, outside F/G/T.
+-            val prepared = entitlement.prepareReturn(budget) ?: PersistenceJdbcGuardContext.refuse()
+-            if (!prepared.enter()) PersistenceJdbcGuardContext.refuse()
+-            entered = true
+-            prepared
+-        } finally {
+-            if (!entered) {
+-                try {
+-                    deliveryFailed()
+-                } finally {
+-                    // Only AVAILABLE can be revoked. A partially admitted authentic frame keeps
+-                    // its consumed right/count; never invent its end or issue a replacement budget.
+-                    entitlement.revoke()
+-                }
+-            }
+-        }
++        val operation = enterReturn(budget)
+         var dispatch: PersistenceJdbcDispatch.Frame? = null
+         var failure: Throwable? = null
+         var bookkeepingFailure: SQLException? = null
+@@ -124,18 +107,7 @@ internal class PersistenceJdbcLease private constructor(
+                     ownership.requestRetirement(state.epoch)
+                     state.epoch.sealForTerminal()
+                     if (attempt != null && !attempt.actualEnded()) attempt.reject()
+-                    try {
+-                        // Exact source ownership is claimed before the private Hikari eviction.
+-                        // This is still inside the consumed RETURN frame, never a second ingress.
+-                        val retirement = owner.evictOwned(this, handle, budget)
+-                        if (retirement is PersistenceLeaseRetirementClaim.CallerSampleFailed) {
+-                            operation.recordReturnIncidentBeforeEnd()
+-                            if (failure == null) failure = retirement.failure
+-                        }
+-                    } catch (problem: Throwable) {
+-                        operation.failBeforeEnd()
+-                        if (failure == null) failure = problem
+-                    }
++                    failure = evictReturningLease(operation, budget, failure)
+                 }
+             } finally {
+                 try {
+@@ -147,63 +119,141 @@ internal class PersistenceJdbcLease private constructor(
+                     // or end failure must never send an already-restored InterruptedException
+                     // through another interrupting adapter, especially after the actor has ended.
+                     bookkeepingFailure = state.context.adaptFailure(IllegalStateException("Persistence return bookkeeping refused."))
+-                    val originalFailure = failure
+-                    if (originalFailure !is InterruptedException) {
+-                        try {
+-                            requireNotNull(returnCaller).restoreAfterFailure()
+-                        } catch (problem: Throwable) {
+-                            operation.failBeforeEnd()
+-                            if (originalFailure == null) throw problem
+-                        }
+-                    }
+-                    // For an original InterruptedException this adapter IS the sole restoration.
+-                    // Both its callback and its own failure stay inside this genuine RETURN.
+-                    failure = originalFailure?.let { state.context.adaptFailure(it) }
++                    failure = restoreReturnFailure(operation, failure)
++                } catch (problem: Error) {
++                    operation.failBeforeEnd()
++                    failure = problem
+                 } catch (problem: Throwable) {
+                     operation.failBeforeEnd()
+-                    failure = if (problem is Error) problem else bookkeepingFailure ?: problem
++                    failure = bookkeepingFailure ?: problem
+                 } finally {
+-                    var holderEnded = transfer?.actualEnded() != false
+-                    try {
+-                        val attempt = transfer
+-                        if (attempt != null && !attempt.actualEnded()) {
+-                            attempt.end()
+-                            holderEnded = true
+-                        }
+-                    } catch (problem: Throwable) {
+-                        operation.failBeforeEnd()
+-                        if (failure == null) failure = if (problem is Error) problem else bookkeepingFailure ?: problem
+-                    }
+-                    var dispatchEnded = dispatch == null
+-                    try {
+-                        dispatch?.end()
+-                        dispatchEnded = true
+-                    } catch (problem: Throwable) {
+-                        operation.failBeforeEnd()
+-                        if (failure == null) failure = if (problem is Error) problem else bookkeepingFailure ?: problem
+-                    } finally {
+-                        phase.set(Phase.CLOSED)
+-                        // Never publish an ended actor frame while its holder/TL tail is unresolved.
+-                        // A consented old tail records only actor uncertainty, not successor eviction.
+-                        if (holderEnded && dispatchEnded) {
+-                            try {
+-                                if (!operation.end() || !operation.actualFrameEnded()) {
+-                                    operation.failBeforeEnd()
+-                                    if (failure == null) failure = requireNotNull(bookkeepingFailure)
+-                                }
+-                            } catch (problem: Throwable) {
+-                                if (failure == null) failure = if (problem is Error) problem else bookkeepingFailure ?: problem
+-                            }
+-                        } else {
+-                            operation.failBeforeEnd()
+-                        }
+-                    }
++                    failure = endReturnTail(operation, dispatch, failure, bookkeepingFailure)
+                 }
+             }
+         }
+         failure?.let { throw it } // Already adapted, or an adapter/Error outcome; never another callback.
+     }
+ 
++    private fun enterReturn(budget: PersistenceTimeBudget): PoolLifecycle.Operation {
++        var entered = false
++        return try {
++            returnCaller = PersistenceOwnedFactoryCaller.capture() // Metadata only, outside F/G/T.
++            val prepared = entitlement.prepareReturn(budget) ?: PersistenceJdbcGuardContext.refuse()
++            if (!prepared.enter()) PersistenceJdbcGuardContext.refuse()
++            entered = true
++            prepared
++        } finally {
++            if (!entered) {
++                try {
++                    deliveryFailed()
++                } finally {
++                    // Only AVAILABLE can be revoked. A partially admitted authentic frame keeps
++                    // its consumed right/count; never invent its end or issue a replacement budget.
++                    entitlement.revoke()
++                }
++            }
++        }
++    }
++
++    private fun evictReturningLease(operation: PoolLifecycle.Operation, budget: PersistenceTimeBudget, originalFailure: Throwable?): Throwable? {
++        var failure = originalFailure
++        runCatching {
++            // Exact source ownership is claimed before the private Hikari eviction.
++            // This is still inside the consumed RETURN frame, never a second ingress.
++            val retirement = owner.evictOwned(this, handle, budget)
++            if (retirement is PersistenceLeaseRetirementClaim.CallerSampleFailed) {
++                operation.recordReturnIncidentBeforeEnd()
++                if (failure == null) failure = retirement.failure
++            }
++        }.onFailure { problem ->
++            operation.failBeforeEnd()
++            if (failure == null) failure = problem
++        }
++        return failure
++    }
++
++    private fun restoreReturnFailure(operation: PoolLifecycle.Operation, originalFailure: Throwable?): Throwable? {
++        if (originalFailure !is InterruptedException) {
++            runCatching {
++                requireNotNull(returnCaller).restoreAfterFailure()
++            }.onFailure { problem ->
++                operation.failBeforeEnd()
++                if (originalFailure == null) throw problem
++            }
++        }
++        // For an original InterruptedException this adapter IS the sole restoration.
++        // Both its callback and its own failure stay inside this genuine RETURN.
++        return originalFailure?.let { state.context.adaptFailure(it) }
++    }
++
++    private fun endReturnTail(
++        operation: PoolLifecycle.Operation,
++        dispatch: PersistenceJdbcDispatch.Frame?,
++        originalFailure: Throwable?,
++        bookkeepingFailure: SQLException?,
++    ): Throwable? {
++        var failure = originalFailure
++        var holderEnded = transfer?.actualEnded() != false
++        runCatching {
++            val attempt = transfer
++            if (attempt != null && !attempt.actualEnded()) {
++                attempt.end()
++                holderEnded = true
++            }
++        }.onFailure { problem ->
++            operation.failBeforeEnd()
++            if (failure == null) {
++                failure = when (problem) {
++                    is Error -> problem
++                    else -> bookkeepingFailure ?: problem
++                }
++            }
++        }
++        var dispatchEnded = dispatch == null
++        try {
++            runCatching {
++                dispatch?.end()
++                dispatchEnded = true
++            }.onFailure { problem ->
++                operation.failBeforeEnd()
++                if (failure == null) {
++                    failure = when (problem) {
++                        is Error -> problem
++                        else -> bookkeepingFailure ?: problem
++                    }
++                }
++            }
++        } finally {
++            phase.set(Phase.CLOSED)
++            // Never publish an ended actor frame while its holder/TL tail is unresolved.
++            // A consented old tail records only actor uncertainty, not successor eviction.
++            if (holderEnded && dispatchEnded) {
++                failure = endReturnedFrame(operation, failure, bookkeepingFailure)
++            } else {
++                operation.failBeforeEnd()
++            }
++        }
++        return failure
++    }
++
++    private fun endReturnedFrame(operation: PoolLifecycle.Operation, originalFailure: Throwable?, bookkeepingFailure: SQLException?): Throwable? {
++        var failure = originalFailure
++        runCatching {
++            if (!operation.end() || !operation.actualFrameEnded()) {
++                operation.failBeforeEnd()
++                if (failure == null) failure = requireNotNull(bookkeepingFailure)
++            }
++        }.onFailure { problem ->
++            if (failure == null) {
++                failure = when (problem) {
++                    is Error -> problem
++                    else -> bookkeepingFailure ?: problem
++                }
++            }
++        }
++        return failure
++    }
++
+     internal fun returnTransfer(expected: PhysicalJdbcFacade): PersistenceJdbcPoolTransfer? = transfer?.takeIf {
+         lower === expected && phase.get() === Phase.RETURNING && Thread.currentThread() === original &&
+             !it.actualEnded() && ownership.ownsTransfer(it)
+@@ -215,9 +265,11 @@ internal class PersistenceJdbcLease private constructor(
+     }
+ 
+     internal fun claimEviction(expectedOwner: GuardedDataSource, candidate: Connection, budget: PersistenceTimeBudget): PersistenceLeaseRetirementClaim {
+-        if (owner !== expectedOwner || handle !== candidate || Thread.currentThread() !== original || phase.get() !== Phase.RETURNING ||
+-            transfer?.consented() == true || !ownership.currentPoolState(state) || !evictionClaimed.compareAndSet(false, true)
+-        ) return PersistenceLeaseRetirementClaim.Refused
++        if (owner !== expectedOwner || handle !== candidate || Thread.currentThread() !== original) return PersistenceLeaseRetirementClaim.Refused
++        if (phase.get() !== Phase.RETURNING || transfer?.consented() == true || !ownership.currentPoolState(state)) {
++            return PersistenceLeaseRetirementClaim.Refused
++        }
++        if (!evictionClaimed.compareAndSet(false, true)) return PersistenceLeaseRetirementClaim.Refused
+         return ownership.retireLeasedState(state, budget, requireNotNull(returnCaller))
+     }
+ 
+@@ -245,11 +297,7 @@ internal object PersistenceJdbcDispatch {
+ 
+     internal fun enter(lease: PersistenceJdbcLease, returning: Boolean): Frame = Frame(lease, returning, frames.get()).also { frames.set(it) }
+ 
+-    internal class Frame internal constructor(
+-        internal val lease: PersistenceJdbcLease,
+-        private val returning: Boolean,
+-        private val parent: Frame?,
+-    ) {
++    internal class Frame internal constructor(internal val lease: PersistenceJdbcLease, private val returning: Boolean, private val parent: Frame?) {
+         private val caller = Thread.currentThread()
+         private var ended = false
+         internal val identity: PersistenceJdbcGuardIdentity get() = lease.identity
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcPoolTransfer.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcPoolTransfer.kt
+index 4cacd6e..872b658 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcPoolTransfer.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcPoolTransfer.kt
+@@ -77,8 +77,7 @@ internal class PersistenceJdbcPoolTransfer private constructor(
+         return canWaitOutsideLocks()
+     }
+ 
+-    internal fun commit(next: PersistenceJdbcPoolEpoch, facts: PersistenceJdbcTransferFacts): Boolean =
+-        ownership.commitPoolTransfer(this, next, facts)
++    internal fun commit(next: PersistenceJdbcPoolEpoch, facts: PersistenceJdbcTransferFacts): Boolean = ownership.commitPoolTransfer(this, next, facts)
+ 
+     /** Invoked only in the prevalidated G commit; no allocation, attachment or native call here. */
+     internal fun publishConsent() = committed.set(true)
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcTransaction.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcTransaction.kt
+index 6b0eb0e..0613360 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcTransaction.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcTransaction.kt
+@@ -9,8 +9,8 @@ internal class PersistenceJdbcTransaction {
+     private var unknown = false
+ 
+     fun beforeConnection(method: Method, arguments: Array<Any?>, returning: Boolean) {
+-        if (method.name == "setAutoCommit" && arguments.singleOrNull() == true && (unknown || (returning && pending))) {
+-            PersistenceJdbcGuardContext.refuse()
++        if (method.name == "setAutoCommit" && arguments.singleOrNull() == true) {
++            if (unknown || (returning && pending)) PersistenceJdbcGuardContext.refuse()
+         }
+         if (method.name !in LOCAL_CONNECTION_STATE) nativeWork()
+     }
+@@ -21,11 +21,14 @@ internal class PersistenceJdbcTransaction {
+                 autoCommit = result as Boolean
+                 if (autoCommit == true) pending = false
+             }
++
+             "setAutoCommit" -> {
+                 autoCommit = arguments.single() as Boolean
+                 if (autoCommit == true) pending = false
+             }
++
+             "commit" -> pending = false
++
+             "rollback" -> if (arguments.isEmpty()) pending = false
+         }
+     }
+@@ -59,6 +62,7 @@ internal class PersistenceJdbcTransaction {
+ 
+     companion object {
+         private val OUTCOME_METHODS = setOf("commit", "rollback", "setAutoCommit")
++
+         // Only the exact pinned PgConnection's non-SQL local state routes are exempt. In
+         // particular getCatalog/getSchema/setSchema/createArrayOf/savepoint routes are NOT.
+         private val LOCAL_CONNECTION_STATE = setOf(
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceManagedObserver.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceManagedObserver.kt
+index 3809674..dc01a35 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceManagedObserver.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceManagedObserver.kt
+@@ -9,11 +9,7 @@ internal object PersistenceManagedObserver {
+         return observe(root, target, budget)
+     }
+ 
+-    fun observe(
+-        root: PersistenceJdbcDriverRoot,
+-        target: PersistenceManagedObservation,
+-        budget: PersistenceTimeBudget,
+-    ): PersistenceLifecycleObservation {
++    fun observe(root: PersistenceJdbcDriverRoot, target: PersistenceManagedObservation, budget: PersistenceTimeBudget): PersistenceLifecycleObservation {
+         val caller = Thread.currentThread()
+         if (!trusted(caller)) return PersistenceLifecycleObservation.UNSUPPORTED_OBSERVER
+         var interrupted = false
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt
+index 457128c..41e62b6 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt
+@@ -93,11 +93,7 @@ internal class PersistenceOwnership(private val entry: PersistencePhysicalEntry,
+         poolTransfer.get() === transfer && transfer.actualCaller() && currentPoolState(transfer.source) &&
+             (context == null || transfer.source.context === context)
+ 
+-    internal fun commitPoolTransfer(
+-        transfer: PersistenceJdbcPoolTransfer,
+-        next: PersistenceJdbcPoolEpoch,
+-        facts: PersistenceJdbcTransferFacts,
+-    ): Boolean {
++    internal fun commitPoolTransfer(transfer: PersistenceJdbcPoolTransfer, next: PersistenceJdbcPoolEpoch, facts: PersistenceJdbcTransferFacts): Boolean {
+         val physical = requireNotNull(binding)
+         check(!ownershipLockHeld())
+         while (transfer.canWaitOutsideLocks()) {
+@@ -157,12 +153,19 @@ internal class PersistenceOwnership(private val entry: PersistencePhysicalEntry,
+                 continue
+             }
+             try {
+-                if (caller.sampleActualFlag() != null || persistenceFactoryRemainingMillis(budget) == 0L) return PersistenceLeaseRetirementClaim.Refused
+-                if (!expected.leased || !currentPoolState(expected)) return PersistenceLeaseRetirementClaim.Refused
+-                if (physical.ledger.current(entry.record) !== entry && !entry.retirementRequested.get()) return PersistenceLeaseRetirementClaim.Refused
+-                entry.retirementRequested.set(true)
+-                expected.epoch.sealForTerminal()
+-                return PersistenceLeaseRetirementClaim.Claimed
++                return when {
++                    caller.sampleActualFlag() != null || persistenceFactoryRemainingMillis(budget) == 0L -> PersistenceLeaseRetirementClaim.Refused
++
++                    !expected.leased || !currentPoolState(expected) -> PersistenceLeaseRetirementClaim.Refused
++
++                    physical.ledger.current(entry.record) !== entry && !entry.retirementRequested.get() -> PersistenceLeaseRetirementClaim.Refused
++
++                    else -> {
++                        entry.retirementRequested.set(true)
++                        expected.epoch.sealForTerminal()
++                        PersistenceLeaseRetirementClaim.Claimed
++                    }
++                }
+             } finally {
+                 physical.ledger.lock.unlock()
+             }
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutAccess.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutAccess.kt
+index 5593ffd..334fd2f 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutAccess.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutAccess.kt
+@@ -474,7 +474,9 @@ internal class PersistencePgOwnedCutCustody(private val entry: PersistencePhysic
+                     PersistencePgOwnedCutAccess.OPENING_UNRESOLVED or PersistencePgOwnedCutAccess.OPENING_CLEANUP_FAILED or
+                         PersistencePgOwnedCutAccess.OPENING_CONSTRUCTION_FAILED
+                     ) != 0
+-            ) return false
++            ) {
++                return false
++            }
+             if (reuseUncertain()) return false
+             val retention = selected.access.retentionState(selected)
+             check(retention and PersistencePgOwnedCutAccess.RETENTION_MASK.inv() == 0)
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt
+index f0dcdc5..d6e49da 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt
+@@ -155,6 +155,7 @@ internal class PhysicalJdbcDescendants(
+                     for (index in value.indices) copy[index] = adapt(value[index])
+                     copy
+                 }
++
+                 is Properties -> {
+                     val defaults = Properties()
+                     val copy = Properties(defaults)
+@@ -167,16 +168,19 @@ internal class PhysicalJdbcDescendants(
+                     }
+                     copy
+                 }
++
+                 is Map<*, *> -> LinkedHashMap<Any?, Any?>().also { copy ->
+                     copies[value] = copy
+                     value.forEach { (key, item) -> copy[adapt(key)] = adapt(item) }
+                 }
++
+                 is Collection<*> -> {
+                     val copy: MutableCollection<Any?> = if (value is Set<*>) LinkedHashSet() else ArrayList()
+                     copies[value] = copy
+                     value.forEach { copy.add(adapt(it)) }
+                     copy
+                 }
++
+                 else -> value
+             }
+         }
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcFacade.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcFacade.kt
+index 38f97fd..852dad8 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcFacade.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcFacade.kt
+@@ -165,27 +165,11 @@ private class PhysicalConnectionCalls(
+         if (method.name == "isClosed" && entry.jdbc.retirementRequested()) return true
+         val dispatch = PersistenceJdbcDispatch.current()
+         // A present old credential is never upgraded using this Thread's pool membership.
+-        val state = if (dispatch != null) {
+-            dispatch.select(self, entry.jdbc)
+-        } else if (entry.jdbc.unboundPoolState(initial)) {
+-            initial // Explicit pre-composition typed capability, never a composed fallback.
+-        } else {
+-            if (!pool.authenticPoolCaller()) PersistenceJdbcGuardContext.refuse()
+-            entry.jdbc.composedPoolState(pool)?.takeUnless { it.leased } ?: PersistenceJdbcGuardContext.refuse()
+-        }
++        val state = selectState(dispatch)
+         val context = state.context
+         val returning = dispatch?.returning() == true
+         val call = try {
+-            when {
+-                dispatch != null -> context.enter(
+-                    dispatch.identity,
+-                    if (returning || terminal) PersistenceJdbcGuardCallKind.CLEANUP else PersistenceJdbcGuardCallKind.BUSINESS,
+-                )
+-                terminal -> context.enterTerminal()
+-                else -> context.enterRoot(
+-                    if (entry.jdbc.unboundPoolState(initial)) PersistenceJdbcGuardCallKind.BUSINESS else PersistenceJdbcGuardCallKind.CLEANUP,
+-                )
+-            }
++            enterCall(context, dispatch, returning, terminal)
+         } catch (failure: SQLException) {
+             throw declaredFailure(context, method, failure)
+         }
+@@ -195,15 +179,22 @@ private class PhysicalConnectionCalls(
+             var completed = false
+             return runCatching {
+                 try {
+-                    val arguments = args?.let { source -> Array<Any?>(source.size) { source[it] } } ?: emptyArray()
++                    val arguments = copyArguments(args)
+                     val result = when (method.name) {
+                         "unwrap" -> unwrap(arguments.singleOrNull() as? Class<*>)
++
+                         "isWrapperFor" -> (arguments.singleOrNull() as? Class<*>)?.isInstance(self) == true
+-                        "close" -> { context.requestTerminal(call); null }
++
++                        "close" -> {
++                            context.requestTerminal(call)
++                            null
++                        }
++
+                         "abort" -> {
+                             context.dispatchAbort(call, arguments.singleOrNull() as? Executor ?: PersistenceJdbcGuardContext.refuse())
+                             null
+                         }
++
+                         else -> {
+                             val adapted = state.graph.connectionArguments(call, method, arguments)
+                             context.transaction.beforeConnection(method, adapted, returning)
+@@ -233,7 +224,11 @@ private class PhysicalConnectionCalls(
+                     }
+                 }
+             }.getOrElse { failure ->
+-                val actual = if (failure.javaClass === InvocationTargetException::class.java) (failure as InvocationTargetException).targetException else failure
++                val actual = if (failure.javaClass === InvocationTargetException::class.java) {
++                    (failure as InvocationTargetException).targetException
++                } else {
++                    failure
++                }
+                 throw declaredFailure(context, method, call.failure(actual, wrapping))
+             }
+         } finally {
+@@ -243,6 +238,35 @@ private class PhysicalConnectionCalls(
+         }
+     }
+ 
++    private fun selectState(dispatch: PersistenceJdbcDispatch.Frame?): PersistenceJdbcPoolEpoch = if (dispatch != null) {
++        dispatch.select(self, entry.jdbc)
++    } else if (entry.jdbc.unboundPoolState(initial)) {
++        initial // Explicit pre-composition typed capability, never a composed fallback.
++    } else {
++        if (!pool.authenticPoolCaller()) PersistenceJdbcGuardContext.refuse()
++        entry.jdbc.composedPoolState(pool)?.takeUnless { it.leased } ?: PersistenceJdbcGuardContext.refuse()
++    }
++
++    private fun enterCall(
++        context: PersistenceJdbcGuardContext,
++        dispatch: PersistenceJdbcDispatch.Frame?,
++        returning: Boolean,
++        terminal: Boolean,
++    ): PersistenceJdbcGuardCall = when {
++        dispatch != null -> context.enter(
++            dispatch.identity,
++            if (returning || terminal) PersistenceJdbcGuardCallKind.CLEANUP else PersistenceJdbcGuardCallKind.BUSINESS,
++        )
++
++        terminal -> context.enterTerminal()
++
++        else -> context.enterRoot(
++            if (entry.jdbc.unboundPoolState(initial)) PersistenceJdbcGuardCallKind.BUSINESS else PersistenceJdbcGuardCallKind.CLEANUP,
++        )
++    }
++
++    private fun copyArguments(args: Array<out Any?>?): Array<Any?> = args?.let { source -> Array<Any?>(source.size) { source[it] } } ?: emptyArray()
++
+     private fun declaredFailure(context: PersistenceJdbcGuardContext, method: Method, failure: Throwable): Throwable =
+         if (method.name == "setClientInfo" && failure is SQLException && failure !is SQLClientInfoException) context.clientInfo(failure) else failure
+ 
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt
+index 6579259..1716f78 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt
+@@ -23,13 +23,12 @@ internal class PoolActorCustody(private val owner: PoolLifecycle, private val ga
+     }
+ 
+     /** These are current-value checks only. Immutable-from-launch provenance is an independent qualification prerequisite. */
+-    internal fun profileSupported(pool: HikariDataSource, installed: Boolean): Boolean =
+-        pool.javaClass === HikariDataSource::class.java &&
+-            (if (installed) pool.threadFactory === factory else pool.threadFactory == null) &&
+-            pool.scheduledExecutor == null && pool.metricsTrackerFactory == null && pool.metricRegistry == null &&
+-            pool.healthCheckRegistry == null && !pool.isRegisterMbeans && !pool.isAllowPoolSuspension &&
+-            pool.exceptionOverride == null && pool.exceptionOverrideClassName == null && pool.initializationFailTimeout == -1L &&
+-            absentOrFalse("com.zaxxer.hikari.blockUntilFilled") && absentOrFalse("com.zaxxer.hikari.enableRequestBoundaries")
++    internal fun profileSupported(pool: HikariDataSource, installed: Boolean): Boolean = pool.javaClass === HikariDataSource::class.java &&
++        (if (installed) pool.threadFactory === factory else pool.threadFactory == null) &&
++        pool.scheduledExecutor == null && pool.metricsTrackerFactory == null && pool.metricRegistry == null &&
++        pool.healthCheckRegistry == null && !pool.isRegisterMbeans && !pool.isAllowPoolSuspension &&
++        pool.exceptionOverride == null && pool.exceptionOverrideClassName == null && pool.initializationFailTimeout == -1L &&
++        absentOrFalse("com.zaxxer.hikari.blockUntilFilled") && absentOrFalse("com.zaxxer.hikari.enableRequestBoundaries")
+ 
+     internal fun failLocked(fault: PoolActorFault) {
+         check(Thread.holdsLock(gate))
+@@ -53,7 +52,8 @@ internal class PoolActorCustody(private val owner: PoolLifecycle, private val ga
+     internal fun actualCreatorLocked(): PoolCreatorCompletion? {
+         check(Thread.holdsLock(gate))
+         val actual = actorFrame.get() ?: return null
+-        if (actual.owner !== this || actual.thread !== Thread.currentThread() || !actual.entered || actual.completion.hasEnded()) return null
++        if (actual.owner !== this || actual.thread !== Thread.currentThread() || !actual.entered) return null
++        if (actual.completion.hasEnded()) return null
+         return actual.completion.takeIf { cells[actual.index] === actual }
+     }
+ 
+@@ -63,8 +63,7 @@ internal class PoolActorCustody(private val owner: PoolLifecycle, private val ga
+         for (index in cells.indices) {
+             val generation = synchronized(gate) { cells[index] } ?: continue
+             val thread = generation.thread ?: continue
+-            if (thread === Thread.currentThread()) continue
+-            if (thread.state !== Thread.State.TERMINATED || thread.isAlive) continue
++            if (thread === Thread.currentThread() || thread.state !== Thread.State.TERMINATED || thread.isAlive) continue
+             synchronized(gate) {
+                 if (cells[index] === generation && generation.constructionEnded && generation.published) {
+                     if (!generation.entered || !generation.completion.hasEnded()) failLocked(PoolActorFault.WORKER_FAILED)
+@@ -192,7 +191,11 @@ internal class PoolActorCustody(private val owner: PoolLifecycle, private val ga
+             returned = true
+         } finally {
+             try {
+-                if (!contextInstalled) refuse(PoolActorFault.BOOKKEEPING_FAILED) else if (!returned) refuse(PoolActorFault.WORKER_FAILED)
++                if (!contextInstalled) {
++                    refuse(PoolActorFault.BOOKKEEPING_FAILED)
++                } else if (!returned) {
++                    refuse(PoolActorFault.WORKER_FAILED)
++                }
+             } finally {
+                 try {
+                     val actual = actorFrame.get()
+@@ -216,12 +219,7 @@ internal class PoolActorCustody(private val owner: PoolLifecycle, private val ga
+ 
+     private fun absentOrFalse(name: String): Boolean = System.getProperty(name).let { it == null || it.equals("false", ignoreCase = true) }
+ 
+-    private class Generation(
+-        val owner: PoolActorCustody,
+-        val index: Int,
+-        val delegate: Runnable,
+-        val creator: PoolCreatorCompletion,
+-    ) {
++    private class Generation(val owner: PoolActorCustody, val index: Int, val delegate: Runnable, val creator: PoolCreatorCompletion) {
+         val issuance = Any()
+         val completion = PoolCreatorCompletion.prepare(issuance)
+ 
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt
+index c20f04e..7e70ddb 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt
+@@ -14,6 +14,7 @@ internal class PoolLifecycle(private val pool: HikariDataSource, private val own
+     private val accepted = AtomicBoolean()
+     private val firstClose = AtomicReference<CloseAttempt?>()
+     private var shutdownBudget: PersistenceTimeBudget? = null
++
+     @Volatile
+     private var businessSealed = false
+ 
+@@ -40,9 +41,11 @@ internal class PoolLifecycle(private val pool: HikariDataSource, private val own
+             installed = true
+             return true
+         } finally {
+-            if (!installed) synchronized(gate) {
+-                installation = Installation.REFUSED
+-                actors.failLocked(PoolActorFault.UNSUPPORTED_PROFILE)
++            if (!installed) {
++                synchronized(gate) {
++                    installation = Installation.REFUSED
++                    actors.failLocked(PoolActorFault.UNSUPPORTED_PROFILE)
++                }
+             }
+         }
+     }
+@@ -139,8 +142,10 @@ internal class PoolLifecycle(private val pool: HikariDataSource, private val own
+             val decision = synchronized(gate) {
+                 when {
+                     firstClose.get() != null -> PoolShutdownInvocation.ALREADY_CLAIMED
++
+                     // Conservative for all admitted getConnection frames, including the first potentially constructing one.
+                     acquisitions != 0L || startup === Startup.INITIALIZING -> PoolShutdownInvocation.INITIALIZATION_PENDING
++
+                     else -> {
+                         check(firstClose.compareAndSet(null, attempt))
+                         frame.activate(issuance)
+@@ -271,9 +276,8 @@ internal class PoolLifecycle(private val pool: HikariDataSource, private val own
+             val admitted = synchronized(gate) {
+                 if (persistenceFactoryRemainingMillis(frame.budget) == 0L) return@synchronized false
+                 if (operation == null) {
+-                    if (businessSealed || installation === Installation.INSTALLING || startup === Startup.INITIALIZING || startup === Startup.FAILED) {
+-                        return@synchronized false
+-                    }
++                    if (businessSealed || installation === Installation.INSTALLING) return@synchronized false
++                    if (startup === Startup.INITIALIZING || startup === Startup.FAILED) return@synchronized false
+                     val count = Math.addExact(acquisitions, 1L)
+                     if (installation === Installation.INSTALLED && startup === Startup.NEW) {
+                         startup = Startup.INITIALIZING
+@@ -382,9 +386,12 @@ internal class PoolLifecycle(private val pool: HikariDataSource, private val own
+         return synchronized(gate) {
+             val frame = operation.frame
+             val entitlement = operation.entitlement
+-            if (!frame.authentic(this, issuance) || frame.kind !== PoolCallKind.RETURN || !frame.active() || PoolCallFrames.current() !== frame ||
+-                !entitlement.authentic(this, issuance) || !entitlement.preparedForLocked(issuance, operation)
+-            ) return@synchronized false
++            if (!frame.authentic(this, issuance) || frame.kind !== PoolCallKind.RETURN || !frame.active()) {
++                return@synchronized false
++            }
++            if (PoolCallFrames.current() !== frame || !entitlement.authentic(this, issuance) || !entitlement.preparedForLocked(issuance, operation)) {
++                return@synchronized false
++            }
+             // Only the exact prepared current RETURN can reveal broken retained accounting.
+             if (!entitlement.consumedLocked(issuance) || operations <= 0L) {
+                 actors.failLocked(PoolActorFault.BOOKKEEPING_FAILED)
+@@ -399,7 +406,8 @@ internal class PoolLifecycle(private val pool: HikariDataSource, private val own
+         if (!ticket.frame.authentic(this, issuance) || owner.ownershipLockHeld()) return null
+         val entitlement = LeaseEntitlement.prepare(this, issuance, Thread.currentThread())
+         return synchronized(gate) {
+-            if (businessSealed || !ticket.frame.active() || PoolCallFrames.current() !== ticket.frame || !ticket.hasCaptured() || ticket.entitlement != null) return null
++            if (businessSealed || !ticket.frame.active() || PoolCallFrames.current() !== ticket.frame) return null
++            if (!ticket.hasCaptured() || ticket.entitlement != null) return null
+             val count = Math.addExact(futureEntries, 1L)
+             ticket.entitlement = entitlement
+             futureEntries = count
+@@ -427,17 +435,22 @@ internal class PoolLifecycle(private val pool: HikariDataSource, private val own
+     private fun observe(candidate: ShutdownReceipt): PoolShutdownObservation {
+         if (candidate !== receipt || !accepted.get()) return PoolShutdownObservation.UNACCEPTED
+         val frame = PoolCallFrames.current()
+-        if (frame != null) return when (frame.kind) {
+-            PoolCallKind.ACQUISITION -> PoolShutdownObservation.ACTIVE_ACQUISITION
+-            PoolCallKind.SHUTDOWN -> PoolShutdownObservation.ACTIVE_SHUTDOWN_FRAME
+-            else -> PoolShutdownObservation.ACTIVE_POOL_FRAME
++        if (frame != null) {
++            return when (frame.kind) {
++                PoolCallKind.ACQUISITION -> PoolShutdownObservation.ACTIVE_ACQUISITION
++                PoolCallKind.SHUTDOWN -> PoolShutdownObservation.ACTIVE_SHUTDOWN_FRAME
++                else -> PoolShutdownObservation.ACTIVE_POOL_FRAME
++            }
+         }
+         if (PoolActorCustody.currentThreadOwnsActorFrame()) return PoolShutdownObservation.ACTIVE_POOL_ACTOR
+         if (owner.ownershipLockHeld()) return PoolShutdownObservation.OWNERSHIP_LOCK_HELD
+-        val attempt = firstClose.get() ?: return PoolShutdownObservation.PENDING
+-        if (!attempt.ended.get()) return PoolShutdownObservation.PENDING
+-        if (!synchronized(gate) { closedPopulationReadyLocked() }) return PoolShutdownObservation.PENDING
+-        return observeEndedPool(attempt)
++        val attempt = firstClose.get()
++        return when {
++            attempt == null -> PoolShutdownObservation.PENDING
++            !attempt.ended.get() -> PoolShutdownObservation.PENDING
++            !synchronized(gate) { closedPopulationReadyLocked() } -> PoolShutdownObservation.PENDING
++            else -> observeEndedPool(attempt)
++        }
+     }
+ 
+     private fun observeEndedPool(attempt: CloseAttempt): PoolShutdownObservation {
+@@ -449,21 +462,21 @@ internal class PoolLifecycle(private val pool: HikariDataSource, private val own
+         // This existing owner observer may wait, but only outside F/G/T and every counted caller/Worker extent.
+         val native = owner.observeShutdown(budget)
+         if (native === PersistenceLifecycleObservation.PENDING) return PoolShutdownObservation.PENDING
+-        if (native !== PersistenceLifecycleObservation.TRACKED_LOCAL_ENDED && native !== PersistenceLifecycleObservation.DRIVER_CONTRACT_ONLY_ENDED) {
+-            return PoolShutdownObservation.UNKNOWN
+-        }
+-        if (attempt.outcome.get() !== PersistenceTerminalCall.RETURNED || attempt.interrupted.get() || attempt.bookkeepingFailed.get() ||
+-            actorState === PoolActorObservation.UNKNOWN
+-        ) {
+-            return PoolShutdownObservation.UNKNOWN
+-        }
+-        if (synchronized(gate) { installation !== Installation.INSTALLED } || actorState === PoolActorObservation.UNPROVEN) {
+-            return PoolShutdownObservation.POOL_ACTORS_UNPROVEN
+-        }
+-        return if (native === PersistenceLifecycleObservation.TRACKED_LOCAL_ENDED) {
+-            PoolShutdownObservation.TRACKED_LOCAL_ENDED
+-        } else {
+-            PoolShutdownObservation.DRIVER_CONTRACT_ONLY_ENDED
++        return when {
++            native !== PersistenceLifecycleObservation.TRACKED_LOCAL_ENDED && native !== PersistenceLifecycleObservation.DRIVER_CONTRACT_ONLY_ENDED ->
++                PoolShutdownObservation.UNKNOWN
++
++            attempt.outcome.get() !== PersistenceTerminalCall.RETURNED || attempt.interrupted.get() || attempt.bookkeepingFailed.get() ->
++                PoolShutdownObservation.UNKNOWN
++
++            actorState === PoolActorObservation.UNKNOWN -> PoolShutdownObservation.UNKNOWN
++
++            synchronized(gate) { installation !== Installation.INSTALLED } || actorState === PoolActorObservation.UNPROVEN ->
++                PoolShutdownObservation.POOL_ACTORS_UNPROVEN
++
++            native === PersistenceLifecycleObservation.TRACKED_LOCAL_ENDED -> PoolShutdownObservation.TRACKED_LOCAL_ENDED
++
++            else -> PoolShutdownObservation.DRIVER_CONTRACT_ONLY_ENDED
+         }
+     }
+ 
+@@ -484,7 +497,8 @@ internal class PoolLifecycle(private val pool: HikariDataSource, private val own
+         fun enter(): Boolean = pool.enterAcquisition(this)
+ 
+         fun capture(returned: Connection): Boolean {
+-            if (!frame.actualCaller() || !frame.active() || PoolCallFrames.current() !== frame || handle != null) return false
++            if (!frame.actualCaller() || !frame.active() || PoolCallFrames.current() !== frame) return false
++            if (handle != null) return false
+             handle = returned
+             return true
+         }
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt
+index e35b003..5c80e67 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt
+@@ -75,13 +75,8 @@ internal class PoolCallFrame private constructor(
+     override fun toString(): String = "PoolCallFrame(redacted)"
+ 
+     companion object {
+-        internal fun prepare(
+-            pool: PoolLifecycle,
+-            issuance: Any,
+-            kind: PoolCallKind,
+-            caller: Thread,
+-            budget: PersistenceTimeBudget,
+-        ): PoolCallFrame = PoolCallFrame(pool, issuance, kind, caller, budget)
++        internal fun prepare(pool: PoolLifecycle, issuance: Any, kind: PoolCallKind, caller: Thread, budget: PersistenceTimeBudget): PoolCallFrame =
++            PoolCallFrame(pool, issuance, kind, caller, budget)
+     }
+ }
+ 
+diff --git a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt
+index 5d9ebf5..ff03b98 100644
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt
+@@ -41,8 +41,8 @@ import java.util.concurrent.TimeUnit
+ import java.util.concurrent.atomic.AtomicBoolean
+ import java.util.concurrent.atomic.AtomicLong
+ import java.util.concurrent.atomic.AtomicReference
+-import java.util.concurrent.locks.ReentrantLock
+ import java.util.concurrent.locks.LockSupport
++import java.util.concurrent.locks.ReentrantLock
+ 
+ /** Requires the qualified private runtime artifact. Missing owned-cut support fails; there is no stock/skip fallback. */
+ @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@@ -58,215 +58,11 @@ class PersistencePgOwnedCutIntegrationTest {
+         if (database.isInitialized()) database.value.close()
+     }
+ 
++    private fun registeredFinalJarConsumerDrivers(): List<Driver> = java.util.Collections.list(DriverManager.getDrivers())
++
+     @Test
+     fun `required adapter resolves all22 exact descriptors and rejects missing changed or foreign helper`() {
+-        val prepared = PersistenceDriverBootstrap.prepare()
+-        val driver = prepared.construct()
+-        val loader = driver.javaClass.classLoader
+-        val access = PersistencePgOwnedCutAccess.prepare(prepared, driver.javaClass)
+-        val helper = Class.forName(OWNED_CUT_HELPER, false, loader)
+-        assertSame(loader, helper.classLoader)
+-        val marker = Class.forName("$OWNED_CUT_HELPER\$1", false, loader)
+-        assertMarkerShape(loader, helper, marker)
+-        fun cell(name: String): Class<*> = Class.forName("$OWNED_CUT_HELPER\$$name", false, loader).also {
+-            assertSame(loader, it.classLoader)
+-            assertSame(helper, it.declaringClass)
+-            assertTrue(Modifier.isPublic(it.modifiers) && Modifier.isFinal(it.modifiers) && Modifier.isStatic(it.modifiers))
+-        }
+-        val opening = cell("Opening")
+-        val root = cell("Root")
+-        val owner = cell("Owner")
+-        val life = cell("Life")
+-        val invocation = cell("Invocation")
+-        val objects = Array<Any?>::class.java
+-        val lives = java.lang.reflect.Array.newInstance(life, 0).javaClass
+-        val nativeConnection = Class.forName("$OWNED_CUT_HELPER\$NativeConnection", false, loader)
+-        val native = Class.forName("$OWNED_CUT_HELPER\$Native", false, loader)
+-        // Recorded native02 descriptors and exact constructor flags, independent of the adapter's shape predicate.
+-        val constructorArguments = mapOf(
+-            opening to listOf(Driver::class.java, Any::class.java),
+-            root to listOf(nativeConnection, Any::class.java, Any::class.java),
+-            owner to listOf(root),
+-            life to listOf(nativeConnection, life, Integer.TYPE, native),
+-            invocation to listOf(owner, Any::class.java, Any::class.java, Method::class.java, objects, objects, lives, IntArray::class.java),
+-        )
+-        constructorArguments.forEach { (type, arguments) ->
+-            assertEquals(2, type.declaredConstructors.size)
+-            val explicit = type.getDeclaredConstructor(*arguments.toTypedArray())
+-            assertEquals(Modifier.PRIVATE, explicit.modifiers)
+-            assertFalse(explicit.isSynthetic)
+-            val bridge = type.getDeclaredConstructor(*(arguments + marker).toTypedArray())
+-            assertEquals(0x1000, bridge.modifiers)
+-            assertTrue(bridge.isSynthetic)
+-            arguments.forEachIndexed { index, argument ->
+-                assertSame(argument, explicit.parameterTypes[index])
+-                assertSame(argument, bridge.parameterTypes[index])
+-            }
+-            assertSame(marker, bridge.parameterTypes.last())
+-        }
+-        val descriptors = mapOf(
+-            "prepareRuntime" to (Void.TYPE to emptyList()),
+-            "prepareOpening" to (opening to listOf(Driver::class.java, Any::class.java)),
+-            "armOpening" to (Void.TYPE to listOf(opening)),
+-            "recordReturned" to (Void.TYPE to listOf(opening, Connection::class.java)),
+-            "endOpening" to (Void.TYPE to listOf(opening)),
+-            "openingState" to (Integer.TYPE to listOf(opening)),
+-            "cleanupOpening" to (Void.TYPE to listOf(opening)),
+-            "attach" to (root to listOf(opening, Connection::class.java, Any::class.java, Any::class.java)),
+-            "owner" to (owner to listOf(root)),
+-            "life" to (life to listOf(owner, Any::class.java, life, java.lang.Boolean.TYPE)),
+-            "isLive" to (java.lang.Boolean.TYPE to listOf(owner, life)),
+-            "revoke" to (java.lang.Boolean.TYPE to listOf(owner, life)),
+-            "lifeKind" to (Integer.TYPE to listOf(life)),
+-            "firstCloseState" to (Integer.TYPE to listOf(life)),
+-            "liveNativeChildren" to (java.lang.Long.TYPE to listOf(root)),
+-            "rootState" to (Integer.TYPE to listOf(root)),
+-            "retentionState" to (Integer.TYPE to listOf(root)),
+-            "prepareInvocation" to
+-                (invocation to listOf(owner, Any::class.java, Any::class.java, Method::class.java, objects, objects, lives, IntArray::class.java)),
+-            "arm" to (Void.TYPE to listOf(invocation)),
+-            "invocationState" to (Integer.TYPE to listOf(invocation)),
+-            "drainState" to (Integer.TYPE to listOf(invocation)),
+-            "disarm" to (Void.TYPE to listOf(invocation)),
+-            "actualEnd" to (Void.TYPE to listOf(invocation)),
+-        )
+-        val resolved = (ownedCutField(access, "methods") as Map<*, *>).values.map { it as Method }.associateBy { it.name }
+-        // Historical selector name stays stable; the successor requires all23 with no old-JAR fallback.
+-        assertEquals(23, resolved.size)
+-        assertEquals(descriptors.keys, resolved.keys)
+-        descriptors.forEach { (name, descriptor) ->
+-            val method = helper.getDeclaredMethod(name, *descriptor.second.toTypedArray())
+-            assertEquals(method, resolved.getValue(name))
+-            assertSame(descriptor.first, method.returnType)
+-            assertTrue(Modifier.isPublic(method.modifiers) && Modifier.isStatic(method.modifiers))
+-            assertFalse(method.isBridge || method.isSynthetic || Modifier.isAbstract(method.modifiers))
+-        }
+-        val verifyConsumerInputs = assertFinalJarConsumerProvenance(
+-            "required",
+-            driver.javaClass,
+-            listOf(helper, marker, opening, root, owner, life, invocation),
+-        )
+-        CutDescriptorDefect.entries.forEach { defect ->
+-            // Only negative cold linkage: authentic artifact class bytes, never a synthetic successful Driver.
+-            val deniedLoader = CutDescriptorDefectLoader(loader, defect)
+-            val denied = PersistenceDriverBootstrap.prepareWithLoader(deniedLoader)
+-            val driverType = Class.forName("org.postgresql.Driver", false, deniedLoader)
+-            assertSame(deniedLoader, driverType.classLoader)
+-            assertTrue(denied.ownsTimerDriverClass(driverType))
+-            deniedLoader.assertConstructorDefect()
+-            assertEndpointFailure(PersistenceBoundaryFailureCode.UNSUPPORTED_JDBC_DRIVER) {
+-                PersistencePgOwnedCutAccess.prepare(denied, driverType)
+-            }
+-        }
+-        verifyConsumerInputs()
+-    }
+-
+-    private fun assertMarkerShape(loader: ClassLoader?, helper: Class<*>, marker: Class<*>) {
+-        assertSame(loader, marker.classLoader)
+-        assertSame(helper, marker.enclosingClass)
+-        assertNull(marker.declaringClass)
+-        assertNull(marker.enclosingMethod)
+-        assertNull(marker.enclosingConstructor)
+-        assertTrue(marker.isAnonymousClass && marker.isSynthetic)
+-        assertEquals(0, marker.modifiers and (Modifier.PUBLIC or Modifier.PROTECTED or Modifier.PRIVATE))
+-        assertEquals(0, marker.declaredFields.size)
+-        assertEquals(0, marker.declaredMethods.size)
+-        assertEquals(0, marker.declaredConstructors.size)
+-    }
+-
+-    /** Actual positive Classes under the explicit development profile, not hashes of Class.getResource bytes. */
+-    private fun assertFinalJarConsumerProvenance(witnessName: String, driverType: Class<*>, cutTypes: List<Class<*>>): () -> Unit {
+-        assertTrue(witnessName == "required" || witnessName == "original")
+-        fun input(name: String): String = requireNotNull(System.getProperty("kira.finalJarConsumer.$name")) {
+-            "The required consumer test needs its explicit final-JAR profile: $name"
+-        }
+-        assertEquals("app-29-final-jar-consumer-profile-04", input("profile"))
+-        val jar = Path.of(input("jar")).toRealPath()
+-        val checker = Path.of(input("checker")).toRealPath()
+-        fun sha256(path: Path): String = MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(path))
+-            .joinToString("") { "%02x".format(it) }
+-        val verifyInputs = {
+-            assertEquals("50f7dc4a6314cc5105f4990be26ba8be65ae242e1f7e62652cc60d6a2c0e03df", sha256(jar))
+-            assertEquals("857658c8bdcbff794949a8d9922f88d63ee3751c203c7cd7d21ea97f9e745288", sha256(checker))
+-        }
+-        verifyInputs()
+-        val loader = requireNotNull(driverType.classLoader)
+-        assertSame(javaClass.classLoader, loader)
+-        assertSame(Thread.currentThread().contextClassLoader, loader)
+-        assertEquals("org.postgresql.Driver", driverType.name)
+-        val witness = linkedMapOf("profile" to input("profile"), "witness" to witnessName)
+-        val loaderIdentity = "${loader.javaClass.name}@${Integer.toHexString(System.identityHashCode(loader))}"
+-        fun associate(type: Class<*>, expected: Path) {
+-            assertSame(loader, type.classLoader)
+-            val source = requireNotNull(type.protectionDomain.codeSource).location.toURI()
+-            assertEquals("file", source.scheme)
+-            val actual = Path.of(source).toRealPath()
+-            assertEquals(expected, actual)
+-            witness["class.${type.name}.source"] = actual.toString()
+-            witness["class.${type.name}.loader"] = loaderIdentity
+-        }
+-        fun literal(name: String): Class<*> = Class.forName(name, false, loader)
+-        (listOf(driverType) + cutTypes).forEach { associate(it, jar) }
+-        val info = literal("org.postgresql.util.DriverInfo")
+-        val cleaner = literal("org.postgresql.util.LazyCleanerImpl")
+-        val wrapper = literal("org.postgresql.util.LazyCleanerImpl\$CleanableWrapper")
+-        val scram = literal("org.postgresql.shaded.com.ongres.scram.client.ScramClient")
+-        listOf(info, cleaner, wrapper, scram).forEach { associate(it, jar) }
+-        associate(literal("org.checkerframework.checker.nullness.qual.NonNull"), checker)
+-        assertEquals("42.7.12-kira.1", driverType.`package`.implementationVersion)
+-        assertEquals("42.7.12-kira.1", info.getField("DRIVER_VERSION").get(null))
+-        val cleanerField = cleaner.getDeclaredField("cleaner")
+-        assertEquals(Modifier.PRIVATE or Modifier.FINAL, cleanerField.modifiers)
+-        assertSame(Cleaner::class.java, cleanerField.type)
+-        assertSame(Cleaner.Cleanable::class.java, wrapper.getDeclaredField("nativeCleanable").type)
+-        witness["mr.cleaner.field"] = cleanerField.type.name
+-        witness["mr.wrapper.field"] = wrapper.getDeclaredField("nativeCleanable").type.name
+-        val registered = java.util.Collections.list(DriverManager.getDrivers())
+-        // acceptsURL parses only; Gate A never calls connect or initializes the lazy database fixture.
+-        val providers = registered.filter { it.acceptsURL("jdbc:postgresql://127.0.0.1/gate_a_no_connection") }
+-        assertEquals(1, providers.size)
+-        assertSame(driverType, providers.single().javaClass)
+-        registered.forEachIndexed { index, provider -> witness["registered.$index"] = provider.javaClass.name }
+-        witness["postgres.provider.count"] = providers.size.toString()
+-        witness["jar.sha256"] = sha256(jar)
+-        witness["checker.sha256"] = sha256(checker)
+-        val report = Path.of(input("report")).resolveSibling("worker-runtime-$witnessName.txt")
+-        recordFinalJarConsumerJvm(witness, Path.of(input("javaHome")), report)
+-        witness["provenance"] = "PASS"
+-        assertTrue(witness.values.none { '\n' in it || '\r' in it })
+-        Files.writeString(
+-            report,
+-            witness.entries.joinToString("\n", postfix = "\n") { "${it.key}=${it.value}" },
+-            StandardOpenOption.CREATE_NEW,
+-        )
+-        return verifyInputs
+-    }
+-
+-    private fun recordFinalJarConsumerJvm(witness: MutableMap<String, String>, expectedHome: Path, report: Path) {
+-        val home = Path.of(System.getProperty("java.home")).toRealPath()
+-        assertEquals(expectedHome.toRealPath(), home)
+-        assertEquals(21, Runtime.version().feature())
+-        val process = ProcessHandle.current()
+-        val info = process.info()
+-        val executable = Path.of(info.command().orElseThrow()).toRealPath()
+-        assertEquals(home.resolve("bin/java").toRealPath(), executable)
+-        witness["worker.pid"] = process.pid().toString()
+-        witness["worker.executable"] = executable.toString()
+-        witness["java.home"] = home.toString()
+-        witness["java.runtime.version"] = Runtime.version().toString()
+-        witness["java.vm.name"] = System.getProperty("java.vm.name")
+-        witness["java.vm.version"] = System.getProperty("java.vm.version")
+-        val arguments = ManagementFactory.getRuntimeMXBean().inputArguments
+-        val forbidden = listOf(
+-            "-javaagent:", "-agentlib:", "-agentpath:", "-Xbootclasspath", "--patch-module", "--upgrade-module-path", "--module-path",
+-            "-Djava.system.class.loader", "-Djava.class.path=", "-Djdk.util.jar.", "-XX:SharedArchiveFile=", "-XX:ArchiveClassesAtExit=",
+-        )
+-        assertFalse(arguments.any { argument -> forbidden.any { argument.startsWith(it) } })
+-        assertTrue(arguments.containsAll(listOf("-XX:+DisableAttachMechanism", "-XX:-EnableDynamicAgentLoading")))
+-        assertTrue(arguments.contains("-Xlog:class+load=info:file=${report.parent}/class-load-%p.txt:uptime,level,tags"))
+-        listOf("JAVA_TOOL_OPTIONS", "JDK_JAVA_OPTIONS", "_JAVA_OPTIONS").forEach { assertNull(System.getenv(it)) }
+-        arguments.forEachIndexed { index, argument -> witness["jvm.arg.$index"] = argument }
+-        info.arguments().orElseThrow().forEachIndexed { index, argument -> witness["process.arg.$index"] = argument }
++        assertRequiredOwnedCutDescriptors(this, this::registeredFinalJarConsumerDrivers)
+     }
+ 
+     @Test
+@@ -275,26 +71,8 @@ class PersistencePgOwnedCutIntegrationTest {
+         var primaryFailure: Throwable? = null
+         try {
+             withOwnedCutConnection(database.value, originalProvider = true) { f ->
+-                assertEquals("app-29-gate-b-hosted-01", System.getProperty("kira.finalJarConsumer.gate"))
+-                val access = f.opening.access
+-                val driverType = ownedCutField(access, "driverType") as Class<*>
+-                val methods = (ownedCutField(access, "methods") as Map<*, *>).values.map { it as Method }
+-                val helper = methods.map { it.declaringClass }.distinct().single()
+-                val types = requireNotNull(ownedCutField(access, "types"))
+-                val opaque = listOf("opening", "root", "owner", "life", "invocation").map { ownedCutField(types, it) as Class<*> }
+-                assertSame(opaque.first(), f.opening.cell.javaClass)
+-                val marker = opaque.first().declaredConstructors.single { it.isSynthetic }.parameterTypes.last()
+-                assertEquals(OWNED_CUT_HELPER, helper.name)
+-                assertEquals("org.postgresql.jdbc.PgConnection", f.raw.javaClass.name)
+-                verifyConsumerInputs = assertFinalJarConsumerProvenance("original", driverType, listOf(helper, marker, f.raw.javaClass) + opaque)
+-                assertSame(PersistenceDriverAttemptPolicy.ORIGINAL_PROVIDER, f.entry.policy)
+-                assertNull(requireNotNull(f.entry.driverOpening).image)
+-                assertNull(f.entry.driverScope)
+-                assertNull(f.entry.transports)
+-                assertTrue(f.entry.driverCut.enabled)
+-                assertSame(f.raw, ownedCutField(f.opening.cell, "returned"))
+-                assertEquals(PersistencePgOwnedCutAccess.OPENING_ENDED, f.opening.access.openingState(f.opening))
+-                assertNull((ownedCutField(f.entry.driverCut, "root") as AtomicReference<*>).get())
++                verifyConsumerInputs = assertOriginalProviderProvenance(this, f, this::registeredFinalJarConsumerDrivers)
++                assertOriginalProviderOpening(f)
+                 f.connection.createStatement().use { statement ->
+                     statement.executeQuery("SELECT 1").use { result ->
+                         assertTrue(result.next())
+@@ -310,13 +88,7 @@ class PersistencePgOwnedCutIntegrationTest {
+             throw failure
+         } finally {
+             // After BOTH outer use blocks (connection retirement and scope close), even when either fails.
+-            try {
+-                verifyConsumerInputs?.invoke()
+-            } catch (recheckFailure: Throwable) {
+-                val failure = primaryFailure
+-                if (failure == null) throw recheckFailure
+-                if (failure !== recheckFailure) failure.addSuppressed(recheckFailure)
+-            }
++            recheckFinalJarConsumerInputs(verifyConsumerInputs, primaryFailure)
+         }
+     }
+ 
+@@ -528,45 +300,44 @@ class PersistencePgOwnedCutIntegrationTest {
+     }
+ 
+     @Test
+-    fun `real native finalizers end before the held core last count and a racing terminal seal still denies return`() =
+-        withOwnedCutPool(database.value) { f ->
+-            val connection = f.pool.connection
+-            val lease = ownedPoolLease(connection)
+-            val entry = f.entry(connection)
+-            val root = ownedPoolRoot(lease)
+-            try {
+-                CoreLastCountBarrier(lease).use { barrier ->
+-                    FactoryWorkerTestScope().use { workers ->
+-                        val observer = workers.launch {
+-                            barrier.awaitEntered()
+-                            try {
+-                                assertTrue(barrier.nativeEnded(), "This seam is AFTER native actualEnd, not a native-finalizer suspension claim.")
+-                                assertTrue(lease.state.epoch.foregroundActive())
+-                                assertFalse(lease.state.epoch.sealedAndEnded())
+-                                assertTrue(entry.jdbc.currentPoolState(lease.state))
+-                                assertSame(root.cell, ownedPoolRoot(lease).cell)
+-                                assertFalse((ownedCutField(lease, "transfer") as PersistenceJdbcPoolTransfer).consented())
+-                                requireNotNull(f.pool.requestShutdown())
+-                                awaitLifecycleFact { !entry.jdbc.permitsCleanup(lease.state.epoch) }
+-                                assertFalse(entry.jdbc.postOpeningCallsEnded())
+-                                assertFalse(requireNotNull(entry.terminalWork).producerDrainProven())
+-                                connection.close() // No second real return, despite the held first one.
+-                            } finally {
+-                                barrier.release()
+-                            }
+-                            true
++    fun `real native finalizers end before the held core last count and a racing terminal seal still denies return`() = withOwnedCutPool(database.value) { f ->
++        val connection = f.pool.connection
++        val lease = ownedPoolLease(connection)
++        val entry = f.entry(connection)
++        val root = ownedPoolRoot(lease)
++        try {
++            CoreLastCountBarrier(lease).use { barrier ->
++                FactoryWorkerTestScope().use { workers ->
++                    val observer = workers.launch {
++                        barrier.awaitEntered()
++                        try {
++                            assertTrue(barrier.nativeEnded(), "This seam is AFTER native actualEnd, not a native-finalizer suspension claim.")
++                            assertTrue(lease.state.epoch.foregroundActive())
++                            assertFalse(lease.state.epoch.sealedAndEnded())
++                            assertTrue(entry.jdbc.currentPoolState(lease.state))
++                            assertSame(root.cell, ownedPoolRoot(lease).cell)
++                            assertFalse((ownedCutField(lease, "transfer") as PersistenceJdbcPoolTransfer).consented())
++                            requireNotNull(f.pool.requestShutdown())
++                            awaitLifecycleFact { !entry.jdbc.permitsCleanup(lease.state.epoch) }
++                            assertFalse(entry.jdbc.postOpeningCallsEnded())
++                            assertFalse(requireNotNull(entry.terminalWork).producerDrainProven())
++                            connection.close() // No second real return, despite the held first one.
++                        } finally {
++                            barrier.release()
+                         }
+-                        assertThrows<SQLException> { connection.close() }
+-                        assertTrue(observer.join())
++                        true
+                     }
+-                    assertFalse(barrier.timedOut.get())
++                    assertThrows<SQLException> { connection.close() }
++                    assertTrue(observer.join())
+                 }
+-                awaitLifecycleFact { f.scope.entries().none { it === entry } }
+-                assertFalse((ownedCutField(lease, "transfer") as PersistenceJdbcPoolTransfer).consented())
+-            } finally {
+-                connection.close()
++                assertFalse(barrier.timedOut.get())
+             }
++            awaitLifecycleFact { f.scope.entries().none { it === entry } }
++            assertFalse((ownedCutField(lease, "transfer") as PersistenceJdbcPoolTransfer).consented())
++        } finally {
++            connection.close()
+         }
++    }
+ 
+     @Test
+     fun `consented real Hikari recycle tail retains no successor eviction or abort authority`() = withOwnedCutPool(database.value) { f ->
+@@ -708,78 +479,30 @@ class PersistencePgOwnedCutIntegrationTest {
+     }
+ 
+     @Test
+-    fun `exact retirement sample result preserves its Throwable and does not absorb adjacent budget failure`() =
+-        withOwnedCutPool(database.value) { f ->
+-            OwnedCallerTestScope().use { callers ->
+-                val behavior = OwnedCallerTestBehavior()
+-                val caller = callers.launch(OwnedCallerTestKind.OVERRIDING, behavior) {
+-                    val connection = f.pool.connection
+-                    val lease = ownedPoolLease(connection)
+-                    val entry = f.entry(connection)
+-                    val original = PersistenceOwnedFactoryCaller.capture()
+-                    val clock = AtomicLong()
+-                    val budget = PersistenceTimeBudget.start(1_000, clock::get)
+-                    val problem = IllegalStateException("Injected exact retirement sample failure.")
+-                    try {
+-                        // Direct internal-boundary probes, not a manufactured admitted RETURN or an eviction receipt.
+-                        val samples = behavior.samples.get()
+-                        behavior.sampleFailure = problem
+-                        val result = entry.jdbc.retireLeasedState(lease.state, budget, original)
+-                        assertTrue(result is PersistenceLeaseRetirementClaim.CallerSampleFailed)
+-                        assertSame(problem, (result as PersistenceLeaseRetirementClaim.CallerSampleFailed).failure)
+-                        assertEquals(
+-                            samples + 1,
+-                            behavior.samples.get(),
+-                            "Only the exact outside-lock sample produces this result, without retry or adaptation.",
+-                        )
+-                        assertTrue(original.isCurrent())
+-                        assertTrue(entry.jdbc.currentPoolState(lease.state))
+-                        assertFalse(entry.retirementRequested.get() || lease.state.epoch.sealedAndEnded())
+-                        assertEquals(1L, f.lifecycle.actorSnapshot().futureLeaseEntries)
+-                        assertEquals(0L, f.lifecycle.actorSnapshot().activeOperations)
+-                        clock.set(TimeUnit.MILLISECONDS.toNanos(1_000))
+-                        assertSame(PersistenceLeaseRetirementClaim.Refused, entry.jdbc.retireLeasedState(lease.state, budget, original))
+-                        assertEquals(samples + 1, behavior.samples.get(), "Original expiry short-circuits the still-throwing override.")
+-                        behavior.sampleFailure = null
+-                        val reads = java.util.concurrent.atomic.AtomicInteger()
+-                        val clockProblem = IllegalStateException("Injected retirement budget recheck failure.")
+-                        val brokenBudget = PersistenceTimeBudget.start(1_000) {
+-                            if (reads.incrementAndGet() == 3) throw clockProblem
+-                            0L
+-                        }
+-                        assertSame(
+-                            clockProblem,
+-                            assertThrows<IllegalStateException> { entry.jdbc.retireLeasedState(lease.state, brokenBudget, original) },
+-                            "The budget check after a successful sample is not a CallerSampleFailed outcome.",
+-                        )
+-                        assertEquals(3, reads.get())
+-                        assertEquals(samples + 2, behavior.samples.get())
+-                        assertFalse(entry.retirementRequested.get())
+-                        assertNull(f.lifecycle.actorSnapshot().firstFailure)
+-                        // A separate direct claim probe, not a reset/replacement of any admitted RETURN allowance.
+-                        assertSame(
+-                            PersistenceLeaseRetirementClaim.Claimed,
+-                            entry.jdbc.retireLeasedState(lease.state, PersistenceTimeBudget.start(1_000), original),
+-                        )
+-                        assertTrue(entry.retirementRequested.get() && lease.state.epoch.sealedAndEnded())
+-                        assertThrows<SQLException> { connection.close() } // The one real RETURN keeps its original 1s budget/finalizers.
+-                        val entitlement = ownedCutField(lease, "entitlement") as PoolLifecycle.LeaseEntitlement
+-                        val operation = ownedCutField(entitlement, "prepared") as PoolLifecycle.Operation
+-                        assertTrue(operation.actualFrameEnded())
+-                        assertEquals(TimeUnit.MILLISECONDS.toNanos(1_000), ownedCutField(operation.frame.budget, "allowanceNanos"))
+-                        connection.close()
+-                        assertSame(operation, ownedCutField(entitlement, "prepared"))
+-                        awaitLifecycleFact { f.scope.entries().none { it === entry } }
+-                        true
+-                    } finally {
+-                        behavior.sampleFailure = null
+-                        connection.close()
+-                    }
++    fun `exact retirement sample result preserves its Throwable and does not absorb adjacent budget failure`() = withOwnedCutPool(database.value) { f ->
++        OwnedCallerTestScope().use { callers ->
++            val behavior = OwnedCallerTestBehavior()
++            val caller = callers.launch(OwnedCallerTestKind.OVERRIDING, behavior) {
++                val connection = f.pool.connection
++                val lease = ownedPoolLease(connection)
++                val entry = f.entry(connection)
++                val original = PersistenceOwnedFactoryCaller.capture()
++                val clock = AtomicLong()
++                val budget = PersistenceTimeBudget.start(1_000, clock::get)
++                val problem = IllegalStateException("Injected exact retirement sample failure.")
++                try {
++                    assertExactRetirementSample(f, behavior, connection, lease, entry, original, clock, budget, problem)
++                    awaitLifecycleFact { f.scope.entries().none { it === entry } }
++                    true
++                } finally {
++                    behavior.sampleFailure = null
++                    connection.close()
+                 }
+-                assertTrue(caller.value())
+-                assertEquals(Thread.State.TERMINATED, caller.thread.state)
+             }
++            assertTrue(caller.value())
++            assertEquals(Thread.State.TERMINATED, caller.thread.state)
+         }
++    }
+ 
+     @Test
+     fun `blocked overriding original checkout sample retains its real holder with F G T free before successful delivery`() =
+@@ -802,11 +525,10 @@ class PersistencePgOwnedCutIntegrationTest {
+         withOwnedCutPool(database.value) { f -> assertOwnedReturnCaller(f, ReturnCallerFault.EXPIRE) }
+ 
+     @Test
+-    fun `throwing original RETURN override leaves F G T free and retires its exact source without a second return`() =
+-        withOwnedCutPool(database.value) { f ->
+-            f.shutdownDiagnosticCase = OwnedCutShutdownDiagnosticCase.RETURN_SAMPLE
+-            assertOwnedReturnCaller(f, ReturnCallerFault.SAMPLE)
+-        }
++    fun `throwing original RETURN override leaves F G T free and retires its exact source without a second return`() = withOwnedCutPool(database.value) { f ->
++        f.shutdownDiagnosticCase = OwnedCutShutdownDiagnosticCase.RETURN_SAMPLE
++        assertOwnedReturnCaller(f, ReturnCallerFault.SAMPLE)
++    }
+ 
+     @Test
+     fun `actual RETURN interruption defeats a false override while outer actor custody survives held restoration`() =
+@@ -841,27 +563,7 @@ class PersistencePgOwnedCutIntegrationTest {
+             val problem = IllegalStateException("Injected authentic RETURN TL installation failure.")
+             try {
+                 ThrowingReturnEntry(f.lifecycle, problem).use { fault ->
+-                    assertSame(problem, assertThrows<IllegalStateException> { connection.close() })
+-                    val operation = ownedCutField(entitlement, "prepared") as PoolLifecycle.Operation
+-                    assertSame(operation.frame, fault.selected)
+-                    assertEquals("REFUSED", requireNotNull(ownedCutField(operation.frame, "phase")).toString())
+-                    assertFalse(operation.frame.hasEntered(), "The real installation threw before counted admission.")
+-                    assertFalse(operation.actualFrameEnded(), "REFUSED is not a manufactured ENDED receipt.")
+-                    assertFalse(operation.frame.completion.hasEnded())
+-                    assertNull(PoolCallFrames.current(), "restoreUnadmitted must remove the actually published frame.")
+-                    assertEquals(1, fault.injections)
+-                    assertTrue(fault.outsideOwnershipLocks)
+-                    assertEquals("REVOKED", requireNotNull(ownedCutField(entitlement, "phase")).toString())
+-                    assertEquals(0L, f.lifecycle.actorSnapshot().futureLeaseEntries)
+-                    assertEquals(0L, f.lifecycle.actorSnapshot().activeOperations)
+-                    assertEquals(PoolActorFault.BOOKKEEPING_FAILED, f.lifecycle.actorSnapshot().firstFailure)
+-                    assertNull(ownedCutField(lease, "transfer"))
+-                    assertSame(lower, ownedCutField(handle, "delegate"), "No Hikari close or reset was reached.")
+-                    assertTrue(lease.closed() && entry.retirementRequested.get())
+-                    assertTrue(lease.state.epoch.sealedAndEnded())
+-                    connection.close()
+-                    assertSame(operation, ownedCutField(entitlement, "prepared"), "Duplicate close issues no new allowance or operation.")
+-                    assertEquals(1, fault.injections)
++                    assertRefusedReturnEntry(f, connection, lease, entry, handle, lower, entitlement, problem, fault)
+                 }
+                 awaitLifecycleFact { f.scope.entries().none { it === entry } }
+             } finally {
+@@ -955,6 +657,363 @@ class PersistencePgOwnedCutIntegrationTest {
+         }
+ }
+ 
++private fun assertRequiredOwnedCutDescriptors(testInstance: PersistencePgOwnedCutIntegrationTest, registeredDrivers: () -> List<Driver>) {
++    val prepared = PersistenceDriverBootstrap.prepare()
++    val driver = prepared.construct()
++    val loader = driver.javaClass.classLoader
++    val access = PersistencePgOwnedCutAccess.prepare(prepared, driver.javaClass)
++    val helper = Class.forName(OWNED_CUT_HELPER, false, loader)
++    assertSame(loader, helper.classLoader)
++    val marker = Class.forName("$OWNED_CUT_HELPER\$1", false, loader)
++    assertMarkerShape(loader, helper, marker)
++    fun cell(name: String): Class<*> = Class.forName("$OWNED_CUT_HELPER\$$name", false, loader).also {
++        assertSame(loader, it.classLoader)
++        assertSame(helper, it.declaringClass)
++        assertTrue(Modifier.isPublic(it.modifiers) && Modifier.isFinal(it.modifiers) && Modifier.isStatic(it.modifiers))
++    }
++    val opening = cell("Opening")
++    val root = cell("Root")
++    val owner = cell("Owner")
++    val life = cell("Life")
++    val invocation = cell("Invocation")
++    val objects = Array<Any?>::class.java
++    val lives = java.lang.reflect.Array.newInstance(life, 0).javaClass
++    val nativeConnection = Class.forName("$OWNED_CUT_HELPER\$NativeConnection", false, loader)
++    val native = Class.forName("$OWNED_CUT_HELPER\$Native", false, loader)
++    // Recorded native02 descriptors and exact constructor flags, independent of the adapter's shape predicate.
++    val constructorArguments = mapOf(
++        opening to listOf(Driver::class.java, Any::class.java),
++        root to listOf(nativeConnection, Any::class.java, Any::class.java),
++        owner to listOf(root),
++        life to listOf(nativeConnection, life, Integer.TYPE, native),
++        invocation to listOf(owner, Any::class.java, Any::class.java, Method::class.java, objects, objects, lives, IntArray::class.java),
++    )
++    assertOwnedCutConstructors(constructorArguments, marker)
++    val descriptors = mapOf(
++        "prepareRuntime" to (Void.TYPE to emptyList()),
++        "prepareOpening" to (opening to listOf(Driver::class.java, Any::class.java)),
++        "armOpening" to (Void.TYPE to listOf(opening)),
++        "recordReturned" to (Void.TYPE to listOf(opening, Connection::class.java)),
++        "endOpening" to (Void.TYPE to listOf(opening)),
++        "openingState" to (Integer.TYPE to listOf(opening)),
++        "cleanupOpening" to (Void.TYPE to listOf(opening)),
++        "attach" to (root to listOf(opening, Connection::class.java, Any::class.java, Any::class.java)),
++        "owner" to (owner to listOf(root)),
++        "life" to (life to listOf(owner, Any::class.java, life, java.lang.Boolean.TYPE)),
++        "isLive" to (java.lang.Boolean.TYPE to listOf(owner, life)),
++        "revoke" to (java.lang.Boolean.TYPE to listOf(owner, life)),
++        "lifeKind" to (Integer.TYPE to listOf(life)),
++        "firstCloseState" to (Integer.TYPE to listOf(life)),
++        "liveNativeChildren" to (java.lang.Long.TYPE to listOf(root)),
++        "rootState" to (Integer.TYPE to listOf(root)),
++        "retentionState" to (Integer.TYPE to listOf(root)),
++        "prepareInvocation" to
++            (invocation to listOf(owner, Any::class.java, Any::class.java, Method::class.java, objects, objects, lives, IntArray::class.java)),
++        "arm" to (Void.TYPE to listOf(invocation)),
++        "invocationState" to (Integer.TYPE to listOf(invocation)),
++        "drainState" to (Integer.TYPE to listOf(invocation)),
++        "disarm" to (Void.TYPE to listOf(invocation)),
++        "actualEnd" to (Void.TYPE to listOf(invocation)),
++    )
++    val resolved = (ownedCutField(access, "methods") as Map<*, *>).values.map { it as Method }.associateBy { it.name }
++    // Historical selector name stays stable; the successor requires all23 with no old-JAR fallback.
++    assertEquals(23, resolved.size)
++    assertEquals(descriptors.keys, resolved.keys)
++    descriptors.forEach { (name, descriptor) ->
++        val method = helper.getDeclaredMethod(name, *descriptor.second.toTypedArray())
++        assertEquals(method, resolved.getValue(name))
++        assertSame(descriptor.first, method.returnType)
++        assertTrue(Modifier.isPublic(method.modifiers) && Modifier.isStatic(method.modifiers))
++        assertFalse(method.isBridge || method.isSynthetic || Modifier.isAbstract(method.modifiers))
++    }
++    val verifyConsumerInputs = assertFinalJarConsumerProvenance(
++        testInstance,
++        "required",
++        driver.javaClass,
++        listOf(helper, marker, opening, root, owner, life, invocation),
++        registeredDrivers,
++    )
++    CutDescriptorDefect.entries.forEach { defect ->
++        // Only negative cold linkage: authentic artifact class bytes, never a synthetic successful Driver.
++        val deniedLoader = CutDescriptorDefectLoader(loader, defect)
++        val denied = PersistenceDriverBootstrap.prepareWithLoader(deniedLoader)
++        val driverType = Class.forName("org.postgresql.Driver", false, deniedLoader)
++        assertSame(deniedLoader, driverType.classLoader)
++        assertTrue(denied.ownsTimerDriverClass(driverType))
++        deniedLoader.assertConstructorDefect()
++        assertEndpointFailure(PersistenceBoundaryFailureCode.UNSUPPORTED_JDBC_DRIVER) {
++            PersistencePgOwnedCutAccess.prepare(denied, driverType)
++        }
++    }
++    verifyConsumerInputs()
++}
++
++private fun assertOwnedCutConstructors(constructorArguments: Map<Class<*>, List<Class<*>>>, marker: Class<*>) {
++    constructorArguments.forEach { (type, arguments) ->
++        assertEquals(2, type.declaredConstructors.size)
++        val explicit = type.getDeclaredConstructor(*arguments.toTypedArray())
++        assertEquals(Modifier.PRIVATE, explicit.modifiers)
++        assertFalse(explicit.isSynthetic)
++        val bridge = type.getDeclaredConstructor(*(arguments + marker).toTypedArray())
++        assertEquals(0x1000, bridge.modifiers)
++        assertTrue(bridge.isSynthetic)
++        arguments.forEachIndexed { index, argument ->
++            assertSame(argument, explicit.parameterTypes[index])
++            assertSame(argument, bridge.parameterTypes[index])
++        }
++        assertSame(marker, bridge.parameterTypes.last())
++    }
++}
++
++private fun assertMarkerShape(loader: ClassLoader?, helper: Class<*>, marker: Class<*>) {
++    assertSame(loader, marker.classLoader)
++    assertSame(helper, marker.enclosingClass)
++    assertNull(marker.declaringClass)
++    assertNull(marker.enclosingMethod)
++    assertNull(marker.enclosingConstructor)
++    assertTrue(marker.isAnonymousClass && marker.isSynthetic)
++    assertEquals(0, marker.modifiers and (Modifier.PUBLIC or Modifier.PROTECTED or Modifier.PRIVATE))
++    assertEquals(0, marker.declaredFields.size)
++    assertEquals(0, marker.declaredMethods.size)
++    assertEquals(0, marker.declaredConstructors.size)
++}
++
++private fun assertOriginalProviderProvenance(
++    testInstance: PersistencePgOwnedCutIntegrationTest,
++    f: OwnedCutConnection,
++    registeredDrivers: () -> List<Driver>,
++): () -> Unit {
++    assertEquals("app-29-gate-b-hosted-01", System.getProperty("kira.finalJarConsumer.gate"))
++    val access = f.opening.access
++    val driverType = ownedCutField(access, "driverType") as Class<*>
++    val methods = (ownedCutField(access, "methods") as Map<*, *>).values.map { it as Method }
++    val helper = methods.map { it.declaringClass }.distinct().single()
++    val types = requireNotNull(ownedCutField(access, "types"))
++    val opaque = listOf("opening", "root", "owner", "life", "invocation").map { ownedCutField(types, it) as Class<*> }
++    assertSame(opaque.first(), f.opening.cell.javaClass)
++    val marker = opaque.first().declaredConstructors.single { it.isSynthetic }.parameterTypes.last()
++    assertEquals(OWNED_CUT_HELPER, helper.name)
++    assertEquals("org.postgresql.jdbc.PgConnection", f.raw.javaClass.name)
++    return assertFinalJarConsumerProvenance(testInstance, "original", driverType, listOf(helper, marker, f.raw.javaClass) + opaque, registeredDrivers)
++}
++
++private fun assertOriginalProviderOpening(f: OwnedCutConnection) {
++    assertSame(PersistenceDriverAttemptPolicy.ORIGINAL_PROVIDER, f.entry.policy)
++    assertNull(requireNotNull(f.entry.driverOpening).image)
++    assertNull(f.entry.driverScope)
++    assertNull(f.entry.transports)
++    assertTrue(f.entry.driverCut.enabled)
++    assertSame(f.raw, ownedCutField(f.opening.cell, "returned"))
++    assertEquals(PersistencePgOwnedCutAccess.OPENING_ENDED, f.opening.access.openingState(f.opening))
++    assertNull((ownedCutField(f.entry.driverCut, "root") as AtomicReference<*>).get())
++}
++
++/** Actual positive Classes under the explicit development profile, not hashes of Class.getResource bytes. */
++private fun assertFinalJarConsumerProvenance(
++    testInstance: PersistencePgOwnedCutIntegrationTest,
++    witnessName: String,
++    driverType: Class<*>,
++    cutTypes: List<Class<*>>,
++    registeredDrivers: () -> List<Driver>,
++): () -> Unit {
++    assertTrue(witnessName == "required" || witnessName == "original")
++    fun input(name: String): String = requireNotNull(System.getProperty("kira.finalJarConsumer.$name")) {
++        "The required consumer test needs its explicit final-JAR profile: $name"
++    }
++    assertEquals("app-29-final-jar-consumer-profile-04", input("profile"))
++    val jar = Path.of(input("jar")).toRealPath()
++    val checker = Path.of(input("checker")).toRealPath()
++    fun sha256(path: Path): String = MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(path))
++        .joinToString("") { "%02x".format(it) }
++    val verifyInputs = {
++        assertEquals("50f7dc4a6314cc5105f4990be26ba8be65ae242e1f7e62652cc60d6a2c0e03df", sha256(jar))
++        assertEquals("857658c8bdcbff794949a8d9922f88d63ee3751c203c7cd7d21ea97f9e745288", sha256(checker))
++    }
++    verifyInputs()
++    val loader = requireNotNull(driverType.classLoader)
++    assertSame(testInstance.javaClass.classLoader, loader)
++    assertSame(Thread.currentThread().contextClassLoader, loader)
++    assertEquals("org.postgresql.Driver", driverType.name)
++    val witness = linkedMapOf("profile" to input("profile"), "witness" to witnessName)
++    val loaderIdentity = "${loader.javaClass.name}@${Integer.toHexString(System.identityHashCode(loader))}"
++    fun associate(type: Class<*>, expected: Path) {
++        assertSame(loader, type.classLoader)
++        val source = requireNotNull(type.protectionDomain.codeSource).location.toURI()
++        assertEquals("file", source.scheme)
++        val actual = Path.of(source).toRealPath()
++        assertEquals(expected, actual)
++        witness["class.${type.name}.source"] = actual.toString()
++        witness["class.${type.name}.loader"] = loaderIdentity
++    }
++    fun literal(name: String): Class<*> = Class.forName(name, false, loader)
++    (listOf(driverType) + cutTypes).forEach { associate(it, jar) }
++    val info = literal("org.postgresql.util.DriverInfo")
++    val cleaner = literal("org.postgresql.util.LazyCleanerImpl")
++    val wrapper = literal("org.postgresql.util.LazyCleanerImpl\$CleanableWrapper")
++    val scram = literal("org.postgresql.shaded.com.ongres.scram.client.ScramClient")
++    listOf(info, cleaner, wrapper, scram).forEach { associate(it, jar) }
++    associate(literal("org.checkerframework.checker.nullness.qual.NonNull"), checker)
++    assertEquals("42.7.12-kira.1", driverType.`package`.implementationVersion)
++    assertEquals("42.7.12-kira.1", info.getField("DRIVER_VERSION").get(null))
++    val cleanerField = cleaner.getDeclaredField("cleaner")
++    assertEquals(Modifier.PRIVATE or Modifier.FINAL, cleanerField.modifiers)
++    assertSame(Cleaner::class.java, cleanerField.type)
++    assertSame(Cleaner.Cleanable::class.java, wrapper.getDeclaredField("nativeCleanable").type)
++    witness["mr.cleaner.field"] = cleanerField.type.name
++    witness["mr.wrapper.field"] = wrapper.getDeclaredField("nativeCleanable").type.name
++    val registered = registeredDrivers()
++    // acceptsURL parses only; Gate A never calls connect or initializes the lazy database fixture.
++    val providers = registered.filter { it.acceptsURL("jdbc:postgresql://127.0.0.1/gate_a_no_connection") }
++    assertEquals(1, providers.size)
++    assertSame(driverType, providers.single().javaClass)
++    registered.forEachIndexed { index, provider -> witness["registered.$index"] = provider.javaClass.name }
++    witness["postgres.provider.count"] = providers.size.toString()
++    witness["jar.sha256"] = sha256(jar)
++    witness["checker.sha256"] = sha256(checker)
++    val report = Path.of(input("report")).resolveSibling("worker-runtime-$witnessName.txt")
++    recordFinalJarConsumerJvm(witness, Path.of(input("javaHome")), report)
++    witness["provenance"] = "PASS"
++    assertTrue(witness.values.none { '\n' in it || '\r' in it })
++    Files.writeString(
++        report,
++        witness.entries.joinToString("\n", postfix = "\n") { "${it.key}=${it.value}" },
++        StandardOpenOption.CREATE_NEW,
++    )
++    return verifyInputs
++}
++
++private fun recordFinalJarConsumerJvm(witness: MutableMap<String, String>, expectedHome: Path, report: Path) {
++    val home = Path.of(System.getProperty("java.home")).toRealPath()
++    assertEquals(expectedHome.toRealPath(), home)
++    assertEquals(21, Runtime.version().feature())
++    val process = ProcessHandle.current()
++    val info = process.info()
++    val executable = Path.of(info.command().orElseThrow()).toRealPath()
++    assertEquals(home.resolve("bin/java").toRealPath(), executable)
++    witness["worker.pid"] = process.pid().toString()
++    witness["worker.executable"] = executable.toString()
++    witness["java.home"] = home.toString()
++    witness["java.runtime.version"] = Runtime.version().toString()
++    witness["java.vm.name"] = System.getProperty("java.vm.name")
++    witness["java.vm.version"] = System.getProperty("java.vm.version")
++    val arguments = ManagementFactory.getRuntimeMXBean().inputArguments
++    val forbidden = listOf(
++        "-javaagent:", "-agentlib:", "-agentpath:", "-Xbootclasspath", "--patch-module", "--upgrade-module-path", "--module-path",
++        "-Djava.system.class.loader", "-Djava.class.path=", "-Djdk.util.jar.", "-XX:SharedArchiveFile=", "-XX:ArchiveClassesAtExit=",
++    )
++    assertFalse(arguments.any { argument -> forbidden.any { argument.startsWith(it) } })
++    assertTrue(arguments.containsAll(listOf("-XX:+DisableAttachMechanism", "-XX:-EnableDynamicAgentLoading")))
++    assertTrue(arguments.contains("-Xlog:class+load=info:file=${report.parent}/class-load-%p.txt:uptime,level,tags"))
++    listOf("JAVA_TOOL_OPTIONS", "JDK_JAVA_OPTIONS", "_JAVA_OPTIONS").forEach { assertNull(System.getenv(it)) }
++    arguments.forEachIndexed { index, argument -> witness["jvm.arg.$index"] = argument }
++    info.arguments().orElseThrow().forEachIndexed { index, argument -> witness["process.arg.$index"] = argument }
++}
++
++private fun recheckFinalJarConsumerInputs(verifyConsumerInputs: (() -> Unit)?, primaryFailure: Throwable?) {
++    try {
++        verifyConsumerInputs?.invoke()
++    } catch (recheckFailure: Throwable) {
++        val failure = primaryFailure
++        if (failure == null) throw recheckFailure
++        if (failure !== recheckFailure) failure.addSuppressed(recheckFailure)
++    }
++}
++
++private fun assertExactRetirementSample(
++    f: OwnedCutPool,
++    behavior: OwnedCallerTestBehavior,
++    connection: Connection,
++    lease: PersistenceJdbcLease,
++    entry: PersistencePhysicalEntry,
++    original: PersistenceOwnedFactoryCaller,
++    clock: AtomicLong,
++    budget: PersistenceTimeBudget,
++    problem: IllegalStateException,
++) {
++    // Direct internal-boundary probes, not a manufactured admitted RETURN or an eviction receipt.
++    val samples = behavior.samples.get()
++    behavior.sampleFailure = problem
++    val result = entry.jdbc.retireLeasedState(lease.state, budget, original)
++    assertTrue(result is PersistenceLeaseRetirementClaim.CallerSampleFailed)
++    assertSame(problem, (result as PersistenceLeaseRetirementClaim.CallerSampleFailed).failure)
++    assertEquals(
++        samples + 1,
++        behavior.samples.get(),
++        "Only the exact outside-lock sample produces this result, without retry or adaptation.",
++    )
++    assertTrue(original.isCurrent())
++    assertTrue(entry.jdbc.currentPoolState(lease.state))
++    assertFalse(entry.retirementRequested.get() || lease.state.epoch.sealedAndEnded())
++    assertEquals(1L, f.lifecycle.actorSnapshot().futureLeaseEntries)
++    assertEquals(0L, f.lifecycle.actorSnapshot().activeOperations)
++    clock.set(TimeUnit.MILLISECONDS.toNanos(1_000))
++    assertSame(PersistenceLeaseRetirementClaim.Refused, entry.jdbc.retireLeasedState(lease.state, budget, original))
++    assertEquals(samples + 1, behavior.samples.get(), "Original expiry short-circuits the still-throwing override.")
++    behavior.sampleFailure = null
++    val reads = java.util.concurrent.atomic.AtomicInteger()
++    val clockProblem = IllegalStateException("Injected retirement budget recheck failure.")
++    val brokenBudget = PersistenceTimeBudget.start(1_000) {
++        if (reads.incrementAndGet() == 3) throw clockProblem
++        0L
++    }
++    assertSame(
++        clockProblem,
++        assertThrows<IllegalStateException> { entry.jdbc.retireLeasedState(lease.state, brokenBudget, original) },
++        "The budget check after a successful sample is not a CallerSampleFailed outcome.",
++    )
++    assertEquals(3, reads.get())
++    assertEquals(samples + 2, behavior.samples.get())
++    assertFalse(entry.retirementRequested.get())
++    assertNull(f.lifecycle.actorSnapshot().firstFailure)
++    // A separate direct claim probe, not a reset/replacement of any admitted RETURN allowance.
++    assertSame(
++        PersistenceLeaseRetirementClaim.Claimed,
++        entry.jdbc.retireLeasedState(lease.state, PersistenceTimeBudget.start(1_000), original),
++    )
++    assertTrue(entry.retirementRequested.get() && lease.state.epoch.sealedAndEnded())
++    assertThrows<SQLException> { connection.close() } // The one real RETURN keeps its original 1s budget/finalizers.
++    val entitlement = ownedCutField(lease, "entitlement") as PoolLifecycle.LeaseEntitlement
++    val operation = ownedCutField(entitlement, "prepared") as PoolLifecycle.Operation
++    assertTrue(operation.actualFrameEnded())
++    assertEquals(TimeUnit.MILLISECONDS.toNanos(1_000), ownedCutField(operation.frame.budget, "allowanceNanos"))
++    connection.close()
++    assertSame(operation, ownedCutField(entitlement, "prepared"))
++}
++
++private fun assertRefusedReturnEntry(
++    f: OwnedCutPool,
++    connection: Connection,
++    lease: PersistenceJdbcLease,
++    entry: PersistencePhysicalEntry,
++    handle: Connection,
++    lower: Any,
++    entitlement: PoolLifecycle.LeaseEntitlement,
++    problem: IllegalStateException,
++    fault: ThrowingReturnEntry,
++) {
++    assertSame(problem, assertThrows<IllegalStateException> { connection.close() })
++    val operation = ownedCutField(entitlement, "prepared") as PoolLifecycle.Operation
++    assertSame(operation.frame, fault.selected)
++    assertEquals("REFUSED", requireNotNull(ownedCutField(operation.frame, "phase")).toString())
++    assertFalse(operation.frame.hasEntered(), "The real installation threw before counted admission.")
++    assertFalse(operation.actualFrameEnded(), "REFUSED is not a manufactured ENDED receipt.")
++    assertFalse(operation.frame.completion.hasEnded())
++    assertNull(PoolCallFrames.current(), "restoreUnadmitted must remove the actually published frame.")
++    assertEquals(1, fault.injections)
++    assertTrue(fault.outsideOwnershipLocks)
++    assertEquals("REVOKED", requireNotNull(ownedCutField(entitlement, "phase")).toString())
++    assertEquals(0L, f.lifecycle.actorSnapshot().futureLeaseEntries)
++    assertEquals(0L, f.lifecycle.actorSnapshot().activeOperations)
++    assertEquals(PoolActorFault.BOOKKEEPING_FAILED, f.lifecycle.actorSnapshot().firstFailure)
++    assertNull(ownedCutField(lease, "transfer"))
++    assertSame(lower, ownedCutField(handle, "delegate"), "No Hikari close or reset was reached.")
++    assertTrue(lease.closed() && entry.retirementRequested.get())
++    assertTrue(lease.state.epoch.sealedAndEnded())
++    connection.close()
++    assertSame(operation, ownedCutField(entitlement, "prepared"), "Duplicate close issues no new allowance or operation.")
++    assertEquals(1, fault.injections)
++}
++
+ /**
+  * Two check-only child cases in the existing sanitized negative-probe process. They deliberately
+  * do NOT use the successful OwnedCutPool/PgLifecycleTestScope close contract: neither retained
+@@ -1015,8 +1074,10 @@ internal object OwnedPoolPendingProbe {
+         val cut = when (case.mode) {
+             PgLifecycleDatabaseMode.POOL_ACQUISITION_END_TL_FAILURE ->
+                 "cut=ACQUISITION_END_TL acquisition=ENDING active_acquisitions=1 delivered=false future_entries=0 pool_close_claimed=false"
++
+             PgLifecycleDatabaseMode.POOL_CORE_LAST_COUNT_TL_FAILURE ->
+                 "cut=RETURN_CORE_LAST_COUNT_TL native_actual_end=true core_producer_ended=false future_entries=0 transfer_consented=false"
++
+             else -> error("Not a closed pending-pool child case.")
+         }
+         println("PG_POOL_PENDING_RETAINED ${case.label} nonce=$nonce $cut caller_terminated=true product_end=false")
+@@ -1150,14 +1211,13 @@ internal object OwnedPoolPendingProbe {
+     }
+ 
+     /** Throw before the real delegate removal, AFTER actor claimEnd and the genuine checkout commit. */
+-    private class AcquisitionEndFailure(
+-        private val lifecycle: PoolLifecycle,
+-        private val entry: PersistencePhysicalEntry,
+-        private val problem: Throwable,
+-    ) : ThreadLocal<PoolCallFrame?>(), AutoCloseable {
++    private class AcquisitionEndFailure(private val lifecycle: PoolLifecycle, private val entry: PersistencePhysicalEntry, private val problem: Throwable) :
++        ThreadLocal<PoolCallFrame?>(),
++        AutoCloseable {
+         private val caller = Thread.currentThread()
+         private val storage = requireNotNull(ownedCutField(PoolCallFrames, "storage"))
+         private val field = storage.javaClass.getDeclaredField("current").apply { check(trySetAccessible()) }
++
+         @Suppress("UNCHECKED_CAST")
+         private val delegate = field.get(storage) as ThreadLocal<PoolCallFrame?>
+         var selected: PoolCallFrame? = null
+@@ -1213,14 +1273,13 @@ internal object OwnedPoolPendingProbe {
+     }
+ 
+     /** The same genuine final lower clearWarnings boundary as the held-count test, now a nonhealable removal failure. */
+-    private class CoreLastCountFailure(
+-        private val lease: PersistenceJdbcLease,
+-        private val entry: PersistencePhysicalEntry,
+-        private val problem: Throwable,
+-    ) : ThreadLocal<PersistenceJdbcGuardCall?>(), AutoCloseable {
++    private class CoreLastCountFailure(private val lease: PersistenceJdbcLease, private val entry: PersistencePhysicalEntry, private val problem: Throwable) :
++        ThreadLocal<PersistenceJdbcGuardCall?>(),
++        AutoCloseable {
+         private val caller = Thread.currentThread()
+         private val context = lease.state.context
+         private val field = context.javaClass.getDeclaredField("frames").apply { check(trySetAccessible()) }
++
+         @Suppress("UNCHECKED_CAST")
+         private val delegate = field.get(context) as ThreadLocal<PersistenceJdbcGuardCall?>
+         private val driver = PersistenceJdbcGuardCall::class.java.getDeclaredField("driver").apply { check(trySetAccessible()) }
+@@ -1385,11 +1444,7 @@ internal class OwnedCutPool(val scope: PgLifecycleTestScope, val pool: GuardedDa
+ 
+     /** Best-effort, non-atomic scalar reads only; never a lifecycle observer, cleanup action or completion proof. */
+     @Suppress("TooGenericExceptionCaught")
+-    private fun shutdownDiagnostic(
+-        phase: String,
+-        invocation: PoolShutdownInvocation?,
+-        observation: PoolShutdownObservation? = null,
+-    ) {
++    private fun shutdownDiagnostic(phase: String, invocation: PoolShutdownInvocation?, observation: PoolShutdownObservation? = null) {
+         val case = shutdownDiagnosticCase ?: return
+         try {
+             val budget = ownedCutField(lifecycle, "shutdownBudget") as PersistenceTimeBudget
+@@ -1437,8 +1492,7 @@ internal fun ownedPoolLower(guard: Any): Any {
+     return requireNotNull(ownedCutField(delegated, "delegate")).also { assertNotNull(PhysicalJdbcDescendants.knownGuard(it)) }
+ }
+ 
+-internal fun ownedPoolLife(guard: Any): PersistencePgOwnedCutAccess.Life =
+-    requireNotNull(PhysicalJdbcDescendants.knownGuard(ownedPoolLower(guard))?.driverLife)
++internal fun ownedPoolLife(guard: Any): PersistencePgOwnedCutAccess.Life = requireNotNull(PhysicalJdbcDescendants.knownGuard(ownedPoolLower(guard))?.driverLife)
+ 
+ internal fun ownedPoolScalar(connection: Connection, sql: String): Int = connection.createStatement().use { statement ->
+     statement.executeQuery(sql).use { result ->
+@@ -1579,11 +1633,16 @@ private fun assertOwnedReturnCaller(f: OwnedCutPool, fault: ReturnCallerFault) {
+             originalDelegate.set(requireNotNull(ownedCutField(ownedCutField(lease, "handle") as Connection, "delegate")))
+             behavior.sampleGate = sample
+             val samplesUntilCut = when (fault) {
+-                ReturnCallerFault.EXPIRE -> 3 // Final commit sample, after genuine native/core finalizers and successor preparation.
++                // Final commit sample, after genuine native/core finalizers and successor preparation.
++                ReturnCallerFault.EXPIRE -> 3
++
++                // Before any Hikari return/reset call.
+                 ReturnCallerFault.RESTORE,
+                 ReturnCallerFault.INTERRUPTED_EXCEPTION,
+                 ReturnCallerFault.INTERRUPTED_RESTORE_INTERRUPTED,
+-                ReturnCallerFault.INTERRUPTED_RESTORE_ERROR -> 1 // Before any Hikari return/reset call.
++                ReturnCallerFault.INTERRUPTED_RESTORE_ERROR,
++                -> 1
++
+                 else -> 2 // The former second claim sample was under G.
+             }
+             behavior.gateAtSample = behavior.samples.get() + samplesUntilCut
+@@ -1621,68 +1680,109 @@ private fun assertOwnedReturnCaller(f: OwnedCutPool, fault: ReturnCallerFault) {
+                 awaitLifecycleFact(2_000) { persistenceFactoryRemainingMillis(transfer.budget) == 0L }
+                 assertTrue(entry.jdbc.currentPoolState(lease.state))
+             }
++
+             ReturnCallerFault.SAMPLE,
+             ReturnCallerFault.INTERRUPTED_EXCEPTION,
+             ReturnCallerFault.INTERRUPTED_RESTORE_INTERRUPTED,
+-            ReturnCallerFault.INTERRUPTED_RESTORE_ERROR -> behavior.sampleFailure = problem
++            ReturnCallerFault.INTERRUPTED_RESTORE_ERROR,
++            -> behavior.sampleFailure = problem
++
+             ReturnCallerFault.ACTUAL_FLAG, ReturnCallerFault.RESTORE -> (caller.thread as OverridingCallerThread).setActualFlag()
+         }
+         sample.release()
+         if (restorationExpected) {
+             restore.awaitEntered()
+-            assertTransferLocksAvailable(f, entry)
+-            assertTrue(entry.retirementRequested.get(), "Failure disposition must be visible BEFORE an overridable self-interrupt.")
+-            assertFalse(transfer.consented() || operation.actualFrameEnded())
+-            assertFalse(operation.frame.completion.hasEnded(), "Even the creator completion must remain unpublished throughout this callback.")
+-            assertEquals("ACTIVE", requireNotNull(ownedCutField(operation.frame, "phase")).toString())
+-            assertEquals(1, behavior.restores.get(), "Observe the sole restoration while the authentic RETURN is still counted.")
+-            assertTrue(lease.closed())
+-            assertEquals(0L, f.lifecycle.actorSnapshot().futureLeaseEntries)
+-            assertEquals(1L, f.lifecycle.actorSnapshot().activeOperations)
+-            assertFalse((caller.thread as OverridingCallerThread).actualFlag())
+-            if (fault === ReturnCallerFault.ACTUAL_FLAG) {
+-                assertTrue(transfer.actualEnded(), "The genuine lower failure tail ended, but the outer RETURN actor has not.")
+-            } else {
+-                assertFalse(transfer.actualEnded())
+-                assertSame(originalDelegate.get(), ownedCutField(ownedCutField(lease, "handle") as Connection, "delegate"))
+-            }
++            assertHeldReturnRestoration(f, entry, transfer, operation, behavior, lease, fault, caller, originalDelegate)
+             restore.release()
+         }
+         val outcome = caller.value().exceptionOrNull()
+         assertEquals(Thread.State.TERMINATED, caller.thread.state)
+-        if (fault === ReturnCallerFault.INTERRUPTED_RESTORE_ERROR) {
+-            assertSame(restorationProblem, outcome, "An adapter Error is rethrown unchanged, never adapted or retried.")
+-        } else {
+-            assertTrue(outcome is SQLException)
+-            assertNull(outcome?.cause, "Neither original nor adapter-thrown InterruptedException is retained in the SQL envelope.")
+-        }
+-        assertTrue(lease.closed() && entry.retirementRequested.get() && transfer.actualEnded())
+-        assertFalse(transfer.consented())
+-        assertEquals(fault === ReturnCallerFault.SAMPLE || interruptedSample, transfer.callerSamplingFailed())
+-        assertTrue(operation.actualFrameEnded())
+-        assertSame(operation, ownedCutField(entitlement, "prepared"))
+-        assertSame(operation.frame.budget, transfer.budget)
+-        if (fault === ReturnCallerFault.EXPIRE) assertEquals(0L, persistenceFactoryRemainingMillis(transfer.budget))
+-        assertEquals(fault === ReturnCallerFault.ACTUAL_FLAG || fault === ReturnCallerFault.INTERRUPTED_EXCEPTION, flagAfter.get())
+-        assertEquals(if (restorationExpected) 1 else 0, behavior.restores.get(), "No second restoration may run before or after actual RETURN end.")
+-        assertEquals(0L, f.lifecycle.actorSnapshot().futureLeaseEntries)
+-        assertEquals(0L, f.lifecycle.actorSnapshot().activeOperations)
+-        if (f.expectedPoolUnknown) assertEquals(PoolActorFault.BOOKKEEPING_FAILED, f.lifecycle.actorSnapshot().firstFailure)
+-        if (fault === ReturnCallerFault.SAMPLE) {
+-            assertEquals(
+-                behavior.gateAtSample + 1,
+-                behavior.samples.get(),
+-                "The exact repeated retirement sample still occurs once under the original allowance.",
+-            )
+-            assertFalse(
+-                f.lifecycle.actorSnapshot().factorySealed,
+-                "The positively identified second sample must not fall into the opaque eviction hard catch.",
+-            )
+-        }
++        assertEndedReturnState(fault, lease, entry, transfer, entitlement, operation, interruptedSample, restorationProblem, outcome)
++        assertReturnCallerCompletion(f, fault, behavior, flagAfter, restorationExpected)
+         awaitLifecycleFact { f.scope.entries().none { it === entry } }
+     }
+ }
+ 
++private fun assertHeldReturnRestoration(
++    f: OwnedCutPool,
++    entry: PersistencePhysicalEntry,
++    transfer: PersistenceJdbcPoolTransfer,
++    operation: PoolLifecycle.Operation,
++    behavior: OwnedCallerTestBehavior,
++    lease: PersistenceJdbcLease,
++    fault: ReturnCallerFault,
++    caller: OwnedCallerTestCall<*>,
++    originalDelegate: AtomicReference<Any>,
++) {
++    assertTransferLocksAvailable(f, entry)
++    assertTrue(entry.retirementRequested.get(), "Failure disposition must be visible BEFORE an overridable self-interrupt.")
++    assertFalse(transfer.consented() || operation.actualFrameEnded())
++    assertFalse(operation.frame.completion.hasEnded(), "Even the creator completion must remain unpublished throughout this callback.")
++    assertEquals("ACTIVE", requireNotNull(ownedCutField(operation.frame, "phase")).toString())
++    assertEquals(1, behavior.restores.get(), "Observe the sole restoration while the authentic RETURN is still counted.")
++    assertTrue(lease.closed())
++    assertEquals(0L, f.lifecycle.actorSnapshot().futureLeaseEntries)
++    assertEquals(1L, f.lifecycle.actorSnapshot().activeOperations)
++    assertFalse((caller.thread as OverridingCallerThread).actualFlag())
++    if (fault === ReturnCallerFault.ACTUAL_FLAG) {
++        assertTrue(transfer.actualEnded(), "The genuine lower failure tail ended, but the outer RETURN actor has not.")
++    } else {
++        assertFalse(transfer.actualEnded())
++        assertSame(originalDelegate.get(), ownedCutField(ownedCutField(lease, "handle") as Connection, "delegate"))
++    }
++}
++
++private fun assertEndedReturnState(
++    fault: ReturnCallerFault,
++    lease: PersistenceJdbcLease,
++    entry: PersistencePhysicalEntry,
++    transfer: PersistenceJdbcPoolTransfer,
++    entitlement: PoolLifecycle.LeaseEntitlement,
++    operation: PoolLifecycle.Operation,
++    interruptedSample: Boolean,
++    restorationProblem: Throwable?,
++    outcome: Throwable?,
++) {
++    if (fault === ReturnCallerFault.INTERRUPTED_RESTORE_ERROR) {
++        assertSame(restorationProblem, outcome, "An adapter Error is rethrown unchanged, never adapted or retried.")
++    } else {
++        assertTrue(outcome is SQLException)
++        assertNull(outcome?.cause, "Neither original nor adapter-thrown InterruptedException is retained in the SQL envelope.")
++    }
++    assertTrue(lease.closed() && entry.retirementRequested.get() && transfer.actualEnded())
++    assertFalse(transfer.consented())
++    assertEquals(fault === ReturnCallerFault.SAMPLE || interruptedSample, transfer.callerSamplingFailed())
++    assertTrue(operation.actualFrameEnded())
++    assertSame(operation, ownedCutField(entitlement, "prepared"))
++    assertSame(operation.frame.budget, transfer.budget)
++    if (fault === ReturnCallerFault.EXPIRE) assertEquals(0L, persistenceFactoryRemainingMillis(transfer.budget))
++}
++
++private fun assertReturnCallerCompletion(
++    f: OwnedCutPool,
++    fault: ReturnCallerFault,
++    behavior: OwnedCallerTestBehavior,
++    flagAfter: AtomicBoolean,
++    restorationExpected: Boolean,
++) {
++    assertEquals(fault === ReturnCallerFault.ACTUAL_FLAG || fault === ReturnCallerFault.INTERRUPTED_EXCEPTION, flagAfter.get())
++    assertEquals(if (restorationExpected) 1 else 0, behavior.restores.get(), "No second restoration may run before or after actual RETURN end.")
++    assertEquals(0L, f.lifecycle.actorSnapshot().futureLeaseEntries)
++    assertEquals(0L, f.lifecycle.actorSnapshot().activeOperations)
++    if (f.expectedPoolUnknown) assertEquals(PoolActorFault.BOOKKEEPING_FAILED, f.lifecycle.actorSnapshot().firstFailure)
++    if (fault === ReturnCallerFault.SAMPLE) {
++        assertEquals(
++            behavior.gateAtSample + 1,
++            behavior.samples.get(),
++            "The exact repeated retirement sample still occurs once under the original allowance.",
++        )
++        assertFalse(
++            f.lifecycle.actorSnapshot().factorySealed,
++            "The positively identified second sample must not fall into the opaque eviction hard catch.",
++        )
++    }
++}
++
+ /** While the exact caller is held in its override, no F/G/T lock may be held by that callback. */
+ private fun assertTransferLocksAvailable(f: OwnedCutPool, entry: PersistencePhysicalEntry) {
+     val binding = f.scope.binding()
+@@ -1697,10 +1797,13 @@ private fun assertTransferLocksAvailable(f: OwnedCutPool, entry: PersistencePhys
+ }
+ 
+ /** One exact private actor-storage instance; preserve its single global TL key and every real value. */
+-private class ThrowingReturnEntry(private val lifecycle: PoolLifecycle, private val problem: Throwable) : ThreadLocal<PoolCallFrame?>(), AutoCloseable {
++private class ThrowingReturnEntry(private val lifecycle: PoolLifecycle, private val problem: Throwable) :
++    ThreadLocal<PoolCallFrame?>(),
++    AutoCloseable {
+     private val caller = Thread.currentThread()
+     private val storage = requireNotNull(ownedCutField(PoolCallFrames, "storage"))
+     private val field = storage.javaClass.getDeclaredField("current").apply { check(trySetAccessible()) }
++
+     @Suppress("UNCHECKED_CAST")
+     private val delegate = field.get(storage) as ThreadLocal<PoolCallFrame?>
+     var selected: PoolCallFrame? = null
+@@ -1738,10 +1841,13 @@ private class ThrowingReturnEntry(private val lifecycle: PoolLifecycle, private
+ }
+ 
+ /** Test-only exact instance-TL interception. All storage stays in the original ThreadLocal. */
+-private class CoreLastCountBarrier(private val lease: PersistenceJdbcLease) : ThreadLocal<PersistenceJdbcGuardCall?>(), AutoCloseable {
++private class CoreLastCountBarrier(private val lease: PersistenceJdbcLease) :
++    ThreadLocal<PersistenceJdbcGuardCall?>(),
++    AutoCloseable {
+     private val context = lease.state.context
+     private val caller = Thread.currentThread()
+     private val field = context.javaClass.getDeclaredField("frames").apply { check(trySetAccessible()) }
++
+     @Suppress("UNCHECKED_CAST")
+     private val delegate = field.get(context) as ThreadLocal<PersistenceJdbcGuardCall?>
+     private val driver = PersistenceJdbcGuardCall::class.java.getDeclaredField("driver").apply { check(trySetAccessible()) }
+@@ -1774,10 +1880,12 @@ private class CoreLastCountBarrier(private val lease: PersistenceJdbcLease) : Th
+     override fun set(value: PersistenceJdbcGuardCall?) = delegate.set(value)
+ 
+     override fun remove() {
+-        if (Thread.currentThread() === caller && delegate.get() === selected && selected != null && once.compareAndSet(false, true)) {
+-            entered.countDown()
+-            // Timeout records a failed assertion but still lets the actual frame finish/clean up.
+-            if (!released.await(5, TimeUnit.SECONDS)) timedOut.set(true)
++        if (Thread.currentThread() === caller && delegate.get() === selected && selected != null) {
++            if (once.compareAndSet(false, true)) {
++                entered.countDown()
++                // Timeout records a failed assertion but still lets the actual frame finish/clean up.
++                if (!released.await(5, TimeUnit.SECONDS)) timedOut.set(true)
++            }
+         }
+         delegate.remove()
+     }
+@@ -1795,16 +1903,15 @@ private class CoreLastCountBarrier(private val lease: PersistenceJdbcLease) : Th
+ }
+ 
+ /** Stock ConcurrentBag's instance TL get is after STATE_NOT_IN_USE; no driver/metrics callback is installed. */
+-private class ConsentedRecycleBarrier(
+-    private val fixture: OwnedCutPool,
+-    private val lease: PersistenceJdbcLease,
+-    private val failTail: Boolean,
+-) : ThreadLocal<Any?>(), AutoCloseable {
++private class ConsentedRecycleBarrier(private val fixture: OwnedCutPool, private val lease: PersistenceJdbcLease, private val failTail: Boolean) :
++    ThreadLocal<Any?>(),
++    AutoCloseable {
+     private val caller = Thread.currentThread()
+     private val hikari = requireNotNull(ownedCutField(fixture.pool, "pool"))
+     private val pool = requireNotNull(ownedCutField(hikari, "pool"))
+     private val bag = requireNotNull(ownedCutField(pool, "connectionBag"))
+     private val field = bag.javaClass.getDeclaredField("threadLocalList").apply { check(trySetAccessible()) }
++
+     @Suppress("UNCHECKED_CAST")
+     private val delegate = field.get(bag) as ThreadLocal<Any?>
+     private val once = AtomicBoolean()
+@@ -1875,21 +1982,7 @@ private fun assertConsentedOldTail(f: OwnedCutPool, failTail: Boolean) {
+                         assertEquals(0, aborts.get())
+                         barrier.release()
+                         assertTrue(tailEnded.await(5, TimeUnit.SECONDS))
+-                        assertTrue(entry.jdbc.currentPoolState(current.state))
+-                        assertFalse(entry.retirementRequested.get(), "The old consented tail cannot evict/poison this successor.")
+-                        assertFalse(current.state.epoch.poisoned())
+-                        if (failTail) {
+-                            assertEquals(PoolActorFault.BOOKKEEPING_FAILED, f.lifecycle.actorSnapshot().firstFailure)
+-                            assertFalse(
+-                                f.lifecycle.actorSnapshot().factorySealed,
+-                                "The failed old tail preserves this authentic successor RETURN's creator rights.",
+-                            )
+-                            assertThrows<SQLException> { borrowed.createStatement() }
+-                            assertThrows<SQLException> { borrowed.close() }
+-                        } else {
+-                            assertEquals(5, ownedPoolScalar(borrowed, "SELECT 5"))
+-                            borrowed.close()
+-                        }
++                        assertConsentedTailSuccessor(f, entry, current, borrowed, failTail)
+                         next = null
+                     } finally {
+                         barrier.release()
+@@ -1898,7 +1991,7 @@ private fun assertConsentedOldTail(f: OwnedCutPool, failTail: Boolean) {
+                     true
+                 }
+                 try {
+-                    if (failTail) assertThrows<SQLException> { first.close() } else first.close()
++                    assertConsentedOldTailClose(first, failTail)
+                 } finally {
+                     barrier.release()
+                     tailEnded.countDown()
+@@ -1913,6 +2006,34 @@ private fun assertConsentedOldTail(f: OwnedCutPool, failTail: Boolean) {
+     }
+ }
+ 
++private fun assertConsentedOldTailClose(first: Connection, failTail: Boolean) {
++    if (failTail) assertThrows<SQLException> { first.close() } else first.close()
++}
++
++private fun assertConsentedTailSuccessor(
++    f: OwnedCutPool,
++    entry: PersistencePhysicalEntry,
++    current: PersistenceJdbcLease,
++    borrowed: Connection,
++    failTail: Boolean,
++) {
++    assertTrue(entry.jdbc.currentPoolState(current.state))
++    assertFalse(entry.retirementRequested.get(), "The old consented tail cannot evict/poison this successor.")
++    assertFalse(current.state.epoch.poisoned())
++    if (failTail) {
++        assertEquals(PoolActorFault.BOOKKEEPING_FAILED, f.lifecycle.actorSnapshot().firstFailure)
++        assertFalse(
++            f.lifecycle.actorSnapshot().factorySealed,
++            "The failed old tail preserves this authentic successor RETURN's creator rights.",
++        )
++        assertThrows<SQLException> { borrowed.createStatement() }
++        assertThrows<SQLException> { borrowed.close() }
++    } else {
++        assertEquals(5, ownedPoolScalar(borrowed, "SELECT 5"))
++        borrowed.close()
++    }
++}
++
+ internal class OwnedCutConnection(val scope: PgLifecycleTestScope, val entry: PersistencePhysicalEntry, val connection: PhysicalJdbcFacade) : AutoCloseable {
+     val raw: Connection = requireNotNull(entry.raw.get())
+     val epoch: PersistenceProducerEpoch = requireNotNull(entry.jdbc.poolEpoch(scope.binding().poolIdentity))
+@@ -2130,7 +2251,14 @@ internal fun assertOwnedCutSetterSqlIdentity(statement: PreparedStatement, input
+ }
+ 
+ private const val OWNED_CUT_HELPER = "org.postgresql.jdbc.KiraOwnedJdbcCut"
+-private enum class CutDescriptorDefect { MISSING_HELPER, MISSING_DESCRIPTOR, MISSING_RETENTION_DESCRIPTOR, FOREIGN_HELPER, VISIBLE_CONSTRUCTOR, UNMARKED_BRIDGE }
++private enum class CutDescriptorDefect {
++    MISSING_HELPER,
++    MISSING_DESCRIPTOR,
++    MISSING_RETENTION_DESCRIPTOR,
++    FOREIGN_HELPER,
++    VISIBLE_CONSTRUCTOR,
++    UNMARKED_BRIDGE,
++}
+ 
+ /** Cold denial cases only; does not construct an alternate driver or touch the installed artifact/cache. */
+ private class CutDescriptorDefectLoader(parent: ClassLoader, private val defect: CutDescriptorDefect) : ClassLoader(parent) {
+@@ -2143,7 +2271,8 @@ private class CutDescriptorDefectLoader(parent: ClassLoader, private val defect:
+             val bytes = requireNotNull(parent.getResourceAsStream(name.replace('.', '/') + ".class")).use { it.readAllBytes() }
+             if (name == OWNED_CUT_HELPER && defect in setOf(CutDescriptorDefect.MISSING_DESCRIPTOR, CutDescriptorDefect.MISSING_RETENTION_DESCRIPTOR)) {
+                 // Rename exactly this UTF-8 method name, preserving class shape and every other descriptor.
+-                val target = (if (defect === CutDescriptorDefect.MISSING_RETENTION_DESCRIPTOR) "retentionState" else "recordReturned").toByteArray(Charsets.UTF_8)
++                val target = (if (defect === CutDescriptorDefect.MISSING_RETENTION_DESCRIPTOR) "retentionState" else "recordReturned")
++                    .toByteArray(Charsets.UTF_8)
+                 val matches = (0..bytes.size - target.size).filter { at -> target.indices.all { bytes[at + it] == target[it] } }
+                 assertEquals(1, matches.size)
+                 bytes[matches.single() + target.lastIndex] = 'X'.code.toByte()
+diff --git a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbeProcess.kt b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbeProcess.kt
+index a923ed0..95ad75c 100644
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbeProcess.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbeProcess.kt
+@@ -115,18 +115,22 @@ internal class PgLifecycleDatabaseProbeProcess(private val directory: Path, val
+         val cut = when (case.mode) {
+             PgLifecycleDatabaseMode.POOL_ACQUISITION_END_TL_FAILURE ->
+                 "cut=ACQUISITION_END_TL acquisition=ENDING active_acquisitions=1 delivered=false future_entries=0 pool_close_claimed=false"
++
+             PgLifecycleDatabaseMode.POOL_CORE_LAST_COUNT_TL_FAILURE ->
+                 "cut=RETURN_CORE_LAST_COUNT_TL native_actual_end=true core_producer_ended=false future_entries=0 transfer_consented=false"
++
+             else -> error("Not a closed pending-pool case.")
+         }
+         return "PG_POOL_PENDING_RETAINED ${case.label} nonce=$nonce $cut caller_terminated=true product_end=false"
+     }
+ 
+     private fun requireNoProductEnd(lines: List<String>) {
+-        check(lines.none {
+-            it.startsWith("PG_DATABASE_VERIFIED ") || it.startsWith("PG_DATABASE_SCENARIO_CLEANUP ") ||
+-                it.startsWith("PG_LIFECYCLE_ROOT_CLEANUP ") || it.startsWith("PG_DATABASE_FAILED ") || it.startsWith("PG_POOL_PENDING_FAILED ")
+-        }) { "A pending-pool cut must not claim normal product cleanup or hide a failure." }
++        check(
++            lines.none {
++                it.startsWith("PG_DATABASE_VERIFIED ") || it.startsWith("PG_DATABASE_SCENARIO_CLEANUP ") ||
++                    it.startsWith("PG_LIFECYCLE_ROOT_CLEANUP ") || it.startsWith("PG_DATABASE_FAILED ") || it.startsWith("PG_POOL_PENDING_FAILED ")
++            },
++        ) { "A pending-pool cut must not claim normal product cleanup or hide a failure." }
+     }
+ 
+     fun outputPrefix(): String = requireNotNull(outputCapture).prefix()
+diff --git a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendantsTest.kt b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendantsTest.kt
+index 02410c9..3457299 100644
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendantsTest.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendantsTest.kt
+@@ -23,8 +23,8 @@ import java.sql.PreparedStatement
+ import java.sql.Ref
+ import java.sql.ResultSet
+ import java.sql.ResultSetMetaData
+-import java.sql.SQLException
+ import java.sql.SQLClientInfoException
++import java.sql.SQLException
+ import java.sql.Statement
+ import java.sql.Struct
+ import java.util.Collections
+@@ -223,11 +223,13 @@ class PhysicalJdbcDescendantsTest {
+             assertEquals("kira-shadowed-default-client", connection.getClientInfo("ApplicationName"))
+             assertEquals(7, properties["ApplicationName"], "The caller's explicit non-String entry is not overwritten.")
+             FactoryWorkerTestScope().use { callers ->
+-                assertTrue(callers.launch {
+-                    assertThrows<SQLClientInfoException> { connection.clientInfo = properties }
+-                    assertThrows<SQLClientInfoException> { connection.setClientInfo("ApplicationName", "foreign") }
+-                    true
+-                }.join())
++                assertTrue(
++                    callers.launch {
++                        assertThrows<SQLClientInfoException> { connection.clientInfo = properties }
++                        assertThrows<SQLClientInfoException> { connection.setClientInfo("ApplicationName", "foreign") }
++                        true
++                    }.join(),
++                )
+             }
+         } finally {
+             connection.close()
+diff --git a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt
+index 8f37a12..e165a10 100644
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt
+@@ -73,61 +73,60 @@ class PoolActorCustodyTest {
+ 
+     @ParameterizedTest(name = "{displayName} [{index}] {argumentsWithNames}")
+     @ValueSource(strings = ["incident-first", "hard-first", "operation-hard"])
+-    fun `MODEL RETURN incident preserves authentic creation and generic or factory hard faults stay dominant`(order: String) =
+-        ActorFixture().use { fixture ->
+-            val acquisition = fixture.creator()
++    fun `MODEL RETURN incident preserves authentic creation and generic or factory hard faults stay dominant`(order: String) = ActorFixture().use { fixture ->
++        val acquisition = fixture.creator()
++        try {
++            assertTrue(acquisition.capture(PhysicalTestConnection().raw)) // MODEL handle; the enclosing creator remains genuinely active.
++            val entitlement = requireNotNull(acquisition.prepareLeaseEntitlement())
++            val returning = requireNotNull(entitlement.prepareReturn(PersistenceTimeBudget.start(30_000)))
++            assertTrue(returning.enter())
+             try {
+-                assertTrue(acquisition.capture(PhysicalTestConnection().raw)) // MODEL handle; the enclosing creator remains genuinely active.
+-                val entitlement = requireNotNull(acquisition.prepareLeaseEntitlement())
+-                val returning = requireNotNull(entitlement.prepareReturn(PersistenceTimeBudget.start(30_000)))
+-                assertTrue(returning.enter())
+-                try {
+-                    assertNull(fixture.lifecycle.actorSnapshot().firstFailure)
++                assertNull(fixture.lifecycle.actorSnapshot().firstFailure)
++                assertFalse(fixture.lifecycle.actorSnapshot().factorySealed)
++                if (order == "hard-first") assertNull(fixture.pool.threadFactory.newThread(null))
++                assertTrue(returning.recordReturnIncidentBeforeEnd())
++                assertFalse(fixture.lifecycle.businessReady())
++                assertFalse(fixture.lifecycle.businessAdmissionOpen())
++                if (order == "incident-first") {
+                     assertFalse(fixture.lifecycle.actorSnapshot().factorySealed)
+-                    if (order == "hard-first") assertNull(fixture.pool.threadFactory.newThread(null))
+-                    assertTrue(returning.recordReturnIncidentBeforeEnd())
+-                    assertFalse(fixture.lifecycle.businessReady())
+-                    assertFalse(fixture.lifecycle.businessAdmissionOpen())
+-                    if (order == "incident-first") {
+-                        assertFalse(fixture.lifecycle.actorSnapshot().factorySealed)
+-                        val calls = AtomicInteger()
+-                        val actor = requireNotNull(
+-                            fixture.emit(
+-                                Runnable {
+-                                    assertTrue(fixture.lifecycle.isAuthenticPoolCaller())
+-                                    assertFalse(fixture.lifecycle.businessAdmissionOpen())
+-                                    calls.incrementAndGet()
+-                                },
+-                            ),
+-                        )
+-                        actor.start()
+-                        awaitActorTermination(actor)
+-                        assertEquals(1, calls.get())
+-                        assertNull(fixture.pool.threadFactory.newThread(null)) // Genuine later hard refusal, not another incident classification.
+-                        assertEquals(1L, fixture.lifecycle.actorSnapshot().retiredGenerations)
+-                    } else if (order == "operation-hard") {
+-                        assertFalse(fixture.lifecycle.actorSnapshot().factorySealed)
+-                        assertTrue(returning.failBeforeEnd(), "The exact generic hard API must still seal despite an earlier incident.")
+-                    }
+-                    val first = if (order == "hard-first") PoolActorFault.UNAUTHENTICATED_CREATION else PoolActorFault.BOOKKEEPING_FAILED
+-                    assertEquals(first, fixture.lifecycle.actorSnapshot().firstFailure)
+-                    assertTrue(fixture.lifecycle.actorSnapshot().factorySealed)
+-                    assertTrue(returning.recordReturnIncidentBeforeEnd())
+-                    assertNull(fixture.emit(Runnable { error("An incident must never reopen a hard-sealed factory.") }))
+-                    assertEquals(first, fixture.lifecycle.actorSnapshot().firstFailure)
+-                    assertTrue(fixture.lifecycle.actorSnapshot().factorySealed)
+-                    assertEquals(0, fixture.lifecycle.actorSnapshot().retainedGenerations)
+-                    assertEquals(1L, fixture.lifecycle.actorSnapshot().activeOperations)
+-                    assertSame(returning.frame, PoolCallFrames.current())
+-                    assertFalse(returning.actualFrameEnded() || returning.frame.completion.hasEnded())
+-                } finally {
+-                    assertTrue(returning.end())
++                    val calls = AtomicInteger()
++                    val actor = requireNotNull(
++                        fixture.emit(
++                            Runnable {
++                                assertTrue(fixture.lifecycle.isAuthenticPoolCaller())
++                                assertFalse(fixture.lifecycle.businessAdmissionOpen())
++                                calls.incrementAndGet()
++                            },
++                        ),
++                    )
++                    actor.start()
++                    awaitActorTermination(actor)
++                    assertEquals(1, calls.get())
++                    assertNull(fixture.pool.threadFactory.newThread(null)) // Genuine later hard refusal, not another incident classification.
++                    assertEquals(1L, fixture.lifecycle.actorSnapshot().retiredGenerations)
++                } else if (order == "operation-hard") {
++                    assertFalse(fixture.lifecycle.actorSnapshot().factorySealed)
++                    assertTrue(returning.failBeforeEnd(), "The exact generic hard API must still seal despite an earlier incident.")
+                 }
++                val first = if (order == "hard-first") PoolActorFault.UNAUTHENTICATED_CREATION else PoolActorFault.BOOKKEEPING_FAILED
++                assertEquals(first, fixture.lifecycle.actorSnapshot().firstFailure)
++                assertTrue(fixture.lifecycle.actorSnapshot().factorySealed)
++                assertTrue(returning.recordReturnIncidentBeforeEnd())
++                assertNull(fixture.emit(Runnable { error("An incident must never reopen a hard-sealed factory.") }))
++                assertEquals(first, fixture.lifecycle.actorSnapshot().firstFailure)
++                assertTrue(fixture.lifecycle.actorSnapshot().factorySealed)
++                assertEquals(0, fixture.lifecycle.actorSnapshot().retainedGenerations)
++                assertEquals(1L, fixture.lifecycle.actorSnapshot().activeOperations)
++                assertSame(returning.frame, PoolCallFrames.current())
++                assertFalse(returning.actualFrameEnded() || returning.frame.completion.hasEnded())
+             } finally {
+-                // Only now may this uninitialized MODEL acquisition record its separate hard startup failure.
+-                assertTrue(acquisition.end())
++                assertTrue(returning.end())
+             }
++        } finally {
++            // Only now may this uninitialized MODEL acquisition record its separate hard startup failure.
++            assertTrue(acquisition.end())
+         }
++    }
+ 
+     @Test
+     fun `ordinary unstarted platform Thread has no inherited app context and foreign or reentrant run cannot execute its delegate twice`() =
+@@ -284,43 +283,42 @@ class PoolActorCustodyTest {
+         }
+ 
+     @Test
+-    fun `stock executor replacement from complete Worker finally retains its authentic creator even after the task throws`() =
+-        ActorFixture().use { fixture ->
+-            OwnedCallerTestScope().use { scope ->
+-                val firstHeld = scope.gate()
+-                val secondHeld = scope.gate()
+-                val firstThread = AtomicReference<Thread>()
+-                val secondThread = AtomicReference<Thread>()
+-                val executor = ThreadPoolExecutor(1, 1, 5, TimeUnit.SECONDS, LinkedBlockingQueue(), fixture.pool.threadFactory)
+-                fixture.own(executor)
+-                val acquisition = fixture.creator()
+-                try {
+-                    executor.execute {
+-                        firstThread.set(Thread.currentThread())
+-                        firstHeld.hold()
+-                        throw IllegalStateException("MODEL task failure, real Worker replacement finally.")
+-                    }
+-                    firstHeld.awaitEntered()
+-                    executor.execute {
+-                        secondThread.set(Thread.currentThread())
+-                        assertTrue(fixture.lifecycle.isAuthenticPoolCaller())
+-                        secondHeld.hold()
+-                    }
+-                    firstHeld.release()
+-                    secondHeld.awaitEntered()
+-                    awaitActorTermination(requireNotNull(firstThread.get()))
+-                    assertNotNull(secondThread.get(), "A complete Worker, not just the throwing task, authenticates replacement creation.")
+-                    assertFalse(firstThread.get() === secondThread.get())
+-                    assertEquals(2, fixture.lifecycle.actorSnapshot().retainedGenerations)
+-                    assertEquals(PoolActorFault.WORKER_FAILED, fixture.lifecycle.actorSnapshot().firstFailure)
+-                    assertFalse(fixture.lifecycle.businessAdmissionOpen())
+-                } finally {
+-                    firstHeld.release()
+-                    secondHeld.release()
+-                    assertTrue(acquisition.end())
++    fun `stock executor replacement from complete Worker finally retains its authentic creator even after the task throws`() = ActorFixture().use { fixture ->
++        OwnedCallerTestScope().use { scope ->
++            val firstHeld = scope.gate()
++            val secondHeld = scope.gate()
++            val firstThread = AtomicReference<Thread>()
++            val secondThread = AtomicReference<Thread>()
++            val executor = ThreadPoolExecutor(1, 1, 5, TimeUnit.SECONDS, LinkedBlockingQueue(), fixture.pool.threadFactory)
++            fixture.own(executor)
++            val acquisition = fixture.creator()
++            try {
++                executor.execute {
++                    firstThread.set(Thread.currentThread())
++                    firstHeld.hold()
++                    error("MODEL task failure, real Worker replacement finally.")
++                }
++                firstHeld.awaitEntered()
++                executor.execute {
++                    secondThread.set(Thread.currentThread())
++                    assertTrue(fixture.lifecycle.isAuthenticPoolCaller())
++                    secondHeld.hold()
+                 }
++                firstHeld.release()
++                secondHeld.awaitEntered()
++                awaitActorTermination(requireNotNull(firstThread.get()))
++                assertNotNull(secondThread.get(), "A complete Worker, not just the throwing task, authenticates replacement creation.")
++                assertFalse(firstThread.get() === secondThread.get())
++                assertEquals(2, fixture.lifecycle.actorSnapshot().retainedGenerations)
++                assertEquals(PoolActorFault.WORKER_FAILED, fixture.lifecycle.actorSnapshot().firstFailure)
++                assertFalse(fixture.lifecycle.businessAdmissionOpen())
++            } finally {
++                firstHeld.release()
++                secondHeld.release()
++                assertTrue(acquisition.end())
+             }
+         }
++    }
+ 
+     @Test
+     fun `stock caller-runs work stays in its actual acquisition extent even though no factory callback occurs`() = ActorFixture().use { fixture ->
+@@ -383,24 +381,25 @@ class PoolActorCustodyTest {
+ 
+     @ParameterizedTest(name = "{displayName} [{index}] {argumentsWithNames}")
+     @ValueSource(strings = ["F", "G"])
+-    fun `factory never publishes under a held ownership lock and its seal recheck needs no lock or profile callback`(held: String) = ActorFixture().use { fixture ->
+-        val root = actorField(fixture.owner, "root") as PersistenceJdbcDriverRoot
+-        val binding = actorField(root.ordinary, "binding") as PersistencePhysicalFactoryBinding
+-        val lock = if (held == "F") binding.rendezvous.lock else binding.ledger.lock
+-        val acquisition = fixture.creator()
+-        try {
+-            lock.withLock {
+-                assertTrue(fixture.lifecycle.businessAdmissionOpen())
+-                assertFalse(fixture.lifecycle.isAuthenticPoolCaller())
+-                assertNull(fixture.emit(Runnable { error("Ownership-locked factory callback must not publish.") }))
+-                assertFalse(fixture.lifecycle.businessAdmissionOpen())
++    fun `factory never publishes under a held ownership lock and its seal recheck needs no lock or profile callback`(held: String) =
++        ActorFixture().use { fixture ->
++            val root = actorField(fixture.owner, "root") as PersistenceJdbcDriverRoot
++            val binding = actorField(root.ordinary, "binding") as PersistencePhysicalFactoryBinding
++            val lock = if (held == "F") binding.rendezvous.lock else binding.ledger.lock
++            val acquisition = fixture.creator()
++            try {
++                lock.withLock {
++                    assertTrue(fixture.lifecycle.businessAdmissionOpen())
++                    assertFalse(fixture.lifecycle.isAuthenticPoolCaller())
++                    assertNull(fixture.emit(Runnable { error("Ownership-locked factory callback must not publish.") }))
++                    assertFalse(fixture.lifecycle.businessAdmissionOpen())
++                }
++                assertEquals(PoolActorFault.UNAUTHENTICATED_CREATION, fixture.lifecycle.actorSnapshot().firstFailure)
++                assertEquals(0, fixture.lifecycle.actorSnapshot().retainedGenerations)
++            } finally {
++                assertTrue(acquisition.end())
+             }
+-            assertEquals(PoolActorFault.UNAUTHENTICATED_CREATION, fixture.lifecycle.actorSnapshot().firstFailure)
+-            assertEquals(0, fixture.lifecycle.actorSnapshot().retainedGenerations)
+-        } finally {
+-            assertTrue(acquisition.end())
+         }
+-    }
+ }
+ 
+ /** All cleanup ownership is retained before any explicit fixture start/submit. NEW is never started by cleanup to obtain a receipt. */
+diff --git a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt
+index 465c8cb..cc044b7 100644
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt
+@@ -218,83 +218,7 @@ class PoolLifecycleTest {
+     fun `MODEL exact RETURN incident retains custody and seals only the empty UNKNOWN cut`() = InertPoolFixture().use { fixture ->
+         InertPoolFixture().use { other ->
+             OwnedCallerTestScope().use { callers ->
+-                val entitlement = modelLeaseEntitlement(fixture.lifecycle)
+-                val evictionEntitlement = modelLeaseEntitlement(fixture.lifecycle)
+-                val budget = PersistenceTimeBudget.start(30_000)
+-                val returning = requireNotNull(entitlement.prepareReturn(budget))
+-                val otherBefore = other.lifecycle.actorSnapshot()
+-                val prepared = fixture.lifecycle.actorSnapshot()
+-                assertNull(prepared.firstFailure)
+-                assertFalse(prepared.factorySealed, "No MODEL initialization fault may mask the final-seal branch.")
+-                assertFalse(returning.recordReturnIncidentBeforeEnd())
+-                assertEquals(prepared, fixture.lifecycle.actorSnapshot())
+-                assertTrue(returning.enter())
+-                try {
+-                    val active = fixture.lifecycle.actorSnapshot()
+-                    val forged = PoolLifecycle.Operation.prepare(fixture.lifecycle, returning.frame, entitlement)
+-                    val wrongPool = PoolLifecycle.Operation.prepare(other.lifecycle, returning.frame, entitlement)
+-                    assertFalse(
+-                        forged.recordReturnIncidentBeforeEnd(),
+-                        "Sharing the exact active frame and consumed right is not prepared-Operation identity.",
+-                    )
+-                    assertFalse(wrongPool.recordReturnIncidentBeforeEnd())
+-                    assertTrue(callers.launch { !returning.recordReturnIncidentBeforeEnd() }.value())
+-                    assertEquals(active, fixture.lifecycle.actorSnapshot())
+-                    assertEquals(otherBefore, other.lifecycle.actorSnapshot())
+-                    val eviction = requireNotNull(evictionEntitlement.prepareEviction(budget))
+-                    assertTrue(eviction.enter())
+-                    try {
+-                        val nested = fixture.lifecycle.actorSnapshot()
+-                        assertFalse(eviction.recordReturnIncidentBeforeEnd(), "An authentic EVICTION is not a RETURN incident grant.")
+-                        assertFalse(returning.recordReturnIncidentBeforeEnd(), "Even the authentic RETURN must be the current top frame.")
+-                        assertSame(eviction.frame, PoolCallFrames.current())
+-                        assertEquals(nested, fixture.lifecycle.actorSnapshot())
+-                    } finally {
+-                        assertTrue(eviction.end())
+-                    }
+-                    assertFalse(eviction.recordReturnIncidentBeforeEnd())
+-                    assertTrue(returning.recordReturnIncidentBeforeEnd())
+-                    val incident = fixture.lifecycle.actorSnapshot()
+-                    assertEquals(PoolActorFault.BOOKKEEPING_FAILED, incident.firstFailure)
+-                    assertFalse(incident.factorySealed)
+-                    assertEquals(0L, incident.futureLeaseEntries)
+-                    assertEquals(1L, incident.activeOperations)
+-                    assertSame(returning.frame, PoolCallFrames.current())
+-                    assertSame(budget, returning.frame.budget)
+-                    assertFalse(returning.actualFrameEnded() || returning.frame.completion.hasEnded())
+-                    assertFalse(entitlement.revoke())
+-                    assertNull(entitlement.prepareReturn(PersistenceTimeBudget.start(30_000)))
+-                    assertFalse(fixture.lifecycle.prepareAcquisition(PersistenceTimeBudget.start(30_000)).enter())
+-                    assertTrue(returning.recordReturnIncidentBeforeEnd())
+-                    assertFalse(
+-                        forged.recordReturnIncidentBeforeEnd(),
+-                        "An earlier incident must not give the forged operation hard-failure authority either.",
+-                    )
+-                    assertEquals(incident, fixture.lifecycle.actorSnapshot())
+-                } finally {
+-                    assertTrue(returning.end())
+-                    evictionEntitlement.revoke() // Only an unused MODEL right if an earlier assertion failed.
+-                }
+-                assertFalse(returning.recordReturnIncidentBeforeEnd())
+-                assertTrue(returning.actualFrameEnded() && returning.frame.completion.hasEnded())
+-                assertNull(PoolCallFrames.current())
+-                val receipt = requireNotNull(fixture.lifecycle.requestShutdown())
+-                assertEquals(PoolShutdownInvocation.RETURNED, fixture.lifecycle.closePool())
+-                assertFalse(
+-                    fixture.lifecycle.actorSnapshot().factorySealed,
+-                    "No earlier hard failure or shutdown invocation seals this MODEL population.",
+-                )
+-                assertEquals(PoolShutdownObservation.UNKNOWN, receipt.observe())
+-                val ended = fixture.lifecycle.actorSnapshot()
+-                assertEquals(PoolActorFault.BOOKKEEPING_FAILED, ended.firstFailure)
+-                assertEquals(0L, ended.futureLeaseEntries)
+-                assertEquals(0L, ended.activeOperations)
+-                assertEquals(0, ended.constructing)
+-                assertEquals(0, ended.retainedGenerations)
+-                assertTrue(ended.factorySealed)
+-                assertEquals(PoolShutdownObservation.UNKNOWN, receipt.observe())
+-                assertEquals(ended, fixture.lifecycle.actorSnapshot())
+-                assertEquals(otherBefore, other.lifecycle.actorSnapshot())
++                assertModelReturnIncident(fixture, other, callers)
+             }
+         }
+     }
+@@ -507,6 +431,86 @@ class PoolLifecycleTest {
+     }
+ }
+ 
++private fun assertModelReturnIncident(fixture: InertPoolFixture, other: InertPoolFixture, callers: OwnedCallerTestScope) {
++    val entitlement = modelLeaseEntitlement(fixture.lifecycle)
++    val evictionEntitlement = modelLeaseEntitlement(fixture.lifecycle)
++    val budget = PersistenceTimeBudget.start(30_000)
++    val returning = requireNotNull(entitlement.prepareReturn(budget))
++    val otherBefore = other.lifecycle.actorSnapshot()
++    val prepared = fixture.lifecycle.actorSnapshot()
++    assertNull(prepared.firstFailure)
++    assertFalse(prepared.factorySealed, "No MODEL initialization fault may mask the final-seal branch.")
++    assertFalse(returning.recordReturnIncidentBeforeEnd())
++    assertEquals(prepared, fixture.lifecycle.actorSnapshot())
++    assertTrue(returning.enter())
++    try {
++        val active = fixture.lifecycle.actorSnapshot()
++        val forged = PoolLifecycle.Operation.prepare(fixture.lifecycle, returning.frame, entitlement)
++        val wrongPool = PoolLifecycle.Operation.prepare(other.lifecycle, returning.frame, entitlement)
++        assertFalse(
++            forged.recordReturnIncidentBeforeEnd(),
++            "Sharing the exact active frame and consumed right is not prepared-Operation identity.",
++        )
++        assertFalse(wrongPool.recordReturnIncidentBeforeEnd())
++        assertTrue(callers.launch { !returning.recordReturnIncidentBeforeEnd() }.value())
++        assertEquals(active, fixture.lifecycle.actorSnapshot())
++        assertEquals(otherBefore, other.lifecycle.actorSnapshot())
++        val eviction = requireNotNull(evictionEntitlement.prepareEviction(budget))
++        assertTrue(eviction.enter())
++        try {
++            val nested = fixture.lifecycle.actorSnapshot()
++            assertFalse(eviction.recordReturnIncidentBeforeEnd(), "An authentic EVICTION is not a RETURN incident grant.")
++            assertFalse(returning.recordReturnIncidentBeforeEnd(), "Even the authentic RETURN must be the current top frame.")
++            assertSame(eviction.frame, PoolCallFrames.current())
++            assertEquals(nested, fixture.lifecycle.actorSnapshot())
++        } finally {
++            assertTrue(eviction.end())
++        }
++        assertFalse(eviction.recordReturnIncidentBeforeEnd())
++        assertTrue(returning.recordReturnIncidentBeforeEnd())
++        val incident = fixture.lifecycle.actorSnapshot()
++        assertEquals(PoolActorFault.BOOKKEEPING_FAILED, incident.firstFailure)
++        assertFalse(incident.factorySealed)
++        assertEquals(0L, incident.futureLeaseEntries)
++        assertEquals(1L, incident.activeOperations)
++        assertSame(returning.frame, PoolCallFrames.current())
++        assertSame(budget, returning.frame.budget)
++        assertFalse(returning.actualFrameEnded() || returning.frame.completion.hasEnded())
++        assertFalse(entitlement.revoke())
++        assertNull(entitlement.prepareReturn(PersistenceTimeBudget.start(30_000)))
++        assertFalse(fixture.lifecycle.prepareAcquisition(PersistenceTimeBudget.start(30_000)).enter())
++        assertTrue(returning.recordReturnIncidentBeforeEnd())
++        assertFalse(
++            forged.recordReturnIncidentBeforeEnd(),
++            "An earlier incident must not give the forged operation hard-failure authority either.",
++        )
++        assertEquals(incident, fixture.lifecycle.actorSnapshot())
++    } finally {
++        assertTrue(returning.end())
++        evictionEntitlement.revoke() // Only an unused MODEL right if an earlier assertion failed.
++    }
++    assertFalse(returning.recordReturnIncidentBeforeEnd())
++    assertTrue(returning.actualFrameEnded() && returning.frame.completion.hasEnded())
++    assertNull(PoolCallFrames.current())
++    val receipt = requireNotNull(fixture.lifecycle.requestShutdown())
++    assertEquals(PoolShutdownInvocation.RETURNED, fixture.lifecycle.closePool())
++    assertFalse(
++        fixture.lifecycle.actorSnapshot().factorySealed,
++        "No earlier hard failure or shutdown invocation seals this MODEL population.",
++    )
++    assertEquals(PoolShutdownObservation.UNKNOWN, receipt.observe())
++    val ended = fixture.lifecycle.actorSnapshot()
++    assertEquals(PoolActorFault.BOOKKEEPING_FAILED, ended.firstFailure)
++    assertEquals(0L, ended.futureLeaseEntries)
++    assertEquals(0L, ended.activeOperations)
++    assertEquals(0, ended.constructing)
++    assertEquals(0, ended.retainedGenerations)
++    assertTrue(ended.factorySealed)
++    assertEquals(PoolShutdownObservation.UNKNOWN, receipt.observe())
++    assertEquals(ended, fixture.lifecycle.actorSnapshot())
++    assertEquals(otherBefore, other.lifecycle.actorSnapshot())
++}
++
+ /** MODEL captured handles only; the uninstalled inert pool cannot inject a startup fault into the incident oracle. */
+ private fun modelLeaseEntitlement(lifecycle: PoolLifecycle): PoolLifecycle.LeaseEntitlement {
+     val acquisition = lifecycle.prepareAcquisition(PersistenceTimeBudget.start(30_000))
