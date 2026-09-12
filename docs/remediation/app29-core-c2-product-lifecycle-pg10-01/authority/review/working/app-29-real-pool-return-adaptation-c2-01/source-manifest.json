@@ -1,0 +1,528 @@
+{
+  "kind": "SOURCE-ONLY C2 RETURN-adaptation successor21 AUTHOR CANDIDATE; uncompiled/unexecuted/not independently approved",
+  "captured_utc": "2026-09-11T04:08:19.329043+00:00",
+  "author": "/root/backend_01_core_author",
+  "repo": "/root/projects/Kira/kira-backend",
+  "baseline_head": "49da0919d9ec3091cb7bb041009dc9bd5f3e090f",
+  "branch": "remediation/app-29-backend-complaints",
+  "local_only": true,
+  "public_push_authorized": false,
+  "source_paths": [
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardCall.kt",
+      "kind": "production",
+      "baseline_state": "tracked",
+      "bytes": 11229,
+      "sha256": "44d1945e376ecba2c20355aad2905c241ce5edcd78eaca6bac09abab81c901bf",
+      "baseline_sha256": "a8a7e62ec6a3e10b27ba8cb8d14933ca71898f82fe410cb93f67640e79253ba1",
+      "before_bytes": 11229,
+      "before_sha256": "44d1945e376ecba2c20355aad2905c241ce5edcd78eaca6bac09abab81c901bf",
+      "changed": false,
+      "full_diff_bytes": 3530,
+      "full_diff_sha256": "a974a7b0f7779a631b350af685bcb7a12c480ce8fb3450cf2643148e40651cc0",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt",
+      "kind": "production",
+      "baseline_state": "tracked",
+      "bytes": 19966,
+      "sha256": "c3c2095193dac21bae09219e75a50b79b2da6ed5512db4ad0168da88676b30c0",
+      "baseline_sha256": "33b2db6f80b68282b2d88523b25d83e31b0bc2b254b3f8943279df67fcf11a59",
+      "before_bytes": 19966,
+      "before_sha256": "c3c2095193dac21bae09219e75a50b79b2da6ed5512db4ad0168da88676b30c0",
+      "changed": false,
+      "full_diff_bytes": 6106,
+      "full_diff_sha256": "038004ed2b1830073245f1ca481dfbc313fc56ed464e9cd48b31f0811a8f4bf2",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLifecycleOwner.kt",
+      "kind": "production",
+      "baseline_state": "tracked",
+      "bytes": 2173,
+      "sha256": "7c20e32a16f0818b80f3dacf29232d3ad08b7a2088e26815e8ee64cccc1a263f",
+      "baseline_sha256": "a9d8ccd5bb99d996d4157bb51dd138ee05270ee329350e0a8d0cc77926592020",
+      "before_bytes": 2173,
+      "before_sha256": "7c20e32a16f0818b80f3dacf29232d3ad08b7a2088e26815e8ee64cccc1a263f",
+      "changed": false,
+      "full_diff_bytes": 1133,
+      "full_diff_sha256": "b5384e141ea9b8c02a7f80c18971617b33ae5a7d4900944b569d93a099663bd2",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceManagedObserver.kt",
+      "kind": "production",
+      "baseline_state": "tracked",
+      "bytes": 2975,
+      "sha256": "392f637a22ca16f967ee028cbf0731f8c93622560556fa4bbef7e47657d63b23",
+      "baseline_sha256": "48a2ba10eebd2742886caa9659e558009573a62f734503d658f68d56f5896a52",
+      "before_bytes": 2975,
+      "before_sha256": "392f637a22ca16f967ee028cbf0731f8c93622560556fa4bbef7e47657d63b23",
+      "changed": false,
+      "full_diff_bytes": 1289,
+      "full_diff_sha256": "0560caf15116e0c253a43d53e928356924c6adb2ff5ea3c495f2cbe300b7961c",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt",
+      "kind": "production",
+      "baseline_state": "tracked",
+      "bytes": 13495,
+      "sha256": "5bee8dc7f22219542a6ff28df8230e401268884c4711289afebf397c39d2d334",
+      "baseline_sha256": "c0b3b24460581d88e8a3e078549cadfadcee3aca695a5b9e96d078f36de1cb46",
+      "before_bytes": 13495,
+      "before_sha256": "5bee8dc7f22219542a6ff28df8230e401268884c4711289afebf397c39d2d334",
+      "changed": false,
+      "full_diff_bytes": 9973,
+      "full_diff_sha256": "d43c7afdeebab9e8152d9b127626375b292e805c27514a2bb46e70296d5da57f",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutAccess.kt",
+      "kind": "production",
+      "baseline_state": "tracked",
+      "bytes": 25955,
+      "sha256": "4141070d8e4332dd8e5cddccf7ab6d3cdf906682cd6092aa96d9ce7b4acf4f5c",
+      "baseline_sha256": "9e26a9bd492dc93d898fa2adef660d782bed51e926a19c006556476e18cae938",
+      "before_bytes": 25955,
+      "before_sha256": "4141070d8e4332dd8e5cddccf7ab6d3cdf906682cd6092aa96d9ce7b4acf4f5c",
+      "changed": false,
+      "full_diff_bytes": 5049,
+      "full_diff_sha256": "ad4cd6a00515cb53ac26eb95390680f41804f6c71d00ff4c38fd67b954fe0e1e",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt",
+      "kind": "production",
+      "baseline_state": "tracked",
+      "bytes": 11641,
+      "sha256": "bc52f1465041db567ea08baee1ec9e223d472d1d6915f7b278fecf2ddc040cf9",
+      "baseline_sha256": "fdb2ce10346848ea458840eae34fcd4fdd0049026f392fdc35e7c53964d6829f",
+      "before_bytes": 11641,
+      "before_sha256": "bc52f1465041db567ea08baee1ec9e223d472d1d6915f7b278fecf2ddc040cf9",
+      "changed": false,
+      "full_diff_bytes": 2070,
+      "full_diff_sha256": "48b2d01fa605341cd39772e18ad0783d20234fd8cf577ed1aa0615322e5a45fa",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt",
+      "kind": "production",
+      "baseline_state": "tracked",
+      "bytes": 35424,
+      "sha256": "f7127c8d922a1a17f34e7230b6ae715ec36f99e819e5bb35a907f347f40c337d",
+      "baseline_sha256": "c94d819000e903ab4a6b7b618c9e168316239ab3dc0ec91a194baad559fceaf4",
+      "before_bytes": 35424,
+      "before_sha256": "f7127c8d922a1a17f34e7230b6ae715ec36f99e819e5bb35a907f347f40c337d",
+      "changed": false,
+      "full_diff_bytes": 11043,
+      "full_diff_sha256": "6ec409c578ae6d8ba42cd3009b34a9c9361359f98a155fdd98a49892d4a5613d",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcFacade.kt",
+      "kind": "production",
+      "baseline_state": "tracked",
+      "bytes": 13783,
+      "sha256": "a58c7aedd83c96dc572f94351fe77387922c949a066ca5a49f80744b569b6c74",
+      "baseline_sha256": "549cd192c3dcd39c9ce3833071f3737c32e70c9ce0592d35d93f78f5a9247170",
+      "before_bytes": 13783,
+      "before_sha256": "a58c7aedd83c96dc572f94351fe77387922c949a066ca5a49f80744b569b6c74",
+      "changed": false,
+      "full_diff_bytes": 16675,
+      "full_diff_sha256": "ba22723b193cd1056daa00ba7b51a4ca839b8fd2e2982e191b3fc64bc9b03ea2",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PreparedPoolConnection.kt",
+      "kind": "production",
+      "baseline_state": "tracked",
+      "bytes": 2977,
+      "sha256": "1f184fdd95401e528b4fc9900fc532448f8ceae7d07bd77b1b824b2cf47a9a79",
+      "baseline_sha256": "bbd608e9ffe3a68351adf1fea88e6530cb09b84bf4b08bf1506255fea3361ec5",
+      "before_bytes": 2977,
+      "before_sha256": "1f184fdd95401e528b4fc9900fc532448f8ceae7d07bd77b1b824b2cf47a9a79",
+      "changed": false,
+      "full_diff_bytes": 2322,
+      "full_diff_sha256": "ad57917303bb8cd2a2d9d62e6d4724f6bfdd60c4b22e9225a07af3ee1e0b644e",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt",
+      "kind": "production",
+      "baseline_state": "new",
+      "bytes": 6585,
+      "sha256": "a6730fbc65d378713dd89bd0794b5514a764320f1186c681c4b44efabd1d09c7",
+      "baseline_sha256": null,
+      "before_bytes": 6585,
+      "before_sha256": "a6730fbc65d378713dd89bd0794b5514a764320f1186c681c4b44efabd1d09c7",
+      "changed": false,
+      "full_diff_bytes": 7163,
+      "full_diff_sha256": "38b3c451260e7103e04a095cef90becfb77fee71639008ccc9d9353daf97fe31",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PrivateJdbcDataSource.kt",
+      "kind": "production",
+      "baseline_state": "new",
+      "bytes": 2734,
+      "sha256": "57d702ce9988b0bdd650387dd604d47edd0a4d3640f4f0071f6ad6311467a691",
+      "baseline_sha256": null,
+      "before_bytes": 2734,
+      "before_sha256": "57d702ce9988b0bdd650387dd604d47edd0a4d3640f4f0071f6ad6311467a691",
+      "changed": false,
+      "full_diff_bytes": 3242,
+      "full_diff_sha256": "ce9a9ecbef571539605472462d05d6d55ca0908afeedbd9497d762e23c6db2f1",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt",
+      "kind": "production",
+      "baseline_state": "new",
+      "bytes": 5029,
+      "sha256": "0e6acaf9ca87a5f16672c3efa090c2dde8491c3e80e7b8cc19e6fb78f56f698f",
+      "baseline_sha256": null,
+      "before_bytes": 5029,
+      "before_sha256": "0e6acaf9ca87a5f16672c3efa090c2dde8491c3e80e7b8cc19e6fb78f56f698f",
+      "changed": false,
+      "full_diff_bytes": 5571,
+      "full_diff_sha256": "66c696bdc8cc98447477f963bd16364e22955d082209a34ab9ef5bf036ae5cea",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt",
+      "kind": "production",
+      "baseline_state": "new",
+      "bytes": 13504,
+      "sha256": "dd73ba8b486e285ac76c16e56d98bdac475027c86fed9eb5ffe3f7c1a5a820fd",
+      "baseline_sha256": null,
+      "before_bytes": 12188,
+      "before_sha256": "f486b296d822d7bdbe39a69474a5537a6b0de85958b7be4be8be04c2ec91e043",
+      "changed": true,
+      "full_diff_bytes": 14221,
+      "full_diff_sha256": "6a33211b4d1a5a4a69a6f77201a6cc6d3feb3f8d69b7fce56cc9658a8223def5",
+      "incremental_diff_bytes": 5100,
+      "incremental_diff_sha256": "14e8618d473f71f0692fedc74bc3d96856b8a64ece6fc17c864ca0c1eabdde8c"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcPoolTransfer.kt",
+      "kind": "production",
+      "baseline_state": "new",
+      "bytes": 6557,
+      "sha256": "04ff9655211046f13af24395eb9bb489c3375702fc3dd057f225792da11e3b49",
+      "baseline_sha256": null,
+      "before_bytes": 6557,
+      "before_sha256": "04ff9655211046f13af24395eb9bb489c3375702fc3dd057f225792da11e3b49",
+      "changed": false,
+      "full_diff_bytes": 7172,
+      "full_diff_sha256": "a3e8fa92f177e0729631bf0d902c148011b720eba92f76a9b4845b56acbe03f1",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcTransaction.kt",
+      "kind": "production",
+      "baseline_state": "new",
+      "bytes": 3021,
+      "sha256": "55e1393e113e750a49572b39ca4217b5b701ecc4fa7edb8c338e72c7dd1fb462",
+      "baseline_sha256": null,
+      "before_bytes": 3021,
+      "before_sha256": "55e1393e113e750a49572b39ca4217b5b701ecc4fa7edb8c338e72c7dd1fb462",
+      "changed": false,
+      "full_diff_bytes": 3558,
+      "full_diff_sha256": "ecb6e24f8d4891bf63ded16980fe2fe8a503e7876ac6e01569d09e751952e00e",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendantsTest.kt",
+      "kind": "test",
+      "baseline_state": "tracked",
+      "bytes": 35316,
+      "sha256": "0997dd22f9c2ee5f36c837559a113134c0c3a59f17b4087b0746989b331407c6",
+      "baseline_sha256": "ea674953249590b380935832c396d02eb761af5b032654f700d2762ba0ac814c",
+      "before_bytes": 35316,
+      "before_sha256": "0997dd22f9c2ee5f36c837559a113134c0c3a59f17b4087b0746989b331407c6",
+      "changed": false,
+      "full_diff_bytes": 6653,
+      "full_diff_sha256": "7dffb8a6b2d286a32ccda99839eb56fe235cb124ad68d421217f70c7dea1af79",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt",
+      "kind": "test",
+      "baseline_state": "tracked",
+      "bytes": 117449,
+      "sha256": "2be392d5768db39dce43832be3eb12d3b6d724b60d7a569f51c8be9b704aba7a",
+      "baseline_sha256": "b0dada1c989fe3b0f1decd75556b6a2d913cc6db321511f14c7558c5866ec063",
+      "before_bytes": 115317,
+      "before_sha256": "d2deb0973b6bcf98e62e19c244bdd69b0f0d756cf43ac952855e0aaf50aae9e6",
+      "changed": true,
+      "full_diff_bytes": 80443,
+      "full_diff_sha256": "e2892be45721f723f40d2963926e63010a9746181da2a6a62b89813281f4fca2",
+      "incremental_diff_bytes": 8566,
+      "incremental_diff_sha256": "7201d23759966f9a609886ab6aa1a0ddb75583877439db422dd2b3e6f06a6b99"
+    },
+    {
+      "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseRecipe.kt",
+      "kind": "test_support",
+      "baseline_state": "tracked",
+      "bytes": 7047,
+      "sha256": "59c151faec761164dae849abc8b408fd6dd956ca43a368bcbfadfc8d07ce734f",
+      "baseline_sha256": "71f29a6cc5d2b79ce304cf67b767676cfd7caca5cc191d9f2a3233c0449c7c0f",
+      "before_bytes": 7047,
+      "before_sha256": "59c151faec761164dae849abc8b408fd6dd956ca43a368bcbfadfc8d07ce734f",
+      "changed": false,
+      "full_diff_bytes": 2312,
+      "full_diff_sha256": "f96ec999738ee39308841f5992ed9434ac1cea760e7d4d00b786ef613fb53cd5",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbe.kt",
+      "kind": "test_support",
+      "baseline_state": "tracked",
+      "bytes": 4679,
+      "sha256": "b7d0df49b6d27c7d2f21ca801ba80b419dcf9a46277705cd4c609bd66a10a424",
+      "baseline_sha256": "1fa4607c24104344eb6af548250a2a9030328368f0f272505f50d92fc0a632cc",
+      "before_bytes": 4679,
+      "before_sha256": "b7d0df49b6d27c7d2f21ca801ba80b419dcf9a46277705cd4c609bd66a10a424",
+      "changed": false,
+      "full_diff_bytes": 2490,
+      "full_diff_sha256": "05e1e75857603e21b858d5b3c9753d864ff84fe014fc4f8cf0c190b3712a081b",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbeProcess.kt",
+      "kind": "test_support",
+      "baseline_state": "tracked",
+      "bytes": 15432,
+      "sha256": "b115bbde5d83873d0dfa63a88571a2da601a0dbaf91c4db9c7cac1c73b09cf3a",
+      "baseline_sha256": "3c88f52aa69d943679956fa86eda2fa05ba0ed874053a6dc7960c9daf3972618",
+      "before_bytes": 15432,
+      "before_sha256": "b115bbde5d83873d0dfa63a88571a2da601a0dbaf91c4db9c7cac1c73b09cf3a",
+      "changed": false,
+      "full_diff_bytes": 5795,
+      "full_diff_sha256": "8a9dcfca48722629c2212d8ac314f4c218649754050d6b48a6d2454ed5811982",
+      "incremental_diff_bytes": 0,
+      "incremental_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "production_paths": 16,
+  "test_paths": 2,
+  "test_support_paths": 3,
+  "changed_production_paths": 1,
+  "changed_test_paths": 1,
+  "changed_test_support_paths": 0,
+  "core_predecessor_manifest_sha256": "4c9972b568f974d8fdcbc74af8929bfc829cf533fd5ed4d8ceb1ab619ed9835b",
+  "core_independent_review_sha256": "705cb53e8369d20abadeb826cbff1b40ae83fb4bac7eebc9df01c8c84e47c320",
+  "immediate_predecessor_manifest_sha256": "46edb1d622b7a532ebb1511bb765d50184a8d0d2e844c30479f4134234972d9a",
+  "correction_scope": "C2 only: remove separate original-IE self-interrupt and arbitrary post-RETURN-end adaptation. Use unchanged adapter once under retained RETURN after source retirement, retain pre-end detached fallback for adapter/end failures, preserve Error. Existing exact count1 plus nested IE/Error discriminators. No scope expansion beyond Lease + current IntegrationTest helper/test extent.",
+  "separate_pending_scope": "The four-test-path pending-probes-01 delta remains separately frozen and under separate independent review. Its contents are unchanged by this C2 delta. Composition is not probe/core/artifact acceptance.",
+  "packet_outputs": [
+    {
+      "path": "before-manifest.json",
+      "bytes": 13522,
+      "sha256": "13872ecd0ef3e37d7d18209886f7847fcbb3d976c544173163fe98decfa82953"
+    },
+    {
+      "path": "owned-core-and-probes.patch",
+      "bytes": 197810,
+      "sha256": "46e3d100706abe1f3e74f83d5635203f3fd570a635a8eaf384c699b55180a3df"
+    },
+    {
+      "path": "c2-delta.patch",
+      "bytes": 13666,
+      "sha256": "f9606bc8d4edb1ed0adf9e7169e3784c99f1d6bd8430cdc23132151446ae8e35"
+    },
+    {
+      "path": "test-source-inventory.json",
+      "bytes": 18581,
+      "sha256": "823f49b359b8dec60d1b024c2bfd4e3d2d6822a42fed1a8c8d0e905b5ba87650"
+    }
+  ],
+  "read_only_control_pins": [
+    {
+      "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseHandshake.kt",
+      "bytes": 5825,
+      "sha256": "47b356dd08525813e057aae1e56ec524e2840a5b2a43a4860a9d985fd0fbe629",
+      "read_only": true
+    },
+    {
+      "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseControlsTest.kt",
+      "bytes": 11324,
+      "sha256": "ae098432000c15bdd4e90c45ddbf7ebb02e819dde2ebdf0db535b6ff720c056e",
+      "read_only": true
+    },
+    {
+      "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcDatabaseLifecycleTest.kt",
+      "bytes": 4460,
+      "sha256": "3b10b0ffa4819df6d7e209402f02d9b91618487d26d6af5e47d9c9079e353917",
+      "read_only": true
+    },
+    {
+      "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseCases.kt",
+      "bytes": 12713,
+      "sha256": "8d88d79d4abfca56431b3a22a8bbb2aae455d00d81f7bed058da531ba4b55a07",
+      "read_only": true
+    },
+    {
+      "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseScenario.kt",
+      "bytes": 14678,
+      "sha256": "1a744eb5f81b4f742fcdecf4dac01cca44d10675d3df571d1727f4b5b876c225",
+      "read_only": true
+    },
+    {
+      "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleTestScope.kt",
+      "bytes": 4894,
+      "sha256": "7574167d18008256a43ff056e5797d5882abe1defc4ffcdda46e72a02a0ae9ec",
+      "read_only": true
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/SafeJdbcFailure.kt",
+      "sha256": "03b502ed83f9b323f7278273eb8b2dcb6fb22b8003f52310470170cd24cb63a0",
+      "bytes": 7078,
+      "read_only": true
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnedFactoryCaller.kt",
+      "sha256": "b43a7c3251c9f84762a1befb65b5e531fe0052598b5f1a894eae53474dd9f28b",
+      "bytes": 3197,
+      "read_only": true
+    },
+    {
+      "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OwnedCallerTestScope.kt",
+      "sha256": "0c77a20900256ef113d4b22ba1d38e4cbbc346a6851c262cd64d06ff779b4ee5",
+      "bytes": 5911,
+      "read_only": true
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt",
+      "sha256": "2cbd7a055d12000953c37301a7d08839df739d391b4fafa453e8acb62944963e",
+      "bytes": 4530,
+      "read_only": true
+    }
+  ],
+  "read_only_references": [
+    {
+      "path": "review/remediation/app-29-real-pool-pending-negative-probe-proposal.md",
+      "bytes": 9848,
+      "sha256": "88c752f504a8928d36a46e0f046b313889c3f5ffa85dc583aba2dfa9f48c9aeb",
+      "read_only": true
+    },
+    {
+      "path": "review/working/app-29-real-pool-connected-core-resume-02/source-manifest.json",
+      "bytes": 20902,
+      "sha256": "4c9972b568f974d8fdcbc74af8929bfc829cf533fd5ed4d8ceb1ab619ed9835b",
+      "read_only": true
+    },
+    {
+      "path": "review/remediation/app-29-real-pool-connected-core-resume-02-independent-review.md",
+      "bytes": 11166,
+      "sha256": "705cb53e8369d20abadeb826cbff1b40ae83fb4bac7eebc9df01c8c84e47c320",
+      "read_only": true
+    },
+    {
+      "path": "review/working/app-29-real-pool-actor-storage-01/manifest.json",
+      "bytes": 2483,
+      "sha256": "2cf95e5f04b8e4d043a213a0103d6ce197c2f1703d0b777ab7fe5613f4611517",
+      "read_only": true
+    },
+    {
+      "path": "review/remediation/app-29-real-pool-actor-storage-01-independent-review.md",
+      "bytes": 4125,
+      "sha256": "fd6260433e2f7b06ee54631ec8857550badf7add0b202cbce18f8d14c9f7e05f",
+      "read_only": true
+    },
+    {
+      "path": "review/working/app-29-real-pool-native-retention-02/source-manifest.json",
+      "bytes": 20062,
+      "sha256": "599744a4d59814528e576f87295c82f5f5d3f83a5a5abf28a0025fbef01b71ef",
+      "read_only": true
+    },
+    {
+      "path": "review/working/app-29-driver-cut-native-build-02/artifacts/postgresql-42.7.12-kira.1-osgi.jar",
+      "bytes": 1195540,
+      "sha256": "f1a6dad0aa9ee3288c1a57cb230336fab96ca183b648976d68012caf9413395c",
+      "read_only": true
+    },
+    {
+      "path": "review/remediation/app-29-real-pool-lease-implementation-agreement.md",
+      "bytes": 11988,
+      "sha256": "f9046e74cd2a38b0a16ee55de1058c6bcc95dbd14f34e965e0b22ae510302138",
+      "read_only": true
+    },
+    {
+      "path": "review/working/app-29-real-pool-pending-probes-01/source-manifest.json",
+      "bytes": 24946,
+      "sha256": "46edb1d622b7a532ebb1511bb765d50184a8d0d2e844c30479f4134234972d9a",
+      "read_only": true
+    },
+    {
+      "path": "review/working/app-29-real-pool-pending-probes-01/SOURCE-ONLY-HANDOFF.md",
+      "bytes": 12174,
+      "sha256": "bc8d6c8ac79cc0fac846367d13a256372999110f9e5eabca8f3ec8ae30d9ef6e",
+      "read_only": true
+    },
+    {
+      "path": "review/working/app-29-real-pool-pending-probes-01/pending-probes-delta.patch",
+      "bytes": 31794,
+      "sha256": "a74752a3610d914c4782959d4d1343d68901939c377860f88042814c3179004f",
+      "read_only": true
+    }
+  ],
+  "frozen_predecessor_integrity": [
+    {
+      "path": "review/working/app-29-real-pool-connected-core-resume-01",
+      "source_manifest_sha256": "da900e95e2fdb51f689932bc1ae9f183ff229de905812bd3b83736b181bc33da",
+      "checksum_entries_reread": 63,
+      "all_match": true,
+      "note": "File-data integrity only; no source/test/static execution."
+    },
+    {
+      "path": "review/working/app-29-real-pool-connected-core-resume-02",
+      "source_manifest_sha256": "4c9972b568f974d8fdcbc74af8929bfc829cf533fd5ed4d8ceb1ab619ed9835b",
+      "checksum_entries_reread": 42,
+      "all_match": true,
+      "note": "File-data integrity only; no source/test/static execution."
+    },
+    {
+      "path": "review/working/app-29-real-pool-pending-probes-01",
+      "source_manifest_sha256": "46edb1d622b7a532ebb1511bb765d50184a8d0d2e844c30479f4134234972d9a",
+      "checksum_entries_reread": 48,
+      "all_match": true,
+      "note": "File-data integrity only; no source/test/static execution."
+    }
+  ],
+  "patch_construction": "Full concatenated Git full-index/binary/no-renames/no-ext-diff/no-textconv against private49da for fifteen tracked paths plus six no-index /dev/null additions. Incremental deterministic UTF-8 unified diff against exact before/21 equal frozen pending-probes-01; only Lease and IntegrationTest differ.",
+  "execution": {
+    "builds": 0,
+    "tests": 0,
+    "static_checkers": 0,
+    "formatters": 0,
+    "jvms": 0,
+    "services": 0,
+    "downloads": 0,
+    "ci": 0,
+    "commits": 0,
+    "pushes": 0,
+    "artifact_replacements": 0
+  },
+  "qualification_note": "47 authored textual declarations, zero executed. No C2/negative-probe/aggregate acceptance. Native method23 successor artifact/provenance not qualified; old native JAR remains unchanged and incapable. Historical all348/W06 exclusion/NEW-data recovery and all pending co-gates remain."
+}

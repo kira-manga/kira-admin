@@ -1,17 +1,17 @@
 {
-  "schema": "app-29-core-c2-diagnostics-01",
+  "schema": "app-29-core-c2-product-lifecycle-pg10-01",
   "authorized": true,
   "attempts": 1,
-  "backend_sha": "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc",
-  "checkpoint_sha256": "341f756f968c63dccab3aa9bf8451f6c6ae4b223302ef4a5dba2d61c7bc4c7de",
+  "backend_sha": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+  "checkpoint_sha256": "d29c4f6a399faebf88ed2def0ddc3ae2c2048eea9d1658d9567e50e602ffdbe5",
   "source_bundle": {
     "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
-    "private_parent_sha": "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+    "private_parent_sha": "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc",
     "ref": "refs/heads/remediation/app-29-backend-complaints",
-    "source_path": "review/working/app-29-core-c2-diagnostics-private-checkpoint-02/backend.bundle",
-    "path": "docs/remediation/app29-core-c2-diagnostics-01/inputs/backend.bundle",
-    "sha256": "36e84a965720f325ac0b91b3807f9dcc95793268a4e7a2f6a802a5b333f25e41",
-    "bytes": 200148
+    "source_path": "review/working/app-29-core-c2-product-lifecycle-private-checkpoint-01/backend.bundle",
+    "path": "docs/remediation/app29-core-c2-product-lifecycle-pg10-01/inputs/backend.bundle",
+    "sha256": "26315048e8463395c7a8ea1a351a83c1b0c6c55fdab52fc57fb62565e32d1b93",
+    "bytes": 208275
   },
   "budgets": {
     "job_minutes": 25,
@@ -21,10 +21,10 @@
     "cleanup_seconds": 180
   },
   "tool_sha256": {
-    "ci/app29-gate-b.py": "39224054c4bd61bbf665568c982302c12f84fa5df3e293c568f338a9cbeae9ca",
-    ".github/workflows/app29-gate-b.yml": "da12c5352baf0b3dcc1127d4e2042b9ea95159086ee72d34133f1962e6b717dd",
-    "review/working/app-29-core-c2-diagnostics-preparation-01/profile/profile.json": "a5e6cf435dd0457cfd24f8cefa2cbe4fa90445bf884d028fe67bca07ec6664b7",
-    "review/working/app-29-core-c2-diagnostics-preparation-01/profile/profile.init.gradle": "8e7bd86077e4a3a9b817ef6014514598264f4bcc3d416e9543d93c11b7615b8a",
+    "ci/app29-gate-b.py": "230140399aa9353ef6f3628c1c961aa1cda96f52bbfa5b97c8245fa9f2b3b301",
+    ".github/workflows/app29-gate-b.yml": "7822bd6fb67d1916977520ceb5e77adf1949a2ae774ac5e9b8917a99e72da625",
+    "review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.json": "f721c8d972206b973b2d3aefa4246bbd2d768c66f6f2908c470b3f896526b339",
+    "review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.init.gradle": "09742b6796f0fe3d65f2b172272ab8a697ea5a07dadad7298bed1c062ee61ada",
     "ci/app29_owned_children.py": "56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385"
   }
 }

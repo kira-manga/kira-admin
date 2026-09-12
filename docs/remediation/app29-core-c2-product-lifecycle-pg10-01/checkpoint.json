@@ -1,0 +1,22 @@
+{
+  "schema": "app29-core-c2-clean-checkpoint-v1",
+  "source_accepted": true,
+  "backend_sha": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+  "source_bundle": {
+    "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+    "private_parent_sha": "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc",
+    "ref": "refs/heads/remediation/app-29-backend-complaints",
+    "source_path": "review/working/app-29-core-c2-product-lifecycle-private-checkpoint-01/backend.bundle",
+    "path": "docs/remediation/app29-core-c2-product-lifecycle-pg10-01/inputs/backend.bundle",
+    "sha256": "26315048e8463395c7a8ea1a351a83c1b0c6c55fdab52fc57fb62565e32d1b93",
+    "bytes": 208275
+  },
+  "manifest_path": "review/working/app-29-w03-integrated-driver-core-c2-product-lifecycle-pg10-01/manifest.json",
+  "manifest_sha256": "f44346d3f76072b62c61e72fa8231e318650ec0cd0da8d976f2ef043f16dbb3d",
+  "local_v3_preflight": {
+    "manifest_sha256": "f44346d3f76072b62c61e72fa8231e318650ec0cd0da8d976f2ef043f16dbb3d",
+    "tool_sha256": "e8c6a48fc26c634fbccbb081651631fb5c767099b1143ab4dbe8439f6060d0fe",
+    "receipt_path": "review/working/app-29-w03-integrated-driver-core-c2-product-lifecycle-pg10-01/hosted-local-preflight.json",
+    "receipt_sha256": "3b6e6541725e1cd8569aa04d34782120ad3e6439e70c9eafaf728cf3b0083a1a"
+  }
+}
