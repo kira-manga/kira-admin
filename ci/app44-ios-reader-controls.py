@@ -400,12 +400,18 @@ class Leaf:
         require(len(matches) == 1 and matches[0]['state'] == 'Shutdown', 'Created device is not uniquely shut down')
         self.own_device(matches[0])
         end = min(self.work_end, time.monotonic() + 180)
+        root = Path(self.state['dataRoot'])
+        root_before = root.lstat()
+        require(stat.S_ISDIR(root_before.st_mode) and root_before.st_uid == os.getuid(),
+                'Foreign/missing Simulator data root before boot')
         self.call(['/usr/bin/xcrun', 'simctl', 'boot', self.state['udid']], 'boot-device', end=end)
         self.call(['/usr/bin/xcrun', 'simctl', 'bootstatus', self.state['udid'], '-b'], 'bootstatus', seconds=180, end=end)
-        matches = [row for row in self.devices() if row['udid'] == self.state['udid']]
-        require(len(matches) == 1 and matches[0]['state'] == 'Booted', 'Owned Simulator boot is unproved')
-        self.own_device(matches[0])
-        self.state['booted'] = True
+        root_after = root.lstat()
+        require(stat.S_ISDIR(root_after.st_mode) and root_after.st_uid == root_before.st_uid == os.getuid()
+                and (root_after.st_dev, root_after.st_ino) == (root_before.st_dev, root_before.st_ino)
+                and (root / 'data').resolve() == root / 'data', 'Owned Simulator data root changed during boot')
+        require(not self.owner.CANCELLED and time.monotonic() < end, 'Owned Simulator readiness cancelled/expired')
+        self.state['bootReadinessEvidence'] = 'normal-same-uuid-bootstatus-and-same-owned-root'
         self.save_device()
 
     def test_argv(self):
