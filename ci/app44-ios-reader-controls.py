@@ -21,11 +21,14 @@ METHODS = ('testSinglePageChapterButtonsKeepEnablementAndEnabledActions',
            'testEmptyChapterKeepsChapterButtonsAndSliderHidden',
            'testOneManyOneTransitionsKeepFiniteLayoutAndChapterRelativeSeeking')
 LEAF = 'iosApp/reader-controls-tests'
+HOST = 'ReaderChromeControlsHost'
+HOST_INPUT = LEAF + '/Host/AppDelegate.swift'
 INPUTS = {
     'iosApp/iosApp/NativeReader/ReaderChromeView.swift': 'bf9bad6dcc21a5c284fd448be270012df9f3feffaca7b58d44859172b697c6ae',
     LEAF + '/ReaderChromeBarsTests.swift': '00521a691a65c1a419df289fabef2f727f877f751ac3075369c549d5b4eb67ae',
-    LEAF + '/project.yml': '7347aafc7e9c10662ab02664aedd8ed25a75ad866aa94bfc7ce6bfc272b5d084',
+    LEAF + '/project.yml': 'd05be11ff9f960e80a1cac3e72ef25b334d257bc4855a20a394c0366f2c003d4',
     LEAF + '/.gitignore': '71560d61d40d33d0b45905f47b600fac842947f43310422b5c61b0012fe7de4e',
+    HOST_INPUT: '88d9956b5fce2426e30de5eac0b2092c1f2010e954b4e965716d2bd7efc476d0',
 }
 OWNER_SHA = 'ebfad8e4bc0f43b2be84befc72d70b3479555609c40857d75b3211831302ca20'
 XCODE = '/Applications/Xcode_26.4.1.app/Contents/Developer'
@@ -457,14 +460,15 @@ class Leaf:
         filelist = folder / 'Objects-normal/arm64' / (TARGET + '.SwiftFileList')
         require(filelist.is_file() and not filelist.is_symlink() and filelist.stat().st_size <= 65536, 'Missing actual Swift file list')
         files = shlex.split(filelist.read_text())
-        expected = {str(self.source / path) for path in INPUTS if path.endswith('.swift')}
+        expected = {str(self.source / path) for path in INPUTS if path.endswith('.swift') and path != HOST_INPUT}
         require(len(files) == 2 and set(files) == expected, 'Actual compilation did not use exactly the two bound Swift files')
         log = next(task['log'] for task in self.commands.tasks if task['receipt']['label'] == 'xcodebuild-test')
         raw = log.read_text(errors='replace')
         require(str(filelist) in raw, 'No actual Swift file-list invocation in the raw build log')
         require(not any(text in raw for text in ('Unable to simultaneously satisfy constraints', 'UIViewAlertForUnsatisfiableConstraints')),
                 'Unexplained UIKit constraint diagnostic; retain for primary review')
-        bundle = self.derived / 'Build/Products/Debug-iphonesimulator' / (TARGET + '.xctest')
+        host_bundle = self.derived / 'Build/Products/Debug-iphonesimulator' / (HOST + '.app')
+        bundle = host_bundle / 'PlugIns' / (TARGET + '.xctest')
         info_path = bundle / 'Info.plist'
         require(bundle.resolve() == bundle and info_path.is_file() and not info_path.is_symlink()
                 and info_path.stat().st_size <= 65536, 'Missing/nonregular compiled bundle metadata')
@@ -473,8 +477,28 @@ class Leaf:
         require(info['CFBundleIdentifier'] == 'me.manga.kira.readercontrols.tests' and info['CFBundleExecutable'] == TARGET,
                 'Wrong compiled XCTest bundle identity')
         self.owner.inspect_macho(self.commands, bundle / TARGET, 'xctest-binary', end)
-        self.save('compilation-evidence.json', {'swiftInputs': sorted(files), 'filelistSha256': digest(filelist),
-                                              'binarySha256': digest(bundle / TARGET)})
+        compilation = {'swiftInputs': sorted(files), 'filelistSha256': digest(filelist),
+                       'binarySha256': digest(bundle / TARGET)}
+        host_folder = folder.parent / (HOST + '.build')
+        host_filelist = host_folder / 'Objects-normal/arm64' / (HOST + '.SwiftFileList')
+        require(host_filelist.is_file() and not host_filelist.is_symlink() and host_filelist.stat().st_size <= 65536,
+                'Missing actual host Swift file list')
+        host_files = shlex.split(host_filelist.read_text())
+        require(host_files == [str(self.source / HOST_INPUT)], 'Host compilation did not use exactly the bound host Swift file')
+        require(str(host_filelist) in raw, 'No actual host Swift file-list invocation in the raw build log')
+        host_info_path = host_bundle / 'Info.plist'
+        require(host_bundle.resolve() == host_bundle and host_info_path.is_file() and not host_info_path.is_symlink()
+                and host_info_path.stat().st_size <= 65536, 'Missing/nonregular compiled host metadata')
+        with host_info_path.open('rb') as stream:
+            host_info = plistlib.load(stream)
+        require(host_info['CFBundleIdentifier'] == 'me.manga.kira.readercontrols.testhost'
+                and host_info['CFBundleExecutable'] == HOST and host_info['CFBundlePackageType'] == 'APPL',
+                'Wrong compiled UIApplication host identity')
+        self.owner.inspect_macho(self.commands, host_bundle / HOST, 'testhost-binary', end)
+        compilation['host'] = {'target': HOST, 'bundleIdentifier': host_info['CFBundleIdentifier'],
+                               'swiftInputs': host_files, 'filelistSha256': digest(host_filelist),
+                               'infoPlistSha256': digest(host_info_path), 'binarySha256': digest(host_bundle / HOST)}
+        self.save('compilation-evidence.json', compilation)
         self.result['compilationEvidencePreserved'] = True
 
     def bundle_snapshot(self, end, target=None):

@@ -2,12 +2,13 @@
   "schema": "app44-ios-reader-controls-private-v1",
   "authorization": "APP44_APPLE_ONE_ATTEMPT_AUTHORIZED",
   "sourceRepository": "kira-manga/kira-app",
-  "sourceSha": "9a2c87e33e3a0db60460b258c3f6f5fc25e7df70",
+  "sourceSha": "0ec2c16519e44e4d87d809c5f7feb46c7dcace95",
   "nativeInputs": {
     "iosApp/iosApp/NativeReader/ReaderChromeView.swift": "bf9bad6dcc21a5c284fd448be270012df9f3feffaca7b58d44859172b697c6ae",
     "iosApp/reader-controls-tests/ReaderChromeBarsTests.swift": "00521a691a65c1a419df289fabef2f727f877f751ac3075369c549d5b4eb67ae",
-    "iosApp/reader-controls-tests/project.yml": "7347aafc7e9c10662ab02664aedd8ed25a75ad866aa94bfc7ce6bfc272b5d084",
-    "iosApp/reader-controls-tests/.gitignore": "71560d61d40d33d0b45905f47b600fac842947f43310422b5c61b0012fe7de4e"
+    "iosApp/reader-controls-tests/project.yml": "d05be11ff9f960e80a1cac3e72ef25b334d257bc4855a20a394c0366f2c003d4",
+    "iosApp/reader-controls-tests/.gitignore": "71560d61d40d33d0b45905f47b600fac842947f43310422b5c61b0012fe7de4e",
+    "iosApp/reader-controls-tests/Host/AppDelegate.swift": "88d9956b5fce2426e30de5eac0b2092c1f2010e954b4e965716d2bd7efc476d0"
   },
   "target": "ReaderChromeControlsTests",
   "class": "ReaderChromeBarsTests",
@@ -19,7 +20,7 @@
   "expectedRunAttempt": 1,
   "developerDir": "/Applications/Xcode_26.4.1.app/Contents/Developer",
   "ownerSha256": "ebfad8e4bc0f43b2be84befc72d70b3479555609c40857d75b3211831302ca20",
-  "controllerSha256": "ecb32ce07f916858457a459bdbddce4da8cf62b8b8981a3d2604546716b41719",
+  "controllerSha256": "d1751aa9aa614d6286f188c80d93b259f4b3bd7ed8d0cfc790907fd7160f5972",
   "workflowSha256": "7dd65fb6e2337402b86e7bd23fed30eba8d931f7d0b7831026ea30aef374fb0c",
   "xcodegenIntake": {
     "version": "2.46.0",
