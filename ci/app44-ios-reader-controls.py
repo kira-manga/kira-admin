@@ -409,7 +409,7 @@ class Leaf:
         return ['/usr/bin/xcodebuild', 'test', '-project', self.project, '-scheme', TARGET, '-configuration', 'Debug',
                 '-sdk', 'iphonesimulator', '-destination', 'platform=iOS Simulator,id=' + self.state['udid'],
                 '-destination-timeout', '60', '-jobs', '1', '-parallel-testing-enabled', 'NO',
-                '-maximum-concurrent-test-simulator-destinations', '1', '-test-iterations', '1',
+                '-maximum-concurrent-test-simulator-destinations', '1',
                 '-test-timeouts-enabled', 'YES', '-default-test-execution-time-allowance', '30',
                 '-maximum-test-execution-time-allowance', '60', '-derivedDataPath', self.derived,
                 '-resultBundlePath', self.bundle, '-disableAutomaticPackageResolution', '-skipPackageUpdates',
