@@ -1,0 +1,7 @@
+{
+  "authorization": "BACKEND27_ONE_RENDERED_MEDIA_BATCH_AUTHORIZED",
+  "source_commit": "6dbf62ad47602174509bd2d277e9d0f8d93e6c0e",
+  "source_tree": "0a16b8e7be4f62025dbf14c252a9b038b7d5afce",
+  "selection": "RenderedMediaTests10",
+  "upload_failure_policy": "UNACCEPTED_EVIDENCE_MISSING_CLEAN_OWNED_SCRATCH_NO_RETRY"
+}

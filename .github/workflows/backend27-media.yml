@@ -1,0 +1,317 @@
+name: Backend27 focused rendered-media verification
+
+'on':
+  push:
+    branches: [remediation/backend-27-rendered-media]
+    paths: [ci/backend27-media.request.json]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend27-focused-media-verification
+  cancel-in-progress: false
+
+jobs:
+  media:
+    if: ${{ github.event.repository.private == true && github.repository == 'kira-manga/kira-admin' && github.run_attempt == 1 }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      SOURCE_COMMIT: 6dbf62ad47602174509bd2d277e9d0f8d93e6c0e
+      SOURCE_TREE: 0a16b8e7be4f62025dbf14c252a9b038b7d5afce
+      KUBECTL_IMAGE: registry.k8s.io/kubectl@sha256:59bafa07ff3a6d4b417e7633ddb9d79a9606ca98bf64bac080b3e65748669250
+      KUBECONFORM_IMAGE: ghcr.io/yannh/kubeconform@sha256:faffaf43f95aa6425306e1ab8d6fcad72acb9049158f38e574c085ea1ec0f64e
+      GIT_TERMINAL_PROMPT: "0"
+      GIT_CONFIG_NOSYSTEM: "1"
+      GIT_CONFIG_GLOBAL: /dev/null
+    steps:
+      - name: Read only the exact private request without persisted credentials
+        timeout-minutes: 1
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.sha }}
+          path: carrier
+          persist-credentials: false
+          sparse-checkout: ci/backend27-media.request.json
+          sparse-checkout-cone-mode: false
+
+      - name: Require authorization; exact public source, render, schema and remaining ten only
+        id: focused
+        timeout-minutes: 7
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          import json, os
+          from pathlib import Path
+          request = Path('carrier/ci/backend27-media.request.json')
+          if request.is_symlink() or not request.is_file() or request.stat().st_size > 4096:
+              raise SystemExit('Missing or invalid Backend27 request; no source/tool acquisition authorized')
+          expected = {
+              'authorization': 'BACKEND27_ONE_RENDERED_MEDIA_BATCH_AUTHORIZED',
+              'source_commit': os.environ['SOURCE_COMMIT'],
+              'source_tree': os.environ['SOURCE_TREE'],
+              'selection': 'RenderedMediaTests10',
+              'upload_failure_policy': 'UNACCEPTED_EVIDENCE_MISSING_CLEAN_OWNED_SCRATCH_NO_RETRY',
+          }
+          if json.loads(request.read_text(encoding='utf-8')) != expected:
+              raise SystemExit('Unbound or unauthorized Backend27 request; no source/tool acquisition authorized')
+          PY
+          umask 077
+          work="$(mktemp -d "${RUNNER_TEMP:?}/backend27-media.XXXXXXXX")"
+          owner="$(basename -- "$work")"
+          mkdir "$work/evidence" "$work/tmp"
+          printf '%s:%s\n' "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" > "$work/.owner"
+          printf 'status=INCOMPLETE\nsource_commit=%s\n' "$SOURCE_COMMIT" > "$work/evidence/result.txt"
+          printf 'work=%s\nowner=%s\n' "$work" "$owner" >> "$GITHUB_OUTPUT"
+          phase=setup
+          finish() {
+            rc=$?
+            trap - EXIT INT TERM
+            printf '%s\n' "$rc" > "$work/exit-code"
+            printf '%s\n' "$phase" > "$work/phase"
+            exit "$rc"
+          }
+          trap finish EXIT
+          trap 'exit 130' INT
+          trap 'exit 143' TERM
+          exec > "$work/raw.log" 2>&1
+          export TMPDIR="$work/tmp"
+          python3 --version
+          # The scratch root stays private; public source/render binds must be readable by tool-image UIDs.
+          umask 022
+
+          phase=source
+          git -c init.templateDir= init --quiet "$work/source"
+          timeout --kill-after=5s 60s git -C "$work/source" -c credential.helper= \
+            fetch --quiet --no-tags --depth=1 https://github.com/kira-manga/Kira-backend.git "$SOURCE_COMMIT"
+          timeout --kill-after=5s 30s git -C "$work/source" -c core.hooksPath=/dev/null \
+            checkout --quiet --detach FETCH_HEAD
+          cd "$work/source"
+          test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT"
+          test "$(git rev-parse HEAD^{tree})" = "$SOURCE_TREE"
+          cat > "$work/source-pins.sha256" <<'PINS'
+          4dd018bb94610559ff23de3b7610b91ba2be8cef7355e57f2fcb78002ebde28d  .github/workflows/ci.yml
+          66f9e01379b228e9c8af634936a5a7ec8bff280b0073da174ed2ae9f9201a847  deploy/kubernetes/base/config-map.yaml
+          da245bbcafb8e53b5a4d46008d26c87f6aa2ddd2f68d07f847b92d37fb5f40bb  deploy/kubernetes/base/deployment.yaml
+          df52a8c0c9c3c7632b47187982ba4cb84fd9c840c3f9f249216d20df3780ad46  deploy/kubernetes/base/kustomization.yaml
+          3095e300ebe9509b4578744d1ff736594e7fb304e36236198c9509bf40d13b70  deploy/kubernetes/base/tutorial-media-pvc.yaml
+          fc584f26a8075d64a8d89799e86d17d6fb34367716988fbc8093e9031bae7c43  docs/DEPLOYMENT.md
+          1fa6f203d69a56ab269c7a2639c75c9d435909172de0da0e5213d8fefd0809c9  docs/TUTORIALS.md
+          fc94d50f12b130dc8036e87e34529809c360de5489d7dcba6dec5b9138e0404e  scripts/ci/kubernetes-media-requirements.txt
+          bc71ab9a644997e4f13e9a5e36dcb46498fdb3d68e9ecf65547ef16c6f3ded9c  scripts/ci/test_kubernetes_media_storage.py
+          PINS
+          sha256sum --check --strict "$work/source-pins.sha256"
+          test -z "$(git status --porcelain)"
+
+          phase=render
+          timeout --kill-after=5s 90s docker run --rm --name "${owner}-render" \
+            --label "kira.backend27.owner=$owner" \
+            --volume "$work/source/deploy/kubernetes:/work:ro" "$KUBECTL_IMAGE" \
+            kustomize /work/base > "$work/rendered.yaml"
+          test "$(stat -c %s "$work/rendered.yaml")" -le 1048576
+          phase=schema
+          timeout --kill-after=5s 90s docker run --rm --name "${owner}-schema" \
+            --label "kira.backend27.owner=$owner" \
+            --volume "$work/rendered.yaml:/work/kira-rendered.yaml:ro" "$KUBECONFORM_IMAGE" \
+            -strict -summary -kubernetes-version 1.34.1 /work/kira-rendered.yaml
+
+          phase=venv
+          timeout --kill-after=5s 30s python3 -B -m venv "$work/venv"
+          phase=parser_install
+          timeout --kill-after=5s 60s "$work/venv/bin/python" -I -B -m pip --isolated install \
+            --disable-pip-version-check --require-hashes --only-binary=:all: --no-deps --no-cache-dir \
+            --requirement scripts/ci/kubernetes-media-requirements.txt
+          phase=check_template
+          timeout --kill-after=5s 15s "$work/venv/bin/python" -I -B \
+            scripts/ci/test_kubernetes_media_storage.py check-template "$work/rendered.yaml"
+          phase=test_rendered
+          timeout --kill-after=5s 30s "$work/venv/bin/python" -I -B - "$work/rendered.yaml" <<'PY'
+          import importlib.util, sys, unittest
+          from pathlib import Path
+          spec = importlib.util.spec_from_file_location(
+              'backend27_media_policy', Path('scripts/ci/test_kubernetes_media_storage.py').resolve())
+          policy = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(policy)  # Definitions only; do not invoke main or the fifteen-case CLI.
+          documents = policy.load_rendered(Path(sys.argv[1]).read_text(encoding='utf-8'))
+          selected = [case for group in policy.rendered_suite(documents) for case in group
+                      if type(case).__name__ == 'RenderedMediaTests']
+          expected = {
+              'test_actual_template_and_synthetic_resolved_positive_controls',
+              'test_parser_front_end_rejections',
+              'test_resource_and_named_entry_rejections',
+              'test_supported_effective_env_forms',
+              'test_effective_env_rejections',
+              'test_unsupported_configuration_channels',
+              'test_persistent_media_chain_rejections',
+              'test_scratch_rejections',
+              'test_security_and_topology_rejections',
+              'test_explicit_class_and_capacity_selection',
+          }
+          expected_ids = {f'{policy.__name__}.rendered_suite.<locals>.RenderedMediaTests.{name}'
+                          for name in expected}
+          if len(selected) != 10 or {case.id() for case in selected} != expected_ids:
+              raise SystemExit('Remaining rendered-media selection must be exactly the reviewed ten methods')
+          print('selection=RenderedMediaTests10; accepted PolicyUnitTests5 NOT RERUN', flush=True)
+          result = unittest.TextTestRunner(verbosity=2).run(unittest.TestSuite(selected))
+          passed = (result.testsRun == 10 and result.wasSuccessful() and not result.failures
+                    and not result.errors and not result.skipped and not result.expectedFailures
+                    and not result.unexpectedSuccesses)
+          raise SystemExit(0 if passed else 1)
+          PY
+          phase=source_unchanged
+          sha256sum --check --strict "$work/source-pins.sha256"
+          test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT"
+          test "$(git rev-parse HEAD^{tree})" = "$SOURCE_TREE"
+          test -z "$(git status --porcelain)"
+          phase=complete
+
+      - name: Stop only owned tool containers and retain bounded evidence
+        id: evidence
+        if: ${{ always() && steps.focused.outputs.work != '' }}
+        timeout-minutes: 1
+        shell: bash
+        env:
+          WORK: ${{ steps.focused.outputs.work }}
+          OWNER: ${{ steps.focused.outputs.owner }}
+          COMMAND_OUTCOME: ${{ steps.focused.outcome }}
+        run: |
+          set -euo pipefail
+          [[ "$WORK" == "${RUNNER_TEMP:?}/backend27-media."* && -d "$WORK" && ! -L "$WORK" ]]
+          [[ "$(basename -- "$WORK")" == "$OWNER" ]]
+          [[ -f "$WORK/.owner" && ! -L "$WORK/.owner" ]]
+          [[ "$(cat "$WORK/.owner")" == "$GITHUB_RUN_ID:$GITHUB_RUN_ATTEMPT" ]]
+          cleanup=OK
+          forced=false
+          if ids="$(timeout --kill-after=2s 10s docker ps -aq --no-trunc \
+            --filter "label=kira.backend27.owner=$OWNER" 2>> "$WORK/raw.log")"; then
+            if [[ -n "$ids" ]]; then
+              forced=true
+              : > "$WORK/forced-container-cleanup"
+            fi
+            while IFS= read -r id; do
+              [[ -z "$id" ]] && continue
+              if [[ "$id" =~ ^[0-9a-f]{64}$ ]]; then
+                timeout --kill-after=2s 10s docker rm --force "$id" >> "$WORK/raw.log" 2>&1 || cleanup=FAILED
+              else
+                cleanup=FAILED
+              fi
+            done <<< "$ids"
+          else
+            cleanup=FAILED
+          fi
+          if remaining="$(timeout --kill-after=2s 10s docker ps -aq --no-trunc \
+            --filter "label=kira.backend27.owner=$OWNER" 2>> "$WORK/raw.log")"; then
+            [[ -z "$remaining" ]] || cleanup=FAILED
+          else
+            cleanup=FAILED
+          fi
+
+          raw_bytes=0
+          render_bytes=0
+          exit_code=unknown
+          phase=unknown
+          if [[ -f "$WORK/exit-code" ]]; then read -r exit_code < "$WORK/exit-code" || exit_code=unknown; fi
+          if [[ -f "$WORK/phase" ]]; then read -r phase < "$WORK/phase" || phase=unknown; fi
+          [[ "$exit_code" =~ ^[0-9]{1,3}$ ]] || exit_code=unknown
+          [[ "$phase" =~ ^[a-z_]+$ ]] || phase=unknown
+          if [[ -f "$WORK/raw.log" ]]; then
+            raw_bytes="$(stat -c %s "$WORK/raw.log")"
+            head -c 2097152 "$WORK/raw.log" > "$WORK/evidence/raw.log"
+          fi
+          if [[ -f "$WORK/rendered.yaml" ]]; then
+            render_bytes="$(stat -c %s "$WORK/rendered.yaml")"
+            head -c 1048576 "$WORK/rendered.yaml" > "$WORK/evidence/rendered.yaml"
+          fi
+          if [[ -f "$WORK/source-pins.sha256" ]]; then
+            head -c 4096 "$WORK/source-pins.sha256" > "$WORK/evidence/source-pins.sha256"
+          fi
+          raw_truncated=false
+          render_truncated=false
+          [[ "$raw_bytes" -le 2097152 ]] || raw_truncated=true
+          [[ "$render_bytes" -le 1048576 ]] || render_truncated=true
+          status=FAILED_OR_INCOMPLETE
+          if [[ "$COMMAND_OUTCOME" == success && "$exit_code" == 0 && "$phase" == complete \
+            && "$cleanup" == OK && "$forced" == false && "$raw_bytes" -gt 0 && "$raw_bytes" -le 2097152 && "$render_bytes" -gt 0 \
+            && "$render_bytes" -le 1048576 ]]; then
+            status=COMMANDS_SUCCEEDED_REVIEW_REQUIRED
+          fi
+          {
+            printf 'status=%s\nsource_commit=%s\nsource_tree=%s\n' "$status" "$SOURCE_COMMIT" "$SOURCE_TREE"
+            printf 'workflow_sha=%s\ncarrier_sha=%s\nrun_id=%s\nrun_attempt=%s\n' "$GITHUB_WORKFLOW_SHA" "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT"
+            printf 'command_outcome=%s\ncommand_exit=%s\nlast_phase=%s\n' "$COMMAND_OUTCOME" "$exit_code" "$phase"
+            printf 'owned_container_cleanup=%s\nraw_bytes=%s\nrender_bytes=%s\n' "$cleanup" "$raw_bytes" "$render_bytes"
+            printf 'forced_container_cleanup=%s\nselection=RenderedMediaTests10; PolicyUnitTests5 NOT RERUN\n' "$forced"
+            printf 'raw_truncated=%s\nrender_truncated=%s\n' "$raw_truncated" "$render_truncated"
+            printf 'retention_caps=raw:2097152,render:1048576,pins:4096,result:4096 bytes\n'
+            printf 'scope=render/schema/template/parser-policy only; not installed storage/bootstrap/recovery\n'
+            if [[ -f "$WORK/evidence/rendered.yaml" ]]; then
+              printf 'retained_render_sha256=%s\n' "$(sha256sum "$WORK/evidence/rendered.yaml" | cut -d ' ' -f 1)"
+            fi
+          } > "$WORK/result.tmp"
+          test "$(stat -c %s "$WORK/result.tmp")" -le 4096
+          mv -- "$WORK/result.tmp" "$WORK/evidence/result.txt"
+          printf 'status=%s\n' "$status" >> "$GITHUB_OUTPUT"
+          [[ "$status" == COMMANDS_SUCCEEDED_REVIEW_REQUIRED ]]
+
+      - name: Retain this attempt's bounded source-verification evidence
+        id: upload
+        if: ${{ always() && steps.focused.outputs.work != '' }}
+        timeout-minutes: 2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: backend27-media-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.focused.outputs.work }}/evidence/*
+          if-no-files-found: error
+          overwrite: false
+          compression-level: 0
+          retention-days: 3
+
+      - name: Clean owned scratch even if upload failed; emit only the final absence receipt
+        id: final_cleanup
+        if: ${{ always() && steps.focused.outputs.work != '' }}
+        timeout-minutes: 1
+        shell: bash
+        env:
+          WORK: ${{ steps.focused.outputs.work }}
+          OWNER: ${{ steps.focused.outputs.owner }}
+          COMMAND_OUTCOME: ${{ steps.focused.outcome }}
+          EVIDENCE_OUTCOME: ${{ steps.evidence.outcome }}
+          EVIDENCE_STATUS: ${{ steps.evidence.outputs.status }}
+          UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
+        run: |
+          set -euo pipefail
+          [[ "$WORK" == "${RUNNER_TEMP:?}/backend27-media."* && -d "$WORK" && ! -L "$WORK" ]]
+          [[ "$(basename -- "$WORK")" == "$OWNER" ]]
+          [[ -f "$WORK/.owner" && ! -L "$WORK/.owner" ]]
+          [[ "$(cat "$WORK/.owner")" == "$GITHUB_RUN_ID:$GITHUB_RUN_ATTEMPT" ]]
+          [[ "$GITHUB_RUN_ID" =~ ^[0-9]+$ && "$GITHUB_RUN_ATTEMPT" == 1 ]]
+          [[ "$GITHUB_WORKFLOW_SHA" =~ ^[0-9a-f]{40}$ && "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]]
+          forced=false
+          if [[ -e "$WORK/forced-container-cleanup" || -L "$WORK/forced-container-cleanup" ]]; then forced=true; fi
+          ids="$(timeout --kill-after=2s 10s docker ps -aq --no-trunc \
+            --filter "label=kira.backend27.owner=$OWNER" 2>> "$WORK/raw.log")"
+          if [[ -n "$ids" ]]; then forced=true; : > "$WORK/forced-container-cleanup"; fi
+          while IFS= read -r id; do
+            [[ -z "$id" ]] && continue
+            [[ "$id" =~ ^[0-9a-f]{64}$ ]]
+            timeout --kill-after=2s 10s docker rm --force "$id" >> "$WORK/raw.log" 2>&1
+          done <<< "$ids"
+          remaining="$(timeout --kill-after=2s 10s docker ps -aq --no-trunc \
+            --filter "label=kira.backend27.owner=$OWNER" 2>> "$WORK/raw.log")"
+          [[ -z "$remaining" ]]
+          rm -rf -- "$WORK"
+          [[ ! -e "$WORK" && ! -L "$WORK" ]]
+          upload=EVIDENCE_MISSING
+          disposition=UNACCEPTED
+          if [[ "$UPLOAD_OUTCOME" == success ]]; then
+            upload=UPLOADED
+            if [[ "$COMMAND_OUTCOME" == success && "$EVIDENCE_OUTCOME" == success \
+              && "$EVIDENCE_STATUS" == COMMANDS_SUCCEEDED_REVIEW_REQUIRED && "$forced" == false ]]; then
+              disposition=REVIEW_REQUIRED
+            fi
+          fi
+          printf 'BACKEND27_FINAL_CLEANUP_V1 run_id=%s run_attempt=%s workflow_sha=%s carrier_sha=%s source_commit=%s source_tree=%s upload=%s forced_cleanup=%s final_cleanup=VERIFIED disposition=%s\n' \
+            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_WORKFLOW_SHA" "$GITHUB_SHA" "$SOURCE_COMMIT" "$SOURCE_TREE" "$upload" "$forced" "$disposition"
+          [[ "$disposition" == REVIEW_REQUIRED ]]
