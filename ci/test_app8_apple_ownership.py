@@ -160,13 +160,16 @@ class Ownership(unittest.TestCase):
             task = host.commands.start(['/usr/bin/owned-tool'], 'short-normal-cap', seconds=0.1)
             self.assertEqual(host.commands.wait(task), 'ok\n')
             self.assertTrue(all(0 < timeout <= 0.1 for child in host.children for timeout in child.waits))
-        with Host() as host:
-            target = host.target()
-            host.root_member(target)
-            observation = host.commands.observe()
-            self.assertFalse(host.commands.group_quiet(target, observation))
-            self.assertFalse(target['receipt']['leaderReaped'])
-            self.assertIn(0, [row['uid'] for row in target['receipt']['lastGroup']])
+        for member_state in ('S', '?', '?<'):
+            with self.subTest(member_state=member_state), Host() as host:
+                target = host.target()
+                host.root_member(target, state=member_state)
+                observation = host.commands.observe()
+                self.assertFalse(host.commands.group_quiet(target, observation))
+                self.assertFalse(target['receipt']['leaderReaped'] or target['receipt']['normalJoin'])
+                self.assertEqual([(row['pid'], row['uid'], row['state']) for row in target['receipt']['lastGroup']],
+                                 [(target['process'].pid, 501, 'Z'), (9000, 0, member_state)])
+                self.assertEqual((host.signals, host.sleeps), ([], []))
         for case in ('omitted', 'wrong-ppid', 'wrong-pgid'):
             with self.subTest(case=case), Host() as host:
                 target = host.target()
@@ -433,16 +436,18 @@ class Ownership(unittest.TestCase):
             self.assertFalse(cleanup['commandsAbsent'])
             self.assertFalse(DRAFT.may_release(record, '42', True, cleanup))
             self.assertEqual((host.signals, host.sleeps), ([], []))
-        with Host() as host:
-            escaped = {'process': SimpleNamespace(pid=9000)}
-            host.root_member(escaped, escaped=True)
-            cleanup = dict.fromkeys(keys, True)
-            DRAFT.absence_barrier(host.commands, {}, cleanup, [])
-            self.assertTrue(cleanup['commandsAbsent'])
-            self.assertFalse(cleanup['workersAbsent'] or cleanup['nativeAbsent'])
-            self.assertEqual(cleanup['workers'][0]['uid'], 0)
-            self.assertFalse(DRAFT.may_release(record, '42', True, cleanup))
-            self.assertEqual(host.signals, [])
+        for worker_state in ('S', '?', '?<'):
+            with self.subTest(worker_state=worker_state), Host() as host:
+                escaped = {'process': SimpleNamespace(pid=9000)}
+                host.root_member(escaped, state=worker_state, escaped=True)
+                cleanup = dict.fromkeys(keys, True)
+                DRAFT.absence_barrier(host.commands, {}, cleanup, [])
+                self.assertTrue(cleanup['commandsAbsent'])
+                self.assertFalse(cleanup['workersAbsent'] or cleanup['nativeAbsent'])
+                self.assertEqual([(row['pid'], row['uid'], row['state']) for row in cleanup['workers']],
+                                 [(9000, 0, worker_state)])
+                self.assertFalse(DRAFT.may_release(record, '42', True, cleanup))
+                self.assertEqual(host.signals, [])
         with Host() as host:
             cleanup, firewall = dict.fromkeys(keys, True), {'ownershipVerified': True, 'ownershipLost': False}
             DRAFT.absence_barrier(host.commands, {}, cleanup, [])
@@ -472,6 +477,8 @@ class Ownership(unittest.TestCase):
                 ('9 0 PRIVATE_PPID PRIVATE_PGID PRIVATE_STAT' + suffix, 'PPID_DIGITS', width),
                 ('9 0 777 PRIVATE_PGID PRIVATE_STAT' + suffix, 'PGID_DIGITS', width),
                 ('9 0 777 9 PRIVATE_STAT' + suffix, 'STAT', width),
+                ('9 0 777 9 R?' + suffix, 'STAT', width),
+                ('9 0 777 9 ?x' + suffix, 'STAT', width),
             )
             for bad, predicate, count in cases:
                 with self.subTest(full=full, predicate=predicate, fields=count), Host() as host:
@@ -498,10 +505,18 @@ class Ownership(unittest.TestCase):
                     self.assertEqual((len(host.children), host.signals, host.sleeps), (1, [], []))
 
     def test_accepted_rows_keep_the_existing_projection_and_state_rules(self):
-        for full, raw in (
-            (False, '01000 0 0777 01000 I<ALNs+\n'),
-            (True, '1000 501 777 1000 R /bin/ps\n'),
-            (True, '1000 501 777 1000 Z /bin/ps args with spaces\n'),
+        for full, raw, expected in (
+            (False, '01000 0 0777 01000 I<ALNs+\n', [(1000, 0, 777, 1000, 'I<ALNs+')]),
+            (True, '1000 501 777 1000 R /bin/ps\n', [(1000, 501, 777, 1000, 'R')]),
+            (True, '1000 501 777 1000 Z /bin/ps args with spaces\n', [(1000, 501, 777, 1000, 'Z')]),
+            (False, '1000 501 777 1000 R\n 5328     0   960   940 ?  \n',
+             [(1000, 501, 777, 1000, 'R'), (5328, 0, 960, 940, '?')]),
+            (False, '1000 501 777 1000 R\n 5328     0   960   940 ?<  \n',
+             [(1000, 501, 777, 1000, 'R'), (5328, 0, 960, 940, '?<')]),
+            (True, '1000 501 777 1000 R /bin/ps\n5328 0 960 940 ? unknown-tool\n',
+             [(1000, 501, 777, 1000, 'R'), (5328, 0, 960, 940, '?')]),
+            (True, '1000 501 777 1000 R /bin/ps\n5328 0 960 940 ?< unknown-tool args with spaces\n',
+             [(1000, 501, 777, 1000, 'R'), (5328, 0, 960, 940, '?<')]),
         ):
             with self.subTest(full=full, raw=raw), Host() as host:
                 host.plan(raw=raw)
@@ -510,6 +525,8 @@ class Ownership(unittest.TestCase):
                 self.assertTrue(receipt['normalJoin'] and host.commands.normal())
                 self.assertNotIn('censusParseFailure', receipt)
                 self.assertNotIn('censusRetention', receipt)
+                self.assertEqual([tuple(row[key] for key in ('pid', 'uid', 'ppid', 'pgid', 'state'))
+                                  for row in observation['rows']], expected)
                 self.assertEqual(list((host.root / 'reports').glob('*.log')), [])
                 self.assertFalse(observation['observer']['log'].exists())
                 self.assertEqual((host.signals, host.sleeps), ([], []))

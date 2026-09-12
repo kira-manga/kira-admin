@@ -303,7 +303,7 @@ class Commands:
                 fields = line.split(None, 6) if full else line.split()
                 valid = ((len(fields) in (6, 7) if full else len(fields) == 5)
                          and all(re.fullmatch(r'[0-9]+', value) for value in fields[:4])
-                         and re.fullmatch(r'[IRSTUZ][<AELNOSTVWXs+>]*', fields[4]))
+                         and re.fullmatch(r'[IRSTUZ?][<AELNOSTVWXs+>]*', fields[4]))
                 if not valid:
                     predicate = 'FIELD_COUNT'
                     if (len(fields) in (6, 7) if full else len(fields) == 5):
