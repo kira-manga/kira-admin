@@ -20,7 +20,7 @@
   "expectedRunAttempt": 1,
   "developerDir": "/Applications/Xcode_26.4.1.app/Contents/Developer",
   "ownerSha256": "ebfad8e4bc0f43b2be84befc72d70b3479555609c40857d75b3211831302ca20",
-  "controllerSha256": "d1751aa9aa614d6286f188c80d93b259f4b3bd7ed8d0cfc790907fd7160f5972",
+  "controllerSha256": "25a2fc2effbbaa5a4c4e88159b7c6c2fd1a053e255a2ecb66b405e10e832ea50",
   "workflowSha256": "7dd65fb6e2337402b86e7bd23fed30eba8d931f7d0b7831026ea30aef374fb0c",
   "xcodegenIntake": {
     "version": "2.46.0",

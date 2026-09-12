@@ -402,7 +402,7 @@ class Leaf:
         end = min(self.work_end, time.monotonic() + 180)
         self.call(['/usr/bin/xcrun', 'simctl', 'boot', self.state['udid']], 'boot-device', end=end)
         self.call(['/usr/bin/xcrun', 'simctl', 'bootstatus', self.state['udid'], '-b'], 'bootstatus', seconds=180, end=end)
-        matches = [row for row in self.devices(end=end) if row['udid'] == self.state['udid']]
+        matches = [row for row in self.devices() if row['udid'] == self.state['udid']]
         require(len(matches) == 1 and matches[0]['state'] == 'Booted', 'Owned Simulator boot is unproved')
         self.own_device(matches[0])
         self.state['booted'] = True
