@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useActionOwner, type ActionTicket } from '@/lib/action-owner';
 import { apiFetch, apiFetchWithMeta } from '@/lib/client-api';
@@ -15,12 +15,21 @@ type EditorState = SourceDraftEditorSnapshot & { target: EditorTarget; validatio
 type PendingPublish = PreparedDraftPublish & { target: EditorTarget; ticket: ActionTicket };
 type PendingMode = { target: EditorTarget; mode: SourceOperationalMode; ticket: ActionTicket };
 type PreviewOperation = 'home' | 'featured' | 'search';
+// Each request object is a generation, even when retrying/resetting the same URL.
+type HistoryRequest = { api: string; beforeRevision: string | null };
+type HistoryWindow = { request: HistoryRequest } & (
+  | { status: 'ready'; revisions: SourceRevision[]; nextBefore: string | null }
+  | { status: 'error'; message: string }
+);
+type RevisionTarget = { request: HistoryRequest; revisionNumber: number };
 
 export function SourcesView() {
   const [sources, setSources] = useState<SourceHead[] | null>(null);
   const [capabilities, setCapabilities] = useState<SourceCapabilities | null>(null);
   const [selectedApi, setSelectedApi] = useState('');
-  const [revisions, setRevisions] = useState<SourceRevision[]>([]);
+  const [historyRequest, setHistoryRequest] = useState<HistoryRequest | null>(null);
+  const [historyWindow, setHistoryWindow] = useState<HistoryWindow | null>(null);
+  const historyRequestRef = useRef<HistoryRequest | null>(null);
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [query, setQuery] = useState('');
   const [error, setError] = useState('');
@@ -35,8 +44,19 @@ export function SourcesView() {
   const [previewPage, setPreviewPage] = useState(1);
   const owner = useActionOwner();
 
+  const requestHistory = useCallback((api: string, beforeRevision: string | null = null) => {
+    const request = { api, beforeRevision };
+    // Invalidate continuations/actions synchronously, before passive effect cleanup.
+    historyRequestRef.current = request;
+    setHistoryRequest(request);
+  }, []);
+
   const load = useCallback(async () => {
     const isCurrent = owner.captureLifetime();
+    // Authoring refresh invalidates an outstanding older window immediately, even
+    // while the independent source-head/capability refresh is still in flight.
+    const api = historyRequestRef.current?.api;
+    if (api) requestHistory(api);
     try {
       const [items, vocabulary] = await Promise.all([
         apiFetch<SourceHead[]>('sources'),
@@ -45,28 +65,43 @@ export function SourcesView() {
       if (!isCurrent()) return;
       setSources(items);
       setCapabilities(vocabulary);
-      setSelectedApi((current) => current || items[0]?.api || '');
+      if (!historyRequestRef.current && items[0]) {
+        setSelectedApi(items[0].api);
+        requestHistory(items[0].api);
+      }
     } catch (caught) {
       if (isCurrent()) setError(caught instanceof Error ? caught.message : 'Could not load sources.');
     }
-  }, [owner]);
+  }, [owner, requestHistory]);
 
   useEffect(() => {
-    // State changes only after the external requests resolve.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // The initial catalog response selects the first source/history window.
     void load();
   }, [load]);
   useEffect(() => {
-    if (!selectedApi) return;
-    const isCurrent = owner.captureLifetime();
+    if (!historyRequest) return;
+    const isMounted = owner.captureLifetime();
+    const controller = new AbortController();
     let active = true;
-    void apiFetch<SourceRevision[]>(`sources/${encodeURIComponent(selectedApi)}/revisions`)
-      .then((items) => { if (active && isCurrent()) setRevisions(items); })
-      .catch((caught: Error) => { if (active && isCurrent()) setError(caught.message); });
-    return () => { active = false; };
-  }, [selectedApi, sources, owner]);
+    const isCurrent = () => active && isMounted() && historyRequestRef.current === historyRequest;
+    const before = historyRequest.beforeRevision === null ? '' : `&beforeRevision=${encodeURIComponent(historyRequest.beforeRevision)}`;
+    void apiFetchWithMeta<SourceRevision[]>(`sources/${encodeURIComponent(historyRequest.api)}/revisions?size=20${before}`, { signal: controller.signal })
+      .then((result) => {
+        if (!isCurrent()) return;
+        setHistoryWindow({ request: historyRequest, status: 'ready', revisions: result.data, nextBefore: result.historyNextBefore ?? null });
+      })
+      .catch((caught: unknown) => {
+        if (!isCurrent()) return;
+        setHistoryWindow({ request: historyRequest, status: 'error', message: caught instanceof Error ? caught.message : 'Could not load source revisions.' });
+      });
+    // Loading is derived from request identity, so there is no unscoped finally
+    // that can end the loading state of a newer request.
+    return () => { active = false; controller.abort(); };
+  }, [historyRequest, owner]);
 
   const selected = sources?.find((source) => source.api === selectedApi) ?? null;
+  const currentHistory = historyRequest?.api === selectedApi && historyWindow?.request === historyRequest ? historyWindow : null;
+  const historyLoading = selected !== null && currentHistory === null;
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return (sources ?? []).filter((source) => !needle || `${source.api} ${source.displayName} ${source.language} ${source.status} ${source.operationalMode ?? ''}`.toLowerCase().includes(needle));
@@ -109,15 +144,16 @@ export function SourcesView() {
     return { ticket, target, action };
   }
 
-  async function openEditor(fromRevision?: number) {
-    if (!selected || editor) return;
-    const target = { api: selected.api, displayName: selected.displayName };
+  async function openEditor(from?: RevisionTarget) {
+    if (!selected || editor || historyRequestRef.current?.api !== selected.api) return;
+    if (from && (historyRequestRef.current !== from.request || from.request.api !== selected.api)) return;
+    const target = { api: from?.request.api ?? selected.api, displayName: selected.displayName };
     const ticket = beginAction();
     if (!ticket) return;
     try {
       const result = await apiFetchWithMeta<SourceDraft>(`sources/${encodeURIComponent(target.api)}/editor-draft`, {
         method: 'POST',
-        body: JSON.stringify(fromRevision === undefined ? {} : { fromRevision }),
+        body: JSON.stringify(from === undefined ? {} : { fromRevision: from.revisionNumber }),
       });
       if (!result.etag) throw new Error('The backend did not return the required draft ETag.');
       if (!ticket.isCurrent()) return;
@@ -240,7 +276,7 @@ export function SourcesView() {
   }
 
   function prepareOperationalMode(mode: SourceOperationalMode) {
-    if (!selected || editor || selected.operationalMode === mode) return;
+    if (!selected || editor || historyRequestRef.current?.api !== selected.api || selected.operationalMode === mode) return;
     const ticket = owner.acquire();
     if (!ticket) return;
     setError('');
@@ -284,8 +320,27 @@ export function SourcesView() {
   }
 
   function selectSource(api: string) {
-    if (editor || owner.isLocked()) return;
+    if (editor || owner.isLocked() || historyRequestRef.current?.api === api) return;
     setSelectedApi(api);
+    requestHistory(api);
+  }
+
+  function olderHistory() {
+    if (editor || owner.isLocked() || currentHistory?.status !== 'ready' || !currentHistory.nextBefore
+      || historyRequestRef.current !== currentHistory.request) return;
+    requestHistory(currentHistory.request.api, currentHistory.nextBefore);
+  }
+
+  function latestHistory() {
+    if (editor || owner.isLocked() || !historyRequest || historyRequest.beforeRevision === null
+      || historyRequestRef.current !== historyRequest) return;
+    requestHistory(historyRequest.api);
+  }
+
+  function retryHistory() {
+    if (editor || owner.isLocked() || currentHistory?.status !== 'error'
+      || historyRequestRef.current !== currentHistory.request) return;
+    requestHistory(currentHistory.request.api, currentHistory.request.beforeRevision);
   }
 
   function closeEditor() {
@@ -333,7 +388,21 @@ export function SourcesView() {
             <div className="operational-control"><div><span>APP AVAILABILITY</span><strong>Operational mode</strong><small>Publishes one signed catalog update. Foreground apps revalidate immediately and poll while active.</small></div>{selected.operationalMode ? <div className="mode-switch" role="radiogroup" aria-label={`Operational mode for ${selected.displayName}`}>{OPERATIONAL_MODES.map((mode) => <button type="button" role="radio" aria-checked={selected.operationalMode === mode} className={`mode-${mode}${selected.operationalMode === mode ? ' active' : ''}`} disabled={backgroundLocked || selected.operationalMode === mode} onClick={() => prepareOperationalMode(mode)} key={mode}>{modeLabel(mode)}</button>)}</div> : <span className="mode-unavailable">Managed through the advanced lifecycle workflow</span>}</div>
             <div className="detail-meta"><div><span>PUBLISHED REVISION</span><strong>{selected.currentPublishedRevisionNumber ?? '—'}</strong></div><div><span>LATEST REVISION</span><strong>{selected.latestRevisionNumber ?? '—'}</strong></div><div><span>UPDATED</span><strong>{formatDate(selected.updatedAt)}</strong></div></div>
             <div className="revision-heading"><div><span className="eyebrow">IMMUTABLE HISTORY</span><h4>Source revisions</h4></div><Button icon="edit" onClick={() => void openEditor()} disabled={backgroundLocked}>Open editor</Button></div>
-            <div className="revision-list">{revisions.map((revision) => <article className={revision.status === 'published' ? 'current' : ''} key={revision.revisionNumber}><span className="revision-number">r{revision.revisionNumber}</span><div><strong>{revision.status}</strong><small>{revision.checksum.slice(0, 16)}…</small><p>{formatDate(revision.createdAt)}</p></div><div className="revision-actions"><StatusBadge status={revision.valid === false ? 'invalid' : revision.status} />{revision.status === 'draft' ? <Button type="button" onClick={() => void openEditor(revision.revisionNumber)} disabled={backgroundLocked}>Open draft</Button> : null}</div></article>)}</div></> : <EmptyState icon="sources" title="Select a source" copy="Choose a catalog source to inspect its immutable history." />}
+            <nav className="detail-actions" aria-label="Source revision history">
+              <Button onClick={olderHistory} disabled={backgroundLocked || currentHistory?.status !== 'ready' || !currentHistory.nextBefore}>Older</Button>
+              <Button onClick={latestHistory} disabled={backgroundLocked || !historyRequest || historyRequest.beforeRevision === null}>Latest</Button>
+            </nav>
+            <div className="revision-list" aria-busy={historyLoading}>
+              {historyLoading ? <Spinner label="Loading source revisions" /> : null}
+              {currentHistory?.status === 'error' ? <div className="notice notice-error" role="alert">{currentHistory.message}<Button onClick={retryHistory} disabled={backgroundLocked}>Retry history</Button></div> : null}
+              {currentHistory?.status === 'ready' ? currentHistory.revisions.length ? currentHistory.revisions.map((revision) => (
+                <article className={revision.status === 'published' ? 'current' : ''} key={revision.revisionNumber}>
+                  <span className="revision-number">r{revision.revisionNumber}</span>
+                  <div><strong>{revision.status}</strong><small>{revision.checksum.slice(0, 16)}…</small><p>{formatDate(revision.createdAt)}</p></div>
+                  <div className="revision-actions"><StatusBadge status={revision.valid === false ? 'invalid' : revision.status} />{revision.status === 'draft' ? <Button type="button" onClick={() => void openEditor({ request: currentHistory.request, revisionNumber: revision.revisionNumber })} disabled={backgroundLocked}>Open draft</Button> : null}</div>
+                </article>
+              )) : <EmptyState icon="history" title="No source revisions" copy={historyRequest?.beforeRevision ? 'There are no revisions before this window. Return to Latest to see recent history.' : 'This source has no immutable revisions yet.'} /> : null}
+            </div></> : <EmptyState icon="sources" title="Select a source" copy="Choose a catalog source to inspect its immutable history." />}
         </div>
       </section>
 

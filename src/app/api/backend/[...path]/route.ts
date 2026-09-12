@@ -6,6 +6,13 @@ import { adminStepUpCookie, adminTokenCookie, backendUrl } from '@/lib/server-co
 import { requireCsrf } from '@/lib/server-security';
 
 const upstreamTimeoutMs = 65_000;
+const historyCursorHeader = 'X-Kira-History-Next-Before';
+
+function historyCursorMaximum(path: string[]) {
+  if (path.length === 1 && path[0] === 'documents') return '9223372036854775807';
+  if (path.length === 3 && path[0] === 'sources' && path[1] && path[2] === 'revisions') return '2147483647';
+  return null;
+}
 
 async function proxy(request: Request, context: { params: Promise<{ path: string[] }> }) {
   const { path } = await context.params;
@@ -61,6 +68,16 @@ async function proxy(request: Request, context: { params: Promise<{ path: string
   for (const name of ['content-type', 'etag', 'cache-control']) {
     const value = upstream.headers.get(name);
     if (value) responseHeaders.set(name, value);
+  }
+  if (request.method === 'GET' && upstream.ok) {
+    const maximum = historyCursorMaximum(path);
+    const cursor = upstream.headers.get(historyCursorHeader);
+    // Length/lexical comparison is lossless for canonical decimals, including Long.
+    // A repeated header is comma-combined by Headers.get and fails the scalar check.
+    if (maximum && cursor && cursor.length <= maximum.length && /^[1-9][0-9]*$/.test(cursor)
+      && (cursor.length < maximum.length || cursor <= maximum)) {
+      responseHeaders.set(historyCursorHeader, cursor);
+    }
   }
   const response = new NextResponse(upstream.body, { status: upstream.status, headers: responseHeaders });
   if (routeNeedsStepUp(path)) response.cookies.delete(adminStepUpCookie);
