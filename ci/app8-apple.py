@@ -14,6 +14,7 @@ import re
 import secrets
 import shutil
 import signal
+import stat
 import subprocess
 import sys
 import time
@@ -231,6 +232,61 @@ class Commands:
                 and observation['observer']['receipt']['normalJoin'] and not self.audit_failed,
                 'Missing/stale/failed process observation')
 
+    def retain_malformed_groups(self, task, sequence):
+        receipt, source = task['receipt'], task['log']
+        def in_time():
+            require(time.monotonic() < min(receipt['deadline'], self.end), 'Malformed group census retention deadline exceeded')
+        def identity(path):
+            info = path.lstat()
+            require(stat.S_ISREG(info.st_mode), 'Nonregular malformed group census log')
+            return info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns
+        in_time()
+        destination = self.reports / f'{sequence:03d}-malformed-owned-groups.log'
+        require(task['leaf'] and receipt['argv'] == GROUP_PS and receipt['leaderReaped']
+                and source == self.run / 'work' / f'{sequence:03d}-owned-groups.log'
+                and self.reports == self.run / 'reports'
+                and all(path.is_dir() and not path.is_symlink()
+                        for path in (self.run, source.parent, self.reports)),
+                'Invalid malformed group census retention path')
+        before = identity(source)
+        receipt['outputBytesAtLastRead'] = before[2]
+        require(before[2] <= 1048576 and self.within_cap(), 'Malformed group census retention cap exceeded')
+        in_time()
+        with source.open('rb') as stream:
+            in_time()
+            data = stream.read(1048577)
+        in_time()
+        require(identity(source) == before and len(data) == before[2]
+                and self.within_cap(), 'Malformed group census log changed or exceeded cap')
+        sha256 = hashlib.sha256(data).hexdigest()
+        in_time()
+        require(not destination.exists() and not destination.is_symlink(), 'Malformed group census destination exists')
+        in_time()
+        os.link(source, destination, follow_symlinks=False)  # Exclusive: a raced destination cannot be overwritten.
+        task['log'] = destination  # Account for retained bytes even if scratch unlink fails.
+        receipt['output'] = destination.name
+        receipt['censusRetention'] = {'status': 'LINKED', 'name': destination.name, 'scratchRemoved': False}
+        in_time()
+        require(identity(destination) == before and self.within_cap(), 'Linked malformed group census changed or exceeded cap')
+        in_time()
+        with destination.open('rb') as stream:
+            in_time()
+            linked_data = stream.read(1048577)
+        in_time()
+        linked_sha256 = hashlib.sha256(linked_data).hexdigest()
+        in_time()
+        require(identity(destination) == before and len(linked_data) == before[2]
+                and linked_sha256 == sha256 and self.within_cap(), 'Linked malformed group census bytes changed or exceeded cap')
+        require(identity(source) == before, 'Malformed group census scratch identity changed before deletion')
+        in_time()
+        receipt['censusRetention'].update(bytesAtRetention=len(linked_data), sha256AtRetention=linked_sha256)
+        source.unlink()
+        receipt['censusRetention']['scratchRemoved'] = True
+        in_time()
+        require(identity(destination) == before and self.within_cap(), 'Retained malformed group census changed or exceeded cap')
+        in_time()
+        receipt['censusRetention']['status'] = 'RETAINED'
+
     def observe(self, cleaning=False, full=False, end=None):
         require(self.failed_observer_progress != self.progress, 'Observer failed without relevant target progress')
         before = len(self.tasks)
@@ -243,11 +299,20 @@ class Commands:
             raw = self.output(task, cleaning)
             require(raw.endswith('\n') and raw.strip(), 'Empty/truncated owned-process census')
             rows, seen = [], set()
-            for line in raw.splitlines():
+            for line_index, line in enumerate(raw.splitlines(), 1):
                 fields = line.split(None, 6) if full else line.split()
-                require((len(fields) in (6, 7) if full else len(fields) == 5)
-                        and all(re.fullmatch(r'[0-9]+', value) for value in fields[:4])
-                        and re.fullmatch(r'[IRSTUZ][<AELNOSTVWXs+>]*', fields[4]), 'Malformed owned-process census')
+                valid = ((len(fields) in (6, 7) if full else len(fields) == 5)
+                         and all(re.fullmatch(r'[0-9]+', value) for value in fields[:4])
+                         and re.fullmatch(r'[IRSTUZ][<AELNOSTVWXs+>]*', fields[4]))
+                if not valid:
+                    predicate = 'FIELD_COUNT'
+                    if (len(fields) in (6, 7) if full else len(fields) == 5):
+                        predicate = next((name for name, value in zip(
+                            ('PID_DIGITS', 'UID_DIGITS', 'PPID_DIGITS', 'PGID_DIGITS'), fields[:4])
+                            if not re.fullmatch(r'[0-9]+', value)), 'STAT')
+                    task['receipt']['censusParseFailure'] = {'lineIndex': line_index, 'fieldCount': len(fields),
+                                                           'predicate': predicate}
+                require(valid, 'Malformed owned-process census')
                 row = dict(zip(('pid', 'uid', 'ppid', 'pgid'), map(int, fields[:4])), state=fields[4])
                 require(row['pid'] not in seen, 'Duplicate process census identity')
                 seen.add(row['pid'])
@@ -269,7 +334,14 @@ class Commands:
             if len(self.tasks) > before:
                 task = self.tasks[before]
                 self.failed(task, error)
-                if task['log'].exists():
+                if (task['receipt']['argv'] == GROUP_PS and task['receipt']['leaderReaped']
+                        and 'censusParseFailure' in task['receipt']):
+                    try:
+                        self.retain_malformed_groups(task, before + 1)
+                    except Exception:
+                        task['receipt'].setdefault('censusRetention', {})['status'] = 'FAILED'
+                        task['receipt']['errors'].append('Malformed group census retention failed')
+                elif task['log'].exists():
                     task['receipt']['outputBytesAtLastRead'] = task['log'].stat().st_size
                     if task['receipt']['leaderReaped']:
                         task['log'].unlink()

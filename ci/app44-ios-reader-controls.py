@@ -30,7 +30,7 @@ INPUTS = {
     LEAF + '/.gitignore': '71560d61d40d33d0b45905f47b600fac842947f43310422b5c61b0012fe7de4e',
     HOST_INPUT: '88d9956b5fce2426e30de5eac0b2092c1f2010e954b4e965716d2bd7efc476d0',
 }
-OWNER_SHA = 'ebfad8e4bc0f43b2be84befc72d70b3479555609c40857d75b3211831302ca20'
+OWNER_SHA = '0bfed8f55a6a0bc3d3ba22bce30da84bd8a0da9fb1cc11dd41e7492c12a96b08'
 XCODE = '/Applications/Xcode_26.4.1.app/Contents/Developer'
 XCODEGEN = {
     'version': '2.46.0',

@@ -194,7 +194,7 @@ class Ownership(unittest.TestCase):
                 elif case == 'missing-observer':
                     host.transform = lambda rows: [dict(rows[0], pid=8888)]
                 else:
-                    host.plan(spawn_delay=2)
+                    host.plan(spawn_delay=11)
                 with self.assertRaises(RuntimeError):
                     host.commands.observe()
                 observer = host.commands.observer
@@ -460,6 +460,302 @@ class Ownership(unittest.TestCase):
             self.assertFalse(any(cleanup[key] for key in keys if key != 'simulatorRemoved'))
             self.assertFalse(DRAFT.may_release(record, '42', firewall['ownershipVerified'], cleanup))
             self.assertFalse(any('-X' in child.argv for child in host.children))
+
+    def test_rejected_rows_record_only_the_first_fixed_predicate(self):
+        for full in (False, True):
+            suffix, width = (' PRIVATE_COMMAND PRIVATE_ARGS', 7) if full else ('', 5)
+            cases = (
+                ('PRIVATE_FIELDS', 'FIELD_COUNT', 1), ('', 'FIELD_COUNT', 0),
+                ('9 0 777 9 R' if full else '9 0 777 9 R PRIVATE_EXTRA', 'FIELD_COUNT', 5 if full else 6),
+                ('PRIVATE_PID PRIVATE_UID PRIVATE_PPID PRIVATE_PGID PRIVATE_STAT' + suffix, 'PID_DIGITS', width),
+                ('9 PRIVATE_UID PRIVATE_PPID PRIVATE_PGID PRIVATE_STAT' + suffix, 'UID_DIGITS', width),
+                ('9 0 PRIVATE_PPID PRIVATE_PGID PRIVATE_STAT' + suffix, 'PPID_DIGITS', width),
+                ('9 0 777 PRIVATE_PGID PRIVATE_STAT' + suffix, 'PGID_DIGITS', width),
+                ('9 0 777 9 PRIVATE_STAT' + suffix, 'STAT', width),
+            )
+            for bad, predicate, count in cases:
+                with self.subTest(full=full, predicate=predicate, fields=count), Host() as host:
+                    first = '1000 501 777 1000 R' + (' owned-tool owned-tool' if full else '')
+                    host.plan(raw=first + '\n' + bad + '\nPRIVATE_LATER_ROW\n')
+                    with self.assertRaisesRegex(RuntimeError, '^Malformed owned-process census$'):
+                        host.commands.observe(full=full)
+                    task, receipt = host.commands.observer, host.commands.observer['receipt']
+                    self.assertEqual(receipt['censusParseFailure'],
+                                     {'lineIndex': 2, 'fieldCount': count, 'predicate': predicate})
+                    self.assertEqual(receipt['errors'], ['Malformed owned-process census'])
+                    self.assertNotIn('PRIVATE_', DRAFT.json.dumps(receipt))
+                    if full:
+                        self.assertNotIn('censusRetention', receipt)
+                        self.assertEqual(receipt['output'], 'private census; not retained')
+                        self.assertFalse(task['log'].exists())
+                        self.assertEqual(list((host.root / 'reports').glob('*.log')), [])
+                    else:
+                        self.assertEqual(receipt['censusRetention']['status'], 'RETAINED')
+                        self.assertEqual(task['log'], host.root / 'reports/001-malformed-owned-groups.log')
+                    self.assertFalse(receipt['normalJoin'] or host.commands.normal())
+                    with self.assertRaisesRegex(RuntimeError, 'Observer failed without relevant target progress'):
+                        host.commands.observe(cleaning=True)
+                    self.assertEqual((len(host.children), host.signals, host.sleeps), (1, [], []))
+
+    def test_accepted_rows_keep_the_existing_projection_and_state_rules(self):
+        for full, raw in (
+            (False, '01000 0 0777 01000 I<ALNs+\n'),
+            (True, '1000 501 777 1000 R /bin/ps\n'),
+            (True, '1000 501 777 1000 Z /bin/ps args with spaces\n'),
+        ):
+            with self.subTest(full=full, raw=raw), Host() as host:
+                host.plan(raw=raw)
+                observation = host.commands.observe(full=full)
+                receipt = observation['observer']['receipt']
+                self.assertTrue(receipt['normalJoin'] and host.commands.normal())
+                self.assertNotIn('censusParseFailure', receipt)
+                self.assertNotIn('censusRetention', receipt)
+                self.assertEqual(list((host.root / 'reports').glob('*.log')), [])
+                self.assertFalse(observation['observer']['log'].exists())
+                self.assertEqual((host.signals, host.sleeps), ([], []))
+
+    def test_retained_group_bytes_stay_accounted_if_scratch_unlink_fails(self):
+        for unlink_error in (False, True):
+            with self.subTest(unlink_error=unlink_error), Host() as host:
+                raw = b'1000 501 777 1000 R\r\nPRIVATE_BAD_ROW\r\n'
+                host.plan(raw=raw.decode())
+                scratch = host.root / 'work/001-owned-groups.log'
+                retained = host.root / 'reports/001-malformed-owned-groups.log'
+                unlink, failed, original_errors = Path.unlink, host.commands.failed, []
+                def remove(path, *args, **kwargs):
+                    if unlink_error and path == scratch:
+                        raise OSError('PRIVATE_UNLINK_ERROR')
+                    return unlink(path, *args, **kwargs)
+                def remember(task, error):
+                    original_errors.append(error)
+                    failed(task, error)
+                with mock.patch.object(Path, 'unlink', new=remove), mock.patch.object(host.commands, 'failed', side_effect=remember):
+                    with self.assertRaisesRegex(RuntimeError, '^Malformed owned-process census$') as failure:
+                        host.commands.observe()
+                task, receipt = host.commands.observer, host.commands.observer['receipt']
+                self.assertIs(failure.exception, original_errors[0])
+                self.assertEqual(receipt['errors'], ['Malformed owned-process census']
+                                 + (['Malformed group census retention failed'] if unlink_error else []))
+                self.assertEqual(receipt['censusRetention'], {
+                    'status': 'FAILED' if unlink_error else 'RETAINED', 'name': retained.name,
+                    'bytesAtRetention': len(raw), 'sha256AtRetention': DRAFT.hashlib.sha256(raw).hexdigest(),
+                    'scratchRemoved': not unlink_error,
+                })
+                self.assertEqual((task['log'], receipt['output'], receipt['outputBytesAtLastRead']),
+                                 (retained, retained.name, len(raw)))
+                self.assertEqual(retained.read_bytes(), raw)
+                self.assertEqual(scratch.exists(), unlink_error)
+                if unlink_error:
+                    self.assertTrue(scratch.samefile(retained))
+                self.assertEqual(DRAFT.read_json(host.root / 'reports/commands.json'), [receipt])
+                self.assertNotIn('PRIVATE_', DRAFT.json.dumps(receipt))
+                self.assertTrue(receipt['leaderReaped'] and receipt['groupQuiet'])
+                self.assertFalse(receipt['normalJoin'] or receipt['forced'] or receipt['timedOut'] or host.commands.normal())
+                self.assertTrue(host.commands.within_cap())
+                retained.write_bytes(b'x' * 1048577)
+                self.assertFalse(host.commands.within_cap())  # Includes the reports file, even after scratch is gone.
+                host.commands.retire_observer()
+                with self.assertRaisesRegex(RuntimeError, 'Observer failed without relevant target progress'):
+                    host.commands.observe(cleaning=True)
+                self.assertEqual(host.commands.failed_observer_progress, host.commands.progress)
+                self.assertEqual((len(host.children), host.signals, host.sleeps), (1, [], []))
+
+    def test_group_retention_refuses_existing_destinations_symlinks_and_link_errors(self):
+        for case in ('existing', 'destination-symlink', 'raced-destination', 'source-symlink', 'link-error'):
+            with self.subTest(case=case), Host() as host:
+                raw, prior = b'PRIVATE_FIELDS\n', b'preserve existing evidence\n'
+                host.plan(raw=raw.decode())
+                scratch = host.root / 'work/001-owned-groups.log'
+                destination = host.root / 'reports/001-malformed-owned-groups.log'
+                if case == 'existing':
+                    destination.write_bytes(prior)
+                elif case == 'destination-symlink':
+                    destination.symlink_to(host.root / 'not-created')
+                elif case == 'raced-destination':
+                    link = DRAFT.os.link
+                    def race(source, target, **kwargs):
+                        self.assertEqual(kwargs, {'follow_symlinks': False})
+                        target.write_bytes(prior)
+                        return link(source, target, **kwargs)
+                    host.stack.enter_context(mock.patch.object(DRAFT.os, 'link', side_effect=race))
+                elif case == 'source-symlink':
+                    output = host.commands.output
+                    def substitute(task, cleaning=False):
+                        value = output(task, cleaning)
+                        original = host.root / 'work/private-original'
+                        task['log'].rename(original)
+                        task['log'].symlink_to(original)
+                        return value
+                    host.stack.enter_context(mock.patch.object(host.commands, 'output', side_effect=substitute))
+                else:
+                    host.stack.enter_context(mock.patch.object(DRAFT.os, 'link', side_effect=OSError('PRIVATE_LINK_ERROR')))
+                with self.assertRaisesRegex(RuntimeError, '^Malformed owned-process census$'):
+                    host.commands.observe()
+                task, receipt = host.commands.observer, host.commands.observer['receipt']
+                self.assertEqual(receipt['errors'], ['Malformed owned-process census', 'Malformed group census retention failed'])
+                self.assertEqual(receipt['censusRetention'], {'status': 'FAILED'})
+                self.assertEqual((task['log'], receipt['output']), (scratch, 'private census; not retained'))
+                self.assertEqual(scratch.read_bytes(), raw)
+                self.assertNotIn('PRIVATE_', DRAFT.json.dumps(receipt))
+                if case in ('existing', 'raced-destination'):
+                    self.assertEqual(destination.read_bytes(), prior)
+                elif case == 'destination-symlink':
+                    self.assertTrue(destination.is_symlink())
+                    self.assertFalse(destination.exists() or (host.root / 'not-created').exists())
+                else:
+                    self.assertFalse(destination.exists())
+                self.assertFalse(receipt['normalJoin'] or host.commands.normal())
+                with self.assertRaisesRegex(RuntimeError, 'Observer failed without relevant target progress'):
+                    host.commands.observe(cleaning=True)
+                self.assertEqual((len(host.children), host.signals, host.sleeps), (1, [], []))
+
+    def test_group_retention_enforces_file_and_total_caps_even_during_cleanup(self):
+        for cap in ('file', 'total'):
+            with self.subTest(cap=cap), Host() as host:
+                if cap == 'total':
+                    for _ in range(4):
+                        host.target(raw='x' * 1048576)
+                else:
+                    output = host.commands.output
+                    def grow(task, cleaning=False):
+                        value = output(task, cleaning)
+                        task['log'].write_bytes(b'x' * 1048577)
+                        return value
+                    host.stack.enter_context(mock.patch.object(host.commands, 'output', side_effect=grow))
+                host.plan(raw='PRIVATE_FIELDS\n')
+                with self.assertRaisesRegex(RuntimeError, '^Malformed owned-process census$'):
+                    host.commands.observe(cleaning=True)
+                task, receipt = host.commands.observer, host.commands.observer['receipt']
+                self.assertEqual(receipt['errors'], ['Malformed owned-process census', 'Malformed group census retention failed'])
+                self.assertEqual(receipt['censusRetention'], {'status': 'FAILED'})
+                self.assertEqual(receipt['output'], 'private census; not retained')
+                self.assertEqual(task['log'].parent, host.root / 'work')
+                self.assertTrue(task['log'].exists())
+                self.assertFalse(host.commands.within_cap() or receipt['normalJoin'] or host.commands.normal())
+                self.assertEqual(list((host.root / 'reports').glob('*-malformed-owned-groups.log')), [])
+                with self.assertRaisesRegex(RuntimeError, 'Observer failed without relevant target progress'):
+                    host.commands.observe(cleaning=True)
+                self.assertEqual((len(host.children), host.signals, host.sleeps), (5 if cap == 'total' else 1, [], []))
+
+    def test_retention_keeps_existing_deadlines_across_added_work(self):
+        for bound in ('observer', 'owner'):
+            for phase in ('entry', 'source-hash', 'link', 'report-hash', 'unlink'):
+                with self.subTest(bound=bound, phase=phase), Host() as host:
+                    host.plan(raw='PRIVATE_FIELDS\n')
+                    scratch = host.root / 'work/001-owned-groups.log'
+                    report = host.root / 'reports/001-malformed-owned-groups.log'
+                    failed, sha256, link, unlink = host.commands.failed, DRAFT.hashlib.sha256, DRAFT.os.link, Path.unlink
+                    original_errors, hashes, links, unlinks = [], [], [], []
+                    def expire():
+                        host.now = min(host.commands.observer['receipt']['deadline'], host.commands.end)
+                    def remember(task, error):
+                        original_errors.append(error)
+                        failed(task, error)
+                        if bound == 'owner':
+                            host.commands.end = 15.0  # Inject only a stricter owner end; observer deadline stays at clock20.
+                        if phase == 'entry':
+                            expire()
+                    def timed_hash(data=b''):
+                        result = sha256(data)
+                        hashes.append(1)
+                        if (phase == 'source-hash' and len(hashes) == 1) or (phase == 'report-hash' and len(hashes) == 2):
+                            expire()
+                        return result
+                    def timed_link(source, destination, **kwargs):
+                        result = link(source, destination, **kwargs)
+                        links.append(destination)
+                        if phase == 'link':
+                            expire()
+                        return result
+                    def timed_unlink(path, *args, **kwargs):
+                        result = unlink(path, *args, **kwargs)
+                        if path == scratch:
+                            unlinks.append(path)
+                            if phase == 'unlink':
+                                expire()
+                        return result
+                    for target, name, replacement in (
+                        (host.commands, 'failed', remember), (DRAFT.hashlib, 'sha256', timed_hash),
+                        (DRAFT.os, 'link', timed_link), (Path, 'unlink', timed_unlink),
+                    ):
+                        host.stack.enter_context(mock.patch.object(target, name, new=replacement))
+                    with self.assertRaisesRegex(RuntimeError, '^Malformed owned-process census$') as failure:
+                        host.commands.observe()
+                    task, receipt = host.commands.observer, host.commands.observer['receipt']
+                    linked = phase in ('link', 'report-hash', 'unlink')
+                    self.assertIs(failure.exception, original_errors[0])
+                    self.assertEqual(receipt['errors'], ['Malformed owned-process census', 'Malformed group census retention failed'])
+                    self.assertEqual(receipt['censusRetention']['status'], 'FAILED')
+                    self.assertEqual((task['log'], receipt['output']),
+                                     (report, report.name) if linked else (scratch, 'private census; not retained'))
+                    self.assertEqual((len(hashes), len(links), len(unlinks)),
+                                     (0 if phase == 'entry' else 1 if phase in ('source-hash', 'link') else 2,
+                                      int(linked), int(phase == 'unlink')))
+                    self.assertEqual((receipt['deadline'], host.commands.end, host.now),
+                                     (20.0, 15.0 if bound == 'owner' else 100.0, 15.0 if bound == 'owner' else 20.0))
+                    self.assertEqual(scratch.exists(), phase != 'unlink')
+                    if linked:
+                        self.assertTrue(report.exists())
+                        self.assertEqual(receipt['censusRetention']['scratchRemoved'], phase == 'unlink')
+                    else:
+                        self.assertFalse(report.exists())
+                    self.assertNotIn('PRIVATE_', DRAFT.json.dumps(receipt))
+                    self.assertTrue(receipt['leaderReaped'] and receipt['groupQuiet'])
+                    self.assertFalse(receipt['normalJoin'] or receipt['forced'] or host.commands.normal())
+                    host.commands.retire_observer()
+                    with self.assertRaisesRegex(RuntimeError, 'Observer failed without relevant target progress'):
+                        host.commands.observe(cleaning=True)
+                    self.assertEqual(host.commands.failed_observer_progress, host.commands.progress)
+                    self.assertEqual((len(host.children), host.signals, host.sleeps), (1, [], []))
+
+    def test_linked_artifact_growth_substitution_and_bytes_fail_closed(self):
+        for case in ('growth', 'replacement', 'symlink', 'same-size-bytes', 'aggregate'):
+            with self.subTest(case=case), Host() as host:
+                if case == 'aggregate':
+                    for _ in range(4):
+                        host.target()
+                sequence = len(host.commands.tasks) + 1
+                raw = b'PRIVATE_FIELDS\n'
+                host.plan(raw=raw.decode())
+                scratch = host.root / 'work' / f'{sequence:03d}-owned-groups.log'
+                report = host.root / 'reports' / f'{sequence:03d}-malformed-owned-groups.log'
+                link = DRAFT.os.link
+                def change_at_link(source, destination, **kwargs):
+                    self.assertEqual(kwargs, {'follow_symlinks': False})
+                    if case == 'growth':
+                        source.write_bytes(b'x' * 1048577)
+                    elif case in ('replacement', 'symlink'):
+                        original = host.root / 'work/original-at-link'
+                        source.rename(original)  # Keep the original inode live; replacement cannot reuse it.
+                        if case == 'symlink':
+                            source.symlink_to(original)
+                        else:
+                            source.write_bytes(raw)
+                    elif case == 'same-size-bytes':
+                        prior = source.lstat()
+                        source.write_bytes(b'x' * len(raw))
+                        DRAFT.os.utime(source, ns=(prior.st_atime_ns, prior.st_mtime_ns))
+                    else:
+                        for target in host.commands.tasks[:-1]:
+                            target['log'].write_bytes(b'x' * 1048576)
+                    return link(source, destination, **kwargs)
+                with mock.patch.object(DRAFT.os, 'link', side_effect=change_at_link):
+                    with self.assertRaisesRegex(RuntimeError, '^Malformed owned-process census$'):
+                        host.commands.observe()
+                task, receipt = host.commands.observer, host.commands.observer['receipt']
+                self.assertEqual((task['log'], receipt['output']), (report, report.name))
+                self.assertEqual(receipt['errors'], ['Malformed owned-process census', 'Malformed group census retention failed'])
+                self.assertEqual(receipt['censusRetention'], {'status': 'FAILED', 'name': report.name, 'scratchRemoved': False})
+                self.assertTrue(scratch.exists() and report.exists())
+                self.assertEqual(report.is_symlink(), case == 'symlink')
+                self.assertEqual(host.commands.within_cap(), case not in ('growth', 'aggregate'))
+                self.assertNotIn('PRIVATE_', DRAFT.json.dumps(receipt))
+                self.assertTrue(receipt['leaderReaped'] and receipt['groupQuiet'])
+                self.assertFalse(receipt['normalJoin'] or receipt['forced'] or host.commands.normal())
+                with self.assertRaisesRegex(RuntimeError, 'Observer failed without relevant target progress'):
+                    host.commands.observe(cleaning=True)
+                self.assertEqual(host.commands.failed_observer_progress, host.commands.progress)
+                self.assertEqual((len(host.children), host.signals, host.sleeps), (sequence, [], []))
 
 
 if __name__ == '__main__':
