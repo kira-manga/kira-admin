@@ -1,0 +1,81 @@
+# One primary-bound realPG3/corrected-two-file-static batch; no release or deployment.
+name: Backend17 focused history PostgreSQL validation (private)
+'on':
+  push:
+    branches: [remediation/app-29-backend-complaints]
+    paths: [ci/backend17-history-pg03.request.json]
+permissions:
+  contents: read
+concurrency:
+  group: backend17-private-history-pg03
+  cancel-in-progress: false
+jobs:
+  history-postgres:
+    if: github.event.repository.private == true && github.repository == 'kira-manga/kira-admin' && github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 43
+    steps:
+      - name: Check out the exact private carrier without persisted credentials
+        timeout-minutes: 1
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.sha }}
+          path: admin
+          persist-credentials: false
+      - name: Require explicit primary authorization and an exact Backend17 commit
+        id: target
+        timeout-minutes: 1
+        shell: bash
+        run: |
+          python3 -B - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          value = json.loads(Path('admin/ci/backend17-history-pg03.request.json').read_text())
+          sha = value.get('backend_sha', '')
+          expected_sha = 'a7d0eec5924b016e09710b0d1f92de95ec64f76c'  # Primary-only binding of the same isolated checkpoint as request/controller.
+          expected_class = 'me.manga.kira.backend.sourceconfig.infrastructure.AdminHistoryRepositoryIT'
+          expected_files = {
+              'src/test/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/AdminHistoryJdbcObserver.kt': '377a20271b7437a8c4c23a84a4247949e7ccf80fcea85b69cca5b0e6b5cc582f',
+              'src/test/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/AdminHistoryRepositoryIT.kt': 'f3475014fe632ebb93206ed550d7408ce1f2e1eebc9b86abc794a97e29ccd31f',
+          }
+          fields = {'authorization', 'backend_sha', 'classes', 'selectors', 'static_files', 'status'}
+          if (set(value) != fields or value.get('authorization') != 'BACKEND17_PG03_ONE_TARGETED_BATCH_AUTHORIZED'
+                  or not isinstance(sha, str) or not re.fullmatch('[0-9a-f]{40}', sha)
+                  or sha == '0' * 40 or sha != expected_sha
+                  or value.get('classes') != {expected_class: 3}
+                  or type(value['classes'].get(expected_class)) is not int
+                  or value.get('selectors') != [expected_class]
+                  or value.get('static_files') != expected_files):
+              raise SystemExit('Unbound, broadened or unauthorized Backend17 PG03 request; no Backend checkout/build permitted')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('sha=' + sha + '\n')
+          PY
+      - name: Check out only the exact public Backend17 target
+        timeout-minutes: 1
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: kira-manga/Kira-backend
+          ref: ${{ steps.target.outputs.sha }}
+          path: backend
+          persist-credentials: false
+      - name: Set up the existing Java 21 toolchain
+        timeout-minutes: 2
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Compile and run only three history methods plus exact two-file static checks once
+        id: validation
+        timeout-minutes: 35
+        env:
+          BACKEND17_RUN: ${{ runner.temp }}/backend17-history-pg03-${{ github.run_id }}-${{ github.run_attempt }}
+        run: python3 -B admin/ci/backend17-history-pg03.py
+      - name: Retain raw private reports; missing evidence is not a passing test result
+        if: always() && steps.validation.outcome != 'skipped'
+        timeout-minutes: 2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: backend17-history-pg03-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/backend17-history-pg03-${{ github.run_id }}-${{ github.run_attempt }}/reports/
+          retention-days: 3
+          if-no-files-found: error

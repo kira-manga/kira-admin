@@ -1,0 +1,15 @@
+{
+  "authorization": "BACKEND17_PG03_ONE_TARGETED_BATCH_AUTHORIZED",
+  "backend_sha": "a7d0eec5924b016e09710b0d1f92de95ec64f76c",
+  "classes": {
+    "me.manga.kira.backend.sourceconfig.infrastructure.AdminHistoryRepositoryIT": 3
+  },
+  "selectors": [
+    "me.manga.kira.backend.sourceconfig.infrastructure.AdminHistoryRepositoryIT"
+  ],
+  "static_files": {
+    "src/test/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/AdminHistoryJdbcObserver.kt": "377a20271b7437a8c4c23a84a4247949e7ccf80fcea85b69cca5b0e6b5cc582f",
+    "src/test/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/AdminHistoryRepositoryIT.kt": "f3475014fe632ebb93206ed550d7408ce1f2e1eebc9b86abc794a97e29ccd31f"
+  },
+  "status": "PRIMARY AUTHORIZED: one exact real PostgreSQL17.6 history3/corrected-two-file-static batch; unvalidated isolated public-safe Backend17 checkpoint. Preserve old83; no deployment/release/integration/automatic retry."
+}
