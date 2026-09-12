@@ -1,0 +1,9 @@
+{
+  "authorization": "BACKEND19_ONE_TARGETED_BATCH_AUTHORIZED",
+  "backend_sha": "a5f7c5ab012f7e597d4c93672acdd38b9bad8f82",
+  "classes": {
+    "me.manga.kira.backend.sourceconfig.public.PublicSourceSummaryConsistencyIT": 2,
+    "me.manga.kira.backend.sourceconfig.public.PublicSourcesIT": 13
+  },
+  "status": "Primary authorizes ONE exact public Backend19 checkpoint test batch: new2 + PublicSourcesIT13, normal compilation, main/test statics. Not source acceptance, integration, deployment or permission to rerun."
+}
