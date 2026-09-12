@@ -43,6 +43,7 @@ XCODEGEN = {
 }
 RUNTIME, DEVICE = 'com.apple.CoreSimulator.SimRuntime.iOS-26-4', 'com.apple.CoreSimulator.SimDeviceType.iPhone-17'
 UUID = r'[0-9A-F]{8}(?:-[0-9A-F]{4}){3}-[0-9A-F]{12}'
+USERNAME = r'[A-Za-z_][A-Za-z0-9_.-]{0,63}'
 
 
 def require(ok, message):
@@ -117,10 +118,16 @@ class Leaf:
     def save(self, name, value, limit=131072):
         self.owner.save(self.reports / name, value, limit=limit)
 
-    def call(self, argv, label, seconds=30, cleaning=False, end=None):
+    def call(self, argv, label, seconds=30, cleaning=False, end=None, generator_user=None):
         self.result['finalOwnedAbsence'] = False
+        if generator_user is not None:
+            require(label == 'generate-project' and not cleaning and isinstance(generator_user, str)
+                    and re.fullmatch(USERNAME, generator_user), 'XCODEGEN_USER_OVERLAY_NOT_PERMITTED')
+            require(os.getuid() == os.geteuid() == self.commands.owner['realUid']
+                    == self.commands.owner['effectiveUid'] > 0, 'XCODEGEN_USER_OWNER_CHANGED_BEFORE_GENERATION')
         return self.commands.call(argv, label, seconds=seconds, cleaning=cleaning,
-                                  end=end if end is not None else (self.end if cleaning else self.work_end))
+                                  end=end if end is not None else (self.end if cleaning else self.work_end),
+                                  extra={'USER': generator_user} if generator_user is not None else None)
 
     def source_receipt(self, after=False):
         git = ['/usr/bin/git', '-C', str(self.source)]
@@ -187,11 +194,31 @@ class Leaf:
         self.xcresulttool_sha = digest(self.xcresulttool)
         identities.update(xcresulttoolPath=str(self.xcresulttool), xcresulttoolSha256=self.xcresulttool_sha)
         self.save('tools.json', identities)
+        uid, euid = os.getuid(), os.geteuid()
+        user_receipt = {'status': 'INTENT', 'realUid': uid, 'effectiveUid': euid,
+                        'commandLabel': 'xcodegen-user', 'overlayKeys': ['USER']}
+        prerequisites['generatorUser'] = user_receipt
+        self.save('prerequisites.json', prerequisites)
+        try:
+            require(uid == euid == self.commands.owner['realUid'] == self.commands.owner['effectiveUid'] > 0,
+                    'XCODEGEN_USER_REQUIRES_UNCHANGED_NONROOT_OWNER')
+            raw_user = self.call(['/usr/bin/id', '-un'], 'xcodegen-user')
+            username = raw_user.removesuffix('\n')
+            require(raw_user == username + '\n' and re.fullmatch(USERNAME, username),
+                    'XCODEGEN_USER_OUTPUT_INVALID; raw command log retained')
+            user_receipt['identityUnchanged'] = (os.getuid(), os.geteuid()) == (uid, euid)
+            require(user_receipt['identityUnchanged'], 'XCODEGEN_USER_IDENTITY_CHANGED')
+            user_receipt.update(status='BOUND', USER=username)
+        except Exception as error:
+            user_receipt.update(status='FAILED', error=str(error))
+            raise RuntimeError('XCODEGEN_USER_BINDING_FAILED: ' + str(error)) from error
+        finally:
+            self.save('prerequisites.json', prerequisites)
         require(hashlib.sha256(self.xcodegen_bytes(xcodegen, XCODEGEN['executableBytes'], self.work_end)).hexdigest()
                 == XCODEGEN['executableSha256'], 'XCODEGEN_CHANGED_BEFORE_GENERATION')
         self.project_intended = True
         self.call([xcodegen, 'generate', '--spec', self.source / LEAF / 'project.yml', '--project', self.source / LEAF],
-                  'generate-project', seconds=60)
+                  'generate-project', seconds=60, generator_user=username)
         require(hashlib.sha256(self.xcodegen_bytes(xcodegen, XCODEGEN['executableBytes'], self.work_end)).hexdigest()
                 == XCODEGEN['executableSha256'], 'XCODEGEN_CHANGED_DURING_GENERATION')
         self.save('project.json', {'pbxprojSha256': digest(self.project / 'project.pbxproj'),
