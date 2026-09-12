@@ -1,6 +1,6 @@
 {
   "authorization": "BACKEND15_ONE_TARGETED_BATCH_AUTHORIZED",
-  "backend_sha": "8dbb17b9571aee94e7b0df216f5bea64c9fb6c75",
+  "backend_sha": "76b92c38b17749586e0dd6c1f4057d01bff0c305",
   "classes": {
     "me.manga.kira.backend.completion.CompletionAdmissionResponseTest": 12,
     "me.manga.kira.backend.completion.CompletionLifecycleTest": 3,
@@ -30,5 +30,5 @@
       "later completion closes do not repeat an unconfirmed application release"
     ]
   },
-  "status": "Primary authorizes one exact20 batch on this reviewed nine-file issue checkpoint: unit16 + actual PostgreSQL HTTP2 + real Redis2, normal main/test compilation/Ktlint/Detekt. Source-only checkpoint is not a validated fix; preserve failures and owned cleanup. No retry/deployment/release/enablement or private Backend ancestry. Carrier02 changes only the reported Redis constructor layout after independently reviewed01. Application release attempt is not wire exactly-once."
+  "status": "Primary-authorized ONE fresh Backend15 successor batch after hosted01 test-source compiler failure. Exact10 methods/20 invocations (unit16, real PostgreSQL HTTP2, real Redis2), normal compilation and scoped statics. Source-only registry lifetime correction and carrier03 reviewed081909013d3258a305d371596181849e0a78583cd03cf36fe58434ae43caf3c4. Preserve prior FAIL/unchecked final source; require fresh real XML/source/cleanup. No rerun, broader suite, deployment, Store, completion enablement or issue closure."
 }
