@@ -1,0 +1,34 @@
+{
+  "authorization": "BACKEND15_ONE_TARGETED_BATCH_AUTHORIZED",
+  "backend_sha": "8dbb17b9571aee94e7b0df216f5bea64c9fb6c75",
+  "classes": {
+    "me.manga.kira.backend.completion.CompletionAdmissionResponseTest": 12,
+    "me.manga.kira.backend.completion.CompletionLifecycleTest": 3,
+    "me.manga.kira.backend.completion.CompletionInterruptionTest": 1,
+    "me.manga.kira.backend.completion.CompletionReleaseFailureHttpIT": 2,
+    "me.manga.kira.backend.security.RedisCoordinationIT": 2
+  },
+  "methods": {
+    "me.manga.kira.backend.completion.CompletionAdmissionResponseTest": [
+      "Redis defined rejections preserve codes retries and their HTTP distinction",
+      "indeterminate Redis acquisition denies work without speculative release",
+      "Redis acquire transport failure is unavailable not a caller limit",
+      "Redis zero alone admits and releases once",
+      "unconfirmed Redis release preserves the result and reports once per application attempt"
+    ],
+    "me.manga.kira.backend.completion.CompletionLifecycleTest": [
+      "only committed overload ownership can turn an equal-looking winner into 503",
+      "persistence failure remains primary when Redis release is unconfirmed"
+    ],
+    "me.manga.kira.backend.completion.CompletionInterruptionTest": [
+      "request interruption persists a sanitized terminal outcome before restoring interrupt"
+    ],
+    "me.manga.kira.backend.completion.CompletionReleaseFailureHttpIT": [
+      "committed HTTP outcome survives Redis release failure"
+    ],
+    "me.manga.kira.backend.security.RedisCoordinationIT": [
+      "later completion closes do not repeat an unconfirmed application release"
+    ]
+  },
+  "status": "Primary authorizes one exact20 batch on this reviewed nine-file issue checkpoint: unit16 + actual PostgreSQL HTTP2 + real Redis2, normal main/test compilation/Ktlint/Detekt. Source-only checkpoint is not a validated fix; preserve failures and owned cleanup. No retry/deployment/release/enablement or private Backend ancestry. Carrier02 changes only the reported Redis constructor layout after independently reviewed01. Application release attempt is not wire exactly-once."
+}
