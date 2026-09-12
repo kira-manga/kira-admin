@@ -1,0 +1,16 @@
+{
+  "authorization": "BACKEND11_ONE_TARGETED_BATCH_AUTHORIZED",
+  "backend_sha": "74f0619eea443e6727a3ae07f686f69723894216",
+  "classes": {
+    "me.manga.kira.backend.completion.RedisCompletionAdmissionIT": 7,
+    "me.manga.kira.backend.completion.CompletionAdmissionResponseTest": 20,
+    "me.manga.kira.backend.completion.InMemoryCompletionAdmissionTest": 2,
+    "me.manga.kira.backend.security.RedisCoordinationIT": 1,
+    "me.manga.kira.backend.security.RedisCoordinationFailureTest": 1
+  },
+  "methods": {
+    "me.manga.kira.backend.security.RedisCoordinationIT": "completion quota and concurrency are shared by instances",
+    "me.manga.kira.backend.security.RedisCoordinationFailureTest": "completion admission fails closed when shared Redis is unavailable"
+  },
+  "status": "PRIMARY AUTHORIZED: one first31-case logical-lease Redis/compilation/static/Lua batch on this exact public issue commit. UNEXECUTED; no integration, provider enablement or physical-lifetime acceptance."
+}
