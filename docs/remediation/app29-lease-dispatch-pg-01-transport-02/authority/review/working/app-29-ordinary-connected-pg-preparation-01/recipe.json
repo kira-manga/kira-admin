@@ -1,0 +1,262 @@
+{
+  "schema": "app-29-ordinary-connected-pg-existing-runner-recipe-v1",
+  "status": "INERT_AUTHOR_PREPARATION_PENDING_INDEPENDENT_REVIEW_AND_PRIMARY_ADMISSION",
+  "execution_authorized": false,
+  "author_role": "Preparation author, including prior W03 authorship; not independent approver of those pieces or this packet.",
+  "task_boundary": "Only private preparation files plus passive source/evidence/JSON/AST/hash inspection. No live product/carrier edits, imports/execution of candidates/helpers, builds/tests/checkers/freezes, Git/CI/service/process control, installation/acquisition/network, or subagents.",
+  "local_validation_boundary": {
+    "session_id": 36966,
+    "state_at_assignment": "ACTIVE_RESULTS_UNKNOWN",
+    "rule": "Primary owns Linux03 five-class compile/test and its disposition. This author neither inspects nor controls that session; no PASS inferred.",
+    "primary_reported_update": {
+      "status": "PRIMARY_REPORTED_LINUX03_PASS56_NOT_INDEPENDENTLY_REVIEWED_BY_THIS_AUTHOR",
+      "cases": 56,
+      "class_counts": {
+        "PersistenceJdbcGuardProtocolTest": 11,
+        "PersistenceJdbcTransactionTest": 7,
+        "PersistenceOwnershipTest": 8,
+        "PhysicalJdbcFacadeTest": 11,
+        "PoolLifecycleTest": 19
+      },
+      "normal_main_test_compile_and_ktlint": "PRIMARY_REPORTED_SUCCESS",
+      "raw_result_sha256": "c9787405e0fa2f75c1d006b42eb695fc4fbad7653de1393597d7de08c0472c83",
+      "cleanup": "Primary reports both stops0, all5 natural-absence barriers, outputs absent and source preserved.",
+      "independent_actual_result_review": "ACTIVE_PER_PRIMARY",
+      "author_scope": "Message attribution only; this author did not inspect/control session36966 or inspect/approve its actual result. No ordinary PG test result follows."
+    }
+  },
+  "host_justification": "Per primary, current VPS has no Docker/PostgreSQL executables or Docker socket. Use the existing private Ubuntu Linux PG lane only after admission; no probing, installation, service start, or alternate-OS fallback by this author.",
+  "source_authority": {
+    "path": "review/working/app-29-w03-integrated-driver-ordinary-connected-03/manifest.json",
+    "sha256": "171dc5c76663c7552bd064c343437bc6545394315769214354afec2295929913"
+  },
+  "selection_file": "selection.json",
+  "source_transition_file": "source-transition.json",
+  "reuse_only_as_inspected_base_not_ready_to_run": {
+    "controller": {
+      "path": "kira-admin/ci/app29-gate-b.py",
+      "sha256": "ad2d09e5dd5419ba48bc66b73ccfd502a593e88ca2362b7b277a8dfe6f759d2d"
+    },
+    "workflow": {
+      "path": "kira-admin/.github/workflows/app29-gate-b.yml",
+      "sha256": "6088e8813ceafd11ade49274b12a07395cf674d39696ca1fbdb500e42f0c3ea4"
+    },
+    "owner_helper_unchanged": {
+      "path": "kira-admin/ci/app29_owned_children.py",
+      "sha256": "56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385"
+    },
+    "profile": {
+      "path": "review/working/app-29-core-c2-sqlclientinfo-pg1-preparation-01/profile/profile.json",
+      "sha256": "173b4f5131cacd7b89b8bd24b1700eac34218969b7921c80a6beb9dee72c0d37"
+    },
+    "profile_init": {
+      "path": "review/working/app-29-core-c2-sqlclientinfo-pg1-preparation-01/profile/profile.init.gradle",
+      "sha256": "f4d6c74702278adc8224ee834da7735884281bd83b977da40d5e111bfe70568d"
+    },
+    "historical_authorized_request_not_new_authority": {
+      "path": "kira-admin/ci/app29-gate-b.request.json",
+      "sha256": "1d99235e7cb6abc289a44e58c9d378b9a0a237660878e78c9770316a255338b4"
+    },
+    "historical_deployed_checkpoint_not_new_authority": {
+      "path": "kira-admin/docs/remediation/app29-core-c2-sqlclientinfo-pg1-01/checkpoint.json",
+      "sha256": "80400d3c1f8afc8bd410e256a171d4dafdc79f3acc2a94b49f2889cdd5caca09"
+    },
+    "historical_pg1_acceptance": {
+      "path": "review/working/app-29-core-c2-sqlclientinfo-pg1-admission-01/launch-03/primary-acceptance.json",
+      "sha256": "b5df18dc41891d0e5fe770f9fb1ca05936a5d45bc0357c4cb04a330548075821"
+    }
+  },
+  "proposed_namespace_not_created": {
+    "candidate_directory": "review/working/app-29-ordinary-connected-pg-carrier-01",
+    "gate": "app-29-ordinary-connected-pg-01",
+    "profile_id": "app-29-ordinary-connected-pg-profile-01",
+    "profile_file": "review/working/app-29-ordinary-connected-pg-carrier-01/profile/profile.json",
+    "profile_init": "review/working/app-29-ordinary-connected-pg-carrier-01/profile/profile.init.gradle",
+    "manifest_file": "review/working/app-29-w03-integrated-driver-ordinary-connected-pg-01/manifest.json",
+    "checkpoint_schema": "app29-ordinary-connected-clean-checkpoint-v1",
+    "payload_root": "docs/remediation/app29-ordinary-connected-pg-01",
+    "run_and_artifact_prefix": "app29-ordinary-connected-pg-01",
+    "report_directory": "reports/ordinary-connected-pg-01",
+    "deployment_map": {
+      "review/working/app-29-ordinary-connected-pg-carrier-01/ci/app29-gate-b.py": "ci/app29-gate-b.py",
+      "review/working/app-29-ordinary-connected-pg-carrier-01/.github/workflows/app29-gate-b.yml": ".github/workflows/app29-gate-b.yml",
+      "review/working/app-29-ordinary-connected-pg-carrier-01/profile/profile.json": "review/working/app-29-ordinary-connected-pg-carrier-01/profile/profile.json",
+      "review/working/app-29-ordinary-connected-pg-carrier-01/profile/profile.init.gradle": "review/working/app-29-ordinary-connected-pg-carrier-01/profile/profile.init.gradle",
+      "review/working/app-29-targeted-private-ci-draft-v2/ci/app29_owned_children.py": "ci/app29_owned_children.py"
+    }
+  },
+  "primary_only_sequence": [
+    "Review this recipe independently; separately finish the primary-reported Linux03 actual-result/source disposition without rerunning its batch. Do not turn this authorship packet into its own approval.",
+    "Prepare the narrow derivative of the pinned existing gate-b/profile/init/workflow in a separate fresh candidate directory. Apply README bounded adaptations, not a generic new controller. Keep this packet immutable.",
+    "Primary alone creates a clean private source checkpoint whose full478 source map is exactly target171dc, with a reviewed new complete bounded bundle. Proposed minimal chain adds one child of6db944; any different ancestry/source delta requires a new disposition, not weakened guards. Never push private ancestry to the public backend.",
+    "Bind actual final derivative bytes and source transport, independent preparation review and primary disposition; create fresh full-v3 new-selection freeze and genuine local-v3 preflight with the unchanged freezer. No local build/test rerun is part of this recipe.",
+    "Transport complete authority/snapshots/diff and pinned existing dependency artifacts privately; primary creates a distinct accepted deployment checkpoint. Hash actual final request/carrier and explicitly admit exactly one hosted attempt with separate resource ownership.",
+    "After actual hosted execution, retain raw XML/JDK/classpath/source/process/container/output evidence before deletion. Independent actual-result review and primary acceptance are separate; 21 intended cases are not 21 passes."
+  ],
+  "source_transport_plan": {
+    "route": "Existing clean private checkpoint plus complete singleton SHA1 v2 bundle; not an unreviewed dirty-source overlay.",
+    "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+    "proposed_direct_parent_sha": "6db944871c1584bd6a1f28263e8010cadd766fab",
+    "branch": "remediation/app-29-backend-complaints",
+    "ref": "refs/heads/remediation/app-29-backend-complaints",
+    "proposed_bundle_source_path": "review/working/app-29-ordinary-connected-private-checkpoint-01/backend.bundle",
+    "proposed_bundle_deployment_path": "docs/remediation/app29-ordinary-connected-pg-01/inputs/backend.bundle",
+    "bundle_max_bytes": 8388608,
+    "requirement": "Bind new actual tip/parent/header/prerequisite/ref/SHA/size and exact full-map/removed-path identities before and after. Preserve existing no-merge/no-extra-descendant historical chain checks, adding new tip ->6db944 ->1c91 ->eb8fed8 ->989a ->926927 ->49da ->public prerequisite. Keep source acceptance distinct from execution authority.",
+    "old_bundle": {
+      "path": "review/working/app-29-core-c2-post-structural-private-checkpoint-01/backend.bundle",
+      "sha256": "2506c18cc5e40f089cc1176a65a79d449ff02b13f4c08e0719c24d359e9882da"
+    },
+    "old_bundle_scope": "217809 bytes; historical6db944 only, insufficient to materialize target W03. Not a current transport binding."
+  },
+  "freeze_plan": {
+    "state": "NOT_CREATED",
+    "tool": {
+      "path": "review/working/freeze_app29_integrated_driver_v3.py",
+      "sha256": "e8c6a48fc26c634fbccbb081651631fb5c767099b1143ab4dbe8439f6060d0fe"
+    },
+    "argv_prefix_template": [
+      "python3",
+      "-B",
+      "/root/projects/Kira/review/working/freeze_app29_integrated_driver_v3.py",
+      "--workspace",
+      "/root/projects/Kira",
+      "--freeze",
+      "app-29-w03-integrated-driver-ordinary-connected-pg-01"
+    ],
+    "argv_assembly": "Append --approved-input PATH for each unique sorted union key described below, with duplicate path/hash agreement; only actual resolved review/ paths. Append --tooling PATH for exactly the five deployment-map keys. Append -- then all43 selection.json task_args unchanged. This is data, not an executable or an authorization.",
+    "approved_input_union": [
+      "Every entry of target manifest approved_inputs (19) and validation_tooling (8), plus target manifest itself.",
+      "Every entry of pinned historical PG1 manifest approved_inputs (170) and validation_tooling (10), plus that manifest/profile, accepted PG1 actual review/primary acceptance. They remain historical provenance, not current-source/test authority.",
+      "All sealed preparation files in this packet; actual independently reviewed new derivative/profile/init and review/primary disposition evidence.",
+      "Actual new source-checkpoint evidence/bundle under review/, immutable source-transition/selection evidence, existing exact Native05 and checker artifacts. Add no placeholder or null path/hash."
+    ],
+    "active_tooling_rule": "Retain the five base tooling entries from target validation_tooling excluding its three additional_validation_tooling_paths; add exactly the five new deployment-map keys (10 active entries). Keep all old tooling pairs above as approved-input provenance. Do not edit the freezer/local wrappers/inventory helper.",
+    "full_source_requirements": {
+      "source_count": 478,
+      "seed_paths_preserved": 348,
+      "snapshot_subject_count": 211,
+      "historical_input_count": 102
+    },
+    "full_source_rule": "Fresh clean repository identity/untracked=[]; complete source_hashes and review_subject_paths equal target171dc, removed_paths and historical_input_hashes unchanged. All211 fresh snapshots bind actual source bytes. Fresh complete issue diff is generated, not copied from the earlier dirty snapshot. Dynamic authority counts come from the final exact maps; never transplant PG1 466/199/474/851 or old local task argv."
+  },
+  "local_preflight_plan": {
+    "state": "NOT_PERFORMED",
+    "argv_prefix_template": [
+      "python3",
+      "-B",
+      "/root/projects/Kira/review/working/freeze_app29_integrated_driver_v3.py",
+      "--workspace",
+      "/root/projects/Kira",
+      "--validate-manifest",
+      "/root/projects/Kira/review/working/app-29-w03-integrated-driver-ordinary-connected-pg-01/manifest.json"
+    ],
+    "argv_tail_rule": "Append --manifest-sha256 ACTUAL_FRESH_MANIFEST_SHA, then -- and identical43 task_args. Save genuine successful stdout and its SHA in the new checkpoint. Null bindings cannot be replaced by synthetic output or the old466/PG1 or Linux03 receipt.",
+    "proposed_receipt_path": "review/working/app-29-w03-integrated-driver-ordinary-connected-pg-01/hosted-local-preflight.json",
+    "required_success_shape_not_a_receipt": {
+      "status": "READ_ONLY_V3_PREFLIGHT_PASSED",
+      "source_paths": 478
+    }
+  },
+  "resource_proposal_not_admission": {
+    "budgets": {
+      "job_minutes": 25,
+      "controller_seconds": 1200,
+      "preflight_seconds": 120,
+      "validation_seconds": 900,
+      "cleanup_seconds": 180
+    },
+    "minimum_free_bytes": 8589934592,
+    "gradle_max_heap": "2g",
+    "gradle_max_metaspace": "512m",
+    "max_workers": 1,
+    "test_max_heap": "512m",
+    "test_max_parallel_forks": 1,
+    "test_fork_every": 0,
+    "junit_parallel_enabled": false,
+    "rules": "Retain no-daemon/no-parallel/no-build-cache/no-configuration-cache/strict verification, isolated fresh owned HOME/TMP/cache/build, pinned Temurin21, in-process Kotlin, auto-JDK acquisition disabled, immutable18 private W01 inputs. No timeout extensions, second attempt or acquisition lane by implication."
+  },
+  "unchanged_dependency_inputs": {
+    "archive": {
+      "path": "kira-admin/docs/remediation/checkpoint-2026-09-08/review-evidence.tar.gz",
+      "sha256": "da94218f74eb0f5831241c8606c8f82142e49b818acfaff027a78f2efe77faab"
+    },
+    "archive_members": 18,
+    "local_manifest": {
+      "path": "review/working/app-29-w01-local-dependencies-20260905/local-inputs.sha256",
+      "sha256": "c67fcc5fe64a9a795373c4683c7c1edd6407146e3cd07609fa7018a8a98db79a"
+    },
+    "original_init": {
+      "path": "review/working/app-29-w01-local-dependencies.init.gradle",
+      "sha256": "429961b98254b89f7ce1d7ba1efa61b8cba28a3bae35353bf3a8ba85f4a1c839"
+    },
+    "final_jar": {
+      "path": "review/working/app-29-driver-cut-native-build-05/artifacts/postgresql-42.7.12-kira.1-osgi.jar",
+      "sha256": "50f7dc4a6314cc5105f4990be26ba8be65ae242e1f7e62652cc60d6a2c0e03df",
+      "bytes": 1200036,
+      "source_path": "review/working/app-29-driver-cut-native-build-05/artifacts/postgresql-42.7.12-kira.1-osgi.jar",
+      "qualification": "UNQUALIFIED",
+      "candidate_id": "app-29-driver-cut-native-build-05-isolation-getter-source-01"
+    },
+    "checker": {
+      "path": "review/working/app-29-final-jar-consumer-profile-01/inputs/checker-qual-3.55.1.jar",
+      "sha256": "857658c8bdcbff794949a8d9922f88d63ee3751c203c7cd7d21ea97f9e745288",
+      "bytes": 241885,
+      "source_path": "review/working/app-29-final-jar-consumer-profile-01/inputs/checker-qual-3.55.1.jar"
+    },
+    "removed_stock": {
+      "group": "org.postgresql",
+      "module": "postgresql",
+      "version": "42.7.12",
+      "sha256": "31fbf6f06b2217fb51d5100cee51b22625cc81640da0679b47914e54c1e6377c"
+    },
+    "limit": "Reuse exact available bytes only; no Native rebuild/acquisition. Strict Gradle mode is not proof of all transitive bytes. Capture actual JDK/classpath and class-load logs, require one pinned PostgreSQL supplier/service and one checker, no stock/duplicate/implicit loader/agent. Historical186 entries are not a new measured result; Native05 remains UNQUALIFIED."
+  },
+  "request_template_not_deployed": {
+    "schema": "app-29-ordinary-connected-pg-01",
+    "authorized": false,
+    "attempts": 1,
+    "backend_sha": null,
+    "checkpoint_sha256": null,
+    "source_bundle": {
+      "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+      "private_parent_sha": null,
+      "ref": "refs/heads/remediation/app-29-backend-complaints",
+      "source_path": null,
+      "path": null,
+      "sha256": null,
+      "bytes": null
+    },
+    "budgets": {
+      "job_minutes": 25,
+      "controller_seconds": 1200,
+      "preflight_seconds": 120,
+      "validation_seconds": 900,
+      "cleanup_seconds": 180
+    },
+    "tool_sha256": {
+      "ci/app29-gate-b.py": null,
+      ".github/workflows/app29-gate-b.yml": null,
+      "review/working/app-29-ordinary-connected-pg-carrier-01/profile/profile.json": null,
+      "review/working/app-29-ordinary-connected-pg-carrier-01/profile/profile.init.gradle": null,
+      "ci/app29_owned_children.py": null
+    }
+  },
+  "new_bindings": {
+    "independent_preparation_review": null,
+    "primary_source_disposition": null,
+    "backend_checkpoint": null,
+    "backend_bundle": null,
+    "fresh_manifest": null,
+    "local_v3_receipt": null,
+    "deployed_checkpoint": null,
+    "carrier_sha": null,
+    "final_request_sha256": null,
+    "execution_admission": null,
+    "hosted_run": null,
+    "actual_result": null,
+    "independent_actual_result_review": null
+  },
+  "result_boundary": "Only the21 exact ordinary cases on newly bound target478 bytes could be accepted later. Capture and report failures/UNKNOWN truthfully; untouched local Linux03, historical PG1/PG14/PG10, Native/full47 and Engine evidence do not become new passes. No W03/P3/production/opaque/native-finalizer/pin/compaction/liveness/recovery/consumer qualification follows.",
+  "profile_identity_projection": "Populate new profile expected_tests with exactly the class/method/display_name projection of selection.json expected_tests (21 rows). Keep source_id/source_path/source_line/oracle prose in the textual selection evidence; they are not runtime outcomes. Bind source_inventory to that selection file path and its actual final hash, not to the historical47 inventory."
+}

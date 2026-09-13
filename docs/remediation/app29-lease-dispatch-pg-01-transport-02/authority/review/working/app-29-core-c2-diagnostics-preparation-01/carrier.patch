@@ -1,0 +1,445 @@
+--- a/ci/app29-gate-b.py
++++ b/ci/app29-gate-b.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""One private Core C2/profile04 Native05 check; candidate UNQUALIFIED, request unbound."""
++"""One private exact-two shutdown-diagnostic attempt; no consumer/native/full47 qualification."""
+ import argparse
+ import hashlib
+ import json
+@@ -11,24 +11,26 @@
+ import subprocess
+ import tarfile
+ import time
+-from urllib.parse import unquote, urlsplit
+ from xml.etree import ElementTree as ET
+ 
+ ADMIN = Path(__file__).resolve().parent.parent
+ BACKEND = ADMIN.parent / 'backend'
+-PAYLOAD = ADMIN / 'docs/remediation/app29-core-c2-02'
+-GATE = 'app-29-core-c2-hosted-02'
++PAYLOAD = ADMIN / 'docs/remediation/app29-core-c2-diagnostics-01'
++GATE = 'app-29-core-c2-diagnostics-01'
+ CHECKPOINT_SCHEMA = 'app29-core-c2-clean-checkpoint-v1'
+-PROFILE_ID = 'app-29-final-jar-consumer-profile-04'
+-PROFILE_FILE = 'review/working/app-29-gate-b-hosted-draft-06/profile/profile.json'
+-PROFILE_SHA = 'e54bd9d407f7add0275c245ac6eea6e82921ff3291f264447693762d37c372df'
+-PROFILE_INIT = 'review/working/app-29-gate-b-hosted-draft-06/profile/profile.init.gradle'
+-PROFILE_INIT_SHA = '4b1771bdb1e175691e845cda1d17c7773e90687f70bcbd687c91776a549323dc'
+-MANIFEST_FILE = 'review/working/app-29-w03-integrated-driver-core-c2-hosted-02/manifest.json'
++PROFILE_ID = 'app-29-core-c2-diagnostics-profile-01'
++PROFILE_FILE = 'review/working/app-29-core-c2-diagnostics-preparation-01/profile/profile.json'
++PROFILE_SHA = 'a5e6cf435dd0457cfd24f8cefa2cbe4fa90445bf884d028fe67bca07ec6664b7'
++PROFILE_INIT = 'review/working/app-29-core-c2-diagnostics-preparation-01/profile/profile.init.gradle'
++PROFILE_INIT_SHA = '8e7bd86077e4a3a9b817ef6014514598264f4bcc3d416e9543d93c11b7615b8a'
++MANIFEST_FILE = 'review/working/app-29-w03-integrated-driver-core-c2-diagnostics-01/manifest.json'
+ CLASS = 'me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest'
+-DESCENDANTS = 'me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest'
+-TEST_COUNTS = {DESCENDANTS: 16, CLASS: 31}
+-TASKS = ['test', '--tests', DESCENDANTS, '--tests', CLASS]
++METHODS = (
++    'throwing original RETURN override leaves F G T free and retires its exact source without a second return',
++    'failed post consent real Hikari tail seals actor admission but cannot retire the successor epoch')
++DIAGNOSTIC_CASES = ('RETURN_SAMPLE', 'FAILED_POST_CONSENT_TAIL')
++TEST_COUNTS = {CLASS: 2}
++TASKS = ['test', '--tests', CLASS + '.' + METHODS[0], '--tests', CLASS + '.' + METHODS[1]]
+ SEED = 'review/working/app-29-w03-integrated-driver-development-07/manifest.json'
+ SEED_SHA = '3effe74b4b9daa5198a7ce24347e195da495bf26aeed3aa9519820dd917e4a6a'
+ OWNER_SHA = '56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385'
+@@ -40,13 +42,14 @@
+ BACKEND_BRANCH = 'remediation/app-29-backend-complaints'
+ PUBLIC_PREREQUISITE = '3d839130c807f6a0a9b1c896c1c6cca4b41c4538'
+ CORE_BASELINE = '49da0919d9ec3091cb7bb041009dc9bd5f3e090f'
+-PRIVATE_PARENT = '926927ab805a2a3b78957862f3b744d0fe399ac5'
++PRIVATE_PARENT = '989a8c07b90d956a5f2484f223be41b5d99a8a3c'
++PREVIOUS_PRIVATE_PARENT = '926927ab805a2a3b78957862f3b744d0fe399ac5'
+ SOURCE_BUNDLE = {'public_prerequisite_sha': PUBLIC_PREREQUISITE, 'private_parent_sha': PRIVATE_PARENT,
+                  'ref': 'refs/heads/' + BACKEND_BRANCH,
+-                 'source_path': 'review/working/app-29-core-c2-private-checkpoint-02/backend.bundle',
+-                 'path': 'docs/remediation/app29-core-c2-02/inputs/backend.bundle'}
++                 'source_path': 'review/working/app-29-core-c2-diagnostics-private-checkpoint-01/backend.bundle',
++                 'path': 'docs/remediation/app29-core-c2-diagnostics-01/inputs/backend.bundle'}
+ BUNDLE_MAX_BYTES = 8 * 1024**2
+-DEPLOYMENTS = {f'review/working/app-29-gate-b-hosted-draft-06/{p}': p for p in (
++DEPLOYMENTS = {f'review/working/app-29-core-c2-diagnostics-preparation-01/{p}': p for p in (
+     'ci/app29-gate-b.py', '.github/workflows/app29-gate-b.yml')}
+ DEPLOYMENTS[PROFILE_FILE] = PROFILE_FILE
+ DEPLOYMENTS[PROFILE_INIT] = PROFILE_INIT
+@@ -61,24 +64,17 @@
+     'Report link': 'CAPTURE_LINK',
+     'Evidence copy drift': 'CAPTURE_COPY_DRIFT',
+     'Required raw evidence inventory missing': 'CAPTURE_REQUIRED_INVENTORY',
+-    'Wrong two-class XML inventory': 'XML_INVENTORY',
+-    'Require the sealed 16+31 exact source identities': 'XML_EXPECTED_IDENTITIES',
++    'Wrong diagnostic XML inventory': 'XML_INVENTORY',
++    'Require exactly the two fixed diagnostic source identities': 'XML_EXPECTED_IDENTITIES',
+     'Unsafe XML': 'XML_SAFE',
+-    'Core C2 class did not pass exactly': 'XML_SUITE_PASS',
+-    'Missing, extra or duplicate Core C2/probes testcase': 'XML_ACTUAL_IDENTITIES',
+-    'Wrong actual classpath/profile03/JDK': 'PROVENANCE_CLASSPATH_BINDING',
+-    'Stock/duplicate classpath supplier': 'PROVENANCE_STOCK_OR_DUPLICATE',
+-    'Wrong explicit class supplier': 'PROVENANCE_SUPPLIER',
+-    'Require exactly both CREATE_NEW profile03 witnesses, never an overwritten generic report': 'PROVENANCE_WITNESS_INVENTORY',
+-    'Witness is outside the passing selection': 'PROVENANCE_WITNESS_SELECTION',
+-    'Malformed worker witness': 'PROVENANCE_WITNESS_FORMAT',
+-    'Wrong actual development worker binding; old gate scalar is compatibility only': 'PROVENANCE_WORKER_BINDING',
+-    'Invalid worker PID': 'PROVENANCE_PID',
+-    'Both witnesses must belong to one actual worker/JDK': 'PROVENANCE_SHARED_WORKER',
+-    'Different positive consumer loaders': 'PROVENANCE_LOADER',
+-    'Wrong worker class-load log inventory': 'PROVENANCE_CLASS_LOG',
+-    'Missing actual class-definition association': 'PROVENANCE_CLASS_SOURCE',
+-    'Wrong actual positive Class source/loader association': 'PROVENANCE_POSITIVE_CLASS',
++    'Missing, extra or duplicate diagnostic testcase': 'XML_ACTUAL_IDENTITIES',
++    'Contradictory diagnostic testcase outcome': 'XML_OUTCOME',
++    'Diagnostic XML count mismatch': 'XML_COUNTS',
++    'Malformed fixed diagnostic record': 'DIAGNOSTIC_FORMAT',
++    'Wrong fixed diagnostic labels or scalar fields': 'DIAGNOSTIC_FIELDS',
++    'Wrong actual diagnostic classpath/profile/JDK': 'CONTEXT_CLASSPATH_BINDING',
++    'Stock/duplicate classpath supplier': 'CONTEXT_STOCK_OR_DUPLICATE',
++    'Wrong explicit class supplier': 'CONTEXT_SUPPLIER',
+     'Owned output became a non-directory': 'OWNED_PATH_TYPE',
+ }
+ 
+@@ -136,7 +132,7 @@
+             and all(value[k] == v for k, v in SOURCE_BUNDLE.items()), 'Wrong fixed private source transport')
+     require(type(value['bytes']) is int and 0 < value['bytes'] <= BUNDLE_MAX_BYTES
+             and isinstance(value['sha256'], str) and re.fullmatch('[0-9a-f]{64}', value['sha256'])
+-            and value['sha256'] != '0' * 64 and binding['backend_sha'] not in (PUBLIC_PREREQUISITE, CORE_BASELINE, PRIVATE_PARENT),
++            and value['sha256'] != '0' * 64 and binding['backend_sha'] not in (PUBLIC_PREREQUISITE, CORE_BASELINE, PRIVATE_PARENT, PREVIOUS_PRIVATE_PARENT),
+             'Unbound/oversized private checkpoint bundle')
+     return value
+ 
+@@ -178,7 +174,7 @@
+     for relative, sha in value['tool_sha256'].items():
+         require(digest(safe(ADMIN, relative)) == sha, 'Changed dedicated tool')
+     require(digest(safe(ADMIN, PROFILE_FILE)) == PROFILE_SHA and digest(safe(ADMIN, PROFILE_INIT)) == PROFILE_INIT_SHA,
+-            'Require the sealed profile04/init04 bytes, not a hosted replacement')
++            'Require the sealed diagnostic profile/init bytes, not a hosted replacement')
+     require(digest(ADMIN / 'ci/app29_owned_children.py') == OWNER_SHA, 'Shared ownership utility changed')
+     require(digest(PAYLOAD / 'checkpoint.json') == value['checkpoint_sha256'], 'Unbound checkpoint receipt')
+     checkpoint = read_json(PAYLOAD / 'checkpoint.json')
+@@ -241,7 +237,7 @@
+             and previous['backend_sha'] == PRIVATE_PARENT
+             and len(current['source_hashes']) == previous['source_count'] == 466
+             and current['source_hashes'][test_binding['path']] == test_binding['checkpoint_before_sha256'],
+-            'Wrong immutable current466/profile03 source baseline')
++            'Wrong immutable hosted02 current466 source baseline')
+     expected_sources = dict(current['source_hashes'])
+     expected_sources[test_binding['path']] = test_binding['after_sha256']
+     expected_snapshots = {str(PurePosixPath(MANIFEST_FILE).parent / 'sources' / p): expected_sources[p]
+@@ -257,11 +253,12 @@
+     expected_tooling = {p: sha for p, sha in current['validation_tooling'].items()
+                         if p not in current['additional_validation_tooling_paths']}
+     expected_tooling.update({original: digest(safe(ADMIN, deployed)) for original, deployed in DEPLOYMENTS.items()})
+-    require(manifest['validation_tooling'] == expected_tooling, 'Require exact current freezer and draft06 deployment tools')
++    require(manifest['validation_tooling'] == expected_tooling, 'Require exact current freezer and diagnostic deployment tools')
+     require(manifest['approved_inputs'].get(test_binding['proposal_path']) == test_binding['after_sha256']
+             and manifest['approved_inputs'].get(test_binding['patch_path']) == test_binding['patch_sha256']
+-            and all(manifest['approved_inputs'].get(p) == sha for p, sha in profile['native_candidate_evidence'].items()),
+-            'Missing exact provenance-only source proposal or Native05 authority')
++            and all(manifest['approved_inputs'].get(p) == sha for field in ('native_candidate_evidence', 'diagnostic_authority')
++                    for p, sha in profile[field].items()),
++            'Missing exact diagnostic proposal, source/history authority or retained Native05 inputs')
+     require(manifest['inventory_seed_manifest'] == SEED and manifest['inventory_seed_manifest_sha256'] == SEED_SHA
+             and manifest['inventory_seed_path_count'] == manifest['inventory_seed_preserved_count'] == 348,
+             'Complete historical inventory continuity required')
+@@ -306,10 +303,10 @@
+             and core['public_push_authorized'] is False and len(rows) == 21
+             and len({row['path'] for row in rows}) == 21, 'Wrong closed Core C2 source manifest')
+     require([row['sha256'] for row in rows if row['path'] == test_binding['path']] == [test_binding['before_sha256']],
+-            'Profile04 test correction is not based on the original bound C2 source')
++            'Diagnostic test is not based on the original bound C2 source')
+     for row in rows:
+         sha = test_binding['after_sha256'] if row['path'] == test_binding['path'] else row['sha256']
+-        require(manifest['source_hashes'].get(row['path']) == sha, 'Frozen source is not exact C2 plus profile04 binding')
++        require(manifest['source_hashes'].get(row['path']) == sha, 'Frozen source is not exact C2 plus the accepted diagnostic test')
+     return {'manifest_sha256': checkpoint['manifest_sha256'], 'sources': len(manifest['source_hashes']),
+             'seed_paths': 348, 'local_v3': 'PRIMARY_BOUND_LOCAL_RECEIPT_NOT_HOSTED_REEXECUTION', 'authority_files': len(pins),
+             'core_sources': 21, 'snapshots': 199, 'profile': PROFILE_ID,
+@@ -325,7 +322,7 @@
+         self.end = self.start + binding['budgets']['controller_seconds']
+         self.phase_end = self.start + binding['budgets']['preflight_seconds']
+         self.cancelled, self.started, self.clean_daemon, self.events_since = False, False, False, None
+-        self.run = Path(os.environ['RUNNER_TEMP']) / ('app29-core-c2-02-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
++        self.run = Path(os.environ['RUNNER_TEMP']) / ('app29-core-c2-diagnostics-01-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
+         self.run.mkdir(mode=0o700, exist_ok=False)
+         for name in ('reports', 'gradle', 'w01', 'tmp', 'home', 'project-cache', 'kotlin-cache'):
+             (self.run / name).mkdir(mode=0o700)
+@@ -333,7 +330,8 @@
+         self.result = {'status': 'FAIL', 'gate': GATE, 'backend_sha': binding['backend_sha'],
+                        'carrier_sha': os.environ['GITHUB_SHA'], 'commands': [], 'failures': [], 'processes': [],
+                        'containers': 'UNKNOWN', 'outputs_absent': False, 'capture_complete': False,
+-                       'captured_file_hashes': {}, 'owned_output_cleanup': {}, 'consumer': {'status': 'NOT_EVALUATED'}}
++                       'captured_file_hashes': {}, 'owned_output_cleanup': {}, 'diagnostics': {'status': 'NOT_EVALUATED'},
++                       'consumer': {'status': 'NOT_EVALUATED', 'scope': 'OUTSIDE_TWO_CASE_DIAGNOSTICS'}}
+         self.java = Path(os.environ['JAVA_HOME']).resolve()
+         self.env = {'PATH': str(self.java / 'bin') + ':/usr/bin:/bin', 'JAVA_HOME': str(self.java),
+                     'HOME': str(self.run / 'home'), 'GRADLE_USER_HOME': str(self.run / 'gradle'),
+@@ -351,7 +349,7 @@
+             guard = GUARD_IDS.get(error.args[0])
+             if guard is not None:
+                 row['guard'] = guard
+-        if stage == 'consumer' and type(error) is ET.ParseError:
++        if stage == 'diagnostics' and type(error) is ET.ParseError:
+             row['guard'] = 'XML_PARSE'
+         self.result['failures'].append(row)
+ 
+@@ -443,17 +441,22 @@
+         ancestor = self.command(label + '-private-parent-commit', ['git', '--no-replace-objects', 'cat-file', 'commit', PRIVATE_PARENT], cleaning=cleaning)
+         ancestor_header, ancestor_separator, _ = ancestor.partition(b'\n\n')
+         ancestor_parents = [row[7:].decode('ascii') for row in ancestor_header.split(b'\n') if row.startswith(b'parent ')]
++        previous = self.command(label + '-previous-private-parent-commit', ['git', '--no-replace-objects', 'cat-file', 'commit', PREVIOUS_PRIVATE_PARENT], cleaning=cleaning)
++        previous_header, previous_separator, _ = previous.partition(b'\n\n')
++        previous_parents = [row[7:].decode('ascii') for row in previous_header.split(b'\n') if row.startswith(b'parent ')]
+         core_baseline = self.command(label + '-core-baseline-commit', ['git', '--no-replace-objects', 'cat-file', 'commit', CORE_BASELINE], cleaning=cleaning)
+         core_header, core_separator, _ = core_baseline.partition(b'\n\n')
+         core_parents = [row[7:].decode('ascii') for row in core_header.split(b'\n') if row.startswith(b'parent ')]
+         self.result.setdefault('source_checkout_final', {})[label] = {
+             'head': sha, 'branch': branch, 'parents': parents,
+             'private_parent': {'head': PRIVATE_PARENT, 'parents': ancestor_parents},
++            'previous_private_parent': {'head': PREVIOUS_PRIVATE_PARENT, 'parents': previous_parents},
+             'core_baseline': {'head': CORE_BASELINE, 'parents': core_parents}}
+         require(sha == self.binding['backend_sha'] and branch == BACKEND_BRANCH
+-                and separator and parents == [PRIVATE_PARENT] and ancestor_separator and ancestor_parents == [CORE_BASELINE]
++                and separator and parents == [PRIVATE_PARENT] and ancestor_separator and ancestor_parents == [PREVIOUS_PRIVATE_PARENT]
++                and previous_separator and previous_parents == [CORE_BASELINE]
+                 and core_separator and core_parents == [PUBLIC_PREREQUISITE],
+-                'Require exact new private tip ->926927 ->49da ->public prerequisite, with no merges or extra descendants')
++                'Require exact diagnostic tip ->989a ->926927 ->49da ->public prerequisite, with no merges or extra descendants')
+         require(not self.command(label + '-status', ['git', 'status', '--porcelain=v1', '--untracked-files=all'], cleaning=cleaning), 'Checkpoint is dirty')
+         names = self.command(label + '-tracked', ['git', 'ls-files', '-z'], cleaning=cleaning).decode().split('\0')[:-1]
+         hashes = {p: digest(safe(BACKEND, p)) for p in names}
+@@ -555,41 +558,68 @@
+                     require(digest(destination, 64 * 1024**2) == before == digest(path, 64 * 1024**2), 'Evidence copy drift')
+                     row['sha256'] = before
+     required = {'test-results/test/TEST-' + name + '.xml' for name in TEST_COUNTS}
+-    required.update(profile['report_directory'] + '/' + name for name in (
+-        'effective-classpath.txt', *(item['file'] for item in profile['expected_witnesses'])))
++    required.add(profile['report_directory'] + '/effective-classpath.txt')
+     class_logs = [p for p in inventory if PurePosixPath(p).parent.as_posix() == profile['report_directory']
+                   and re.fullmatch(r'class-load-[1-9][0-9]*\.txt', PurePosixPath(p).name)]
+-    # Presence/copy integrity only: XML outcomes and all provenance meanings remain consumer gates.
++    # Presence/copy integrity only; diagnostics below retain actual outcomes, never consumer qualification.
+     require(required <= inventory.keys() and class_logs, 'Required raw evidence inventory missing')
+     return True
+ 
+ 
+-def consumer(reports, profile, java):
++def diagnostics(reports, profile, java):
+     xmls = list((reports / 'test-results/test').glob('*.xml'))
+-    require(sorted(p.name for p in xmls) == sorted('TEST-' + name + '.xml' for name in TEST_COUNTS), 'Wrong two-class XML inventory')
+-    expected = [(row['class'], row['display_name']) for row in profile['expected_tests']]
+-    require(len(expected) == len(set(expected)) == profile['expected_test_count'] == 47
+-            and all(row['display_name'] == row['method'] + '()' for row in profile['expected_tests'])
+-            and {name: sum(owner == name for owner, _ in expected) for name in TEST_COUNTS} == TEST_COUNTS,
+-            'Require the sealed 16+31 exact source identities')
+-    identities = []
+-    for path in xmls:
+-        name = path.name[len('TEST-'):-len('.xml')]
+-        raw = path.read_text(encoding='utf-8-sig')
+-        require('\x00' not in raw and '<!DOCTYPE' not in raw.upper() and '<!ENTITY' not in raw.upper(), 'Unsafe XML')
+-        suite = ET.fromstring(raw)
+-        cases = suite.findall('testcase')
+-        require(suite.tag == 'testsuite' and suite.get('name') == name and suite.get('tests') == str(TEST_COUNTS[name])
+-                and all(suite.get(k) == '0' for k in ('failures', 'errors', 'skipped')) and len(cases) == TEST_COUNTS[name]
+-                and all(case.get('classname') == name for case in cases)
+-                and not any(node.tag in ('failure', 'error', 'skipped') for node in suite.iter()), 'Core C2 class did not pass exactly')
+-        identities.extend((case.get('classname'), case.get('name')) for case in cases)
+-    require(sorted(identities) == sorted(expected), 'Missing, extra or duplicate Core C2/probes testcase')
++    require([p.name for p in xmls] == ['TEST-' + CLASS + '.xml'], 'Wrong diagnostic XML inventory')
++    expected = [(CLASS, method + '()') for method in METHODS]
++    require(profile['expected_test_count'] == 2 and profile['test_classes'] == [CLASS]
++            and profile['expected_witnesses'] == []
++            and profile['expected_tests'] == [{'class': CLASS, 'method': m, 'display_name': m + '()'} for m in METHODS],
++            'Require exactly the two fixed diagnostic source identities')
++    raw = xmls[0].read_text(encoding='utf-8-sig')
++    require('\x00' not in raw and '<!DOCTYPE' not in raw.upper() and '<!ENTITY' not in raw.upper(), 'Unsafe XML')
++    suite = ET.fromstring(raw)
++    cases = suite.findall('testcase')
++    identities = [(case.get('classname'), case.get('name')) for case in cases]
++    require(suite.tag == 'testsuite' and suite.get('name') == CLASS and suite.get('tests') == '2'
++            and sorted(identities) == sorted(expected), 'Missing, extra or duplicate diagnostic testcase')
++    outcomes = []
++    for case in cases:
++        states = [state for tag, state in (('failure', 'FAIL'), ('error', 'ERROR'), ('skipped', 'SKIP')) if case.find(tag) is not None]
++        require(len(states) <= 1, 'Contradictory diagnostic testcase outcome')
++        outcomes.append({'class': case.get('classname'), 'display_name': case.get('name'),
++                         'status': states[0] if states else 'PASS'})
++    counts = {state: sum(row['status'] == state for row in outcomes) for state in ('PASS', 'FAIL', 'ERROR', 'SKIP')}
++    require(all(suite.get(field) == str(counts[state]) for field, state in
++                (('failures', 'FAIL'), ('errors', 'ERROR'), ('skipped', 'SKIP'))), 'Diagnostic XML count mismatch')
++    phases = ('BEFORE_SHUTDOWN', 'AFTER_SHUTDOWN', 'OBSERVATION_FAILED')
++    scalars = set(('budget_remaining_ms invocation_result first_close observation actor_capacity actor_retained '
++                   'actor_constructing actor_retired actor_factory_sealed actor_fault future_lease_entries active_operations '
++                   'close_queue_size close_pool_size close_active_count close_completed_tasks close_shutdown close_terminated').split())
++    records = []
++    for output in suite.iter('system-out'):
++        for line in (output.text or '').splitlines():
++            if not line.startswith('OWNED_CUT_SHUTDOWN_DIAGNOSTIC'):
++                continue
++            tokens = line.split()
++            pairs = [token.split('=', 1) for token in tokens[1:]]
++            require(tokens[0] == 'OWNED_CUT_SHUTDOWN_DIAGNOSTIC' and all(len(pair) == 2 for pair in pairs),
++                    'Malformed fixed diagnostic record')
++            fields = unique(pairs)
++            require(fields.get('case') in DIAGNOSTIC_CASES and fields.get('phase') in phases
++                    and fields.get('status') in ('CAPTURED', 'UNAVAILABLE')
++                    and fields.keys() == {'case', 'phase', 'status'} | (scalars if fields.get('status') == 'CAPTURED' else set())
++                    and all(re.fullmatch(r'[A-Z][A-Z0-9_]*|-?[0-9]+|true|false', value) for value in fields.values()),
++                    'Wrong fixed diagnostic labels or scalar fields')
++            records.append({'raw': line, 'fields': fields})
++    coverage = {label: {phase: [row['fields']['status'] for row in records
++                               if row['fields']['case'] == label and row['fields']['phase'] == phase]
++                        for phase in phases} for label in DIAGNOSTIC_CASES}
++    scalar_capture = (all(coverage[label][phase] == ['CAPTURED'] for label in DIAGNOSTIC_CASES for phase in phases[:2])
++                      and all(row['fields']['status'] == 'CAPTURED' for row in records))
+     folder = safe(reports, profile['report_directory'])
+     cp = read_json(folder / 'effective-classpath.txt')
+     require(cp['profile'] == PROFILE_ID and cp['java_home'] == str(java)
+-            and cp['source_inventory'] == profile['source_inventory'] and cp['expected_test_count'] == 47
+-            and cp['expected_witnesses'] == profile['expected_witnesses'], 'Wrong actual classpath/profile03/JDK')
++            and cp['source_inventory'] == profile['source_inventory'] and cp['expected_test_count'] == 2
++            and cp['expected_witnesses'] == [], 'Wrong actual diagnostic classpath/profile/JDK')
+     entries = cp['entries']
+     require(len({e['path'] for e in entries}) == len(entries)
+             and cp['removed_stock']['sha256'] == profile['removed_stock']['sha256']
+@@ -598,48 +628,12 @@
+         rows = [e for e in entries if e[flag] > 0]
+         require(len(rows) == 1 and rows[0]['path'] == str(safe(ADMIN, profile[key]['path']))
+                 and rows[0]['sha256'] == profile[key]['sha256'], 'Wrong explicit class supplier')
+-    specifications = profile['expected_witnesses']
+-    require(len(specifications) == 2 and {item['name'] for item in specifications} == {'required', 'original'}
+-            and sorted(p.name for p in folder.glob('worker-runtime*')) == sorted(item['file'] for item in specifications),
+-            'Require exactly both CREATE_NEW profile03 witnesses, never an overwritten generic report')
+-    workers = []
+-    for item in specifications:
+-        require((item['class'], item['method'] + '()') in expected, 'Witness is outside the passing selection')
+-        pairs = [line.split('=', 1) for line in safe(folder, item['file']).read_text().splitlines()]
+-        require(all(len(pair) == 2 for pair in pairs), 'Malformed worker witness')
+-        worker = unique(pairs)
+-        require(worker['profile'] == PROFILE_ID and worker['witness'] == item['name'] and worker['provenance'] == 'PASS'
+-                and worker['java.home'] == str(java) and worker['worker.executable'] == str(java / 'bin/java')
+-                and worker['jar.sha256'] == profile['final_jar']['sha256'] and worker['checker.sha256'] == profile['checker']['sha256']
+-                and '-Dkira.finalJarConsumer.profile=' + PROFILE_ID in worker.values()
+-                and '-Dkira.finalJarConsumer.gate=' + profile['original_provider_gate'] in worker.values(),
+-                'Wrong actual development worker binding; old gate scalar is compatibility only')
+-        require(re.fullmatch('[1-9][0-9]*', worker['worker.pid']), 'Invalid worker PID')
+-        workers.append(worker)
+-    identity = ('worker.pid', 'worker.executable', 'java.home', 'java.runtime.version', 'java.vm.name', 'java.vm.version')
+-    require(len({tuple(worker[key] for key in identity) for worker in workers}) == 1, 'Both witnesses must belong to one actual worker/JDK')
+-    positive_loader = workers[0]['class.org.postgresql.Driver.loader']
+-    require(positive_loader and all(worker['class.org.postgresql.Driver.loader'] == positive_loader for worker in workers),
+-            'Different positive consumer loaders')
+-    logs = list(folder.glob('class-load-*.txt'))
+-    require([p.name for p in logs] == ['class-load-' + workers[0]['worker.pid'] + '.txt'], 'Wrong worker class-load log inventory')
+-    # Preserve Gate A/B's file-origin rule: intentional cold defineClass negatives are not positive suppliers.
+-    observed = re.findall(r'\[class,load\s*\]\s+(\S+) source: (file:[^\r\n]+)', logs[0].read_text())
+-    bindings = [(n, profile['final_jar']['path']) for n in profile['origin_classes']] + [(profile['checker_class'], profile['checker']['path'])]
+-    for name, relative in bindings:
+-        sources = [urlsplit(uri) for actual, uri in observed if actual == name]
+-        expected_path = str(safe(ADMIN, relative))
+-        require(len(sources) == 1 and not sources[0].netloc and unquote(sources[0].path) == expected_path, 'Missing actual class-definition association')
+-    for item, worker in zip(specifications, workers):
+-        bindings = [(name, profile['final_jar']['path']) for name in item['origin_classes']] + [(profile['checker_class'], profile['checker']['path'])]
+-        for name, relative in bindings:
+-            require(worker['class.' + name + '.source'] == str(safe(ADMIN, relative))
+-                    and worker['class.' + name + '.loader'] == positive_loader, 'Wrong actual positive Class source/loader association')
+-    return {'status': 'PASS', 'tests': 47, 'classes': TEST_COUNTS, 'identities': sorted(identities), 'profile': PROFILE_ID,
+-            'worker_pid': workers[0]['worker.pid'], 'positive_loader': positive_loader,
+-            'witness_files': [item['file'] for item in specifications], 'raw_class': 'org.postgresql.jdbc.PgConnection',
+-            'candidate_qualification': 'UNQUALIFIED',
+-            'negative_scope': 'Two JUnit pending probes verify intentional exit23 as PROCESS_ONLY/product_end=false; no owner exit-code waiver'}
++    return {'status': 'RECORDED', 'test_status': 'PASS' if counts['PASS'] == 2 else 'FAIL',
++            'tests': 2, 'classes': TEST_COUNTS, 'identities': sorted(identities), 'outcomes': outcomes, 'counts': counts,
++            'profile': PROFILE_ID, 'fixed_scalar_capture': 'CAPTURED' if scalar_capture else 'INCOMPLETE_OR_UNAVAILABLE',
++            'raw_shutdown_diagnostics': records, 'diagnostic_coverage': coverage,
++            'diagnostic_limit': 'Best-effort non-atomic scalars; not causality, completion, repair or consumer proof.',
++            'historical_result': profile['historical_result'], 'candidate_qualification': 'UNQUALIFIED'}
+ 
+ 
+ def execute(binding):
+@@ -659,8 +653,10 @@
+         require(carrier == os.environ['GITHUB_SHA'], 'Carrier checkout differs from exact workflow SHA')
+         profile = read_json(safe(ADMIN, PROFILE_FILE))
+         require(profile['profile_id'] == PROFILE_ID and profile['task_args'] == TASKS
+-                and profile['expected_test_count'] == 47 and profile['final_jar']['qualification'] == 'UNQUALIFIED',
+-                'Wrong development profile04/task/candidate scope')
++                and profile['expected_test_count'] == 2 and profile['expected_witnesses'] == []
++                and profile['final_jar']['qualification'] == 'UNQUALIFIED',
++                'Wrong two-case diagnostic profile/task/candidate scope')
++        gate.result['historical_result'] = profile['historical_result']
+         gate.materialize_source()
+         baseline = gate.sources('before')
+         gate.result['source_binding_before'] = bind_freeze(binding, profile)
+@@ -698,7 +694,7 @@
+             gate.result['source_bundle_after'] = gate.attempt('source-bundle-postflight', lambda: read_source_bundle(binding))
+             gate.result['capture_complete'] = gate.attempt('capture-reports', lambda: capture_reports(gate, profile)) is True
+             if gate.result['capture_complete']:
+-                gate.result['consumer'] = gate.attempt('consumer', lambda: consumer(gate.reports, profile, gate.java)) or {'status': 'FAIL'}
++                gate.result['diagnostics'] = gate.attempt('diagnostics', lambda: diagnostics(gate.reports, profile, gate.java)) or {'status': 'FAIL'}
+             def postflight():
+                 require(baseline is not None and gate.sources('after', cleaning=True) == baseline, 'Effective source changed')
+                 require(request() == binding, 'Initially accepted request changed')
+@@ -759,10 +755,11 @@
+         gate.result['elapsed_seconds'] = time.monotonic() - gate.start
+         passed = (not gate.result['failures'] and not gate.cancelled and gate.result['elapsed_seconds'] < 1200
+                   and gate.result['outputs_absent'] and gate.result['retained_inventory_complete'] and gate.result.get('inputs_preserved') is True
+-                  and gate.result.get('consumer', {}).get('status') == 'PASS' and gate.result['containers'] == 'NORMAL_ABSENT'
++                  and gate.result.get('diagnostics', {}).get('test_status') == 'PASS'
++                  and gate.result['diagnostics'].get('fixed_scalar_capture') == 'CAPTURED' and gate.result['containers'] == 'NORMAL_ABSENT'
+                   and all(r['outcome'] == 'NORMAL' for r in gate.result['commands']) and final_containers is True)
+         gate.result['status'] = 'PASS' if passed else 'FAIL'
+-        gate.result['limitation'] = 'Development Core C2/probes47 only; two negative exits are PROCESS_ONLY, not product end. Native05 candidate50f7 remains UNQUALIFIED; D05 PARTIAL / D06 unreviewed and W03/native/full qualification remain open.'
++        gate.result['limitation'] = 'Exactly two shutdown-diagnostic methods only; historical hosted02 45 PASS/2 FAIL is not rerun or relabelled. Raw scalars are non-atomic, not completion or causal proof. No consumer/full47/Native05 qualification; Native05 remains UNQUALIFIED, D05 PARTIAL / D06 unreviewed; W03/native/full qualification remain open.'
+         save(gate.reports / 'result.json', gate.result)
+     return 0 if gate.result['status'] == 'PASS' else 1
+ 
+--- a/.github/workflows/app29-gate-b.yml
++++ b/.github/workflows/app29-gate-b.yml
+@@ -1,12 +1,12 @@
+-name: App29 Core C2 profile04 Native05 development47 (private, candidate unqualified)
++name: App29 Core C2 two-case shutdown diagnostics (private, no qualification)
+ on:
+   push:
+     branches: [remediation/app-29-backend-complaints]
+     paths:
+       - .github/workflows/app29-gate-b.yml
+       - ci/app29-gate-b.py
+-      - review/working/app-29-gate-b-hosted-draft-06/profile/profile.json
+-      - review/working/app-29-gate-b-hosted-draft-06/profile/profile.init.gradle
++      - review/working/app-29-core-c2-diagnostics-preparation-01/profile/profile.json
++      - review/working/app-29-core-c2-diagnostics-preparation-01/profile/profile.init.gradle
+       - ci/app29-gate-b.request.json
+ permissions:
+   contents: read
+@@ -14,7 +14,7 @@
+   group: app29-gate-b-private-${{ github.ref }}
+   cancel-in-progress: false
+ jobs:
+-  consumer:
++  diagnostics:
+     if: github.event.repository.private == true && github.repository == 'kira-manga/kira-admin'
+     runs-on: ubuntu-24.04
+     timeout-minutes: 25
+@@ -43,17 +43,17 @@
+         with:
+           distribution: temurin
+           java-version: '21'
+-      - name: Run exactly47 Core C2 cases in one Test task (candidate remains unqualified)
++      - name: Run exactly two Core C2 shutdown-diagnostic methods (no qualification)
+         id: validation
+         shell: bash
+         run: |
+           umask 077
+           python3 -B admin/ci/app29-gate-b.py
+-      - name: Retain complete private consumer and cleanup receipts
++      - name: Retain raw two-case diagnostics, source and owned-cleanup receipts
+         if: always() && steps.validation.outcome != 'skipped'
+         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+         with:
+-          name: app29-core-c2-02-${{ github.run_id }}-${{ github.run_attempt }}
+-          path: ${{ runner.temp }}/app29-core-c2-02-${{ github.run_id }}-${{ github.run_attempt }}/reports/
++          name: app29-core-c2-diagnostics-01-${{ github.run_id }}-${{ github.run_attempt }}
++          path: ${{ runner.temp }}/app29-core-c2-diagnostics-01-${{ github.run_id }}-${{ github.run_attempt }}/reports/
+           retention-days: 3
+           if-no-files-found: error

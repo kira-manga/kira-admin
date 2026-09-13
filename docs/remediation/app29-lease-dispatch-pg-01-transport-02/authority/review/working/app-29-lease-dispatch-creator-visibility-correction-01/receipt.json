@@ -1,0 +1,10 @@
+{
+  "at_utc": "2026-09-13T10:47:58.434024+00:00",
+  "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt",
+  "before_sha256": "da4ead51ebdded37bc6b97e88b2c1d9f43ec6b28d36da25775ca74db601d7e9b",
+  "after_sha256": "8ffac7e6c44fd2cd6503b0b1fd9d00ed70efa45e2bed8880f4b1f042b03790a9",
+  "review": "review/remediation/app-29-lease-dispatch-creator-independent-actual-diff-review-01.md",
+  "change": "F1 only: internal test class; parameter type, method names, enum row selection, assertions, budgets and all16 other reviewed paths unchanged",
+  "status": "UNCOMPILED_UNEXECUTED",
+  "remaining": "Local normal compilation/statics; all17 tests require real Testcontainers PG. Existing null-tail before-allocation failure has source-traced retention but no separately injected runtime result; do not count registered-tail cases as that proof. Original PG01 remainsFAIL20/21; test original failed method unchanged."
+}

@@ -1,0 +1,25 @@
+--- a/profile/profile.init.gradle
++++ b/profile/profile.init.gradle
+@@ -10,7 +10,7 @@
+ 
+ // Private exact21 ordinary-connected derivative of reviewed PG1; all historical files stay unchanged.
+ // Reuses the existing owned hosted context; no controller, process, fixture or dependency replacement.
+-def profileSha256 = null // Inert author derivative; primary must bind actual final profile bytes.
++def profileSha256 = '2cf80540dccd11b5b1088a36244a3c7ab68d8b6050a32008d921862265fa0438' // Inert author derivative; primary must bind actual final profile bytes.
+ if (!(profileSha256 instanceof String) || !(profileSha256 ==~ /[0-9a-f]{64}/) || profileSha256 == '0' * 64) {
+     throw new GradleException('Inert ordinary-connected derivative: final profile hash is unbound')
+ }
+--- a/ci/app29-gate-b.py
++++ b/ci/app29-gate-b.py
+@@ -20,9 +20,9 @@
+ CHECKPOINT_SCHEMA = 'app29-ordinary-connected-clean-checkpoint-v1'
+ PROFILE_ID = 'app-29-ordinary-connected-pg-profile-01'
+ PROFILE_FILE = 'review/working/app-29-ordinary-connected-pg-carrier-01/profile/profile.json'
+-PROFILE_SHA = None  # Inert author derivative; primary binds actual final profile bytes.
++PROFILE_SHA = '2cf80540dccd11b5b1088a36244a3c7ab68d8b6050a32008d921862265fa0438'  # Inert author derivative; primary binds actual final profile bytes.
+ PROFILE_INIT = 'review/working/app-29-ordinary-connected-pg-carrier-01/profile/profile.init.gradle'
+-PROFILE_INIT_SHA = None  # Bind only after the init's real profile hash is finalized.
++PROFILE_INIT_SHA = 'edbe0440d247e66c5a7c8efc17de347e7f077c0eca49b10fbd719ba4b2ce2172'  # Bind only after the init's real profile hash is finalized.
+ MANIFEST_FILE = 'review/working/app-29-w03-integrated-driver-ordinary-connected-pg-01/manifest.json'
+ METHODS = {
+     'me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT': (

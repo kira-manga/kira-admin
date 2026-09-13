@@ -1,0 +1,1056 @@
+--- kira-admin/ci/app29-gate-b.py
++++ review/working/app-29-ordinary-connected-pg-carrier-01/ci/app29-gate-b.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""One private exact-one SQLClientInfo attempt; no consumer/native/full47 qualification."""
++"""One private exact21 ordinary-connected PG attempt; no consumer/native/full47/W03 qualification."""
+ import argparse
+ import hashlib
+ import json
+@@ -15,21 +15,52 @@
+ 
+ ADMIN = Path(__file__).resolve().parent.parent
+ BACKEND = ADMIN.parent / 'backend'
+-PAYLOAD = ADMIN / 'docs/remediation/app29-core-c2-sqlclientinfo-pg1-01'
+-GATE = 'app-29-core-c2-sqlclientinfo-pg1-01'
+-CHECKPOINT_SCHEMA = 'app29-core-c2-clean-checkpoint-v1'
+-PROFILE_ID = 'app-29-core-c2-sqlclientinfo-pg1-profile-01'
+-PROFILE_FILE = 'review/working/app-29-core-c2-sqlclientinfo-pg1-preparation-01/profile/profile.json'
+-PROFILE_SHA = '173b4f5131cacd7b89b8bd24b1700eac34218969b7921c80a6beb9dee72c0d37'
+-PROFILE_INIT = 'review/working/app-29-core-c2-sqlclientinfo-pg1-preparation-01/profile/profile.init.gradle'
+-PROFILE_INIT_SHA = 'f4d6c74702278adc8224ee834da7735884281bd83b977da40d5e111bfe70568d'
+-MANIFEST_FILE = 'review/working/app-29-w03-integrated-driver-core-c2-sqlclientinfo-pg1-01/manifest.json'
+-CLASS = 'me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest'
+-METHODS = ('real lease preserves Properties client info defaults and declared stale and foreign failure shapes',)
++PAYLOAD = ADMIN / 'docs/remediation/app29-ordinary-connected-pg-01'
++GATE = 'app-29-ordinary-connected-pg-01'
++CHECKPOINT_SCHEMA = 'app29-ordinary-connected-clean-checkpoint-v1'
++PROFILE_ID = 'app-29-ordinary-connected-pg-profile-01'
++PROFILE_FILE = 'review/working/app-29-ordinary-connected-pg-carrier-01/profile/profile.json'
++PROFILE_SHA = None  # Inert author derivative; primary binds actual final profile bytes.
++PROFILE_INIT = 'review/working/app-29-ordinary-connected-pg-carrier-01/profile/profile.init.gradle'
++PROFILE_INIT_SHA = None  # Bind only after the init's real profile hash is finalized.
++MANIFEST_FILE = 'review/working/app-29-w03-integrated-driver-ordinary-connected-pg-01/manifest.json'
++METHODS = {
++    'me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT': (
++        'ordinary JPA required join shares exact holder lease PID and transaction without completing the outer owner',
++        'wrong dispatch propagation resource and both extra borrow overloads refuse before suspension or checkout',
++        'ambient synchronization holders actual transaction and an unbound ordinary loan reject named entry',
++        'missing or foreign selected holder cannot authorize cleanup even with true transaction flags',
++        'wrapped unscoped JPA commits and releases immediately without acquiring short phase ownership',
++        'foreign same endpoint or unprovable EMF metadata refuses before additional creation begin or either checkout',
++        'private JPA composition refuses execution listener configuration before any begin or lease',
++        'accepted real lease survives failed begin with no returned status until actual rollback close and receipt',
++        'post status selected holder materialization failure rolls back the retained real transaction without fallback borrowing',
++        'an accepted but undelivered late acquisition never enters the body and retains custody through its real tail',
++        'positive remaining caps and the two second work budget share only one emergency allowance',
++        'real blocking SQL after delete ends the old session and row lock without a future timeout receipt',
++        'native commit failure stays unknown after Spring cleanup while authentic local quiescence permits only refund',
++        'real afterCommit interruption preserves durable committed outcome exact cleanup and original caller interrupt',
++        'a real post consent return tail retains permit past expiry and cannot refund or retire its successor early',
++    ),
++    'me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupIT': (
++        'source expiry includes the cutoff and used unexpired grants without deleting the next microsecond',
++        'mixed scope cleanup preserves active source grants and every complaint lifecycle',
++        'one invocation commits only the first fifty eligible UUIDs and leaves the remaining batch',
++        'an independently locked earliest eligible grant is skipped while fifty other rows commit',
++        'the trusted Clock is sampled once and its committed cutoff is durable to an independent reader',
++        'a decorator failure after the real delete rolls back and preserves independently readable rows',
++    ),
++}
+ # Historical syntax guard only: this separate profile rejects every emitted PG14 row.
+ DIAGNOSTIC_CASES = ('RETURN_SAMPLE', 'FAILED_POST_CONSENT_TAIL')
+-TEST_COUNTS = {CLASS: 1}
+-TASKS = ['test'] + [arg for method in METHODS for arg in ('--tests', CLASS + '.' + method)]
++TEST_COUNTS = {
++    'me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT': 15,
++    'me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupIT': 6,
++}
++EXPECTED_TESTS = [{'class': name, 'method': method, 'display_name': method + '()'}
++                  for name, methods in METHODS.items() for method in methods]
++TASKS = ['test'] + [arg for row in EXPECTED_TESTS for arg in ('--tests', row['class'] + '.' + row['method'])]
++LOCAL_PREFLIGHT_FILE = str(PurePosixPath(MANIFEST_FILE).parent / 'hosted-local-preflight.json')
+ SEED = 'review/working/app-29-w03-integrated-driver-development-07/manifest.json'
+ SEED_SHA = '3effe74b4b9daa5198a7ce24347e195da495bf26aeed3aa9519820dd917e4a6a'
+ OWNER_SHA = '56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385'
+@@ -45,12 +76,16 @@
+ PREVIOUS_PRIVATE_PARENT = '926927ab805a2a3b78957862f3b744d0fe399ac5'
+ DIAGNOSTIC_PARENT = 'eb8fed8b6b620a0c7448c223bf49c1683f8eaadc'
+ PRODUCT_LIFECYCLE_PARENT = '1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1'
+-SOURCE_BUNDLE = {'public_prerequisite_sha': PUBLIC_PREREQUISITE, 'private_parent_sha': PRODUCT_LIFECYCLE_PARENT,
++ORDINARY_PARENT = '6db944871c1584bd6a1f28263e8010cadd766fab'
++ORDINARY_HEAD = 'ccdbb28f6362117882501b4da040257be6fc1990'
++ORDINARY_TREE = 'd172ecf246a9606194f43023a0703d778b877566'
++SOURCE_BUNDLE = {'public_prerequisite_sha': PUBLIC_PREREQUISITE, 'private_parent_sha': ORDINARY_PARENT,
+                  'ref': 'refs/heads/' + BACKEND_BRANCH,
+-                 'source_path': 'review/working/app-29-core-c2-post-structural-private-checkpoint-01/backend.bundle',
+-                 'path': 'docs/remediation/app29-core-c2-sqlclientinfo-pg1-01/inputs/backend.bundle'}
++                 'source_path': 'review/working/app-29-ordinary-connected-source-checkpoint-01/ordinary-connected-source.bundle',
++                 'path': 'docs/remediation/app29-ordinary-connected-pg-01/inputs/backend.bundle',
++                 'sha256': '63d9469a1ac0145f807129e8b6c7ee865a309676ee3e188eacf413d8de40b3a3', 'bytes': 257140}
+ BUNDLE_MAX_BYTES = 8 * 1024**2
+-DEPLOYMENTS = {f'review/working/app-29-core-c2-sqlclientinfo-pg1-preparation-01/{p}': p for p in (
++DEPLOYMENTS = {f'review/working/app-29-ordinary-connected-pg-carrier-01/{p}': p for p in (
+     'ci/app29-gate-b.py', '.github/workflows/app29-gate-b.yml')}
+ DEPLOYMENTS[PROFILE_FILE] = PROFILE_FILE
+ DEPLOYMENTS[PROFILE_INIT] = PROFILE_INIT
+@@ -66,7 +101,7 @@
+     'Evidence copy drift': 'CAPTURE_COPY_DRIFT',
+     'Required raw evidence inventory missing': 'CAPTURE_REQUIRED_INVENTORY',
+     'Wrong diagnostic XML inventory': 'XML_INVENTORY',
+-    'Require exactly the one fixed SQLClientInfo source identity': 'XML_EXPECTED_IDENTITIES',
++    'Require exactly the21 fixed ordinary-connected source identities': 'XML_EXPECTED_IDENTITIES',
+     'Unsafe XML': 'XML_SAFE',
+     'Missing, extra or duplicate diagnostic testcase': 'XML_ACTUAL_IDENTITIES',
+     'Contradictory diagnostic testcase outcome': 'XML_OUTCOME',
+@@ -86,6 +121,12 @@
+         raise ValueError(message)
+ 
+ 
++def require_profile_pins():
++    require(all(isinstance(sha, str) and re.fullmatch('[0-9a-f]{64}', sha) and sha != '0' * 64
++                for sha in (PROFILE_SHA, PROFILE_INIT_SHA)),
++            'Inert ordinary-connected derivative: final profile/init hashes are unbound')
++
++
+ def safe(root, relative):
+     parts = PurePosixPath(relative).parts
+     require(isinstance(relative, str) and parts and not relative.startswith('/')
+@@ -134,7 +175,9 @@
+             and all(value[k] == v for k, v in SOURCE_BUNDLE.items()), 'Wrong fixed private source transport')
+     require(type(value['bytes']) is int and 0 < value['bytes'] <= BUNDLE_MAX_BYTES
+             and isinstance(value['sha256'], str) and re.fullmatch('[0-9a-f]{64}', value['sha256'])
+-            and value['sha256'] != '0' * 64 and binding['backend_sha'] not in (PUBLIC_PREREQUISITE, CORE_BASELINE, PRIVATE_PARENT, PREVIOUS_PRIVATE_PARENT, DIAGNOSTIC_PARENT, PRODUCT_LIFECYCLE_PARENT),
++            and value['sha256'] != '0' * 64 and binding['backend_sha'] == ORDINARY_HEAD
++            and binding['backend_sha'] not in (PUBLIC_PREREQUISITE, CORE_BASELINE, PRIVATE_PARENT, PREVIOUS_PRIVATE_PARENT,
++                                               DIAGNOSTIC_PARENT, PRODUCT_LIFECYCLE_PARENT, ORDINARY_PARENT),
+             'Unbound/oversized private checkpoint bundle')
+     return value
+ 
+@@ -164,6 +207,7 @@
+ 
+ 
+ def request():
++    require_profile_pins()  # Before request reading, emit-target output or helper/resource acquisition.
+     value = read_json(ADMIN / 'ci/app29-gate-b.request.json')
+     require(value['schema'] == GATE and value['authorized'] is True and value['attempts'] == 1,
+             'Primary execution authority and one attempt are required')
+@@ -252,7 +296,7 @@
+     require(manifest['approved_inputs'].get(predecessor['path']) == predecessor['sha256']
+             and digest(safe(authority, predecessor['path'])) == predecessor['sha256'], 'Accepted PG10 source freeze missing or changed')
+     pg10 = read_json(safe(authority, predecessor['path']))
+-    # Bind historical PG10 argv to its own immutable profile, never a slice of the new one-method TASKS.
++    # Bind historical PG10 argv to its own immutable profile, never a slice of the new21-method TASKS.
+     pg10_selection = profile['predecessor_profile']
+     require(manifest['approved_inputs'].get(pg10_selection['path']) == pg10_selection['sha256']
+             and digest(safe(authority, pg10_selection['path'])) == pg10_selection['sha256'], 'Historical PG10 selection profile missing or changed')
+@@ -271,18 +315,23 @@
+     require(manifest['approved_inputs'].get(structural['path']) == structural['sha256']
+             and digest(safe(authority, structural['path'])) == structural['sha256'], 'Private structural checkpoint missing or changed')
+     structural_checkpoint = read_json(safe(authority, structural['path']))
++    historical_bundle = profile['historical_pg1_source_bundle']
++    require(manifest['approved_inputs'].get(historical_bundle['path']) == historical_bundle['sha256']
++            and digest(safe(authority, historical_bundle['path'])) == historical_bundle['sha256']
++            and safe(authority, historical_bundle['path']).stat().st_size == historical_bundle['bytes'],
++            'Historical structural/PG1 bundle missing or changed')
+     post_delta = profile['post_structural_source_delta']
+     require(len(post_delta) == 19 and structural_checkpoint['source_delta'] == post_delta
+-            and structural_checkpoint['head'] == binding['backend_sha']
++            and structural_checkpoint['head'] == ORDINARY_PARENT
+             and structural_checkpoint['parent'] == PRODUCT_LIFECYCLE_PARENT and structural_checkpoint['branch'] == BACKEND_BRANCH
+             and structural_checkpoint['public_push_authorized'] is False and structural_checkpoint['source_count'] == 466
+             and structural_checkpoint['seed_paths_preserved'] == 348
+-            and structural_checkpoint['bundle_path'] == source_bundle['source_path']
+-            and structural_checkpoint['bundle_sha256'] == source_bundle['sha256']
+-            and structural_checkpoint['bundle_bytes'] == source_bundle['bytes']
++            and structural_checkpoint['bundle_path'] == historical_bundle['path']
++            and structural_checkpoint['bundle_sha256'] == historical_bundle['sha256']
++            and structural_checkpoint['bundle_bytes'] == historical_bundle['bytes'] == 217809
+             and all(expected_sources.get(p) == row['before'] for p, row in post_delta.items()), 'Wrong accepted nineteen-source successor binding')
+     expected_sources.update({p: row['after'] for p, row in post_delta.items()})
+-    # PG14 is the same-source predecessor; a selector-only successor authorizes zero product replacements.
++    # PG14 and its selector-only PG1 successor remain historical466 stages, not the new checkpoint.
+     validation_predecessor = profile['validation_predecessor']
+     validation_selection = profile['validation_predecessor_profile']
+     for item in (validation_predecessor, validation_selection):
+@@ -290,8 +339,8 @@
+                 and digest(safe(authority, item['path'])) == item['sha256'], 'PG14 source/selection predecessor missing or changed')
+     pg14 = read_json(safe(authority, validation_predecessor['path']))
+     pg14_profile = read_json(safe(authority, validation_selection['path']))
+-    require(pg14['repositories']['kira-backend'] == {'head': binding['backend_sha'], 'branch': BACKEND_BRANCH, 'status': ''}
+-            and validation_predecessor['backend_sha'] == binding['backend_sha'] and profile['selection_source_delta'] == {}
++    require(pg14['repositories']['kira-backend'] == {'head': ORDINARY_PARENT, 'branch': BACKEND_BRANCH, 'status': ''}
++            and validation_predecessor['backend_sha'] == ORDINARY_PARENT
+             and pg14_profile['profile_id'] == 'app-29-core-c2-product-lifecycle-pg14-profile-01'
+             and pg14_profile['expected_test_count'] == 14 and len(pg14_profile['task_args']) == 29
+             and pg14['validation_task_args'] == pg14_profile['task_args']
+@@ -300,25 +349,132 @@
+             and pg14['historical_input_hashes'] == current['historical_input_hashes'], 'Require unchanged complete PG14 source and historical authority')
+     require(pg14['approved_inputs'].items() <= manifest['approved_inputs'].items()
+             and pg14['validation_tooling'].items() <= manifest['approved_inputs'].items(), 'PG14 approved authority or tooling provenance omitted')
++
++    pg1_binding = profile['ordinary_source_predecessor']
++    pg1_selection = profile['ordinary_source_predecessor_profile']
++    target_binding = profile['ordinary_source_target']
++    transition_binding = profile['ordinary_source_transition']
++    source_checkpoint_binding = profile['ordinary_source_checkpoint']
++    checkpoint_paths_binding = profile['ordinary_checkpoint_paths']
++    for item in (pg1_binding, pg1_selection, target_binding, transition_binding,
++                 source_checkpoint_binding, checkpoint_paths_binding, profile['source_inventory']):
++        require(manifest['approved_inputs'].get(item['path']) == item['sha256']
++                and digest(safe(authority, item['path'])) == item['sha256'],
++                'Ordinary source/selection/checkpoint authority missing or changed')
++    pg1 = read_json(safe(authority, pg1_binding['path']))
++    pg1_profile = read_json(safe(authority, pg1_selection['path']))
++    require(pg1['repositories']['kira-backend'] == {'head': ORDINARY_PARENT, 'branch': BACKEND_BRANCH, 'status': ''}
++            and pg1_binding['backend_sha'] == ORDINARY_PARENT
++            and pg1_profile['profile_id'] == 'app-29-core-c2-sqlclientinfo-pg1-profile-01'
++            and pg1_profile['expected_test_count'] == 1 and len(pg1_profile['task_args']) == 3
++            and pg1['validation_task_args'] == pg1_profile['task_args']
++            and profile['selection_source_delta'] == pg1_profile['selection_source_delta'] == {}
++            and len(pg1['source_hashes']) == pg1_binding['source_count'] == 466
++            and len(pg1['snapshots']) == pg1_binding['snapshot_count'] == previous['snapshot_count'] == 199
++            and len(pg1['approved_inputs']) == pg1_binding['approved_input_count'] == 170
++            and len(pg1['historical_input_hashes']) == pg1_binding['historical_input_count'] == 102
++            and pg1['source_hashes'] == expected_sources and pg1['removed_paths'] == current['removed_paths']
++            and pg1['review_subject_paths'] == current['review_subject_paths']
++            and pg1['historical_input_hashes'] == current['historical_input_hashes'],
++            'Require the complete historical PG1 stage before the ordinary source transition')
++    target = read_json(safe(authority, target_binding['path']))
++    transition = read_json(safe(authority, transition_binding['path']))
++    source_checkpoint = read_json(safe(authority, source_checkpoint_binding['path']))
++    checkpoint_paths = read_json(safe(authority, checkpoint_paths_binding['path']))
++    delta = transition['source_delta']
++    actual_delta = [{'path': p, 'before_sha256': pg1['source_hashes'].get(p),
++                     'after_sha256': target['source_hashes'].get(p)}
++                    for p in sorted(pg1['source_hashes'].keys() | target['source_hashes'].keys())
++                    if pg1['source_hashes'].get(p) != target['source_hashes'].get(p)]
++    require(transition['schema'] == 'app-29-ordinary-connected-pg-source-transition-v1'
++            and transition['historical_pg1_manifest'] == {k: pg1_binding[k] for k in ('path', 'sha256')}
++            and transition['historical_pg1_backend_sha'] == ORDINARY_PARENT
++            and transition['target_source_manifest'] == {k: target_binding[k] for k in ('path', 'sha256')}
++            and transition['before_source_count'] == 466 and transition['after_source_count'] == 478
++            and transition['unchanged_count'] == 455 and transition['changed_count'] == 11
++            and transition['added_count'] == 12 and transition['removed_count'] == 0
++            and transition['seed_path_count'] == 348 and transition['review_subject_count'] == 211
++            and transition['historical_input_count'] == 102
++            and delta == actual_delta == checkpoint_paths and len(delta) == 23
++            and len({row['path'] for row in delta}) == 23
++            and sum(row['before_sha256'] is None for row in delta) == 12
++            and sum(row['before_sha256'] is not None for row in delta) == 11
++            and all(isinstance(row['after_sha256'], str) and re.fullmatch('[0-9a-f]{64}', row['after_sha256'])
++                    for row in delta), 'Require exact11 replacements plus12 additions and no new removal')
++    expected_sources.update({row['path']: row['after_sha256'] for row in delta})
++    require(expected_sources == target['source_hashes'] and len(expected_sources) == target_binding['source_count'] == 478
++            and sum(pg1['source_hashes'].get(p) == sha for p, sha in target['source_hashes'].items()) == 455
++            and target['removed_paths'] == current['removed_paths'] == transition['required_removed_paths']
++            and target['historical_input_hashes'] == current['historical_input_hashes']
++            and len(target['review_subject_paths']) == len(set(target['review_subject_paths'])) == 211
++            and set(target['review_subject_paths']) == (set(pg1['review_subject_paths'])
++                | {row['path'] for row in delta if row['before_sha256'] is None})
++            and len(target['snapshots']) == target_binding['snapshot_count'] == 211,
++            'Require the whole immutable target478 source map and211 review subjects, not a selected subset')
++    require(source_checkpoint['status'] == 'PRIVATE_TRANSPORT_CHECKPOINT_NOT_FIX_ACCEPTANCE'
++            and source_checkpoint['head'] == binding['backend_sha'] == ORDINARY_HEAD
++            and source_checkpoint['parent'] == ORDINARY_PARENT and source_checkpoint['tree'] == ORDINARY_TREE
++            and source_checkpoint['branch'] == BACKEND_BRANCH and source_checkpoint['public_prerequisite'] == PUBLIC_PREREQUISITE
++            and source_checkpoint['source_manifest'] == target_binding['path']
++            and source_checkpoint['source_manifest_sha256'] == target_binding['sha256']
++            and source_checkpoint['source_count'] == 478 and source_checkpoint['development07_seed_keys_preserved'] == 348
++            and source_checkpoint['modified_paths'] == 11 and source_checkpoint['newly_tracked_paths'] == 12
++            and source_checkpoint['source_bytes_unchanged'] is True and source_checkpoint['clean_worktree'] is True
++            and source_checkpoint['public_push_forbidden'] is True and source_checkpoint['integration_changed'] is False
++            and source_checkpoint['tests_run'] is False
++            and source_checkpoint['bundle'] == {'path': source_bundle['source_path'], 'sha256': source_bundle['sha256'],
++                                                 'bytes': source_bundle['bytes']},
++            'Require the actual private source checkpoint receipt, distinct from later acceptance/preflight data')
++    selection = read_json(safe(authority, profile['source_inventory']['path']))
++    require(selection['schema'] == 'app-29-ordinary-connected-pg-selection-v1'
++            and selection['source_freeze'] == {k: target_binding[k] for k in ('path', 'sha256')}
++            and selection['source_hashes'].items() <= target['source_hashes'].items()
++            and selection['test_classes'] == profile['test_classes'] == list(TEST_COUNTS)
++            and selection['test_counts'] == TEST_COUNTS
++            and selection['expected_test_count'] == profile['source_inventory']['expected_test_count'] == 21
++            and selection['task_args'] == TASKS and selection['task_argv_count'] == len(TASKS) == 43
++            and [{k: row[k] for k in ('class', 'method', 'display_name')} for row in selection['expected_tests']]
++                == profile['expected_tests'] == EXPECTED_TESTS
++            and selection['expected_xml_files'] == profile['expected_xml_files']
++            and sorted(profile['expected_xml_files']) == sorted('TEST-' + name + '.xml' for name in TEST_COUNTS)
++            and selection['shutdown_diagnostics'] == profile['shutdown_diagnostics']
++            and selection['container_population'] == profile['container_population'],
++            'Require the sealed exact21 ordinary selection rather than historical or local argv')
++    provenance = {}
++    for predecessor_manifest in (pg1, target):
++        for field in ('approved_inputs', 'validation_tooling'):
++            for relative, sha in predecessor_manifest[field].items():
++                require(relative not in provenance or provenance[relative] == sha, 'Contradictory PG1/target provenance pin')
++                provenance[relative] = sha
++    require(len(provenance) == 188 and provenance.items() <= manifest['approved_inputs'].items(),
++            'Preserve all188 PG1/target approved/tooling provenance pairs')
+     expected_snapshots = {str(PurePosixPath(MANIFEST_FILE).parent / 'sources' / p): expected_sources[p]
+-                          for p in current['review_subject_paths']}
++                          for p in target['review_subject_paths']}
+     require(manifest['source_hashes'] == expected_sources
+-            and manifest['removed_paths'] == current['removed_paths']
+-            and manifest['review_subject_paths'] == current['review_subject_paths']
+-            and len(manifest['snapshots']) == len(current['snapshots']) == previous['snapshot_count'] == 199
+-            and manifest['snapshots'] == expected_snapshots, 'Require exact466 source binding and all199 fresh snapshots')
++            and manifest['removed_paths'] == target['removed_paths']
++            and manifest['review_subject_paths'] == target['review_subject_paths']
++            and len(manifest['snapshots']) == 211
++            and manifest['snapshots'] == expected_snapshots, 'Require exact478 source binding and all211 fresh snapshots')
+     require(manifest['historical_input_hashes'] == current['historical_input_hashes']
+             and current['approved_inputs'].items() <= manifest['approved_inputs'].items(),
+             'Historical authority or original approved input omitted')
+     expected_tooling = {p: sha for p, sha in current['validation_tooling'].items()
+                         if p not in current['additional_validation_tooling_paths']}
++    require(len(expected_tooling) == 5 and all(expected_tooling == {
++                p: sha for p, sha in predecessor_manifest['validation_tooling'].items()
++                if p not in predecessor_manifest['additional_validation_tooling_paths']}
++                for predecessor_manifest in (pg1, target)), 'Historical and target base tooling must remain identical')
+     expected_tooling.update({original: digest(safe(ADMIN, deployed)) for original, deployed in DEPLOYMENTS.items()})
+-    require(manifest['validation_tooling'] == expected_tooling, 'Require exact current freezer and diagnostic deployment tools')
++    require(manifest['validation_tooling'] == expected_tooling and len(expected_tooling) == 10
++            and len(manifest['additional_validation_tooling_paths']) == 5
++            and set(manifest['additional_validation_tooling_paths']) == set(DEPLOYMENTS),
++            'Require the unchanged five base tools plus exactly five ordinary deployment tools')
+     require(manifest['approved_inputs'].get(test_binding['proposal_path']) == test_binding['after_sha256']
+             and manifest['approved_inputs'].get(test_binding['patch_path']) == test_binding['patch_sha256']
+             and all(manifest['approved_inputs'].get(row['proposal_path']) == row['after_sha256'] for row in source_delta.values())
+             and all(manifest['approved_inputs'].get(p) == sha
+-                    for field in ('native_candidate_evidence', 'diagnostic_authority', 'product_lifecycle_authority', 'post_structural_authority', 'selection_authority')
++                    for field in ('native_candidate_evidence', 'diagnostic_authority', 'product_lifecycle_authority',
++                                  'post_structural_authority', 'selection_authority', 'ordinary_connected_authority')
+                     for p, sha in profile[field].items()),
+             'Missing exact accepted proposals, source/history authority or retained Native05 inputs')
+     require(manifest['inventory_seed_manifest'] == SEED and manifest['inventory_seed_manifest_sha256'] == SEED_SHA
+@@ -329,11 +485,17 @@
+     require(len(seed['source_hashes']) == 348 and seed['source_hashes'].keys() <= manifest['source_hashes'].keys(), 'Seed path omitted')
+     proof = checkpoint['local_v3_preflight']
+     require(proof['manifest_sha256'] == checkpoint['manifest_sha256']
++            and proof['receipt_path'] == LOCAL_PREFLIGHT_FILE
+             and proof['tool_sha256'] == 'e8c6a48fc26c634fbccbb081651631fb5c767099b1143ab4dbe8439f6060d0fe'
+             and digest(safe(authority, proof['receipt_path'])) == proof['receipt_sha256'], 'Unbound local verification receipt')
+     receipt = read_json(safe(authority, proof['receipt_path']))
+     require(receipt == {'status': 'READ_ONLY_V3_PREFLIGHT_PASSED', 'source_paths': len(manifest['source_hashes'])},
+             'Local v3 validation is missing; hosted transport cannot replace it')
++    require(all(checkpoint['manifest_path'] not in manifest[field] and proof['receipt_path'] not in manifest[field]
++                and 'ci/app29-gate-b.request.json' not in manifest[field]
++                and (PAYLOAD / 'checkpoint.json').relative_to(ADMIN).as_posix() not in manifest[field]
++                for field in ('snapshots', 'historical_input_hashes', 'approved_inputs', 'validation_tooling')),
++            'Fresh manifest must not contain its own receipt, later deployment checkpoint or request')
+     pins = {checkpoint['manifest_path']: checkpoint['manifest_sha256'], proof['receipt_path']: proof['receipt_sha256']}
+     for field in ('snapshots', 'historical_input_hashes', 'approved_inputs', 'validation_tooling'):
+         for relative, sha in manifest[field].items():
+@@ -373,24 +535,30 @@
+             sha = source_delta[row['path']]['after_sha256']
+         if row['path'] in post_delta:
+             sha = post_delta[row['path']]['after']
+-        require(manifest['source_hashes'].get(row['path']) == sha, 'Frozen source is not exact C2 plus accepted diagnostics, product and structural deltas')
++        require(pg1['source_hashes'].get(row['path']) == sha,
++                'Historical PG1 source is not exact C2 plus accepted diagnostics, product and structural deltas')
+     return {'manifest_sha256': checkpoint['manifest_sha256'], 'sources': len(manifest['source_hashes']),
+             'seed_paths': 348, 'local_v3': 'PRIMARY_BOUND_LOCAL_RECEIPT_NOT_HOSTED_REEXECUTION', 'authority_files': len(pins),
+-            'core_sources': 21, 'snapshots': 199, 'profile': PROFILE_ID,
+-            'validation_predecessor_sha256': validation_predecessor['sha256'], 'selection_source_delta_count': 0,
++            'core_sources': 21, 'snapshots': 211, 'profile': PROFILE_ID,
++            'validation_predecessor_sha256': pg1_binding['sha256'], 'historical_pg14_manifest_sha256': validation_predecessor['sha256'],
++            'target_source_manifest_sha256': target_binding['sha256'], 'source_transition_sha256': transition_binding['sha256'],
++            'source_checkpoint_sha256': source_checkpoint_binding['sha256'], 'selection_source_delta_count': 23,
++            'source_delta': {'changed': 11, 'added': 12, 'unchanged': 455, 'removed': 0},
++            'historical_pg1_selection_source_delta_count': 0, 'pg1_target_provenance_pairs': len(provenance),
+             'candidate_id': profile['final_jar']['candidate_id'], 'candidate_sha256': profile['final_jar']['sha256'],
+             'candidate_qualification': 'UNQUALIFIED'}
+ 
+ 
+ class Gate:
+     def __init__(self, binding):
++        require_profile_pins()  # Also refuse direct execute() use while the author pins are unbound.
+         from app29_owned_children import OwnedChildren  # Hash checked first; immutable import has no actions.
+         self.binding, self.owner = binding, None
+         self.start = time.monotonic()
+         self.end = self.start + binding['budgets']['controller_seconds']
+         self.phase_end = self.start + binding['budgets']['preflight_seconds']
+         self.cancelled, self.started, self.clean_daemon, self.events_since = False, False, False, None
+-        self.run = Path(os.environ['RUNNER_TEMP']) / ('app29-core-c2-sqlclientinfo-pg1-01-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
++        self.run = Path(os.environ['RUNNER_TEMP']) / ('app29-ordinary-connected-pg-01-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
+         self.run.mkdir(mode=0o700, exist_ok=False)
+         for name in ('reports', 'gradle', 'w01', 'tmp', 'home', 'project-cache', 'kotlin-cache'):
+             (self.run / name).mkdir(mode=0o700)
+@@ -399,7 +567,7 @@
+                        'carrier_sha': os.environ['GITHUB_SHA'], 'commands': [], 'failures': [], 'processes': [],
+                        'containers': 'UNKNOWN', 'outputs_absent': False, 'capture_complete': False,
+                        'captured_file_hashes': {}, 'owned_output_cleanup': {}, 'diagnostics': {'status': 'NOT_EVALUATED'},
+-                       'consumer': {'status': 'NOT_EVALUATED', 'scope': 'OUTSIDE_SQLCLIENTINFO_PG1_VALIDATION'}}
++                       'consumer': {'status': 'NOT_EVALUATED', 'scope': 'OUTSIDE_ORDINARY_CONNECTED_PG_VALIDATION'}}
+         self.java = Path(os.environ['JAVA_HOME']).resolve()
+         self.env = {'PATH': str(self.java / 'bin') + ':/usr/bin:/bin', 'JAVA_HOME': str(self.java),
+                     'HOME': str(self.run / 'home'), 'GRADLE_USER_HOME': str(self.run / 'gradle'),
+@@ -506,6 +674,10 @@
+         commit = self.command(label + '-backend-commit', ['git', '--no-replace-objects', 'cat-file', 'commit', 'HEAD'], cleaning=cleaning)
+         header, separator, _ = commit.partition(b'\n\n')
+         parents = [row[7:].decode('ascii') for row in header.split(b'\n') if row.startswith(b'parent ')]
++        trees = [row[5:].decode('ascii') for row in header.split(b'\n') if row.startswith(b'tree ')]
++        structural = self.command(label + '-post-structural-parent-commit', ['git', '--no-replace-objects', 'cat-file', 'commit', ORDINARY_PARENT], cleaning=cleaning)
++        structural_header, structural_separator, _ = structural.partition(b'\n\n')
++        structural_parents = [row[7:].decode('ascii') for row in structural_header.split(b'\n') if row.startswith(b'parent ')]
+         product = self.command(label + '-product-lifecycle-parent-commit', ['git', '--no-replace-objects', 'cat-file', 'commit', PRODUCT_LIFECYCLE_PARENT], cleaning=cleaning)
+         product_header, product_separator, _ = product.partition(b'\n\n')
+         product_parents = [row[7:].decode('ascii') for row in product_header.split(b'\n') if row.startswith(b'parent ')]
+@@ -522,19 +694,22 @@
+         core_header, core_separator, _ = core_baseline.partition(b'\n\n')
+         core_parents = [row[7:].decode('ascii') for row in core_header.split(b'\n') if row.startswith(b'parent ')]
+         self.result.setdefault('source_checkout_final', {})[label] = {
+-            'head': sha, 'branch': branch, 'parents': parents,
++            'head': sha, 'branch': branch, 'parents': parents, 'trees': trees,
++            'post_structural_parent': {'head': ORDINARY_PARENT, 'parents': structural_parents},
+             'product_lifecycle_parent': {'head': PRODUCT_LIFECYCLE_PARENT, 'parents': product_parents},
+             'diagnostic_parent': {'head': DIAGNOSTIC_PARENT, 'parents': diagnostic_parents},
+             'private_parent': {'head': PRIVATE_PARENT, 'parents': ancestor_parents},
+             'previous_private_parent': {'head': PREVIOUS_PRIVATE_PARENT, 'parents': previous_parents},
+             'core_baseline': {'head': CORE_BASELINE, 'parents': core_parents}}
+-        require(sha == self.binding['backend_sha'] and branch == BACKEND_BRANCH
+-                and separator and parents == [PRODUCT_LIFECYCLE_PARENT] and product_separator and product_parents == [DIAGNOSTIC_PARENT]
++        require(sha == self.binding['backend_sha'] == ORDINARY_HEAD and branch == BACKEND_BRANCH
++                and separator and parents == [ORDINARY_PARENT] and trees == [ORDINARY_TREE]
++                and structural_separator and structural_parents == [PRODUCT_LIFECYCLE_PARENT]
++                and product_separator and product_parents == [DIAGNOSTIC_PARENT]
+                 and diagnostic_separator and diagnostic_parents == [PRIVATE_PARENT]
+                 and ancestor_separator and ancestor_parents == [PREVIOUS_PRIVATE_PARENT]
+                 and previous_separator and previous_parents == [CORE_BASELINE]
+                 and core_separator and core_parents == [PUBLIC_PREREQUISITE],
+-                'Require exact post-structural tip ->1c91 ->eb8fed8 ->989a ->926927 ->49da ->public prerequisite, with no merges or extra descendants')
++                'Require exact ordinary tip/tree ->6db944 ->1c91 ->eb8fed8 ->989a ->926927 ->49da ->public prerequisite, with no merges or extra descendants')
+         require(not self.command(label + '-status', ['git', 'status', '--porcelain=v1', '--untracked-files=all'], cleaning=cleaning), 'Checkpoint is dirty')
+         names = self.command(label + '-tracked', ['git', 'ls-files', '-z'], cleaning=cleaning).decode().split('\0')[:-1]
+         hashes = {p: digest(safe(BACKEND, p)) for p in names}
+@@ -545,6 +720,7 @@
+             require(not any((Path(folder) / d).is_symlink() for d in directories), 'Unexpected source directory link')
+             actual.update((relative / f).as_posix() for f in files)
+         require(actual == set(hashes), 'Extra/untracked/ignored effective source input')
++        self.result['source_checkout_final'][label]['tracked_path_count'] = len(hashes)
+         save(self.reports / (label + '-source-hashes.json'), hashes)
+         return hashes
+ 
+@@ -579,13 +755,13 @@
+                 created[cid] = labels
+             else:
+                 destroyed.add(cid)
+-        require(len(created) == 2 and sum(r['image'] == 'postgres:17.6-alpine' for r in created.values()) == 1
++        require(len(created) == 3 and sum(r['image'] == 'postgres:17.6-alpine' for r in created.values()) == 2
+                 and sum(r['image'] == 'testcontainers/ryuk:0.12.0' for r in created.values()) == 1
+                 and destroyed <= created.keys() and remaining <= created.keys(), 'Incomplete/unexpected container journal')
+         pg = [r for r in created.values() if r['image'] == 'postgres:17.6-alpine']
+         ryuk = next(r for r in created.values() if r['image'] != 'postgres:17.6-alpine')
+         sessions = {row.get('org.testcontainers.sessionId', '') for row in pg}
+-        require(len(sessions) == 1, 'The selected class fixture must belong to the one Test worker session')
++        require(len(sessions) == 1, 'Both selected class fixtures must belong to the one Test worker session')
+         session = sessions.pop()
+         require(re.fullmatch('[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}', session)
+                 and ryuk.get('name') == 'testcontainers-ryuk-' + session, 'Unknown fixture/Ryuk session')
+@@ -646,55 +822,70 @@
+ 
+ def diagnostics(reports, profile, java):
+     xmls = list((reports / 'test-results/test').glob('*.xml'))
+-    require([p.name for p in xmls] == ['TEST-' + CLASS + '.xml'], 'Wrong diagnostic XML inventory')
+-    expected = [(CLASS, method + '()') for method in METHODS]
+-    require(profile['expected_test_count'] == 1 and profile['test_classes'] == [CLASS]
+-            and profile['expected_witnesses'] == []
+-            and profile['expected_tests'] == [{'class': CLASS, 'method': m, 'display_name': m + '()'} for m in METHODS],
+-            'Require exactly the one fixed SQLClientInfo source identity')
+-    raw = xmls[0].read_text(encoding='utf-8-sig')
+-    require('\x00' not in raw and '<!DOCTYPE' not in raw.upper() and '<!ENTITY' not in raw.upper(), 'Unsafe XML')
+-    suite = ET.fromstring(raw)
+-    cases = suite.findall('testcase')
+-    identities = [(case.get('classname'), case.get('name')) for case in cases]
+-    require(suite.tag == 'testsuite' and suite.get('name') == CLASS and suite.get('tests') == '1'
+-            and sorted(identities) == sorted(expected), 'Missing, extra or duplicate diagnostic testcase')
+-    outcomes = []
+-    for case in cases:
+-        states = [state for tag, state in (('failure', 'FAIL'), ('error', 'ERROR'), ('skipped', 'SKIP')) if case.find(tag) is not None]
+-        require(len(states) <= 1, 'Contradictory diagnostic testcase outcome')
+-        outcomes.append({'class': case.get('classname'), 'display_name': case.get('name'),
+-                         'status': states[0] if states else 'PASS'})
++    expected_files = ['TEST-' + name + '.xml' for name in TEST_COUNTS]
++    require(sorted(p.name for p in xmls) == sorted(expected_files) == sorted(profile['expected_xml_files']),
++            'Wrong diagnostic XML inventory')
++    expected = [(row['class'], row['display_name']) for row in EXPECTED_TESTS]
++    require(profile['expected_test_count'] == 21 and profile['test_classes'] == list(TEST_COUNTS)
++            and profile['expected_witnesses'] == [] and profile['expected_tests'] == EXPECTED_TESTS,
++            'Require exactly the21 fixed ordinary-connected source identities')
++    identities, outcomes, suites, suite_results = [], [], [], []
++    for name, count in TEST_COUNTS.items():
++        path = safe(reports, 'test-results/test/TEST-' + name + '.xml')
++        digest(path, 64 * 1024**2)
++        raw = path.read_text(encoding='utf-8-sig')
++        require('\x00' not in raw and '<!DOCTYPE' not in raw.upper() and '<!ENTITY' not in raw.upper(), 'Unsafe XML')
++        suite = ET.fromstring(raw)
++        cases = suite.findall('testcase')
++        actual = [(case.get('classname'), case.get('name')) for case in cases]
++        required = [(row['class'], row['display_name']) for row in EXPECTED_TESTS if row['class'] == name]
++        require(suite.tag == 'testsuite' and suite.get('name') == name and suite.get('tests') == str(count)
++                and len(cases) == count and sorted(actual) == sorted(required),
++                'Missing, extra or duplicate diagnostic testcase')
++        suite_outcomes = []
++        for case in cases:
++            states = [state for tag, state in (('failure', 'FAIL'), ('error', 'ERROR'), ('skipped', 'SKIP')) if case.find(tag) is not None]
++            require(len(states) <= 1, 'Contradictory diagnostic testcase outcome')
++            suite_outcomes.append({'class': case.get('classname'), 'display_name': case.get('name'),
++                                   'status': states[0] if states else 'PASS'})
++        suite_counts = {state: sum(row['status'] == state for row in suite_outcomes) for state in ('PASS', 'FAIL', 'ERROR', 'SKIP')}
++        require(all(suite.get(field) == str(suite_counts[state]) for field, state in
++                    (('failures', 'FAIL'), ('errors', 'ERROR'), ('skipped', 'SKIP'))), 'Diagnostic XML count mismatch')
++        identities.extend(actual)
++        outcomes.extend(suite_outcomes)
++        suites.append(suite)
++        suite_results.append({'class': name, 'tests': count, 'counts': suite_counts})
++    require(len(identities) == len(set(identities)) == 21 and sorted(identities) == sorted(expected),
++            'Missing, extra or duplicate diagnostic testcase')
+     counts = {state: sum(row['status'] == state for row in outcomes) for state in ('PASS', 'FAIL', 'ERROR', 'SKIP')}
+-    require(all(suite.get(field) == str(counts[state]) for field, state in
+-                (('failures', 'FAIL'), ('errors', 'ERROR'), ('skipped', 'SKIP'))), 'Diagnostic XML count mismatch')
+     phases = ('BEFORE_SHUTDOWN', 'AFTER_SHUTDOWN', 'OBSERVATION_FAILED')
+     scalars = set(('budget_remaining_ms invocation_result first_close observation actor_capacity actor_retained '
+                    'actor_constructing actor_retired actor_factory_sealed actor_fault future_lease_entries active_operations '
+                    'close_queue_size close_pool_size close_active_count close_completed_tasks close_shutdown close_terminated').split())
+     records = []
+-    for output in suite.iter('system-out'):
+-        for line in (output.text or '').splitlines():
+-            if not line.startswith('OWNED_CUT_SHUTDOWN_DIAGNOSTIC'):
+-                continue
+-            tokens = line.split()
+-            pairs = [token.split('=', 1) for token in tokens[1:]]
+-            require(tokens[0] == 'OWNED_CUT_SHUTDOWN_DIAGNOSTIC' and all(len(pair) == 2 for pair in pairs),
+-                    'Malformed fixed diagnostic record')
+-            fields = unique(pairs)
+-            require(fields.get('case') in DIAGNOSTIC_CASES and fields.get('phase') in phases
+-                    and fields.get('status') in ('CAPTURED', 'UNAVAILABLE')
+-                    and fields.keys() == {'case', 'phase', 'status'} | (scalars if fields.get('status') == 'CAPTURED' else set())
+-                    and all(re.fullmatch(r'[A-Z][A-Z0-9_]*|-?[0-9]+|true|false', value) for value in fields.values()),
+-                    'Wrong fixed diagnostic labels or scalar fields')
+-            records.append({'raw': line, 'fields': fields})
++    for suite in suites:
++        for output in (*suite.iter('system-out'), *suite.iter('system-err')):
++            for line in (output.text or '').splitlines():
++                if not line.startswith('OWNED_CUT_SHUTDOWN_DIAGNOSTIC'):
++                    continue
++                tokens = line.split()
++                pairs = [token.split('=', 1) for token in tokens[1:]]
++                require(tokens[0] == 'OWNED_CUT_SHUTDOWN_DIAGNOSTIC' and all(len(pair) == 2 for pair in pairs),
++                        'Malformed fixed diagnostic record')
++                fields = unique(pairs)
++                require(fields.get('case') in DIAGNOSTIC_CASES and fields.get('phase') in phases
++                        and fields.get('status') in ('CAPTURED', 'UNAVAILABLE')
++                        and fields.keys() == {'case', 'phase', 'status'} | (scalars if fields.get('status') == 'CAPTURED' else set())
++                        and all(re.fullmatch(r'[A-Z][A-Z0-9_]*|-?[0-9]+|true|false', value) for value in fields.values()),
++                        'Wrong fixed diagnostic labels or scalar fields')
++                records.append({'raw': line, 'fields': fields})
+     require(profile['shutdown_diagnostics'] == {'status': 'NOT_APPLICABLE', 'expected_record_count': 0}
+             and not records, 'PG14 fixed diagnostic rows are nonapplicable to this selection')
+-    coverage = {}  # No required PG14 case/phase slots in this different one-method profile.
++    coverage = {}  # No required PG14 case/phase slots in either ordinary-connected suite.
+     folder = safe(reports, profile['report_directory'])
+     cp = read_json(folder / 'effective-classpath.txt')
+     require(cp['profile'] == PROFILE_ID and cp['java_home'] == str(java)
+-            and cp['source_inventory'] == profile['source_inventory'] and cp['expected_test_count'] == 1
++            and cp['source_inventory'] == profile['source_inventory'] and cp['expected_test_count'] == 21
+             and cp['expected_witnesses'] == [], 'Wrong actual diagnostic classpath/profile/JDK')
+     entries = cp['entries']
+     require(len({e['path'] for e in entries}) == len(entries)
+@@ -704,12 +895,13 @@
+         rows = [e for e in entries if e[flag] > 0]
+         require(len(rows) == 1 and rows[0]['path'] == str(safe(ADMIN, profile[key]['path']))
+                 and rows[0]['sha256'] == profile[key]['sha256'], 'Wrong explicit class supplier')
+-    return {'status': 'RECORDED', 'test_status': 'PASS' if counts['PASS'] == 1 else 'FAIL',
+-            'tests': 1, 'classes': TEST_COUNTS, 'identities': sorted(identities), 'outcomes': outcomes, 'counts': counts,
+-            'profile': PROFILE_ID, 'fixed_scalar_capture': 'NOT_APPLICABLE',
++    return {'status': 'RECORDED', 'test_status': 'PASS' if counts == {'PASS': 21, 'FAIL': 0, 'ERROR': 0, 'SKIP': 0} else 'FAIL',
++            'tests': 21, 'classes': TEST_COUNTS, 'identities': sorted(identities), 'outcomes': outcomes, 'counts': counts,
++            'suites': suite_results, 'profile': PROFILE_ID, 'fixed_scalar_capture': 'NOT_APPLICABLE',
+             'raw_shutdown_diagnostics': records, 'diagnostic_coverage': coverage,
+             'diagnostic_limit': profile['shutdown_diagnostics_note'], 'diagnostic_scope': profile['shutdown_diagnostics'],
+-            'historical_pg14_result': profile['historical_pg14_result'],
++            'historical_pg14_result': profile['historical_pg14_result'], 'historical_pg10_result': profile['historical_pg10_result'],
++            'historical_pg1_result': profile['historical_pg1_result'], 'accepted_linux03_result': profile['accepted_linux03_result'],
+             'historical_result': profile['historical_result'], 'historical_diagnostics_result': profile['historical_diagnostics_result'],
+             'candidate_qualification': 'UNQUALIFIED'}
+ 
+@@ -731,13 +923,17 @@
+         require(carrier == os.environ['GITHUB_SHA'], 'Carrier checkout differs from exact workflow SHA')
+         profile = read_json(safe(ADMIN, PROFILE_FILE))
+         require(profile['profile_id'] == PROFILE_ID and profile['task_args'] == TASKS
+-                and profile['expected_test_count'] == 1 and profile['expected_witnesses'] == []
++                and profile['expected_test_count'] == 21 and profile['expected_witnesses'] == []
++                and profile['expected_tests'] == EXPECTED_TESTS and profile['test_classes'] == list(TEST_COUNTS)
+                 and profile['shutdown_diagnostics'] == {'status': 'NOT_APPLICABLE', 'expected_record_count': 0}
+                 and profile['final_jar']['qualification'] == 'UNQUALIFIED',
+-                'Wrong exact-one SQLClientInfo profile/task/candidate scope')
++                'Wrong exact21 ordinary-connected profile/task/candidate scope')
+         gate.result['historical_result'] = profile['historical_result']
+         gate.result['historical_diagnostics_result'] = profile['historical_diagnostics_result']
+         gate.result['historical_pg14_result'] = profile['historical_pg14_result']
++        gate.result['historical_pg10_result'] = profile['historical_pg10_result']
++        gate.result['historical_pg1_result'] = profile['historical_pg1_result']
++        gate.result['accepted_linux03_result'] = profile['accepted_linux03_result']
+         gate.materialize_source()
+         baseline = gate.sources('before')
+         gate.result['source_binding_before'] = bind_freeze(binding, profile)
+@@ -840,7 +1036,7 @@
+                   and gate.result['diagnostics'].get('fixed_scalar_capture') == 'NOT_APPLICABLE' and gate.result['containers'] == 'NORMAL_ABSENT'
+                   and all(r['outcome'] == 'NORMAL' for r in gate.result['commands']) and final_containers is True)
+         gate.result['status'] = 'PASS' if passed else 'FAIL'
+-        gate.result['limitation'] = 'Exactly one existing SQLClientInfo method on unchanged private6db944; PG14 fixed scalar rows NOT_APPLICABLE here, still required in the unchanged original PG14 profile/result. Prior accepted PG14, PG10 on1c91, hosted02 45/47 and diagnostics01 0/2 with failed cleanup remain separate. NORMAL_ABSENT is not graceful-shutdown or zero-kill proof; CURRENT PG14 kill9/die137 retained. No stale String-overload or every-finally-failure coverage claim. No opaque/native-finalizer/pin/compaction/liveness/consumer/full47/Native05 qualification; Native05 UNQUALIFIED. Original D05 PARTIAL / original D06 unreviewed artifacts and already-reviewed/imported v2 successors preserved; full runtime acceptance separate. W03/App29/native/full gates remain open.'
++        gate.result['limitation'] = 'Only the exact21 ordinary-connected PG methods on private ccdbb28f target478 are selected; intended cases are not observed passes. PG14 fixed scalar rows are NOT_APPLICABLE here and remain required in the unchanged original PG14 profile/result. Accepted Linux03 carries only56 nonDB invocations, normal compilation and fresh Ktlint; Detekt is bounded prior-byte-set reuse, not a new pass. PG1 one-case acceptance, PG14, PG10, hosted02 45/47 and diagnostics01 0/2 with failed cleanup remain separate and unchanged. All raw container events, including any kill/die, remain retained; NORMAL_ABSENT is not graceful PostgreSQL shutdown or zero-kill proof. UNKNOWN database outcome is not success or retry permission. No opaque/native-finalizer/pin/compaction/liveness/recovery/consumer/full47/Native05 qualification; Native05 UNQUALIFIED. Original D05 PARTIAL / original D06 artifacts and reviewed/imported v2 successors remain preserved. Full-P3/W03/App29/production/native/full gates remain open; no integration or public private-ancestry push authority.'
+         save(gate.reports / 'result.json', gate.result)
+     return 0 if gate.result['status'] == 'PASS' else 1
+ 
+--- kira-admin/.github/workflows/app29-gate-b.yml
++++ review/working/app-29-ordinary-connected-pg-carrier-01/.github/workflows/app29-gate-b.yml
+@@ -1,12 +1,12 @@
+-name: App29 Core C2 SQLClientInfo PG1 (private, no qualification)
++name: App29 Ordinary Connected PG21 (private, no qualification)
+ on:
+   push:
+     branches: [remediation/app-29-backend-complaints]
+     paths:
+       - .github/workflows/app29-gate-b.yml
+       - ci/app29-gate-b.py
+-      - review/working/app-29-core-c2-sqlclientinfo-pg1-preparation-01/profile/profile.json
+-      - review/working/app-29-core-c2-sqlclientinfo-pg1-preparation-01/profile/profile.init.gradle
++      - review/working/app-29-ordinary-connected-pg-carrier-01/profile/profile.json
++      - review/working/app-29-ordinary-connected-pg-carrier-01/profile/profile.init.gradle
+       - ci/app29-gate-b.request.json
+ permissions:
+   contents: read
+@@ -43,17 +43,17 @@
+         with:
+           distribution: temurin
+           java-version: '21'
+-      - name: Run exactly one existing SQLClientInfo method (no qualification)
++      - name: Run exactly21 ordinary-connected methods (no qualification)
+         id: validation
+         shell: bash
+         run: |
+           umask 077
+           python3 -B admin/ci/app29-gate-b.py
+-      - name: Retain raw one-case outcome, explicit PG14 diagnostic nonapplicability, source and owned-cleanup receipts
++      - name: Retain raw21-case outcomes, explicit PG14 diagnostic nonapplicability, source and owned-cleanup receipts
+         if: always() && steps.validation.outcome != 'skipped'
+         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+         with:
+-          name: app29-core-c2-sqlclientinfo-pg1-01-${{ github.run_id }}-${{ github.run_attempt }}
+-          path: ${{ runner.temp }}/app29-core-c2-sqlclientinfo-pg1-01-${{ github.run_id }}-${{ github.run_attempt }}/reports/
++          name: app29-ordinary-connected-pg-01-${{ github.run_id }}-${{ github.run_attempt }}
++          path: ${{ runner.temp }}/app29-ordinary-connected-pg-01-${{ github.run_id }}-${{ github.run_attempt }}/reports/
+           retention-days: 3
+           if-no-files-found: error
+--- review/working/app-29-core-c2-sqlclientinfo-pg1-preparation-01/profile/profile.json
++++ review/working/app-29-ordinary-connected-pg-carrier-01/profile/profile.json
+@@ -1,24 +1,165 @@
+ {
+   "schema_version": 1,
+-  "profile_id": "app-29-core-c2-sqlclientinfo-pg1-profile-01",
+-  "scope": "ONE_EXISTING_SQLCLIENTINFO_METHOD_VALIDATION_ONLY; distinct selection on unchanged private6db944, not a PG14 rerun, consumer, Native05, full47 or W03 qualification",
++  "profile_id": "app-29-ordinary-connected-pg-profile-01",
++  "scope": "EXACT21_ORDINARY_CONNECTED_POSTGRESQL_VALIDATION_ONLY; new private ccdbb28f checkpoint of target478, not a local56/PG1/PG14 rerun or Native05/full47/consumer/W03/full-P3 qualification",
+   "test_classes": [
+-    "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest"
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupIT"
+   ],
+   "task_args": [
+     "test",
+     "--tests",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest.real lease preserves Properties client info defaults and declared stale and foreign failure shapes"
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.ordinary JPA required join shares exact holder lease PID and transaction without completing the outer owner",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.wrong dispatch propagation resource and both extra borrow overloads refuse before suspension or checkout",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.ambient synchronization holders actual transaction and an unbound ordinary loan reject named entry",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.missing or foreign selected holder cannot authorize cleanup even with true transaction flags",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.wrapped unscoped JPA commits and releases immediately without acquiring short phase ownership",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.foreign same endpoint or unprovable EMF metadata refuses before additional creation begin or either checkout",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.private JPA composition refuses execution listener configuration before any begin or lease",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.accepted real lease survives failed begin with no returned status until actual rollback close and receipt",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.post status selected holder materialization failure rolls back the retained real transaction without fallback borrowing",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.an accepted but undelivered late acquisition never enters the body and retains custody through its real tail",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.positive remaining caps and the two second work budget share only one emergency allowance",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.real blocking SQL after delete ends the old session and row lock without a future timeout receipt",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.native commit failure stays unknown after Spring cleanup while authentic local quiescence permits only refund",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.real afterCommit interruption preserves durable committed outcome exact cleanup and original caller interrupt",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.a real post consent return tail retains permit past expiry and cannot refund or retire its successor early",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupIT.source expiry includes the cutoff and used unexpired grants without deleting the next microsecond",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupIT.mixed scope cleanup preserves active source grants and every complaint lifecycle",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupIT.one invocation commits only the first fifty eligible UUIDs and leaves the remaining batch",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupIT.an independently locked earliest eligible grant is skipped while fifty other rows commit",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupIT.the trusted Clock is sampled once and its committed cutoff is durable to an independent reader",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupIT.a decorator failure after the real delete rolls back and preserves independently readable rows"
+   ],
+-  "expected_test_count": 1,
++  "expected_test_count": 21,
+   "expected_tests": [
+     {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+-      "method": "real lease preserves Properties client info defaults and declared stale and foreign failure shapes",
+-      "display_name": "real lease preserves Properties client info defaults and declared stale and foreign failure shapes()"
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
++      "method": "ordinary JPA required join shares exact holder lease PID and transaction without completing the outer owner",
++      "display_name": "ordinary JPA required join shares exact holder lease PID and transaction without completing the outer owner()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
++      "method": "wrong dispatch propagation resource and both extra borrow overloads refuse before suspension or checkout",
++      "display_name": "wrong dispatch propagation resource and both extra borrow overloads refuse before suspension or checkout()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
++      "method": "ambient synchronization holders actual transaction and an unbound ordinary loan reject named entry",
++      "display_name": "ambient synchronization holders actual transaction and an unbound ordinary loan reject named entry()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
++      "method": "missing or foreign selected holder cannot authorize cleanup even with true transaction flags",
++      "display_name": "missing or foreign selected holder cannot authorize cleanup even with true transaction flags()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
++      "method": "wrapped unscoped JPA commits and releases immediately without acquiring short phase ownership",
++      "display_name": "wrapped unscoped JPA commits and releases immediately without acquiring short phase ownership()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
++      "method": "foreign same endpoint or unprovable EMF metadata refuses before additional creation begin or either checkout",
++      "display_name": "foreign same endpoint or unprovable EMF metadata refuses before additional creation begin or either checkout()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
++      "method": "private JPA composition refuses execution listener configuration before any begin or lease",
++      "display_name": "private JPA composition refuses execution listener configuration before any begin or lease()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
++      "method": "accepted real lease survives failed begin with no returned status until actual rollback close and receipt",
++      "display_name": "accepted real lease survives failed begin with no returned status until actual rollback close and receipt()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
++      "method": "post status selected holder materialization failure rolls back the retained real transaction without fallback borrowing",
++      "display_name": "post status selected holder materialization failure rolls back the retained real transaction without fallback borrowing()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
++      "method": "an accepted but undelivered late acquisition never enters the body and retains custody through its real tail",
++      "display_name": "an accepted but undelivered late acquisition never enters the body and retains custody through its real tail()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
++      "method": "positive remaining caps and the two second work budget share only one emergency allowance",
++      "display_name": "positive remaining caps and the two second work budget share only one emergency allowance()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
++      "method": "real blocking SQL after delete ends the old session and row lock without a future timeout receipt",
++      "display_name": "real blocking SQL after delete ends the old session and row lock without a future timeout receipt()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
++      "method": "native commit failure stays unknown after Spring cleanup while authentic local quiescence permits only refund",
++      "display_name": "native commit failure stays unknown after Spring cleanup while authentic local quiescence permits only refund()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
++      "method": "real afterCommit interruption preserves durable committed outcome exact cleanup and original caller interrupt",
++      "display_name": "real afterCommit interruption preserves durable committed outcome exact cleanup and original caller interrupt()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
++      "method": "a real post consent return tail retains permit past expiry and cannot refund or retire its successor early",
++      "display_name": "a real post consent return tail retains permit past expiry and cannot refund or retire its successor early()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupIT",
++      "method": "source expiry includes the cutoff and used unexpired grants without deleting the next microsecond",
++      "display_name": "source expiry includes the cutoff and used unexpired grants without deleting the next microsecond()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupIT",
++      "method": "mixed scope cleanup preserves active source grants and every complaint lifecycle",
++      "display_name": "mixed scope cleanup preserves active source grants and every complaint lifecycle()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupIT",
++      "method": "one invocation commits only the first fifty eligible UUIDs and leaves the remaining batch",
++      "display_name": "one invocation commits only the first fifty eligible UUIDs and leaves the remaining batch()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupIT",
++      "method": "an independently locked earliest eligible grant is skipped while fifty other rows commit",
++      "display_name": "an independently locked earliest eligible grant is skipped while fifty other rows commit()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupIT",
++      "method": "the trusted Clock is sampled once and its committed cutoff is durable to an independent reader",
++      "display_name": "the trusted Clock is sampled once and its committed cutoff is durable to an independent reader()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupIT",
++      "method": "a decorator failure after the real delete rolls back and preserves independently readable rows",
++      "display_name": "a decorator failure after the real delete rolls back and preserves independently readable rows()"
+     }
+   ],
+-  "report_directory": "reports/core-c2-sqlclientinfo-pg1-01",
++  "report_directory": "reports/ordinary-connected-pg-01",
+   "witness_property_file": "worker-runtime.txt",
+   "expected_witnesses": [],
+   "original_provider_gate": "app-29-gate-b-hosted-01",
+@@ -54,9 +195,10 @@
+     "home": "Bound hosted JAVA_HOME; actual Gradle/Test context and JDK binary/modules hashes remain controller obligations, not positive consumer-loader proof."
+   },
+   "source_inventory": {
+-    "path": "review/working/app-29-real-pool-return-adaptation-c2-01/test-source-inventory.json",
+-    "sha256": "823f49b359b8dec60d1b024c2bfd4e3d2d6822a42fed1a8c8d0e905b5ba87650",
+-    "kind": "Historical47 textual declarations only, NOT this run's executed selection. Exact one-method PhysicalJdbcDescendantsTest identity is expected_tests. Prior PG14 on6db944, PG10 on1c91,45 passes and diagnostics01 0/2 are preserved, not rerun or relabelled."
++    "path": "review/working/app-29-ordinary-connected-pg-preparation-01/selection.json",
++    "sha256": "571c264b1f8b22e575c6fdfd7c726d9918b78b3f435d27526ed76c09e700faa9",
++    "expected_test_count": 21,
++    "kind": "Sealed21 exact literal class/method/display-name declarations, not execution outcomes. The selected real positive controls remain mandatory; no historical47/PG1 selection or consumer-witness credit."
+   },
+   "core_source_manifest": {
+     "path": "review/working/app-29-real-pool-return-adaptation-c2-01/source-manifest.json",
+@@ -80,7 +222,7 @@
+     "snapshot_count": 199,
+     "approved_input_count": 63,
+     "historical_input_count": 102,
+-    "proposed_delta": "Historical stage: unchanged eight product_lifecycle_source_delta replacements must equal the accepted PG10 source map; nineteen post_structural_source_delta replacements must equal the pinned PG14 map. New selection has zero source delta over PG14. Fresh same-source, new-selection full-v3 freeze/local preflight still required; no source commit or smaller inventory."
++    "proposed_delta": "Historical stage only: diagnostics466 plus eight accepted product-lifecycle changes equals PG10; plus nineteen structural changes equals PG14; PG1 is its zero-source-delta selector-only successor. The distinct ordinary_source_transition then applies exactly23 changes to produce target478; a new clean-checkpoint43-argv freeze and genuine local-v3 receipt remain mandatory."
+   },
+   "predecessor_profile": {
+     "path": "review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.json",
+@@ -119,17 +261,18 @@
+     "review/working/app-29-core-c2-isolation-getter-source-01/source-delta.patch": "5be5cd1adb568dc796a01f7756b070cc7fead7c64d99ee925c12530ab8e772ae"
+   },
+   "limits": [
+-    "One Test task, one worker, exactly one existing ordinary @Test method in PhysicalJdbcDescendantsTest with its PER_CLASS/SAME_THREAD lazy PostgreSQL fixture; three task argv elements, no wildcard, backtick or parentheses in argv selectors. Normal compilation remains unrestricted.",
+-    "All existing operation budgets, native/Entry/epoch/UNKNOWN/retirement and ordinary OwnedCutPool teardown assertions remain. No prewarm, process-only substitute, timeout extension or extra hard fault.",
+-    "PG14 fixed shutdown diagnostics are explicitly NOT_APPLICABLE here, with zero expected rows: this method never sets OwnedCutPool.shutdownDiagnosticCase. The unchanged original PG14 profile/carrier still requires all four CAPTURED rows for RETURN_SAMPLE and FAILED_POST_CONSENT_TAIL BEFORE_SHUTDOWN/AFTER_SHUTDOWN. No invented rows or PG14 rerun.",
+-    "A passing one-case XML and NOT_APPLICABLE scalar status are separate requirements. No CAPTURED-by-empty-set inference. Unexpected diagnostic rows fail this selection; actual FAIL/ERROR/SKIP and owned-command nonzero exits remain sticky.",
+-    "Same one lazy PostgreSQL17.6-alpine plus Ryuk0.12.0; exactly2 containers/1 PostgreSQL/1 Ryuk, with all existing session, event, image, ownership, capture-before-delete and absence gates retained. The shared helper uses the passed fixture; two physical custody cells are not two PostgreSQL containers.",
+-    "No positive worker-witness expectations. Effective classpath and class-load logs are context only; Native05 remains UNQUALIFIED.",
+-    "Prior PG14 on6db944 and PG10 on1c91, hosted02 45/47 and diagnostics01 0/2 with failed cleanup remain separate, unchanged evidence. Both current PG14 and historical PostgreSQL kill9/die137 are retained; NORMAL_ABSENT is not graceful-shutdown or zero-kill proof.",
+-    "Preserve all466 source keys through unchanged historical8 and structural19 then zero new replacements, all348 seed paths, all199 snapshot subjects, all143 PG14 approved inputs plus every PG14 tooling provenance pair and all102 historical pins; no inventory-helper modification.",
+-    "Only defaults-backed Properties String values, non-String same-key fallback without caller mutation, both foreign-thread setClientInfo overloads yielding SQLClientInfoException and stale Properties-overload refusal are selected. This method does not inject every finally failure or assert the stale String overload.",
+-    "Original D05 PARTIAL and original D06 unreviewed/unexecuted artifacts remain immutable; their reviewed/imported v2 successors must not be restarted or relabelled unreviewed. Full runtime acceptance is separate. Opaque/native-finalizer/pin/compaction/liveness/full/consumer/W03 gates remain open.",
+-    "Preparation is not execution authority. Primary alone freezes/preflights/checkpoints/adopts/launches. No source/bundle/private ancestry change or public production-profile enablement."
++    "One normal Test task and one512MiB worker inherited from W01, maxParallelForks1/forkEvery0/always-run and explicit JUnit parallel=false. Exactly21 literal methods: OwnershipIT15 plus CleanupIT6,43 argv elements. No wildcards, parameterized expansion, source-set narrowing, compile skip, extra task, timeout increase or retry.",
++    "Parse exactly two bounded UTF-8 XML files, comparing sorted observed and sorted expected filenames. Require each exact suite15/6 and all21 unique class/display-name identities, consistent counts and21PASS/0FAIL/0ERROR/0SKIP. Preserve actual outcomes and raw evidence before deletion, including on failure.",
++    "PG14 shutdown diagnostics are NOT_APPLICABLE with zero rows across BOTH suites. No empty-set CAPTURED inference; unexpected rows fail. Original PG14 four fixed records remain required only in its preserved original selection/result.",
++    "Two independent PER_CLASS/SAME_THREAD lazy PostgreSQL17.6-alpine fixtures, one per selected class, plus one Ryuk0.12.0: exactly3 created containers/2PostgreSQL/1Ryuk in one Testcontainers session. Per-method owned and foreign EMFs reuse their passed database. Keep custody, UUID, image, create/destroy, capture and cleanup gates unchanged.",
++    "Preserve all nonvacuous authored real-PG oracles, including positive selected/foreign EMF controls, exact armed lower BUSINESS commit failure before rollback, real Timeout/PgSleep and1..3000ms disposition, durable afterCommit plus original caller interrupt, late acquisition/RETURN tails, actual clipped JDBC/server caps and same-PID/new-epoch read-cap restoration, and six row/clock/lock controls. They are required tests, not yet observed successes.",
++    "Bind complete historical diagnostics466 -> eight replacements -> PG10 -> nineteen structural replacements -> PG14 -> unchanged PG1 to their own heads/maps/bundles. Then apply exactly11 replacements+12 additions,455 unchanged and zero newly removed to obtain the pinned target478. Preserve348 seed keys,211 snapshot subjects and102 historical pins; no seed-byte-equality claim or inventory helper edit.",
++    "Retain all188 unique path/hash provenance pairs from target19approved+8tooling and PG1170approved+10tooling without conflicts. Fresh active tooling is the same five base tools plus exactly five deployments, including the unchanged ownership helper. Final authority counts are measured from actual maps, not copied from any old receipt.",
++    "The real private source checkpoint ccdbb28f is exactly one child of6db944, with the complete older chain retained. Its actual bundle is distinct from the historical217809-byte bundle. Measure full tracked-versus-actual repository hashes afresh, separately from478 governed sources. Never push this tip or its private ancestry to public Backend.",
++    "Accepted Linux03 carries only56/56 nonDB invocations, normal main/test compilation and fresh Ktlint. Detekt was not run there; prior-byte-set reuse is bounded by ba5b6ec6/68329161. Linux01/02 zero-test failures, all original hosted/diagnostic failures and accepted PG1/PG14/PG10 results remain unchanged and are not rerun or counted among these21.",
++    "No positive consumer worker-witness methods are selected. Actual JDK/classpath/class-load logs remain context, not complete transitive-byte or Native05 qualification. Native05 remains UNQUALIFIED; original-provider/consumer/full47/opaque/native-finalizer/pin/compaction/liveness/recovery/full-P3/W03/production gates remain open.",
++    "Retain25min job/1200s total/120s preflight/900s validation/180s cleanup,8GiB floor,8MiB bundle bound,2GiB Gradle/512MiB metaspace, all four measured drains and11 output-absence obligations. Forced/nonzero cleanup, cancellation, incomplete capture or budget failure is stickyFAIL; unknown custody never permits removal. NORMAL_ABSENT is not graceful PostgreSQL shutdown or zero-kill proof; raw kill/die events remain retained.",
++    "This private author derivative is inert, not source/runtime acceptance or admission. Primary must bind final profile/init/controller hashes, independent actual-delta review, the genuine fresh complete-diff freeze/local receipt, later accepted deployment checkpoint and exact request/carrier before one separately admitted attempt. No future receipt/request/deployment checkpoint belongs inside its own manifest inputs."
+   ],
+   "historical_diagnostics_result": {
+     "run_id": "34678157417",
+@@ -319,7 +462,7 @@
+     "status": "NOT_APPLICABLE",
+     "expected_record_count": 0
+   },
+-  "shutdown_diagnostics_note": "This exact method leaves shutdownDiagnosticCase null; normal real pool teardown assertions remain active but emit no PG14 scalar rows. Zero rows is nonapplicability, never CAPTURED or completion/consumer proof. Original PG14 four-row requirements remain unchanged in its pinned profile/carrier and raw result.",
++  "shutdown_diagnostics_note": "Both selected classes use the real ordinary fixture/owned pool without assigning shutdownDiagnosticCase, so require NOT_APPLICABLE and zero PG14 rows across both suites. Actual pool/EMF/database closes and all teardown assertions remain. Never infer CAPTURED from empty records; original PG14 four-row obligations and results remain separate and unchanged.",
+   "historical_pg14_shutdown_diagnostics": {
+     "scope": "REQUIRED_IN_ORIGINAL_PG14_ONLY_NOT_APPLICABLE_TO_THIS_SELECTION",
+     "required_record_count": 4,
+@@ -355,5 +498,114 @@
+     "scope": "PRIMARY_ACCEPTED_FOCUSED_PG14_ONLY; exact14 on unchanged private6db944, not rerun or merged into the new one-method count; no full47/consumer/native/W03 acceptance",
+     "cleanup_limit": "Controller-unforced final absence; CURRENT PG14 PostgreSQL kill9/die137 retained. Not graceful-shutdown or zero-kill proof.",
+     "primary_disposition": "ACCEPT_FOCUSED_PG14_ONLY"
++  },
++  "expected_xml_files": [
++    "TEST-me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.xml",
++    "TEST-me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupIT.xml"
++  ],
++  "historical_source_inventory": {
++    "path": "review/working/app-29-real-pool-return-adaptation-c2-01/test-source-inventory.json",
++    "sha256": "823f49b359b8dec60d1b024c2bfd4e3d2d6822a42fed1a8c8d0e905b5ba87650",
++    "kind": "Historical47 textual declarations only, NOT this run's executed selection. Exact one-method PhysicalJdbcDescendantsTest identity is expected_tests. Prior PG14 on6db944, PG10 on1c91,45 passes and diagnostics01 0/2 are preserved, not rerun or relabelled."
++  },
++  "selection_source_delta_scope": "The inherited empty selection_source_delta applies only to historical PG14 -> PG1. It is not the current W03 source delta; ordinary_source_transition is the sealed23-row authority.",
++  "container_population": {
++    "total": 3,
++    "postgres": 2,
++    "ryuk": 1,
++    "images": [
++      "postgres:17.6-alpine",
++      "testcontainers/ryuk:0.12.0"
++    ],
++    "basis": "Each PER_CLASS/SAME_THREAD selected class independently creates/starts one lazy PgLifecycleDatabaseFixture and closes it in AfterAll. Per-method ordinary/foreign EMFs and owned pools reuse the passed database. One Test worker with forkEvery=0 uses one Testcontainers session/Ryuk. These are required future event counts, not observed containers."
++  },
++  "ordinary_source_predecessor": {
++    "path": "review/working/app-29-w03-integrated-driver-core-c2-sqlclientinfo-pg1-01/manifest.json",
++    "sha256": "2cde6562f651eb1240ba6fcc7e13d87400a993d10fa4d8b681acf2316cf2f99c",
++    "backend_sha": "6db944871c1584bd6a1f28263e8010cadd766fab",
++    "source_count": 466,
++    "snapshot_count": 199,
++    "approved_input_count": 170,
++    "historical_input_count": 102,
++    "scope": "HISTORICAL_COMPLETE_PG1_SOURCE_STAGE_NOT_CURRENT_W03_SELECTION"
++  },
++  "ordinary_source_predecessor_profile": {
++    "path": "review/working/app-29-core-c2-sqlclientinfo-pg1-preparation-01/profile/profile.json",
++    "sha256": "173b4f5131cacd7b89b8bd24b1700eac34218969b7921c80a6beb9dee72c0d37"
++  },
++  "historical_pg1_source_bundle": {
++    "path": "review/working/app-29-core-c2-post-structural-private-checkpoint-01/backend.bundle",
++    "sha256": "2506c18cc5e40f089cc1176a65a79d449ff02b13f4c08e0719c24d359e9882da",
++    "bytes": 217809
++  },
++  "ordinary_source_target": {
++    "path": "review/working/app-29-w03-integrated-driver-ordinary-connected-03/manifest.json",
++    "sha256": "171dc5c76663c7552bd064c343437bc6545394315769214354afec2295929913",
++    "source_count": 478,
++    "snapshot_count": 211,
++    "scope": "ACCEPTED_LINUX03_DOCUMENTARY_DIRTY_SOURCE_MAP; its Git status/local13-argv are not the required new clean PG checkpoint/43-argv freeze"
++  },
++  "ordinary_source_transition": {
++    "path": "review/working/app-29-ordinary-connected-pg-preparation-01/source-transition.json",
++    "sha256": "14c80ac290be008634cc26e3ade6b54737af05664f68c247e84dce66846291a8"
++  },
++  "ordinary_source_checkpoint": {
++    "path": "review/working/app-29-ordinary-connected-source-checkpoint-01/receipt.json",
++    "sha256": "4aec8adbcd3987cd8e6be152f63ab599d26178ec64020c0aba7281d9a722485b"
++  },
++  "ordinary_checkpoint_paths": {
++    "path": "review/working/app-29-ordinary-connected-source-checkpoint-01/source-paths.json",
++    "sha256": "a59581766bf4618bf7c36b7f47c021d23c9631c55b8e982c6ea2079dedecc4e2"
++  },
++  "ordinary_connected_authority": {
++    "review/working/app-29-ordinary-connected-pg-preparation-01/README.md": "d0664032094608162db43ed7a2688de41b1bc38f2603c4f8d9bdacb8906bc37e",
++    "review/working/app-29-ordinary-connected-pg-preparation-01/SEAL.sha256": "8b6c440a43568a787b7e3279264283b02a37db3f2f333c01bfc71ffc561531db",
++    "review/working/app-29-ordinary-connected-pg-preparation-01/SHA256SUMS": "62d70f6289aa82c6209eba95d38e0940b2dbc9e83aa50e82db32b9a90cd36318",
++    "review/working/app-29-ordinary-connected-pg-preparation-01/inputs.sha256": "25a09f81cc5cc46366a5e545573a589c5e2ef3fdcf9843a308897b0915841450",
++    "review/working/app-29-ordinary-connected-pg-preparation-01/recipe.json": "8d6b4a081a868ea1b304b9b8e259c75d17d96399f9aa412b6310657ec5ef885e",
++    "review/working/app-29-ordinary-connected-pg-preparation-01/selection.json": "571c264b1f8b22e575c6fdfd7c726d9918b78b3f435d27526ed76c09e700faa9",
++    "review/working/app-29-ordinary-connected-pg-preparation-01/source-transition.json": "14c80ac290be008634cc26e3ade6b54737af05664f68c247e84dce66846291a8",
++    "review/remediation/app-29-ordinary-connected-pg-preparation-01-independent-review.md": "5314a77f600bdfb20a7739120aaaa6e2437d4210b866d3fc5c5620d027876adf",
++    "review/working/app-29-ordinary-connected-source-checkpoint-01/receipt.json": "4aec8adbcd3987cd8e6be152f63ab599d26178ec64020c0aba7281d9a722485b",
++    "review/working/app-29-ordinary-connected-source-checkpoint-01/source-paths.json": "a59581766bf4618bf7c36b7f47c021d23c9631c55b8e982c6ea2079dedecc4e2",
++    "review/working/app-29-ordinary-connected-source-checkpoint-01/primary-disposition.md": "7c7bd192153e92dcb7aa91e9b75c55785c0ed25a788337878d8532752e24ec88",
++    "review/working/app-29-ordinary-connected-source-checkpoint-01/ordinary-connected-source.bundle": "63d9469a1ac0145f807129e8b6c7ee865a309676ee3e188eacf413d8de40b3a3",
++    "review/working/app-29-ordinary-connected-linux-03/result.json": "c9787405e0fa2f75c1d006b42eb695fc4fbad7653de1393597d7de08c0472c83",
++    "review/remediation/app-29-ordinary-connected-linux03-independent-actual-result.md": "d7322dc3304c150ca5378a3a2d390928bffb7dbc7936298fd60a2fb264859caf",
++    "review/working/app-29-ordinary-connected-linux-03/primary-acceptance.md": "e1ca7e62c46e51c5b55efc1c49044f860cf4060d604132ee55e3777b5154cca3",
++    "review/working/app-29-core-c2-sqlclientinfo-pg1-admission-01/launch-03/primary-acceptance.json": "b5df18dc41891d0e5fe770f9fb1ca05936a5d45bc0357c4cb04a330548075821",
++    "review/remediation/app-29-core-c2-sqlclientinfo-pg1-actual-result-independent-review-01.md": "1fdb1b65facf80ac79c44f847358e6ad280be1e976484b8ac19259dd3c965c77",
++    "review/working/app-29-core-c2-sqlclientinfo-pg1-admission-01/launch-03/artifacts/result.json": "5d640b6fc1b39a521577374e1e47186368f860b49e3d1bb55da98ab61a478fe1"
++  },
++  "historical_pg1_result": {
++    "run_id": "34709458222",
++    "carrier_sha": "02ebe6024d151e082c1f685cb58280000f81e4a0",
++    "backend_sha": "6db944871c1584bd6a1f28263e8010cadd766fab",
++    "passed": 1,
++    "failed": 0,
++    "errors": 0,
++    "skipped": 0,
++    "primary_disposition": "ACCEPT_FOCUSED_SQLCLIENTINFO_PG1_ONLY",
++    "scope": "HISTORICAL_PRIMARY_ACCEPTED_EXACT_ONE_SQLCLIENTINFO_CASE_ONLY_NOT_RERUN_OR_INCLUDED_IN_21",
++    "cleanup_limit": "Original PG1 PostgreSQL kill9/die137/destroy retained. Controller-unforced final absence is not graceful-shutdown or zero-kill proof."
++  },
++  "accepted_linux03_result": {
++    "result_sha256": "c9787405e0fa2f75c1d006b42eb695fc4fbad7653de1393597d7de08c0472c83",
++    "source_manifest_sha256": "171dc5c76663c7552bd064c343437bc6545394315769214354afec2295929913",
++    "passed": 56,
++    "failed": 0,
++    "errors": 0,
++    "skipped": 0,
++    "test_class_counts": {
++      "PersistenceJdbcTransactionTest": 7,
++      "PersistenceJdbcGuardProtocolTest": 11,
++      "PhysicalJdbcFacadeTest": 11,
++      "PersistenceOwnershipTest": 8,
++      "PoolLifecycleTest": 19
++    },
++    "normal_main_test_compilation": "ACCEPTED",
++    "ktlint": "FRESH_ACCEPTED",
++    "detekt": "NOT_RUN; bounded prior-byte-set reuse only under ba5b6ec6c268dda62230abb6530ca581faef1428560d482d13a28b67dcbb45dc and683291612d4c4b6312201aa312f3a76d40745cfb45be260a273f742bae95c7ce, not a new Detekt pass for changed test bytes",
++    "scope": "PRIMARY_ACCEPTED_FOCUSED_NONDB56_ONLY_NOT_PG_EXECUTION_OR_W03_ACCEPTANCE; supersedes sealed preparation ACTIVE-at-assignment attribution without changing that sealed history"
+   }
+ }
+--- review/working/app-29-core-c2-sqlclientinfo-pg1-preparation-01/profile/profile.init.gradle
++++ review/working/app-29-ordinary-connected-pg-carrier-01/profile/profile.init.gradle
+@@ -8,8 +8,12 @@
+ import org.gradle.api.tasks.testing.Test
+ import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
+ 
+-// Private exact-one SQLClientInfo derivative of reviewed CoreC2 PG14; historical bytes stay unchanged.
++// Private exact21 ordinary-connected derivative of reviewed PG1; all historical files stay unchanged.
+ // Reuses the existing owned hosted context; no controller, process, fixture or dependency replacement.
++def profileSha256 = null // Inert author derivative; primary must bind actual final profile bytes.
++if (!(profileSha256 instanceof String) || !(profileSha256 ==~ /[0-9a-f]{64}/) || profileSha256 == '0' * 64) {
++    throw new GradleException('Inert ordinary-connected derivative: final profile hash is unbound')
++}
+ def runPath = System.getenv('W01_RUN')
+ if (!runPath) throw new GradleException('W01_RUN is required')
+ def run = new File(runPath).canonicalFile
+@@ -26,15 +30,16 @@
+     }
+     digest.digest().encodeHex().toString()
+ }
+-def profileFile = new File(root, 'review/working/app-29-core-c2-sqlclientinfo-pg1-preparation-01/profile/profile.json')
+-if (sha256(profileFile) != '173b4f5131cacd7b89b8bd24b1700eac34218969b7921c80a6beb9dee72c0d37') {
+-    throw new GradleException('Changed exact-one SQLClientInfo profile')
++def profileFile = new File(root, 'review/working/app-29-ordinary-connected-pg-carrier-01/profile/profile.json')
++if (sha256(profileFile) != profileSha256) {
++    throw new GradleException('Changed exact21 ordinary-connected profile')
+ }
+ def profile = new JsonSlurper().parse(profileFile)
+ def exactMethods = profile.expected_tests.collect { it['class'] + '.' + it.method }
+-if (profile.profile_id != 'app-29-core-c2-sqlclientinfo-pg1-profile-01' || profile.expected_test_count != 1 ||
+-        exactMethods.size() != 1 || exactMethods.toSet().size() != 1 || profile.expected_witnesses != []) {
+-    throw new GradleException('Require exactly one SQLClientInfo method and no positive-witness selection')
++if (profile.profile_id != 'app-29-ordinary-connected-pg-profile-01' || profile.expected_test_count != 21 ||
++        exactMethods.size() != 21 || exactMethods.toSet().size() != 21 || profile.expected_witnesses != [] ||
++        profile.task_args != (['test'] + exactMethods.collectMany { ['--tests', it] })) {
++    throw new GradleException('Require exactly21 ordinary-connected methods and the same43 argv, without consumer-witness selection')
+ }
+ def originalInit = new File(run, 'original.init.gradle')
+ if (sha256(originalInit) != profile.original_init.sha256) throw new GradleException('Changed historical source init')
+@@ -82,6 +87,7 @@
+         test.filter.failOnNoMatchingTests = true
+         test.maxParallelForks = 1
+         test.forkEvery = 0
++        test.systemProperty('junit.jupiter.execution.parallel.enabled', 'false')
+         test.outputs.upToDateWhen { false }
+         test.extensions.getByType(JacocoTaskExtension).enabled = false
+ 
+@@ -163,7 +169,7 @@
+             new File(report, 'effective-classpath.txt').text = JsonOutput.prettyPrint(JsonOutput.toJson([
+                     profile: profile.profile_id, source_inventory: profile.source_inventory,
+                     expected_test_count: profile.expected_test_count, expected_witnesses: profile.expected_witnesses,
+-                    scope: 'Exact-one SQLClientInfo validation only; classpath context, not consumer/JAR qualification',
++                    scope: 'Exact21 ordinary-connected PG validation only; classpath context, not consumer/JAR/W03 qualification',
+                     removed_stock: [component: stock[0].id.componentIdentifier.displayName,
+                                     path: stock[0].file.canonicalPath, sha256: sha256(stock[0].file)],
+                     deduplicated_checker: checkers.collect { [path: it.file.canonicalPath, sha256: sha256(it.file)] },

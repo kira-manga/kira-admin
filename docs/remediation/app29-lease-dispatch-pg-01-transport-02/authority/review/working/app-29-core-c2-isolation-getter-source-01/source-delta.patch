@@ -1,0 +1,201 @@
+--- a/pgjdbc/src/main/java/org/postgresql/jdbc/PgConnection.java
++++ b/pgjdbc/src/main/java/org/postgresql/jdbc/PgConnection.java
+@@ -1081,11 +1081,29 @@
+     checkClosed();
+ 
+     String level = null;
+-    final ResultSet rs = execSQLQuery("SHOW TRANSACTION ISOLATION LEVEL"); // nb: no BEGIN triggered
+-    if (rs.next()) {
+-      level = rs.getString(1);
++    // This scalar getter owns the statement even when execution never delivers a result.
++    try (BaseStatement stat = (BaseStatement) createStatement(ResultSet.TYPE_FORWARD_ONLY,
++        ResultSet.CONCUR_READ_ONLY)) {
++      boolean hasResultSet = stat.executeWithFlags("SHOW TRANSACTION ISOLATION LEVEL",
++          QueryExecutor.QUERY_SUPPRESS_BEGIN); // nb: no BEGIN triggered
++      while (!hasResultSet && stat.getUpdateCount() != -1) {
++        hasResultSet = stat.getMoreResults();
++      }
++      if (!hasResultSet) {
++        throw new PSQLException(GT.tr("No results were returned by the query."), PSQLState.NO_DATA);
++      }
++
++      // Preserve warnings before closing their private statement clears them.
++      SQLWarning warnings = stat.getWarnings();
++      if (warnings != null) {
++        addWarning(warnings);
++      }
++      try (ResultSet rs = castNonNull(stat.getResultSet(), "hasResultSet==true, yet getResultSet()==null")) {
++        if (rs.next()) {
++          level = rs.getString(1);
++        }
++      }
+     }
+-    rs.close();
+ 
+     // TODO revisit: throw exception instead of silently eating the error in unknown cases?
+     if (level == null) {
+--- a/pgjdbc-mockito-test/src/test/java/org/postgresql/jdbc/KiraOwnedJdbcCutFaultTest.java
++++ b/pgjdbc-mockito-test/src/test/java/org/postgresql/jdbc/KiraOwnedJdbcCutFaultTest.java
+@@ -26,6 +26,8 @@
+ import org.postgresql.core.Query;
+ import org.postgresql.core.QueryExecutor;
+ import org.postgresql.core.ResultCursor;
++import org.postgresql.core.ResultHandler;
++import org.postgresql.core.TransactionState;
+ import org.postgresql.core.Tuple;
+ import org.postgresql.test.TestUtil;
+ 
+@@ -45,6 +47,7 @@
+ import java.sql.PreparedStatement;
+ import java.sql.ResultSet;
+ import java.sql.SQLException;
++import java.sql.SQLWarning;
+ import java.sql.Statement;
+ import java.util.ArrayList;
+ import java.util.Arrays;
+@@ -63,6 +66,124 @@
+   private static final Class<?>[] NONE = new Class<?>[0];
+   private static final Object[] NO_ARGUMENTS = new Object[0];
+ 
++  @Test
++  void isolationGetterRepeatedSuccessClosesBothResourcesWithoutBeginningATransaction() throws Exception {
++    try (Owned f = new Owned()) {
++      f.call(f.connection, Connection.class, "setAutoCommit", new Class<?>[]{boolean.class}, false);
++      f.call(f.connection, Connection.class, "setTransactionIsolation", new Class<?>[]{int.class},
++          Connection.TRANSACTION_REPEATABLE_READ);
++      QueryExecutor original = f.connection.getQueryExecutor();
++      for (int attempt = 0; attempt < 2; attempt++) {
++        assertFalse(f.connection.getAutoCommit());
++        assertSame(TransactionState.IDLE, f.connection.getTransactionState());
++        f.call(f.connection, Connection.class, "clearWarnings", NONE);
++        AtomicReference<KiraOwnedJdbcCut.Life> statement = new AtomicReference<>();
++        AtomicReference<KiraOwnedJdbcCut.Life> result = new AtomicReference<>();
++        AtomicInteger executed = new AtomicInteger();
++        SQLWarning warning = new SQLWarning("test isolation getter warning");
++        try (ExecutorFault ignored = new ExecutorFault(f.connection, invocation -> {
++          if (invocation.getMethod().getName().equals("execute")
++              && invocation.getArgument(0) instanceof Query
++              && startsWith(invocation.getArgument(0), "SHOW TRANSACTION ISOLATION LEVEL")) {
++            executed.incrementAndGet();
++            assertEquals(QueryExecutor.QUERY_SUPPRESS_BEGIN,
++                (int) invocation.getArgument(5) & QueryExecutor.QUERY_SUPPRESS_BEGIN);
++            statement.set(liveNativeLife(f.connection, PgStatement.class));
++            Object returned = delegate(original, invocation);
++            result.set(liveNativeLife(f.connection, PgResultSet.class));
++            ((ResultHandler) invocation.getArgument(2)).handleWarning(warning);
++            return returned;
++          }
++          return delegate(original, invocation);
++        })) {
++          assertEquals(Connection.TRANSACTION_REPEATABLE_READ,
++              f.call(f.connection, Connection.class, "getTransactionIsolation", NONE));
++        }
++        assertSame(original, f.connection.getQueryExecutor());
++        assertEquals(1, executed.get());
++        assertEquals(2, KiraOwnedJdbcCut.firstCloseState(Objects.requireNonNull(statement.get())));
++        assertEquals(2, KiraOwnedJdbcCut.firstCloseState(Objects.requireNonNull(result.get())));
++        assertSame(warning, f.call(f.connection, Connection.class, "getWarnings", NONE));
++        assertEquals(0L, KiraOwnedJdbcCut.liveNativeChildren(f.root));
++        assertEquals(0, KiraOwnedJdbcCut.retentionState(f.root));
++        assertFalse(f.connection.getAutoCommit());
++        assertSame(TransactionState.IDLE, f.connection.getTransactionState());
++      }
++    }
++  }
++
++  @Test
++  void isolationGetterExecuteFailureClosesItsStatementAndPreservesTheException() throws Exception {
++    try (Owned f = new Owned()) {
++      SQLException marker = new SQLException("test isolation execution failure", "XX000");
++      AtomicReference<KiraOwnedJdbcCut.Life> statement = new AtomicReference<>();
++      AtomicInteger injected = new AtomicInteger();
++      QueryExecutor original = f.connection.getQueryExecutor();
++      assertEquals(0L, KiraOwnedJdbcCut.liveNativeChildren(f.root));
++      try (ExecutorFault ignored = new ExecutorFault(f.connection, invocation -> {
++        if (invocation.getMethod().getName().equals("execute")
++            && invocation.getArgument(0) instanceof Query
++            && startsWith(invocation.getArgument(0), "SHOW TRANSACTION ISOLATION LEVEL")) {
++          statement.set(liveNativeLife(f.connection, PgStatement.class));
++          assertEquals(1L, KiraOwnedJdbcCut.liveNativeChildren(f.root), "No result was created before this fault.");
++          injected.incrementAndGet();
++          throw marker;
++        }
++        return delegate(original, invocation);
++      })) {
++        assertSame(marker, assertThrows(SQLException.class,
++            () -> f.call(f.connection, Connection.class, "getTransactionIsolation", NONE)));
++      }
++      assertSame(original, f.connection.getQueryExecutor());
++      assertEquals(1, injected.get());
++      assertEquals(0, marker.getSuppressed().length);
++      assertEquals(2, KiraOwnedJdbcCut.firstCloseState(Objects.requireNonNull(statement.get())));
++      assertEquals(0, KiraOwnedJdbcCut.invocationState(f.last));
++      assertEquals(0L, KiraOwnedJdbcCut.liveNativeChildren(f.root));
++      assertEquals(0, KiraOwnedJdbcCut.retentionState(f.root));
++    }
++  }
++
++  @Test
++  void isolationGetterReadFailureClosesBothResourcesAndPreservesTheException() throws Exception {
++    try (Owned f = new Owned()) {
++      SQLException marker = new SQLException("test isolation result decoding failure", "XX000");
++      AtomicReference<KiraOwnedJdbcCut.Life> statement = new AtomicReference<>();
++      AtomicReference<KiraOwnedJdbcCut.Life> result = new AtomicReference<>();
++      AtomicInteger injected = new AtomicInteger();
++      QueryExecutor original = f.connection.getQueryExecutor();
++      try (ExecutorFault ignored = new ExecutorFault(f.connection, invocation -> {
++        if (invocation.getMethod().getName().equals("execute")
++            && invocation.getArgument(0) instanceof Query
++            && startsWith(invocation.getArgument(0), "SHOW TRANSACTION ISOLATION LEVEL")) {
++          statement.set(liveNativeLife(f.connection, PgStatement.class));
++          Object returned = delegate(original, invocation);
++          result.set(liveNativeLife(f.connection, PgResultSet.class));
++          return returned;
++        }
++        if (invocation.getMethod().getName().equals("getEncoding") && result.get() != null) {
++          // Armed only after the real result factory returned, at PgResultSet.getString's dependency.
++          assertEquals(0, KiraOwnedJdbcCut.firstCloseState(Objects.requireNonNull(statement.get())));
++          assertEquals(0, KiraOwnedJdbcCut.firstCloseState(result.get()));
++          injected.incrementAndGet();
++          throw marker;
++        }
++        return delegate(original, invocation);
++      })) {
++        assertSame(marker, assertThrows(SQLException.class,
++            () -> f.call(f.connection, Connection.class, "getTransactionIsolation", NONE)));
++      }
++      assertSame(original, f.connection.getQueryExecutor());
++      assertEquals(1, injected.get());
++      assertEquals(0, marker.getSuppressed().length);
++      assertEquals(2, KiraOwnedJdbcCut.firstCloseState(Objects.requireNonNull(statement.get())));
++      assertEquals(2, KiraOwnedJdbcCut.firstCloseState(Objects.requireNonNull(result.get())));
++      assertEquals(0, KiraOwnedJdbcCut.invocationState(f.last));
++      assertEquals(0L, KiraOwnedJdbcCut.liveNativeChildren(f.root));
++      assertEquals(0, KiraOwnedJdbcCut.retentionState(f.root));
++    }
++  }
++
+   @ParameterizedTest
+   @ValueSource(booleans = {false, true})
+   void hiddenFirstCloseFailureIsStickyEvenWhenARepeatWouldBeANoOp(boolean terminalFirst) throws Exception {
+@@ -790,6 +911,20 @@
+     return query.getNativeSql().trim().toUpperCase(Locale.ROOT).startsWith(operation.toUpperCase(Locale.ROOT));
+   }
+ 
++  /** Capture the actual Life before the original call's actualEnd compacts closed receivers. */
++  private static KiraOwnedJdbcCut.Life liveNativeLife(PgConnection connection, Class<?> type) {
++    KiraOwnedJdbcCut.Life found = null;
++    for (KiraOwnedJdbcCut.Native child = connection.kira.children; child != null; child = child.next) {
++      if (child.receiver != null && child.receiver.getClass() == type) {
++        assertNull(found, "Expected only one matching native receiver in this getter extent.");
++        assertTrue(child.factoryReturned);
++        assertEquals(0, KiraOwnedJdbcCut.firstCloseState(child.life));
++        found = child.life;
++      }
++    }
++    return Objects.requireNonNull(found, "The actual native getter receiver was not constructed.");
++  }
++
+   private static PgPreparedStatement hiddenPrepared(PgConnection connection, CachedQuery query) {
+     for (KiraOwnedJdbcCut.Native child = connection.kira.children; child != null; child = child.next) {
+       if (child.receiver instanceof PgPreparedStatement) {

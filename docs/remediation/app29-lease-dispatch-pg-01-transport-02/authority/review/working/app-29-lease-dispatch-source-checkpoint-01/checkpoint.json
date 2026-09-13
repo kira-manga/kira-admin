@@ -1,0 +1,27 @@
+{
+  "status": "PRIVATE_TRANSPORT_CHECKPOINT_NOT_FIX_ACCEPTANCE",
+  "at_utc": "2026-09-13T12:46:46.062750+00:00",
+  "head": "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3",
+  "parent": "ccdbb28f6362117882501b4da040257be6fc1990",
+  "tree": "fc480e82630091138da145ade1812cedcd75e58e",
+  "branch": "remediation/app-29-backend-complaints",
+  "public_prerequisite": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+  "source_manifest": "review/working/app-29-w03-integrated-driver-lease-dispatch-linux-02/manifest.json",
+  "source_manifest_sha256": "9888bdff82450069df09c003d48da5413c5ebe0dda6a4cfe45687f4898a1c8e7",
+  "source_count": 481,
+  "development07_seed_keys_preserved": 348,
+  "modified_paths": 14,
+  "newly_tracked_paths": 3,
+  "source_bytes_unchanged": true,
+  "clean_worktree": true,
+  "public_push_forbidden": true,
+  "integration_changed": false,
+  "integration_observed_at_checkpoint": "7f0172ef8fff815b22d0c9992b2733a7d82490c5",
+  "tests_run": false,
+  "bundle": {
+    "path": "review/working/app-29-lease-dispatch-source-checkpoint-01/backend.bundle",
+    "sha256": "235fca34c51710930fd9ced4444d0931e5273137bd4178169c3b8c9c4010ec50",
+    "bytes": 280735
+  },
+  "local_compile_static_result_sha256": "ac5607599b037b9af592ab52ddfc3376b19392c1ec35b393dbc9274617832c1e"
+}

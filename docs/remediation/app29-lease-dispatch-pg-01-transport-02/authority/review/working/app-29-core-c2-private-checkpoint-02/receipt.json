@@ -1,0 +1,48 @@
+{
+  "at_utc": "2026-09-12T03:39:39.229726+00:00",
+  "status": "LOCAL_PRIVATE_REVIEWED_PROVENANCE_CHECKPOINT_AND_V2_BUNDLE_CREATED_NOT_RUNTIME_ACCEPTED",
+  "private_only": true,
+  "public_push_authorized": false,
+  "backend_sha": "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+  "backend_tree": "6e21c50e94ff863715ccf0c5b67183743b1a5046",
+  "previous_private_head": "926927ab805a2a3b78957862f3b744d0fe399ac5",
+  "parent_chain": [
+    "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+    "926927ab805a2a3b78957862f3b744d0fe399ac5",
+    "49da0919d9ec3091cb7bb041009dc9bd5f3e090f",
+    "3d839130c807f6a0a9b1c896c1c6cca4b41c4538"
+  ],
+  "public_prerequisite": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+  "source_scope": "Exactly two profile/JAR provenance literals;47 bodies unchanged;465 other source paths unchanged; no vendor change",
+  "source_path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt",
+  "source_before_sha256": "d6dea7bad3160f0fcece9afc6d1508a8032e42a423f23ccf5ad30b62925de796",
+  "source_after_sha256": "a92f7a1bc152576c0bc2cd55d3dea49614ca073aea3868c2929e5bf1fea48017",
+  "source_map_count": 466,
+  "source_delta_count": 1,
+  "source_bundle": {
+    "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+    "private_parent_sha": "926927ab805a2a3b78957862f3b744d0fe399ac5",
+    "ref": "refs/heads/remediation/app-29-backend-complaints",
+    "source_path": "review/working/app-29-core-c2-private-checkpoint-02/backend.bundle",
+    "path": "docs/remediation/app29-core-c2-02/inputs/backend.bundle",
+    "sha256": "d3000767393f723ab10b9a66e142fd6a0eb470738972e398df8ce6ba53589e8c",
+    "bytes": 198761
+  },
+  "bundle_header": [
+    "# v2 git bundle",
+    "-3d839130c807f6a0a9b1c896c1c6cca4b41c4538 Checkpoint reviewed App29 development21 diagnostics and ownership foundation",
+    "989a8c07b90d956a5f2484f223be41b5d99a8a3c refs/heads/remediation/app-29-backend-complaints"
+  ],
+  "bundle_pack_magic": "PACK",
+  "bundle_verify_exit": 0,
+  "bundle_verify_log_sha256": "cfdb42d684554f8080ac811b6ab36bb707720ed260b30572db42e4d84b84e594",
+  "bundle_list_heads": "989a8c07b90d956a5f2484f223be41b5d99a8a3c refs/heads/remediation/app-29-backend-complaints",
+  "independent_review": "review/remediation/app-29-gate-b-hosted-draft06-independent-actual-review.md",
+  "independent_review_sha256": "baca287b58d86f7fc833f0bf2a423613a4bb035179d9c4c75495dcb55b4f121d",
+  "author_attribution_erratum": "Draft06 prepared by Admin01, not Backend04; sealed source report unchanged",
+  "old_bundle_unchanged": true,
+  "runtime": "UNKNOWN",
+  "candidate": "UNQUALIFIED",
+  "W03": "INCOMPLETE",
+  "remaining": "Fresh v3 freeze, actual local preflight, private staging and actual binding review before one separately admitted changed hosted47 attempt"
+}
