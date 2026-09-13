@@ -1,23 +1,24 @@
-"""UNBOUND private Backend22 EXPORT derivative of accepted Backend20 hosted04 machinery.
+"""Private Backend22 COMPARE-only derivative; source pinned, request NOT authorized.
 
-Exactly10 ordinary methods + 1 explicit candidate export; not fixture admission, comparison,
-App validation, deployment or issue closure. Legacy backend20* carrier names are retained.
-Primary must bind the real source checkpoint and independently reviewed tooling before admission;
-never import or launch this inert author revision. Primary holds the existing local batch.lock
-across hosted launch/collection/cleanup; this VM does not claim that host-local lock.
+Exactly one normal signed-fixture comparison plus the configured test-source Ktlint check.
+The accepted TEST-ONLY fixture is input, never an export/copy target. No App validation,
+deployment or issue closure is claimed. Legacy backend20* carrier names remain unchanged.
+Primary must independently review/bind tooling, authorize one request, and hold the existing
+host-local batch.lock through collection/cleanup; this VM does not claim that lock.
 """
-import hashlib, json, os, re, shutil, signal, stat, subprocess, tarfile, time
+import hashlib, json, os, re, shutil, signal, subprocess, tarfile, time
 from pathlib import Path, PurePosixPath
 from xml.etree import ElementTree as ET
 
-# Future real checkpoint is deliberately absent. Refuse before request reads, outputs or helpers.
-EXPECTED_BACKEND_SHA = 'f6b118bef0b6380a1d40c23334b4d66b65f282ab'
+# Exact primary-supplied public source checkpoint; this literal is not launch authorization.
+EXPECTED_BACKEND_SHA = '9eb41c547f1c3f979148539eca00699af2cbe4c3'
 if (not isinstance(EXPECTED_BACKEND_SHA, str) or
         not re.fullmatch('[0-9a-f]{40}', EXPECTED_BACKEND_SHA) or EXPECTED_BACKEND_SHA == '0' * 40):
-    raise SystemExit('UNBOUND Backend22 export source checkpoint; no request/output/helper/workload permitted')
-PHASE = 'EXPORT'
-SOURCE_REVIEW_SHA = '8bb35081c8d8d2650eab7619294fc73f74c7057d404aac9648f5d9850bef0c1c'
-PREPARATION_PINS_SHA = 'bb3fe6e9918188020b5ca19e35159066afa1650aba035600951c171d6329152f'
+    raise SystemExit('UNBOUND Backend22 comparison source checkpoint; no request/output/helper/workload permitted')
+PHASE = 'COMPARE'
+EXPORT_RESULT_REVIEW_SHA = '0f0220d8f8a876a9cda91ce7464842b6a4fdf1db7770172da893c61f958b8ca7'
+FIXTURE_ADMISSION_RECEIPT_SHA = '6c790d0ea99d4c7a12f7cc253c7c7bd93c2694abd1c3ae2eb2957f8acb938bee'
+EXPECTED_FIXTURE_SHA = 'cfe2375bec17a9e137b373262cffb97a455d6e9a03f84dcbd4cdfca2eb018b65'
 GENERATE_ENV = 'KIRA_BACKEND22_GENERATE_FIXTURE'
 FIXTURE_RESOURCE = 'fixtures/bootstrap-v2-v6-signed.json'
 
@@ -28,8 +29,8 @@ TARGETS = json.loads(REQUEST_PATH.read_text())
 if (set(TARGETS) != {'authorization', 'authorized', 'runAllowed', 'backend_sha', 'classes', 'methods', 'status'} or
         TARGETS.get('authorization') != 'BACKEND22_ONE_TARGETED_BATCH_AUTHORIZED' or
         TARGETS.get('authorized') is not True or TARGETS.get('runAllowed') is not True or
-        TARGETS.get('status') != 'PRIMARY_BOUND_EXPORT' or TARGETS.get('backend_sha') != EXPECTED_BACKEND_SHA):
-    raise SystemExit('Disabled, unbound or wrong-phase Backend22 export request; no outputs/helpers permitted')
+        TARGETS.get('status') != 'PRIMARY_BOUND_COMPARE' or TARGETS.get('backend_sha') != EXPECTED_BACKEND_SHA):
+    raise SystemExit('Disabled, unbound or wrong-phase Backend22 comparison request; no outputs/helpers permitted')
 CLASSES, METHODS = TARGETS['classes'], TARGETS['methods']
 RUN = Path(os.environ['BACKEND20_RUN'])
 RUN.mkdir(mode=0o700, exist_ok=False)
@@ -37,69 +38,26 @@ REPORTS, HOME, W01, TEMP = (RUN / n for n in ('reports', 'gradle', 'w01', 'tmp')
 for directory in (REPORTS, HOME, W01, TEMP): directory.mkdir(mode=0o700)
 ENV = dict(os.environ, GRADLE_USER_HOME=str(HOME), W01_RUN=str(W01), TMPDIR=str(TEMP),
            JAVA_TOOL_OPTIONS=f'-Djava.io.tmpdir={TEMP}', DOCKER_HOST='unix:///var/run/docker.sock')
-# Only the one explicit export Gradle command receives true; stops and other commands do not.
+# Generation is absent from every command, including the selected Test and both same-home stops.
 ENV.pop(GENERATE_ENV, None)
-CANDIDATE_BUILD = BACKEND / 'build'  # Producer Path.of(), not the relocated Gradle buildDirectory.
-CANDIDATE_PATH = CANDIDATE_BUILD / FIXTURE_RESOURCE
-CANDIDATE_COPY = REPORTS / 'candidate' / Path(FIXTURE_RESOURCE).name
+CANDIDATE_BUILD = BACKEND / 'build'  # Forbidden producer root: comparison never creates, adopts, copies or deletes it.
 EXPECTED_FIXTURE_PATH = BACKEND / 'src/test/resources' / FIXTURE_RESOURCE
 
-# Export only: exact10 ordinary cases plus1 explicit candidate-export case across5 classes.
-# No comparison method, broad Startup class or historical Backend20 selection is admitted here.
+# One exact comparison only; no export counterpart, ordinary11 repeat or whole-class selector.
 EXPECTED_CLASSES = {
-    'me.manga.kira.backend.sourceconfig.InitialSourceCatalogFixturesTest': 4,
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapEndpointIT': 2,
-    'me.manga.kira.backend.sourceconfig.admin.FullBundledParityIT': 1,
-    'me.manga.kira.backend.sourceconfig.StartupConsistencyIT': 3,
     'me.manga.kira.backend.sourceconfig.public.BootstrapSignedCatalogFixtureIT': 1,
 }
 EXPECTED_METHODS = {
-    'me.manga.kira.backend.sourceconfig.InitialSourceCatalogFixturesTest': [
-        'raw historical fixture carries all revision6 generic models including Azora chapter opt in',
-        'helper keeps reference metadata and the entire raw source list without substitution',
-        'helper refuses same roster non Azora model drift rather than repairing it',
-        'unoverridden source defaults align with bundle6 and retain the server minimum100',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapEndpointIT': [
-        'valid same roster stale Azora is rejected without bootstrap or public artifacts',
-        'valid same roster non Azora drift is rejected without bootstrap or public artifacts',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.FullBundledParityIT': [
-        'the full bundled document parses, validates, canonicalizes, imports, serves and re-checksums',
-    ],
-    'me.manga.kira.backend.sourceconfig.StartupConsistencyIT': [
-        'fresh empty DB passes both checks',
-        'existing snapshots with a consistent pointer pass',
-        'minimum-server-revision not greater than bundled-revision-floor fails fast',
-    ],
     'me.manga.kira.backend.sourceconfig.public.BootstrapSignedCatalogFixtureIT': [
-        'exportCandidateOnly',
+        'bootstrapMatchesCommittedFixture',
     ],
 }
 EXPECTED_CASES = {
-    'me.manga.kira.backend.sourceconfig.InitialSourceCatalogFixturesTest': [
-        'raw historical fixture carries all revision6 generic models including Azora chapter opt in()',
-        'helper keeps reference metadata and the entire raw source list without substitution()',
-        'helper refuses same roster non Azora model drift rather than repairing it()',
-        'unoverridden source defaults align with bundle6 and retain the server minimum100()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapEndpointIT': [
-        'valid same roster stale Azora is rejected without bootstrap or public artifacts()',
-        'valid same roster non Azora drift is rejected without bootstrap or public artifacts()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.FullBundledParityIT': [
-        'the full bundled document parses, validates, canonicalizes, imports, serves and re-checksums()',
-    ],
-    'me.manga.kira.backend.sourceconfig.StartupConsistencyIT': [
-        'fresh empty DB passes both checks()',
-        'existing snapshots with a consistent pointer pass()',
-        'minimum-server-revision not greater than bundled-revision-floor fails fast()',
-    ],
     'me.manga.kira.backend.sourceconfig.public.BootstrapSignedCatalogFixtureIT': [
-        'exportCandidateOnly()',
+        'bootstrapMatchesCommittedFixture()',
     ],
 }
-# Accepted Backend22 named source/build/anchor/migration bytes; not a future checkpoint identity.
+# Prior52 named pins: only the whitespace-corrected Kotlin hash changes; admitted fixture adds pin53.
 EXPECTED_SOURCE_SHA256 = {
     '.editorconfig': 'ecc589d2ee57adaacd3e951b625a6f4ad31f6ebc41f354e332cf0b9b39f2c6cd',
     'AGENTS.md': 'e65987b4aacc4b090d2cc3e3bcba040d56fefae4c0357afef3588b323f59f7b9',
@@ -149,9 +107,10 @@ EXPECTED_SOURCE_SHA256 = {
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/AbstractAdminSourceIT.kt': '757ca4c2c54b59365259340f245c8ddef523bea6aa9a728c09d35b6dc875f212',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/BootstrapEndpointIT.kt': 'f38c37fcbe3ddd6022d8699d9e358405f1af88d07f7cbe3ab2b1b402a5df0fd5',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/FullBundledParityIT.kt': '35c1a00ae1359ba64ae90feb4ce4c3269786c1186759369258abf8b6dc3e84e7',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/BootstrapSignedCatalogFixtureIT.kt': 'c7e1ead020c09054fb7baf5c51d0f840c5b767059727a01032fa9343774a75e4',
+    'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/BootstrapSignedCatalogFixtureIT.kt': '4756e1f21e6deeca4a14c729870f816a12cd2eea2816d7731fdc576ff53cb3a7',
     'src/test/kotlin/me/manga/kira/backend/support/AbstractIntegrationTest.kt': 'b39a14d78dcfe1385b03e69d56b7aa7f4b45b7a3c48b0b5e6970154231a21496',
     'src/test/resources/application-test.yml': 'af538d332c0dd2b05a7d555b28f434d5e8d3ac445810e1a22a83bffaabc7f17e',
+    'src/test/resources/fixtures/bootstrap-v2-v6-signed.json': 'cfe2375bec17a9e137b373262cffb97a455d6e9a03f84dcbd4cdfca2eb018b65',
     'src/test/resources/fixtures/bundled-full.json': '1aa86aac2f1ac4aa1fb2b7e3770617b0f364d699bfdd5e14788d6c3d71c9643c',
 }
 REFERENCE_RESOURCE = 'source-config/bootstrap/app-bundle-v6-generic.json'
@@ -175,6 +134,7 @@ gradle.projectsEvaluated {
             def resource = '@REFERENCE_RESOURCE@'
             def expected = '@REFERENCE_SHA@'
             def fixture = 'fixtures/bootstrap-v2-v6-signed.json'
+            def expectedFixture = '@EXPECTED_FIXTURE_SHA@'
             def fixtureSource = p.file('src/test/resources/' + fixture).absoluteFile
             def fixtureProcessed = new File(p.layout.buildDirectory.get().asFile, 'resources/test/' + fixture).absoluteFile
             def generateName = 'KIRA_BACKEND22_GENERATE_FIXTURE'
@@ -185,21 +145,29 @@ gradle.projectsEvaluated {
             def receipt = [test_task: path, resource: resource, expected_sha256: expected,
                 source_path: source.path, processed_path: processed.path,
                 classpath: urls.collect { it.toExternalForm() }, accepted: false,
-                phase: 'EXPORT', project_directory: p.projectDir.canonicalPath,
+                phase: 'COMPARE', project_directory: p.projectDir.canonicalPath,
                 working_directory: workingDir.canonicalPath, max_parallel_forks: maxParallelForks,
                 fork_every: forkEvery, max_heap_size: maxHeapSize,
                 junit_parallel_enabled: systemProperties['junit.jupiter.execution.parallel.enabled'],
                 generation_environment_present: environment.containsKey(generateName),
                 generation_environment_value: environment[generateName],
-                expected_fixture_source_absent: !fixtureSource.exists() && !Files.isSymbolicLink(fixtureSource.toPath()),
-                expected_fixture_processed_absent: !fixtureProcessed.exists() && !Files.isSymbolicLink(fixtureProcessed.toPath())]
+                expected_fixture_sha256: expectedFixture,
+                expected_fixture_source_path: fixtureSource.path, expected_fixture_processed_path: fixtureProcessed.path,
+                expected_fixture_source_regular: fixtureSource.isFile() && !Files.isSymbolicLink(fixtureSource.toPath()),
+                expected_fixture_processed_regular: fixtureProcessed.isFile() && !Files.isSymbolicLink(fixtureProcessed.toPath())]
             def loader = new URLClassLoader(urls, (ClassLoader) null)
             try {
                 receipt.source_sha256 = digest(source.bytes)
                 receipt.processed_sha256 = digest(processed.bytes)
                 def resources = Collections.list(loader.getResources(resource))
                 receipt.resolved_resources = resources.collect { it.toExternalForm() }
-                receipt.expected_fixture_resources = Collections.list(loader.getResources(fixture)).collect { it.toExternalForm() }
+                def fixtureResources = Collections.list(loader.getResources(fixture))
+                receipt.expected_fixture_resources = fixtureResources.collect { it.toExternalForm() }
+                receipt.expected_fixture_source_sha256 = digest(fixtureSource.bytes)
+                receipt.expected_fixture_processed_sha256 = digest(fixtureProcessed.bytes)
+                if (fixtureResources.size() == 1) {
+                    receipt.expected_fixture_loaded_sha256 = fixtureResources[0].openStream().withCloseable { digest(it.bytes) }
+                }
                 if (resources.size() == 1) {
                     receipt.loaded_sha256 = resources[0].openStream().withCloseable { digest(it.bytes) }
                 }
@@ -207,10 +175,12 @@ gradle.projectsEvaluated {
                     receipt.loaded_sha256 == expected && receipt.resolved_resources == [processed.toURI().toURL().toExternalForm()] &&
                     receipt.working_directory == receipt.project_directory && receipt.max_parallel_forks == 1 &&
                     receipt.fork_every == 0 && receipt.max_heap_size == '512m' && receipt.junit_parallel_enabled == 'false' &&
-                    receipt.generation_environment_present && receipt.generation_environment_value == 'true' &&
-                    receipt.expected_fixture_source_absent && receipt.expected_fixture_processed_absent &&
-                    receipt.expected_fixture_resources.isEmpty()
-                if (!receipt.accepted) throw new GradleException('Backend22 export reference/configuration/resource-absence mismatch')
+                    !receipt.generation_environment_present && receipt.generation_environment_value == null &&
+                    receipt.expected_fixture_source_regular && receipt.expected_fixture_processed_regular &&
+                    receipt.expected_fixture_source_sha256 == expectedFixture && receipt.expected_fixture_processed_sha256 == expectedFixture &&
+                    receipt.expected_fixture_loaded_sha256 == expectedFixture &&
+                    receipt.expected_fixture_resources == [fixtureProcessed.toURI().toURL().toExternalForm()]
+                if (!receipt.accepted) throw new GradleException('Backend22 comparison reference/configuration/fixture-resource mismatch')
             } finally {
                 try { loader.close() } finally {
                     new File(System.getenv('W01_RUN'), 'bootstrap-reference-resource.json').text = JsonOutput.prettyPrint(JsonOutput.toJson(receipt)) + '\n'
@@ -220,7 +190,7 @@ gradle.projectsEvaluated {
         }
     }
 }
-'''.replace('@REFERENCE_RESOURCE@', REFERENCE_RESOURCE).replace('@REFERENCE_SHA@', REFERENCE_SHA)
+'''.replace('@REFERENCE_RESOURCE@', REFERENCE_RESOURCE).replace('@REFERENCE_SHA@', REFERENCE_SHA).replace('@EXPECTED_FIXTURE_SHA@', EXPECTED_FIXTURE_SHA)
 OWNED_CHILDREN_SHA = '56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385'
 PREFIX = 'review/working/app-29-w01-local-dependencies-20260905/'
 ARCHIVE_SHA = 'da94218f74eb0f5831241c8606c8f82142e49b818acfaff027a78f2efe77faab'
@@ -326,86 +296,21 @@ def verify_source_pins(phase):
             observed[relative] = hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() and not path.is_symlink() else None
     finally:
         (REPORTS / ('source-pins-' + phase + '.json')).write_text(json.dumps(observed, indent=2) + '\n')
-    require(observed == EXPECTED_SOURCE_SHA256, 'Backend22 export source pins differ: ' + phase)
-
-def candidate_root_matches():
-    if not candidate_root_owned or candidate_root_identity is None: return False
-    try: info = CANDIDATE_BUILD.lstat()
-    except OSError: return False
-    return stat.S_ISDIR(info.st_mode) and (info.st_dev, info.st_ino) == candidate_root_identity and CANDIDATE_BUILD.resolve() == CANDIDATE_BUILD
-
-def capture_candidate():
-    global candidate_observation
-    candidate_observation = {
-        'phase': PHASE, 'admitted': False, 'captured': False, 'ownership': candidate_ownership,
-        'original_path': str(CANDIDATE_PATH), 'copy_path': str(CANDIDATE_COPY),
-        'source_checkpoint': EXPECTED_BACKEND_SHA, 'carrier_sha': os.environ.get('GITHUB_SHA'),
-        'source_review_sha256': SOURCE_REVIEW_SHA, 'preparation_pins_sha256': PREPARATION_PINS_SHA,
-        'classes': CLASSES, 'methods': METHODS, 'generation_environment_name': GENERATE_ENV,
-        'base_command_environment_present': GENERATE_ENV in ENV, 'command_environment_present': started,
-        'command_environment_value': 'true' if started else None,
-        'expected_test_working_directory': str(BACKEND), 'actual_test_configuration': reference_observation.get('witness'),
-        'gradle_started': started, 'gradle_exit': gradle_exit, 'validation_exit_before_capture': result,
-        'xml_verified': xml_verified, 'xml': xml_observations, 'report_failure_before_capture': report_failure,
-    }
-    try:
-        settled = workers_gone and drain('before-candidate-capture')
-        candidate_observation['settled'] = settled
-        require(settled and started, 'Candidate is not settled after an actual export command')
-        require(candidate_root_matches(), 'Real Backend build root is not the exclusively created owned directory')
-        require(CANDIDATE_PATH.parent.is_dir() and not CANDIDATE_PATH.parent.is_symlink() and
-                CANDIDATE_PATH.resolve(strict=True) == CANDIDATE_PATH, 'Unsafe candidate parent/path')
-        identity = lambda info: (info.st_dev, info.st_ino, info.st_mode, info.st_nlink, info.st_size, info.st_mtime_ns, info.st_ctime_ns)
-        with os.fdopen(os.open(CANDIDATE_PATH, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as stream:
-            before_capture = os.fstat(stream.fileno())
-            require(stat.S_ISREG(before_capture.st_mode) and before_capture.st_nlink == 1 and before_capture.st_size > 0,
-                    'Candidate must be a nonempty regular owned file, not a link')
-            data = stream.read()
-            require(identity(os.fstat(stream.fileno())) == identity(before_capture), 'Candidate changed while reading')
-        require(identity(CANDIDATE_PATH.lstat()) == identity(before_capture) and len(data) == before_capture.st_size,
-                'Candidate changed or was incomplete after reading')
-        CANDIDATE_COPY.parent.mkdir(mode=0o700, exist_ok=False)
-        with os.fdopen(os.open(CANDIDATE_COPY, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600), 'wb') as stream:
-            require(stream.write(data) == len(data), 'Incomplete exclusive binary candidate copy')
-        copied = CANDIDATE_COPY.read_bytes()
-        require(copied == data == CANDIDATE_PATH.read_bytes() and
-                identity(CANDIDATE_PATH.lstat()) == identity(before_capture) and candidate_root_matches(),
-                'Original/captured candidate bytes or ownership changed')
-        candidate_observation.update({
-            'captured': True, 'bytes': len(data), 'original_sha256': hashlib.sha256(data).hexdigest(),
-            'copy_sha256': hashlib.sha256(copied).hexdigest(), 'byte_identical': True,
-            'owner_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-            'request_sha256': hashlib.sha256(REQUEST_PATH.read_bytes()).hexdigest(),
-            'workflow_sha256': hashlib.sha256((ADMIN / '.github/workflows/backend20-atomic-bootstrap.yml').read_bytes()).hexdigest(),
-            'original_init_sha256': hashlib.sha256((W01 / 'original.init.gradle').read_bytes()).hexdigest(),
-            'supplemental_init_sha256': hashlib.sha256((W01 / 'bootstrap-reference.init.gradle').read_bytes()).hexdigest(),
-            'owned_children_sha256': OWNED_CHILDREN_SHA,
-            'source_pin_receipts': {name: hashlib.sha256((REPORTS / name).read_bytes()).hexdigest()
-                for name in ('source-pins-before.json', 'source-pins-after.json') if (REPORTS / name).is_file()},
-            'command_receipt_sha256_at_capture': hashlib.sha256((REPORTS / 'commands.log').read_bytes()).hexdigest(),
-            'acceptance': 'UNREVIEWED_RAW_CANDIDATE; not comparison, transfer or App acceptance',
-        })
-    except Exception as failure:
-        candidate_observation['capture_error'] = str(failure)
-        raise
-    finally:
-        with (REPORTS / 'candidate-receipt.json').open('x') as receipt:
-            receipt.write(json.dumps(candidate_observation, indent=2) + '\n')
+    require(observed == EXPECTED_SOURCE_SHA256, 'Backend22 comparison source pins differ: ' + phase)
 
 result, started, before, cleanup_failed, project_caches = 1, False, None, False, []
-candidate_root_owned, candidate_root_identity, candidate_captured = False, None, False
-candidate_ownership, candidate_observation = {}, {}
 raw_reports_copied, report_failure = False, None
 gradle_exit, xml_verified, sources_clean, preserved, containers_absent = None, False, False, False, None
 container_force_requested = False
 xml_observations, static_reports = [], {}
 reference_source_sha, reference_observation, reference_verified = None, {}, False
+fixture_source_sha, fixture_observation, fixture_verified = None, {}, False
 source_pins_before_verified, source_pins_after_verified = False, False
 try:
     require(set(TARGETS) == {'authorization', 'authorized', 'runAllowed', 'backend_sha', 'classes', 'methods', 'status'}, 'Unexpected request fields')
     require(TARGETS['authorization'] == 'BACKEND22_ONE_TARGETED_BATCH_AUTHORIZED', 'Draft is not authorized')
     require(TARGETS['authorized'] is True and TARGETS['runAllowed'] is True, 'Execution is explicitly disabled')
-    require(TARGETS['status'] == 'PRIMARY_BOUND_EXPORT', 'Wrong Backend22 phase/status')
+    require(TARGETS['status'] == 'PRIMARY_BOUND_COMPARE', 'Wrong Backend22 phase/status')
     require(os.environ.get('GITHUB_REPOSITORY') == 'kira-manga/kira-admin' and
             os.environ.get('GITHUB_REF') == 'refs/heads/remediation/app-29-backend-complaints' and
             os.environ.get('GITHUB_EVENT_NAME') == 'push' and os.environ.get('GITHUB_RUN_ATTEMPT') == '1', 'Wrong carrier/event or rerun')
@@ -414,7 +319,7 @@ try:
     OWNER = OwnedChildren()  # Refuse unavailable subreaping before the first command.
     target = TARGETS['backend_sha']
     require(CLASSES == EXPECTED_CLASSES and all(type(count) is int for count in CLASSES.values()) and
-            METHODS == EXPECTED_METHODS, 'Invalid exact Backend22 export class/count/method selection')
+            METHODS == EXPECTED_METHODS, 'Invalid exact Backend22 comparison class/count/method selection')
     note('Primary-bound request: ' + json.dumps(TARGETS, sort_keys=True))
     require(isinstance(target, str) and re.fullmatch('[0-9a-f]{40}', target) and target != '0' * 40 and
             target == EXPECTED_BACKEND_SHA, 'Unbound or unexpected backend target')
@@ -428,15 +333,14 @@ try:
     source_pins_before_verified = True
     reference_source_sha = hashlib.sha256((BACKEND / 'src/main/resources' / REFERENCE_RESOURCE).read_bytes()).hexdigest()
     note('Source bootstrap reference SHA256: ' + reference_source_sha)
-    require(reference_source_sha == REFERENCE_SHA, 'Backend22 export source bootstrap reference differs from the reviewed bytes')
+    require(reference_source_sha == REFERENCE_SHA, 'Backend22 comparison source bootstrap reference differs from the reviewed bytes')
     for name in ('.gradle', '.kotlin'): require(not (BACKEND / name).exists(), 'Unexpected preexisting project cache: ' + name)
     project_caches = [BACKEND / '.gradle', BACKEND / '.kotlin']
     require(BACKEND.is_dir() and not BACKEND.is_symlink() and BACKEND.resolve() == BACKEND, 'Unsafe Backend project directory')
     require(not CANDIDATE_BUILD.exists() and not CANDIDATE_BUILD.is_symlink(), 'Preexisting real Backend build root; not owned')
-    require(not EXPECTED_FIXTURE_PATH.exists() and not EXPECTED_FIXTURE_PATH.is_symlink(), 'Export requires absent expected fixture resource')
-    candidate_ownership = {'parent': str(BACKEND), 'root': str(CANDIDATE_BUILD), 'candidate': str(CANDIDATE_PATH),
-                           'root_prior_absent': True, 'candidate_prior_absent': True,
-                           'expected_resource': str(EXPECTED_FIXTURE_PATH), 'expected_resource_prior_absent': True}
+    require(EXPECTED_FIXTURE_PATH.is_file() and not EXPECTED_FIXTURE_PATH.is_symlink(), 'Comparison requires the admitted expected fixture resource')
+    fixture_source_sha = hashlib.sha256(EXPECTED_FIXTURE_PATH.read_bytes()).hexdigest()
+    require(fixture_source_sha == EXPECTED_FIXTURE_SHA, 'Comparison fixture differs from primary-admitted bytes')
     require(space_ok('before-private-inputs', force=True), 'Insufficient or unknown free space before private inputs')
     archive = ADMIN / 'docs/remediation/checkpoint-2026-09-08/review-evidence.tar.gz'
     with archive.open('rb') as stream: require(hashlib.file_digest(stream, 'sha256').hexdigest() == ARCHIVE_SHA, 'Private archive hash mismatch')
@@ -477,17 +381,9 @@ try:
     before = set((REPORTS / 'preexisting-containers.log').read_text().splitlines())
     require(not before, 'Expected a dedicated clean hosted runner; do not touch preexisting containers')
     require(not CANCELLED, 'Cancelled before validation')
-    # Exclusive creation, not deletion/adoption of an existing producer root.
-    CANDIDATE_BUILD.mkdir(mode=0o700, exist_ok=False)
-    candidate_root_owned = True
-    candidate_root_stat = CANDIDATE_BUILD.lstat()
-    candidate_root_identity = (candidate_root_stat.st_dev, candidate_root_stat.st_ino)
-    require(candidate_root_matches(), 'Cannot establish real Backend build-root ownership')
-    candidate_ownership.update({'created_exclusively': True, 'device': candidate_root_identity[0], 'inode': candidate_root_identity[1]})
-    (REPORTS / 'candidate-ownership.json').write_text(json.dumps(candidate_ownership, indent=2) + '\n')
     selectors = [name + '.' + method for name in CLASSES for method in METHODS[name]]
-    tasks = ['compileKotlin', 'compileTestKotlin', 'test'] + [part for name in selectors for part in ('--tests', name)] + ['ktlintMainSourceSetCheck', 'ktlintTestSourceSetCheck', 'detekt', '--continue', '-x', 'jacocoTestReport']
-    gradle_exit = command(['./gradlew', '--no-daemon', '--no-parallel', '--no-configuration-cache', '--console=plain', '--max-workers=1', '--no-build-cache', '-Dorg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=512m', '-Dorg.gradle.vfs.watch=false', '-Pkotlin.compiler.execution.strategy=in-process', '--init-script', str(W01 / 'original.init.gradle'), '--init-script', str(W01 / 'bootstrap-reference.init.gradle'), *tasks], 'gradle-test', 18 * 60, extra={GENERATE_ENV: 'true'})
+    tasks = ['compileKotlin', 'compileTestKotlin', 'test'] + [part for name in selectors for part in ('--tests', name)] + ['ktlintTestSourceSetCheck', '--continue', '-x', 'jacocoTestReport']
+    gradle_exit = command(['./gradlew', '--no-daemon', '--no-parallel', '--no-configuration-cache', '--console=plain', '--max-workers=1', '--no-build-cache', '-Dorg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=512m', '-Dorg.gradle.vfs.watch=false', '-Pkotlin.compiler.execution.strategy=in-process', '--init-script', str(W01 / 'original.init.gradle'), '--init-script', str(W01 / 'bootstrap-reference.init.gradle'), *tasks], 'gradle-test', 18 * 60)
     result = gradle_exit
 except (Exception, KeyboardInterrupt) as failure:
     note('FAIL: ' + str(failure))
@@ -508,7 +404,7 @@ finally:
     try:
         xmls = list((W01 / 'backend-build/test-results/test').glob('*.xml'))
         for xml in xmls: shutil.copyfile(xml, REPORTS / xml.name)
-        for tool in ('ktlint', 'detekt'):
+        for tool in ('ktlint',):
             directory = W01 / 'backend-build/reports' / tool
             files = [p for p in directory.rglob('*') if p.is_file()] if directory.exists() else []
             files += list((W01 / 'backend-build/reports').glob(tool + '.*'))
@@ -521,16 +417,22 @@ finally:
                     static_reports[tool].append(destination.name)
         for filename in ('bootstrap-reference.init.gradle', 'bootstrap-reference-resource.json'):
             if (W01 / filename).is_file(): shutil.copyfile(W01 / filename, REPORTS / filename)
-        raw_reports_copied = True  # Candidate capture must also complete before preservation permits deletion.
+        raw_reports_copied = True  # No candidate custody exists in COMPARE; preserve raw reports even on task failure.
+        preserved = raw_reports_copied
         processed_reference = W01 / 'backend-build/resources/main' / REFERENCE_RESOURCE
         source_reference = BACKEND / 'src/main/resources' / REFERENCE_RESOURCE
         reference_observation = {'settled': workers_gone, 'expected_sha256': REFERENCE_SHA, 'source_before_sha256': reference_source_sha,
                            'source_after_sha256': hashlib.sha256(source_reference.read_bytes()).hexdigest() if source_reference.is_file() else None,
                            'processed_sha256': hashlib.sha256(processed_reference.read_bytes()).hexdigest() if processed_reference.is_file() else None}
+        processed_fixture = W01 / 'backend-build/resources/test' / FIXTURE_RESOURCE
+        fixture_observation = {'settled': workers_gone, 'expected_sha256': EXPECTED_FIXTURE_SHA, 'source_before_sha256': fixture_source_sha,
+                               'source_after_sha256': hashlib.sha256(EXPECTED_FIXTURE_PATH.read_bytes()).hexdigest() if EXPECTED_FIXTURE_PATH.is_file() else None,
+                               'processed_sha256': hashlib.sha256(processed_fixture.read_bytes()).hexdigest() if processed_fixture.is_file() else None}
         resource_receipt = REPORTS / 'bootstrap-reference-resource.json'
         try: reference_observation['witness'] = json.loads(resource_receipt.read_text()) if resource_receipt.is_file() else None
         except Exception as failure: reference_observation['witness_error'] = str(failure)
         note('Raw bootstrap reference observation: ' + json.dumps(reference_observation, sort_keys=True))
+        note('Raw admitted fixture observation: ' + json.dumps(fixture_observation, sort_keys=True))
         for xml in xmls:
             try:
                 suite = ET.parse(REPORTS / xml.name).getroot()
@@ -552,11 +454,12 @@ finally:
             identities = [(case.get('classname'), case.get('name')) for case in cases]
             require(len(set(identities)) == expected and all(cls == name and method for cls, method in identities), 'Wrong/duplicate testcase identity')
             require(not any(node.tag in ('failure', 'error', 'skipped') for node in suite.iter()), 'Failure/error/skip in focused XML')
-            require({method for _, method in identities} == set(EXPECTED_CASES[name]), 'Wrong Backend22 export testcase identities: ' + name)
+            require({method for _, method in identities} == set(EXPECTED_CASES[name]), 'Wrong Backend22 comparison testcase identities: ' + name)
         xml_verified = True
         witness = reference_observation.get('witness') or {}
         # java.io.File.toURI().toURL() spells local URLs file:/..., not pathlib's file:///....
         processed_url = processed_reference.resolve().as_uri().replace('file:///', 'file:/', 1)
+        processed_fixture_url = processed_fixture.resolve().as_uri().replace('file:///', 'file:/', 1)
         require(reference_source_sha == REFERENCE_SHA and reference_observation['source_after_sha256'] == REFERENCE_SHA and
                 reference_observation['processed_sha256'] == REFERENCE_SHA and witness.get('accepted') is True and
                 witness.get('test_task') == ':test' and witness.get('resource') == REFERENCE_RESOURCE and
@@ -564,31 +467,32 @@ finally:
                 witness.get('resolved_resources') == [processed_url] and witness.get('phase') == PHASE and
                 witness.get('working_directory') == witness.get('project_directory') == str(BACKEND) and
                 witness.get('max_parallel_forks') == 1 and witness.get('fork_every') == 0 and witness.get('max_heap_size') == '512m' and
-                witness.get('junit_parallel_enabled') == 'false' and witness.get('generation_environment_present') is True and
-                witness.get('generation_environment_value') == 'true' and witness.get('expected_fixture_source_absent') is True and
-                witness.get('expected_fixture_processed_absent') is True and witness.get('expected_fixture_resources') == [],
-                'Missing/mismatched reference, export configuration or expected-resource absence evidence')
+                witness.get('junit_parallel_enabled') == 'false' and witness.get('generation_environment_present') is False and
+                'generation_environment_value' in witness and witness['generation_environment_value'] is None,
+                'Missing/mismatched reference or generation-UNSET Test configuration evidence')
         reference_verified = True
-        require(all(static_reports.get(tool) for tool in ('ktlint', 'detekt')), 'Missing static reports')
+        require(fixture_source_sha == EXPECTED_FIXTURE_SHA and fixture_observation['source_after_sha256'] == EXPECTED_FIXTURE_SHA and
+                fixture_observation['processed_sha256'] == EXPECTED_FIXTURE_SHA and
+                all(witness.get(field) == EXPECTED_FIXTURE_SHA for field in ('expected_fixture_sha256', 'expected_fixture_source_sha256',
+                    'expected_fixture_processed_sha256', 'expected_fixture_loaded_sha256')) and
+                witness.get('expected_fixture_source_path') == str(EXPECTED_FIXTURE_PATH) and
+                witness.get('expected_fixture_processed_path') == str(processed_fixture) and
+                witness.get('expected_fixture_source_regular') is True and witness.get('expected_fixture_processed_regular') is True and
+                witness.get('expected_fixture_resources') == [processed_fixture_url],
+                'Missing/mismatched admitted fixture source/processed/unique-classpath evidence')
+        fixture_verified = True
+        require('static-ktlint-ktlintTestSourceSetCheck.txt' in static_reports.get('ktlint', []), 'Missing configured test-source Ktlint report')
         require(command(['git', 'rev-parse', 'HEAD'], 'backend-sha-after', cleaning=True) == 0 and
                 (REPORTS / 'backend-sha-after.log').read_text().strip() == TARGETS['backend_sha'], 'Backend SHA changed during validation')
         require(command(['git', 'status', '--porcelain=v1', '--untracked-files=all'], 'source-after', cleaning=True) == 0 and
                 not (REPORTS / 'source-after.log').read_text().strip(), 'Backend source changed during validation')
         verify_source_pins('after')
         source_pins_after_verified = True
-        require(not EXPECTED_FIXTURE_PATH.exists() and not EXPECTED_FIXTURE_PATH.is_symlink(), 'Export wrote an expected fixture resource')
+        require(not CANDIDATE_BUILD.exists() and not CANDIDATE_BUILD.is_symlink(), 'Comparison created a forbidden real Backend build/candidate root')
         sources_clean = True
     except Exception as failure:
         report_failure = str(failure)
         note('REPORT FAIL: ' + str(failure))
-        result = result or 1
-    # Capture even if another selected task or report gate failed; such a batch stays failed.
-    try:
-        capture_candidate()
-        candidate_captured = True
-        preserved = raw_reports_copied  # A failed/partial candidate or receipt copy never reaches here.
-    except Exception as failure:
-        note('CANDIDATE CAPTURE FAIL: ' + str(failure))
         result = result or 1
     if started and before is not None and workers_gone:
         if cleanup_command(['docker', 'ps', '-aq', '--no-trunc', '--filter', 'label=org.testcontainers=true'], 'remaining-testcontainers'):
@@ -608,10 +512,8 @@ finally:
     files_safe = workers_gone and drain('after-docker-before-files') and preserved and containers_safe
     if not containers_safe: note('RETAINING owned outputs/home/temp/project caches: container absence not proved')
     elif not files_safe: note('RETAINING owned outputs/home/temp/project caches: process absence or report preservation not proved')
-    for directory in ((W01, TEMP, *(project_caches if started else []), *([CANDIDATE_BUILD] if candidate_root_owned else [])) if files_safe else ()):
+    for directory in ((W01, TEMP, *(project_caches if started else [])) if files_safe else ()):
         try:
-            if directory == CANDIDATE_BUILD:
-                require(candidate_root_matches(), 'Refusing deletion of a replaced/unowned Backend build root')
             if directory.exists(): shutil.rmtree(directory)
         except Exception as failure:
             cleanup_failed = True
@@ -635,7 +537,7 @@ finally:
     process_status = 'UNKNOWN_OR_INCOMPLETE' if any(not item['ok'] for item in DRAINS) else ('FORCED' if any(item.get('term') or item.get('kill') for item in DRAINS) else 'COMPLETE')
     container_status = 'NOT_STARTED' if not started else ('UNKNOWN' if containers_absent is None else ('PRESENT' if not containers_absent else ('FORCED' if container_force_requested else 'COMPLETE')))
     ownership_status = 'UNKNOWN_OR_INCOMPLETE' if process_status == 'UNKNOWN_OR_INCOMPLETE' or container_status in ('UNKNOWN', 'PRESENT') else ('FORCED' if process_status == 'FORCED' or container_status == 'FORCED' else 'COMPLETE')
-    passed = result == 0 and gradle_exit == 0 and xml_verified and reference_verified and sources_clean and preserved and candidate_captured and ownership_status == 'COMPLETE' and not cleanup_failed and not CANCELLED and source_pins_before_verified and source_pins_after_verified and SPACE_CHECKS > 0 and SPACE_FAILURE is None
+    passed = result == 0 and gradle_exit == 0 and xml_verified and reference_verified and fixture_verified and sources_clean and preserved and ownership_status == 'COMPLETE' and not cleanup_failed and not CANCELLED and source_pins_before_verified and source_pins_after_verified and SPACE_CHECKS > 0 and SPACE_FAILURE is None
     note(f'validation_result={result}; process_ownership={process_status}; container_ownership={container_status}; ownership={ownership_status}; cleanup_failed={cleanup_failed}; cancelled={CANCELLED}; job_exit={0 if passed else 1}')
-    (REPORTS / 'result.json').write_text(json.dumps({'backend_sha': TARGETS['backend_sha'], 'carrier_sha': os.environ.get('GITHUB_SHA'), 'classes': CLASSES, 'methods': METHODS, 'gradle_exit': gradle_exit, 'validation_exit': result, 'xml_verified': xml_verified, 'xml': xml_observations, 'static_reports': static_reports, 'reference_verified': reference_verified, 'reference': reference_observation, 'scope': 'BACKEND22_EXPORT_ONLY: exact10 ordinary+1 explicit export; not fixture admission, comparison, App, deployment or cross-repo acceptance', 'phase': PHASE, 'candidate_captured': candidate_captured, 'candidate': candidate_observation, 'candidate_build_root_absent': not CANDIDATE_BUILD.exists() and not CANDIDATE_BUILD.is_symlink(), 'sources_clean': sources_clean, 'source_pins_before_verified': source_pins_before_verified, 'source_pins_after_verified': source_pins_after_verified, 'disk_space': {'floor_bytes': MIN_FREE_BYTES, 'poll_seconds': SPACE_POLL_SECONDS, 'observations': SPACE_CHECKS, 'minimum_available_by_device': SPACE_MINIMUM, 'failure': SPACE_FAILURE, 'receipt': 'disk-space.jsonl'}, 'serialization': {'hosted_concurrency_group': 'backend11-private-completion-leases', 'primary_host_lock': 'PRIMARY_OWNED_EXTERNAL_PREREQUISITE; not observed by this VM'}, 'reports_preserved': preserved, 'drains': DRAINS, 'process_ownership_status': process_status, 'container_ownership_status': container_status, 'ownership_status': ownership_status, 'cleanup_failed': cleanup_failed, 'containers_absent': containers_absent, 'container_force_requested': container_force_requested, 'cancelled': CANCELLED, 'outputs_absent': outputs_absent, 'status': 'PASS' if passed else 'FAIL'}, indent=2) + '\n')
+    (REPORTS / 'result.json').write_text(json.dumps({'backend_sha': TARGETS['backend_sha'], 'carrier_sha': os.environ.get('GITHUB_SHA'), 'classes': CLASSES, 'methods': METHODS, 'gradle_exit': gradle_exit, 'validation_exit': result, 'xml_verified': xml_verified, 'xml': xml_observations, 'static_reports': static_reports, 'reference_verified': reference_verified, 'reference': reference_observation, 'scope': 'BACKEND22_COMPARE_ONLY: exact1 normal signed-fixture comparison + configured test-source Ktlint; not EXPORT, App, deployment or cross-repo acceptance', 'phase': PHASE, 'fixture_verified': fixture_verified, 'fixture': fixture_observation, 'fixture_admission_receipt_sha256': FIXTURE_ADMISSION_RECEIPT_SHA, 'export_result_review_sha256': EXPORT_RESULT_REVIEW_SHA, 'candidate_build_root_absent': not CANDIDATE_BUILD.exists() and not CANDIDATE_BUILD.is_symlink(), 'sources_clean': sources_clean, 'source_pins_before_verified': source_pins_before_verified, 'source_pins_after_verified': source_pins_after_verified, 'disk_space': {'floor_bytes': MIN_FREE_BYTES, 'poll_seconds': SPACE_POLL_SECONDS, 'observations': SPACE_CHECKS, 'minimum_available_by_device': SPACE_MINIMUM, 'failure': SPACE_FAILURE, 'receipt': 'disk-space.jsonl'}, 'serialization': {'hosted_concurrency_group': 'backend11-private-completion-leases', 'primary_host_lock': 'PRIMARY_OWNED_EXTERNAL_PREREQUISITE; not observed by this VM'}, 'reports_preserved': preserved, 'drains': DRAINS, 'process_ownership_status': process_status, 'container_ownership_status': container_status, 'ownership_status': ownership_status, 'cleanup_failed': cleanup_failed, 'containers_absent': containers_absent, 'container_force_requested': container_force_requested, 'cancelled': CANCELLED, 'outputs_absent': outputs_absent, 'status': 'PASS' if passed else 'FAIL'}, indent=2) + '\n')
 raise SystemExit(0 if passed else 1)

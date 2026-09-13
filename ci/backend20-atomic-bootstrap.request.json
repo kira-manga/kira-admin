@@ -2,36 +2,14 @@
   "authorization": "BACKEND22_ONE_TARGETED_BATCH_AUTHORIZED",
   "authorized": true,
   "runAllowed": true,
-  "backend_sha": "f6b118bef0b6380a1d40c23334b4d66b65f282ab",
+  "backend_sha": "9eb41c547f1c3f979148539eca00699af2cbe4c3",
   "classes": {
-    "me.manga.kira.backend.sourceconfig.InitialSourceCatalogFixturesTest": 4,
-    "me.manga.kira.backend.sourceconfig.admin.BootstrapEndpointIT": 2,
-    "me.manga.kira.backend.sourceconfig.admin.FullBundledParityIT": 1,
-    "me.manga.kira.backend.sourceconfig.StartupConsistencyIT": 3,
     "me.manga.kira.backend.sourceconfig.public.BootstrapSignedCatalogFixtureIT": 1
   },
   "methods": {
-    "me.manga.kira.backend.sourceconfig.InitialSourceCatalogFixturesTest": [
-      "raw historical fixture carries all revision6 generic models including Azora chapter opt in",
-      "helper keeps reference metadata and the entire raw source list without substitution",
-      "helper refuses same roster non Azora model drift rather than repairing it",
-      "unoverridden source defaults align with bundle6 and retain the server minimum100"
-    ],
-    "me.manga.kira.backend.sourceconfig.admin.BootstrapEndpointIT": [
-      "valid same roster stale Azora is rejected without bootstrap or public artifacts",
-      "valid same roster non Azora drift is rejected without bootstrap or public artifacts"
-    ],
-    "me.manga.kira.backend.sourceconfig.admin.FullBundledParityIT": [
-      "the full bundled document parses, validates, canonicalizes, imports, serves and re-checksums"
-    ],
-    "me.manga.kira.backend.sourceconfig.StartupConsistencyIT": [
-      "fresh empty DB passes both checks",
-      "existing snapshots with a consistent pointer pass",
-      "minimum-server-revision not greater than bundled-revision-floor fails fast"
-    ],
     "me.manga.kira.backend.sourceconfig.public.BootstrapSignedCatalogFixtureIT": [
-      "exportCandidateOnly"
+      "bootstrapMatchesCommittedFixture"
     ]
   },
-  "status": "PRIMARY_BOUND_EXPORT"
+  "status": "PRIMARY_BOUND_COMPARE"
 }
