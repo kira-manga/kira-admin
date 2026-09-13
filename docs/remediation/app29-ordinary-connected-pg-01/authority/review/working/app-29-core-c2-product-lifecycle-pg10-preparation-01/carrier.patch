@@ -1,0 +1,309 @@
+--- a/ci/app29-gate-b.py
++++ b/ci/app29-gate-b.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""One private exact-two shutdown-diagnostic attempt; no consumer/native/full47 qualification."""
++"""One private exact-ten changed-product attempt; no consumer/native/full47 qualification."""
+ import argparse
+ import hashlib
+ import json
+@@ -15,22 +15,30 @@
+ 
+ ADMIN = Path(__file__).resolve().parent.parent
+ BACKEND = ADMIN.parent / 'backend'
+-PAYLOAD = ADMIN / 'docs/remediation/app29-core-c2-diagnostics-01'
+-GATE = 'app-29-core-c2-diagnostics-01'
++PAYLOAD = ADMIN / 'docs/remediation/app29-core-c2-product-lifecycle-pg10-01'
++GATE = 'app-29-core-c2-product-lifecycle-pg10-01'
+ CHECKPOINT_SCHEMA = 'app29-core-c2-clean-checkpoint-v1'
+-PROFILE_ID = 'app-29-core-c2-diagnostics-profile-01'
+-PROFILE_FILE = 'review/working/app-29-core-c2-diagnostics-preparation-01/profile/profile.json'
+-PROFILE_SHA = 'a5e6cf435dd0457cfd24f8cefa2cbe4fa90445bf884d028fe67bca07ec6664b7'
+-PROFILE_INIT = 'review/working/app-29-core-c2-diagnostics-preparation-01/profile/profile.init.gradle'
+-PROFILE_INIT_SHA = '8e7bd86077e4a3a9b817ef6014514598264f4bcc3d416e9543d93c11b7615b8a'
+-MANIFEST_FILE = 'review/working/app-29-w03-integrated-driver-core-c2-diagnostics-01/manifest.json'
++PROFILE_ID = 'app-29-core-c2-product-lifecycle-pg10-profile-01'
++PROFILE_FILE = 'review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.json'
++PROFILE_SHA = 'f721c8d972206b973b2d3aefa4246bbd2d768c66f6f2908c470b3f896526b339'
++PROFILE_INIT = 'review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.init.gradle'
++PROFILE_INIT_SHA = '09742b6796f0fe3d65f2b172272ab8a697ea5a07dadad7298bed1c062ee61ada'
++MANIFEST_FILE = 'review/working/app-29-w03-integrated-driver-core-c2-product-lifecycle-pg10-01/manifest.json'
+ CLASS = 'me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest'
+ METHODS = (
+     'throwing original RETURN override leaves F G T free and retires its exact source without a second return',
+-    'failed post consent real Hikari tail seals actor admission but cannot retire the successor epoch')
++    'blocked overriding final RETURN sample spends the same real allowance and cannot commit after expiry',
++    'actual RETURN interruption defeats a false override while outer actor custody survives held restoration',
++    'throwing RETURN interrupt restoration cannot undo retirement or erase its actor failure',
++    'RETURN override InterruptedException publishes source failure before an overriding self interrupt can block',
++    'RETURN InterruptedException adaptation throwing another InterruptedException never retries restoration after actor end',
++    'RETURN InterruptedException adaptation throwing Error preserves that error without a late restoration callback',
++    'failed post consent real Hikari tail seals actor admission but cannot retire the successor epoch',
++    'consented real Hikari recycle tail retains no successor eviction or abort authority',
++    'exact retirement sample result preserves its Throwable and does not absorb adjacent budget failure')
+ DIAGNOSTIC_CASES = ('RETURN_SAMPLE', 'FAILED_POST_CONSENT_TAIL')
+-TEST_COUNTS = {CLASS: 2}
+-TASKS = ['test', '--tests', CLASS + '.' + METHODS[0], '--tests', CLASS + '.' + METHODS[1]]
++TEST_COUNTS = {CLASS: 10}
++TASKS = ['test'] + [arg for method in METHODS for arg in ('--tests', CLASS + '.' + method)]
+ SEED = 'review/working/app-29-w03-integrated-driver-development-07/manifest.json'
+ SEED_SHA = '3effe74b4b9daa5198a7ce24347e195da495bf26aeed3aa9519820dd917e4a6a'
+ OWNER_SHA = '56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385'
+@@ -44,12 +52,13 @@
+ CORE_BASELINE = '49da0919d9ec3091cb7bb041009dc9bd5f3e090f'
+ PRIVATE_PARENT = '989a8c07b90d956a5f2484f223be41b5d99a8a3c'
+ PREVIOUS_PRIVATE_PARENT = '926927ab805a2a3b78957862f3b744d0fe399ac5'
+-SOURCE_BUNDLE = {'public_prerequisite_sha': PUBLIC_PREREQUISITE, 'private_parent_sha': PRIVATE_PARENT,
++DIAGNOSTIC_PARENT = 'eb8fed8b6b620a0c7448c223bf49c1683f8eaadc'
++SOURCE_BUNDLE = {'public_prerequisite_sha': PUBLIC_PREREQUISITE, 'private_parent_sha': DIAGNOSTIC_PARENT,
+                  'ref': 'refs/heads/' + BACKEND_BRANCH,
+-                 'source_path': 'review/working/app-29-core-c2-diagnostics-private-checkpoint-02/backend.bundle',
+-                 'path': 'docs/remediation/app29-core-c2-diagnostics-01/inputs/backend.bundle'}
++                 'source_path': 'review/working/app-29-core-c2-product-lifecycle-private-checkpoint-01/backend.bundle',
++                 'path': 'docs/remediation/app29-core-c2-product-lifecycle-pg10-01/inputs/backend.bundle'}
+ BUNDLE_MAX_BYTES = 8 * 1024**2
+-DEPLOYMENTS = {f'review/working/app-29-core-c2-diagnostics-preparation-02/{p}': p for p in (
++DEPLOYMENTS = {f'review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/{p}': p for p in (
+     'ci/app29-gate-b.py', '.github/workflows/app29-gate-b.yml')}
+ DEPLOYMENTS[PROFILE_FILE] = PROFILE_FILE
+ DEPLOYMENTS[PROFILE_INIT] = PROFILE_INIT
+@@ -65,7 +74,7 @@
+     'Evidence copy drift': 'CAPTURE_COPY_DRIFT',
+     'Required raw evidence inventory missing': 'CAPTURE_REQUIRED_INVENTORY',
+     'Wrong diagnostic XML inventory': 'XML_INVENTORY',
+-    'Require exactly the two fixed diagnostic source identities': 'XML_EXPECTED_IDENTITIES',
++    'Require exactly the ten fixed changed-product source identities': 'XML_EXPECTED_IDENTITIES',
+     'Unsafe XML': 'XML_SAFE',
+     'Missing, extra or duplicate diagnostic testcase': 'XML_ACTUAL_IDENTITIES',
+     'Contradictory diagnostic testcase outcome': 'XML_OUTCOME',
+@@ -132,7 +141,7 @@
+             and all(value[k] == v for k, v in SOURCE_BUNDLE.items()), 'Wrong fixed private source transport')
+     require(type(value['bytes']) is int and 0 < value['bytes'] <= BUNDLE_MAX_BYTES
+             and isinstance(value['sha256'], str) and re.fullmatch('[0-9a-f]{64}', value['sha256'])
+-            and value['sha256'] != '0' * 64 and binding['backend_sha'] not in (PUBLIC_PREREQUISITE, CORE_BASELINE, PRIVATE_PARENT, PREVIOUS_PRIVATE_PARENT),
++            and value['sha256'] != '0' * 64 and binding['backend_sha'] not in (PUBLIC_PREREQUISITE, CORE_BASELINE, PRIVATE_PARENT, PREVIOUS_PRIVATE_PARENT, DIAGNOSTIC_PARENT),
+             'Unbound/oversized private checkpoint bundle')
+     return value
+ 
+@@ -233,13 +242,18 @@
+             and digest(safe(authority, previous['path'])) == previous['sha256'], 'Current source freeze missing or changed')
+     current = read_json(safe(authority, previous['path']))
+     test_binding = profile['binding_test']
+-    require(current['repositories']['kira-backend'] == {'head': PRIVATE_PARENT, 'branch': BACKEND_BRANCH, 'status': ''}
+-            and previous['backend_sha'] == PRIVATE_PARENT
++    require(current['repositories']['kira-backend'] == {'head': DIAGNOSTIC_PARENT, 'branch': BACKEND_BRANCH, 'status': ''}
++            and previous['backend_sha'] == DIAGNOSTIC_PARENT
+             and len(current['source_hashes']) == previous['source_count'] == 466
+-            and current['source_hashes'][test_binding['path']] == test_binding['checkpoint_before_sha256'],
+-            'Wrong immutable hosted02 current466 source baseline')
++            and len(current['approved_inputs']) == previous['approved_input_count'] == 63
++            and len(current['historical_input_hashes']) == previous['historical_input_count'] == 102
++            and current['source_hashes'][test_binding['path']] == test_binding['after_sha256'],
++            'Wrong immutable diagnostics01 current466 source baseline')
++    source_delta = profile['product_lifecycle_source_delta']
++    require(len(source_delta) == 8 and all(current['source_hashes'].get(p) == row['before_sha256']
++                                          for p, row in source_delta.items()), 'Wrong accepted eight-source baseline')
+     expected_sources = dict(current['source_hashes'])
+-    expected_sources[test_binding['path']] = test_binding['after_sha256']
++    expected_sources.update({p: row['after_sha256'] for p, row in source_delta.items()})
+     expected_snapshots = {str(PurePosixPath(MANIFEST_FILE).parent / 'sources' / p): expected_sources[p]
+                           for p in current['review_subject_paths']}
+     require(manifest['source_hashes'] == expected_sources
+@@ -256,9 +270,11 @@
+     require(manifest['validation_tooling'] == expected_tooling, 'Require exact current freezer and diagnostic deployment tools')
+     require(manifest['approved_inputs'].get(test_binding['proposal_path']) == test_binding['after_sha256']
+             and manifest['approved_inputs'].get(test_binding['patch_path']) == test_binding['patch_sha256']
+-            and all(manifest['approved_inputs'].get(p) == sha for field in ('native_candidate_evidence', 'diagnostic_authority')
++            and all(manifest['approved_inputs'].get(row['proposal_path']) == row['after_sha256'] for row in source_delta.values())
++            and all(manifest['approved_inputs'].get(p) == sha
++                    for field in ('native_candidate_evidence', 'diagnostic_authority', 'product_lifecycle_authority')
+                     for p, sha in profile[field].items()),
+-            'Missing exact diagnostic proposal, source/history authority or retained Native05 inputs')
++            'Missing exact accepted proposals, source/history authority or retained Native05 inputs')
+     require(manifest['inventory_seed_manifest'] == SEED and manifest['inventory_seed_manifest_sha256'] == SEED_SHA
+             and manifest['inventory_seed_path_count'] == manifest['inventory_seed_preserved_count'] == 348,
+             'Complete historical inventory continuity required')
+@@ -306,7 +322,10 @@
+             'Diagnostic test is not based on the original bound C2 source')
+     for row in rows:
+         sha = test_binding['after_sha256'] if row['path'] == test_binding['path'] else row['sha256']
+-        require(manifest['source_hashes'].get(row['path']) == sha, 'Frozen source is not exact C2 plus the accepted diagnostic test')
++        require(current['source_hashes'].get(row['path']) == sha, 'Diagnostic baseline changed original Core C2 source')
++        if row['path'] in source_delta:
++            sha = source_delta[row['path']]['after_sha256']
++        require(manifest['source_hashes'].get(row['path']) == sha, 'Frozen source is not exact C2 plus accepted diagnostics and product delta')
+     return {'manifest_sha256': checkpoint['manifest_sha256'], 'sources': len(manifest['source_hashes']),
+             'seed_paths': 348, 'local_v3': 'PRIMARY_BOUND_LOCAL_RECEIPT_NOT_HOSTED_REEXECUTION', 'authority_files': len(pins),
+             'core_sources': 21, 'snapshots': 199, 'profile': PROFILE_ID,
+@@ -322,7 +341,7 @@
+         self.end = self.start + binding['budgets']['controller_seconds']
+         self.phase_end = self.start + binding['budgets']['preflight_seconds']
+         self.cancelled, self.started, self.clean_daemon, self.events_since = False, False, False, None
+-        self.run = Path(os.environ['RUNNER_TEMP']) / ('app29-core-c2-diagnostics-01-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
++        self.run = Path(os.environ['RUNNER_TEMP']) / ('app29-core-c2-product-lifecycle-pg10-01-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
+         self.run.mkdir(mode=0o700, exist_ok=False)
+         for name in ('reports', 'gradle', 'w01', 'tmp', 'home', 'project-cache', 'kotlin-cache'):
+             (self.run / name).mkdir(mode=0o700)
+@@ -331,7 +350,7 @@
+                        'carrier_sha': os.environ['GITHUB_SHA'], 'commands': [], 'failures': [], 'processes': [],
+                        'containers': 'UNKNOWN', 'outputs_absent': False, 'capture_complete': False,
+                        'captured_file_hashes': {}, 'owned_output_cleanup': {}, 'diagnostics': {'status': 'NOT_EVALUATED'},
+-                       'consumer': {'status': 'NOT_EVALUATED', 'scope': 'OUTSIDE_TWO_CASE_DIAGNOSTICS'}}
++                       'consumer': {'status': 'NOT_EVALUATED', 'scope': 'OUTSIDE_PG10_VALIDATION'}}
+         self.java = Path(os.environ['JAVA_HOME']).resolve()
+         self.env = {'PATH': str(self.java / 'bin') + ':/usr/bin:/bin', 'JAVA_HOME': str(self.java),
+                     'HOME': str(self.run / 'home'), 'GRADLE_USER_HOME': str(self.run / 'gradle'),
+@@ -438,6 +457,9 @@
+         commit = self.command(label + '-backend-commit', ['git', '--no-replace-objects', 'cat-file', 'commit', 'HEAD'], cleaning=cleaning)
+         header, separator, _ = commit.partition(b'\n\n')
+         parents = [row[7:].decode('ascii') for row in header.split(b'\n') if row.startswith(b'parent ')]
++        diagnostic = self.command(label + '-diagnostic-parent-commit', ['git', '--no-replace-objects', 'cat-file', 'commit', DIAGNOSTIC_PARENT], cleaning=cleaning)
++        diagnostic_header, diagnostic_separator, _ = diagnostic.partition(b'\n\n')
++        diagnostic_parents = [row[7:].decode('ascii') for row in diagnostic_header.split(b'\n') if row.startswith(b'parent ')]
+         ancestor = self.command(label + '-private-parent-commit', ['git', '--no-replace-objects', 'cat-file', 'commit', PRIVATE_PARENT], cleaning=cleaning)
+         ancestor_header, ancestor_separator, _ = ancestor.partition(b'\n\n')
+         ancestor_parents = [row[7:].decode('ascii') for row in ancestor_header.split(b'\n') if row.startswith(b'parent ')]
+@@ -449,14 +471,16 @@
+         core_parents = [row[7:].decode('ascii') for row in core_header.split(b'\n') if row.startswith(b'parent ')]
+         self.result.setdefault('source_checkout_final', {})[label] = {
+             'head': sha, 'branch': branch, 'parents': parents,
++            'diagnostic_parent': {'head': DIAGNOSTIC_PARENT, 'parents': diagnostic_parents},
+             'private_parent': {'head': PRIVATE_PARENT, 'parents': ancestor_parents},
+             'previous_private_parent': {'head': PREVIOUS_PRIVATE_PARENT, 'parents': previous_parents},
+             'core_baseline': {'head': CORE_BASELINE, 'parents': core_parents}}
+         require(sha == self.binding['backend_sha'] and branch == BACKEND_BRANCH
+-                and separator and parents == [PRIVATE_PARENT] and ancestor_separator and ancestor_parents == [PREVIOUS_PRIVATE_PARENT]
++                and separator and parents == [DIAGNOSTIC_PARENT] and diagnostic_separator and diagnostic_parents == [PRIVATE_PARENT]
++                and ancestor_separator and ancestor_parents == [PREVIOUS_PRIVATE_PARENT]
+                 and previous_separator and previous_parents == [CORE_BASELINE]
+                 and core_separator and core_parents == [PUBLIC_PREREQUISITE],
+-                'Require exact diagnostic tip ->989a ->926927 ->49da ->public prerequisite, with no merges or extra descendants')
++                'Require exact changed-product tip ->eb8fed8 ->989a ->926927 ->49da ->public prerequisite, with no merges or extra descendants')
+         require(not self.command(label + '-status', ['git', 'status', '--porcelain=v1', '--untracked-files=all'], cleaning=cleaning), 'Checkpoint is dirty')
+         names = self.command(label + '-tracked', ['git', 'ls-files', '-z'], cleaning=cleaning).decode().split('\0')[:-1]
+         hashes = {p: digest(safe(BACKEND, p)) for p in names}
+@@ -501,13 +525,13 @@
+                 created[cid] = labels
+             else:
+                 destroyed.add(cid)
+-        require(len(created) == 3 and sum(r['image'] == 'postgres:17.6-alpine' for r in created.values()) == 2
++        require(len(created) == 2 and sum(r['image'] == 'postgres:17.6-alpine' for r in created.values()) == 1
+                 and sum(r['image'] == 'testcontainers/ryuk:0.12.0' for r in created.values()) == 1
+                 and destroyed <= created.keys() and remaining <= created.keys(), 'Incomplete/unexpected container journal')
+         pg = [r for r in created.values() if r['image'] == 'postgres:17.6-alpine']
+         ryuk = next(r for r in created.values() if r['image'] != 'postgres:17.6-alpine')
+         sessions = {row.get('org.testcontainers.sessionId', '') for row in pg}
+-        require(len(sessions) == 1, 'Both class fixtures must belong to the one Test worker session')
++        require(len(sessions) == 1, 'The selected class fixture must belong to the one Test worker session')
+         session = sessions.pop()
+         require(re.fullmatch('[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}', session)
+                 and ryuk.get('name') == 'testcontainers-ryuk-' + session, 'Unknown fixture/Ryuk session')
+@@ -570,16 +594,16 @@
+     xmls = list((reports / 'test-results/test').glob('*.xml'))
+     require([p.name for p in xmls] == ['TEST-' + CLASS + '.xml'], 'Wrong diagnostic XML inventory')
+     expected = [(CLASS, method + '()') for method in METHODS]
+-    require(profile['expected_test_count'] == 2 and profile['test_classes'] == [CLASS]
++    require(profile['expected_test_count'] == 10 and profile['test_classes'] == [CLASS]
+             and profile['expected_witnesses'] == []
+             and profile['expected_tests'] == [{'class': CLASS, 'method': m, 'display_name': m + '()'} for m in METHODS],
+-            'Require exactly the two fixed diagnostic source identities')
++            'Require exactly the ten fixed changed-product source identities')
+     raw = xmls[0].read_text(encoding='utf-8-sig')
+     require('\x00' not in raw and '<!DOCTYPE' not in raw.upper() and '<!ENTITY' not in raw.upper(), 'Unsafe XML')
+     suite = ET.fromstring(raw)
+     cases = suite.findall('testcase')
+     identities = [(case.get('classname'), case.get('name')) for case in cases]
+-    require(suite.tag == 'testsuite' and suite.get('name') == CLASS and suite.get('tests') == '2'
++    require(suite.tag == 'testsuite' and suite.get('name') == CLASS and suite.get('tests') == '10'
+             and sorted(identities) == sorted(expected), 'Missing, extra or duplicate diagnostic testcase')
+     outcomes = []
+     for case in cases:
+@@ -618,7 +642,7 @@
+     folder = safe(reports, profile['report_directory'])
+     cp = read_json(folder / 'effective-classpath.txt')
+     require(cp['profile'] == PROFILE_ID and cp['java_home'] == str(java)
+-            and cp['source_inventory'] == profile['source_inventory'] and cp['expected_test_count'] == 2
++            and cp['source_inventory'] == profile['source_inventory'] and cp['expected_test_count'] == 10
+             and cp['expected_witnesses'] == [], 'Wrong actual diagnostic classpath/profile/JDK')
+     entries = cp['entries']
+     require(len({e['path'] for e in entries}) == len(entries)
+@@ -628,12 +652,13 @@
+         rows = [e for e in entries if e[flag] > 0]
+         require(len(rows) == 1 and rows[0]['path'] == str(safe(ADMIN, profile[key]['path']))
+                 and rows[0]['sha256'] == profile[key]['sha256'], 'Wrong explicit class supplier')
+-    return {'status': 'RECORDED', 'test_status': 'PASS' if counts['PASS'] == 2 else 'FAIL',
+-            'tests': 2, 'classes': TEST_COUNTS, 'identities': sorted(identities), 'outcomes': outcomes, 'counts': counts,
++    return {'status': 'RECORDED', 'test_status': 'PASS' if counts['PASS'] == 10 else 'FAIL',
++            'tests': 10, 'classes': TEST_COUNTS, 'identities': sorted(identities), 'outcomes': outcomes, 'counts': counts,
+             'profile': PROFILE_ID, 'fixed_scalar_capture': 'CAPTURED' if scalar_capture else 'INCOMPLETE_OR_UNAVAILABLE',
+             'raw_shutdown_diagnostics': records, 'diagnostic_coverage': coverage,
+             'diagnostic_limit': 'Best-effort non-atomic scalars; not causality, completion, repair or consumer proof.',
+-            'historical_result': profile['historical_result'], 'candidate_qualification': 'UNQUALIFIED'}
++            'historical_result': profile['historical_result'], 'historical_diagnostics_result': profile['historical_diagnostics_result'],
++            'candidate_qualification': 'UNQUALIFIED'}
+ 
+ 
+ def execute(binding):
+@@ -653,10 +678,11 @@
+         require(carrier == os.environ['GITHUB_SHA'], 'Carrier checkout differs from exact workflow SHA')
+         profile = read_json(safe(ADMIN, PROFILE_FILE))
+         require(profile['profile_id'] == PROFILE_ID and profile['task_args'] == TASKS
+-                and profile['expected_test_count'] == 2 and profile['expected_witnesses'] == []
++                and profile['expected_test_count'] == 10 and profile['expected_witnesses'] == []
+                 and profile['final_jar']['qualification'] == 'UNQUALIFIED',
+-                'Wrong two-case diagnostic profile/task/candidate scope')
++                'Wrong exact-ten changed-product profile/task/candidate scope')
+         gate.result['historical_result'] = profile['historical_result']
++        gate.result['historical_diagnostics_result'] = profile['historical_diagnostics_result']
+         gate.materialize_source()
+         baseline = gate.sources('before')
+         gate.result['source_binding_before'] = bind_freeze(binding, profile)
+@@ -759,7 +785,7 @@
+                   and gate.result['diagnostics'].get('fixed_scalar_capture') == 'CAPTURED' and gate.result['containers'] == 'NORMAL_ABSENT'
+                   and all(r['outcome'] == 'NORMAL' for r in gate.result['commands']) and final_containers is True)
+         gate.result['status'] = 'PASS' if passed else 'FAIL'
+-        gate.result['limitation'] = 'Exactly two shutdown-diagnostic methods only; historical hosted02 45 PASS/2 FAIL is not rerun or relabelled. Raw scalars are non-atomic, not completion or causal proof. No consumer/full47/Native05 qualification; Native05 remains UNQUALIFIED, D05 PARTIAL / D06 unreviewed; W03/native/full qualification remain open.'
++        gate.result['limitation'] = 'Exactly ten changed-product methods only, with original two-case scalar requirements. Historical hosted02 45/47 and diagnostics01 0/2 with failed cleanup remain unchanged. Raw scalars are non-atomic, not completion or causal proof. No opaque real-eviction hard-fault/liveness claim or consumer/full47/Native05 qualification; Native05 remains UNQUALIFIED, D05 PARTIAL / D06 unreviewed; W03/App29/native/full qualification remain open.'
+         save(gate.reports / 'result.json', gate.result)
+     return 0 if gate.result['status'] == 'PASS' else 1
+ 
+--- a/.github/workflows/app29-gate-b.yml
++++ b/.github/workflows/app29-gate-b.yml
+@@ -1,12 +1,12 @@
+-name: App29 Core C2 two-case shutdown diagnostics (private, no qualification)
++name: App29 Core C2 changed-product PG10 (private, no qualification)
+ on:
+   push:
+     branches: [remediation/app-29-backend-complaints]
+     paths:
+       - .github/workflows/app29-gate-b.yml
+       - ci/app29-gate-b.py
+-      - review/working/app-29-core-c2-diagnostics-preparation-01/profile/profile.json
+-      - review/working/app-29-core-c2-diagnostics-preparation-01/profile/profile.init.gradle
++      - review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.json
++      - review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.init.gradle
+       - ci/app29-gate-b.request.json
+ permissions:
+   contents: read
+@@ -43,17 +43,17 @@
+         with:
+           distribution: temurin
+           java-version: '21'
+-      - name: Run exactly two Core C2 shutdown-diagnostic methods (no qualification)
++      - name: Run exactly ten Core C2 changed-product methods (no qualification)
+         id: validation
+         shell: bash
+         run: |
+           umask 077
+           python3 -B admin/ci/app29-gate-b.py
+-      - name: Retain raw two-case diagnostics, source and owned-cleanup receipts
++      - name: Retain raw ten-case outcomes, original diagnostics, source and owned-cleanup receipts
+         if: always() && steps.validation.outcome != 'skipped'
+         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+         with:
+-          name: app29-core-c2-diagnostics-01-${{ github.run_id }}-${{ github.run_attempt }}
+-          path: ${{ runner.temp }}/app29-core-c2-diagnostics-01-${{ github.run_id }}-${{ github.run_attempt }}/reports/
++          name: app29-core-c2-product-lifecycle-pg10-01-${{ github.run_id }}-${{ github.run_attempt }}
++          path: ${{ runner.temp }}/app29-core-c2-product-lifecycle-pg10-01-${{ github.run_id }}-${{ github.run_attempt }}/reports/
+           retention-days: 3
+           if-no-files-found: error

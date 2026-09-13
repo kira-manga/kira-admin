@@ -1,0 +1,23 @@
+{
+  "admitted_at_utc": "2026-09-12T00:44:30.888156+00:00",
+  "runner_sha256": "2203ee5cf0334958b8b685966b80a4c849ecf32805b3c2530b2037c7e54ca8d5",
+  "preparation_sha256": "32f1b6d64e43efae8997df2285f27d5221a1f3e084d699ec14e835dd962b29bc",
+  "source_independent_review_sha256": "4f6b03f4167b12894eac04a41f67609c292803cb7c68a5c3e0ddbd260af34b9a",
+  "primary_read": "Exact getter/fault diff, full independent source review, runner delta and owned-resource/capture/cleanup controls",
+  "unchanged_function_bodies": 13,
+  "read_only_references_verified": 38,
+  "resources_bytes": {
+    "root": 9755414528,
+    "tmp": 33675309056,
+    "available_memory": 65104089088
+  },
+  "command": [
+    "python3",
+    "-B",
+    "review/working/run_app29_native_build05.py",
+    "--execute-authorized-native-build05"
+  ],
+  "scope": "ONLY three new getter methods plus one osgiJar; genuine existing PG17.6, no old73/10 replay",
+  "risk": "Actual first-close on success/execute/read failure; no implicit BEGIN; warning/exception preservation. Changed production getter requires new candidate for later Core.",
+  "acceptance": "Execution only; unqualified artifact. Core47 retry NOT authorized, all remaining native/Core/W03 gates persist."
+}

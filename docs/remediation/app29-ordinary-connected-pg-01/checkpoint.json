@@ -1,0 +1,23 @@
+{
+  "schema": "app29-ordinary-connected-clean-checkpoint-v1",
+  "source_accepted": true,
+  "backend_sha": "ccdbb28f6362117882501b4da040257be6fc1990",
+  "source_bundle": {
+    "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+    "private_parent_sha": "6db944871c1584bd6a1f28263e8010cadd766fab",
+    "ref": "refs/heads/remediation/app-29-backend-complaints",
+    "source_path": "review/working/app-29-ordinary-connected-source-checkpoint-01/ordinary-connected-source.bundle",
+    "path": "docs/remediation/app29-ordinary-connected-pg-01/inputs/backend.bundle",
+    "sha256": "63d9469a1ac0145f807129e8b6c7ee865a309676ee3e188eacf413d8de40b3a3",
+    "bytes": 257140
+  },
+  "manifest_path": "review/working/app-29-w03-integrated-driver-ordinary-connected-pg-01/manifest.json",
+  "manifest_sha256": "7c5e775dc0250948ead0ba20aff89cb38e2565fdbb82751575291fa96a80d63c",
+  "local_v3_preflight": {
+    "manifest_sha256": "7c5e775dc0250948ead0ba20aff89cb38e2565fdbb82751575291fa96a80d63c",
+    "tool_sha256": "e8c6a48fc26c634fbccbb081651631fb5c767099b1143ab4dbe8439f6060d0fe",
+    "receipt_path": "review/working/app-29-w03-integrated-driver-ordinary-connected-pg-01/hosted-local-preflight.json",
+    "receipt_sha256": "20c7cd0ced705d8fd1d15d5982fa6c8106c0dc2df5bbaf527d59d5d89db40091"
+  },
+  "acceptance_scope": "Exact source transport for one21-case PostgreSQL validation only; not runtime/fix/W03 acceptance"
+}

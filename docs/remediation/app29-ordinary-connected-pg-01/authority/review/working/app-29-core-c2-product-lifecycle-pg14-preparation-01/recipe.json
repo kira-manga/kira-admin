@@ -1,0 +1,240 @@
+{
+  "schema": "app-29-core-c2-product-lifecycle-pg14-preparation-01",
+  "status": "PRIVATE_SOURCE_ONLY_INPUT_HANDOFF_NOT_FRESH_V3_NOT_DEPLOYED_NOT_ADMITTED_NOT_EXECUTED",
+  "execution_authorized": false,
+  "selection_authority": {
+    "path": "review/remediation/app-29-core-c2-post-structural-pg-selection-advisory.md",
+    "sha256": "d934676c715da7aaef8e008c264e0b5e5e7cb30e4a909103878f521a44bc4f64"
+  },
+  "primary_only_sequence": [
+    "Accept independent source-only review of the sealed five-file PG14 derivative. No source-preparation acceptance is launch authority.",
+    "Settle Backend11 integration-ref advancement first. Do not create or reuse a PG14 v3 context across that change. Keep private CoreC2 source6db944 fixed; do not merge or rebase private ancestry.",
+    "After ref context is stable, obtain a fresh full-v3 PG14 source freeze and genuine local preflight on clean private6db944 using the fixed tool and all required inputs below. Historical source receipts and residual-static Git context cannot replace this.",
+    "Transport only exact private deployment/authority/bundle/dependency bytes through the existing bounded lane and create a distinct deployed acceptance checkpoint from actual fresh evidence.",
+    "Leave this sealed unauthorized request immutable. Primary derives a separately hashed final request binding the actual deployed checkpoint and, only with separate authority, authorizes at most one attempt. Stop on any pin, selection, source, context or resource-envelope drift."
+  ],
+  "source_binding": {
+    "root": "kira-backend",
+    "head": "6db944871c1584bd6a1f28263e8010cadd766fab",
+    "tree": "3558d08d9dfc826c6c1c4a79d26265f7cdee54cb",
+    "parent": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+    "branch": "remediation/app-29-backend-complaints",
+    "require_clean": true,
+    "public_push_authorized": false,
+    "required_chain": [
+      "6db944871c1584bd6a1f28263e8010cadd766fab",
+      "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+      "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc",
+      "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+      "926927ab805a2a3b78957862f3b744d0fe399ac5",
+      "49da0919d9ec3091cb7bb041009dc9bd5f3e090f",
+      "3d839130c807f6a0a9b1c896c1c6cca4b41c4538"
+    ],
+    "source_transport_receipt": {
+      "path": "review/working/app-29-core-c2-post-structural-private-checkpoint-01/checkpoint.json",
+      "sha256": "6e7cfcdb0598531092750a122b3cae985fe06f629455ee030773ba2242992556",
+      "scope": "SOURCE_TRANSPORT_AND_EXACT19_DELTA_ONLY_NOT_DEPLOYED_ACCEPTANCE_CHECKPOINT"
+    },
+    "source_stages": [
+      "Preserve immutable diagnostics466 source_hashes, historical binding_test and original product_lifecycle_source_delta eight before/after/proposal rows.",
+      "Require diagnostics plus original8 to equal the pinned accepted PG10 source_hashes, with identical removals, review_subject_paths and historical_input_hashes. PG10 task_args must equal the first21 PG14 task argv elements.",
+      "Require profile.post_structural_source_delta exactly equals the new source transport receipt's19 source_delta rows. Each before matches PG10; replace only19 after hashes, preserving447 others and all466 keys.",
+      "Fresh manifest must retain exact466 source_hashes, exact removals,199 original snapshot subjects with fresh path/hash copies, all348 seed paths and all102 historical inputs. No selected-source inventory and no inventory-helper change."
+    ],
+    "prior_runtime": "PG10 run34691665288 accepted10 on1c91 only; prior38 unit passes carried only. The residual-static acceptance is compile/static only, with no fresh PG tests.",
+    "historical_source_manifest": {
+      "path": "review/working/app-29-w03-integrated-driver-core-c2-residual-static-linux-01/manifest.json",
+      "sha256": "7a48620648806214d5c4158488cd33432b57e9c234a1a5c94b76015fcf36cacf",
+      "current_git_context": false
+    }
+  },
+  "carrier_patch": {
+    "path": "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/carrier.patch",
+    "sha256": "16e46e7f4615db69d367369f50215cbea0a0e7186fcd68e6383d330f94fb2e06",
+    "scope": "Exact five-file before-to-candidate diff; packet-relative a/b labels. No patch application or live deployment performed.",
+    "before_pins": {
+      "path": "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/before.sha256",
+      "sha256": "0ff6709c17be7d96290dff446652eab9f7393279468e1f191fc1870d314d2cd2"
+    },
+    "after_pins": {
+      "path": "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/after.sha256",
+      "sha256": "c1d7fe99016e61c5eb280d08cbe090548f6dde851e79f1c625f6e2f875412e95"
+    }
+  },
+  "deployments": {
+    "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/ci/app29-gate-b.py": {
+      "deployed": "ci/app29-gate-b.py",
+      "sha256": "7fce9fae743a4d235350d2c93610142fc7a0177f2b7d7e44031b56b8315f0576"
+    },
+    "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/.github/workflows/app29-gate-b.yml": {
+      "deployed": ".github/workflows/app29-gate-b.yml",
+      "sha256": "790377568f065d1e2f64bad1a796a3d17f4a32cea224204adda25465c5d3a328"
+    },
+    "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/profile/profile.json": {
+      "deployed": "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/profile/profile.json",
+      "sha256": "36c3637229efbe08186014f4c60684aa0569430b26bae9d13f8b811917e82225"
+    },
+    "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/profile/profile.init.gradle": {
+      "deployed": "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/profile/profile.init.gradle",
+      "sha256": "61fb92e47baa8dcabcd6a7521e01872984e196d16cfd643776f3a50b25a81964"
+    },
+    "review/working/app-29-targeted-private-ci-draft-v2/ci/app29_owned_children.py": {
+      "deployed": "ci/app29_owned_children.py",
+      "sha256": "56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385"
+    }
+  },
+  "freeze": {
+    "state": "PRIMARY_ONLY_AFTER_INTEGRATION_REF_CONTEXT_SETTLES",
+    "name": "app-29-w03-integrated-driver-core-c2-product-lifecycle-pg14-01",
+    "manifest_path": "review/working/app-29-w03-integrated-driver-core-c2-product-lifecycle-pg14-01/manifest.json",
+    "manifest_sha256": "__PRIMARY_AFTER_FRESH_PG14_V3_FREEZE_SHA256__",
+    "freezer": {
+      "path": "review/working/freeze_app29_integrated_driver_v3.py",
+      "sha256": "e8c6a48fc26c634fbccbb081651631fb5c767099b1143ab4dbe8439f6060d0fe"
+    },
+    "argv_prefix": [
+      "python3", "-B", "/root/projects/Kira/review/working/freeze_app29_integrated_driver_v3.py",
+      "--workspace", "/root/projects/Kira",
+      "--freeze", "app-29-w03-integrated-driver-core-c2-product-lifecycle-pg14-01"
+    ],
+    "argv_assembly": "Append --approved-input PATH for EVERY unique sorted union key from the retained_predecessor approved_inputs AND validation_tooling maps, known_additional_approved_inputs, additional_approved_inputs_from_profile and resolved future_approved_inputs. Hash agreement across duplicates is mandatory. Include this sealed recipe and README by actual final byte hashes as preparation provenance. A manifest reference alone is not expansion of its maps. Append --tooling PATH for exactly the five deployments keys; append '--' then task_args unchanged. This is data, not an executable script.",
+    "retained_predecessor": {
+      "path": "review/working/app-29-w03-integrated-driver-core-c2-product-lifecycle-pg10-01/manifest.json",
+      "sha256": "f44346d3f76072b62c61e72fa8231e318650ec0cd0da8d976f2ef043f16dbb3d",
+      "approved_inputs": "Retain every exact key/hash pair without filtering. This already includes all63 original diagnostics approved inputs, original eight source proposals/patches/authority, original candidate inputs and old historical preparations.",
+      "validation_tooling": "Retain every one of all10 exact key/hash pairs as APPROVED INPUT provenance. Old PG10 carrier/init/profile/workflow are not new active tools.",
+      "active_tooling_rule": "Exactly predecessor.validation_tooling minus predecessor.additional_validation_tooling_paths (original5), plus exactly the new deployments5. Expected active validation_tooling count10, with exact equality required by the carrier.",
+      "historical_input_hashes": "All102 exact pairs retained unchanged through the existing v3 history seam.",
+      "snapshot_rule": "Same199 review_subject_paths/removals, but all snapshots belong to the new manifest directory and carry the new complete source map's bytes.",
+      "historical_seed": {
+        "path": "review/working/app-29-w03-integrated-driver-development-07/manifest.json",
+        "sha256": "3effe74b4b9daa5198a7ce24347e195da495bf26aeed3aa9519820dd917e4a6a",
+        "required_preserved_count": 348
+      },
+      "context_note": "The predecessor's integration_refs and aliases are historical only. Fresh v3 context must be captured truthfully after the Backend11 ref decision, not copied from PG10 or residual-static evidence."
+    },
+    "known_additional_approved_inputs": {
+      "review/working/app-29-w03-integrated-driver-core-c2-product-lifecycle-pg10-01/manifest.json": "f44346d3f76072b62c61e72fa8231e318650ec0cd0da8d976f2ef043f16dbb3d",
+      "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/carrier.patch": "16e46e7f4615db69d367369f50215cbea0a0e7186fcd68e6383d330f94fb2e06",
+      "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/before.sha256": "0ff6709c17be7d96290dff446652eab9f7393279468e1f191fc1870d314d2cd2",
+      "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/after.sha256": "c1d7fe99016e61c5eb280d08cbe090548f6dde851e79f1c625f6e2f875412e95",
+      "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/inputs.sha256": "f563d6ebbec74c50f066c73b27adbcc2a25e8ba9a01221376925bf64e494ffa2",
+      "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/profile/profile.json": "36c3637229efbe08186014f4c60684aa0569430b26bae9d13f8b811917e82225",
+      "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/ci/app29-gate-b.request.json": "2934820e9714dff3bd2fc1cdf013b611db03cabb238b2ef6676456e982a837fb",
+      "review/working/app-29-core-c2-post-structural-private-checkpoint-01/backend.bundle": "2506c18cc5e40f089cc1176a65a79d449ff02b13f4c08e0719c24d359e9882da"
+    },
+    "additional_approved_inputs_from_profile": {
+      "path": "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/profile/profile.json",
+      "sha256": "36c3637229efbe08186014f4c60684aa0569430b26bae9d13f8b811917e82225",
+      "maps": ["native_candidate_evidence", "diagnostic_authority", "product_lifecycle_authority", "post_structural_authority"],
+      "source_proposals": "Retain all eight product_lifecycle_source_delta proposal_path -> after_sha256 pairs; new19 are bound by post_structural_checkpoint and reviewed-source.patch, not a replacement of old8 provenance.",
+      "historical_binding_test": "Retain binding_test.proposal_path -> after_sha256 and binding_test.patch_path -> patch_sha256; do not replace that immutable original diagnostic stage with the new test-source hash.",
+      "other_path_sha_pairs": ["current_source_freeze", "predecessor_profile", "post_structural_predecessor", "post_structural_checkpoint", "source_inventory", "core_source_manifest"],
+      "artifact_pairs": "Retain final_jar.source_path -> sha256 and checker.source_path -> sha256 from the inherited map; their deployed paths and byte sizes remain exact. No consumer qualification."
+    },
+    "future_approved_inputs": {
+      "__PRIMARY_ACCEPTED_PG14_INDEPENDENT_SOURCE_REVIEW_PATH__": "__PRIMARY_ACTUAL_PG14_INDEPENDENT_SOURCE_REVIEW_SHA256__",
+      "__PRIMARY_PG14_SOURCE_PREPARATION_DISPOSITION_PATH__": "__PRIMARY_ACTUAL_PG14_SOURCE_PREPARATION_DISPOSITION_SHA256__"
+    },
+    "future_input_note": "Resolve from actual primary/reviewer evidence. Do not pass placeholder names to the freezer, fabricate a receipt, mutate this sealed request, or substitute a prior acceptance. Record any final-context decision separately if primary requires it.",
+    "expected_active_validation_tool_count": 10,
+    "task_args": [
+      "test",
+      "--tests",
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.throwing original RETURN override leaves F G T free and retires its exact source without a second return",
+      "--tests",
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.blocked overriding final RETURN sample spends the same real allowance and cannot commit after expiry",
+      "--tests",
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.actual RETURN interruption defeats a false override while outer actor custody survives held restoration",
+      "--tests",
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.throwing RETURN interrupt restoration cannot undo retirement or erase its actor failure",
+      "--tests",
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.RETURN override InterruptedException publishes source failure before an overriding self interrupt can block",
+      "--tests",
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.RETURN InterruptedException adaptation throwing another InterruptedException never retries restoration after actor end",
+      "--tests",
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.RETURN InterruptedException adaptation throwing Error preserves that error without a late restoration callback",
+      "--tests",
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.failed post consent real Hikari tail seals actor admission but cannot retire the successor epoch",
+      "--tests",
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.consented real Hikari recycle tail retains no successor eviction or abort authority",
+      "--tests",
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.exact retirement sample result preserves its Throwable and does not absorb adjacent budget failure",
+      "--tests",
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.throwing overriding original checkout sample cannot orphan its captured handle or future return right",
+      "--tests",
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.genuine throwing RETURN TL entry restores the authentic lineage and revokes only its still unused future right",
+      "--tests",
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.real post commit Blob work cannot silently commit through Hikari auto commit reset",
+      "--tests",
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.real commit failure retains unknown outcome and refuses reset before native auto commit"
+    ],
+    "task_rule": "Exactly29 task argv elements, same order as profile.task_args and carrier.TASKS; one class,14 ordinary XML cases, zero positive witnesses. No extra Gradle task, class, wildcard or parentheses suffix in selectors."
+  },
+  "local_v3_preflight": {
+    "state": "NOT_PERFORMED_BY_PREPARER",
+    "save_actual_stdout_path": "review/working/app-29-w03-integrated-driver-core-c2-product-lifecycle-pg14-01/hosted-local-preflight.json",
+    "receipt_sha256": "__PRIMARY_AFTER_ACTUAL_PG14_LOCAL_V3_PREFLIGHT_STDOUT_SHA256__",
+    "argv_prefix_template": [
+      "python3", "-B", "/root/projects/Kira/review/working/freeze_app29_integrated_driver_v3.py",
+      "--workspace", "/root/projects/Kira",
+      "--validate-manifest", "/root/projects/Kira/review/working/app-29-w03-integrated-driver-core-c2-product-lifecycle-pg14-01/manifest.json",
+      "--manifest-sha256", "__PRIMARY_AFTER_FRESH_PG14_V3_FREEZE_SHA256__"
+    ],
+    "argv_tail": "Append '--' then freeze.task_args unchanged.",
+    "expected_success_shape_not_a_receipt": {"status": "READ_ONLY_V3_PREFLIGHT_PASSED", "source_paths": 466},
+    "requirement": "Save actual successful stdout from the unchanged tool against the fresh stable-context PG14 manifest. Hosted transport checks do not recreate local v3 validation. No reuse or fabrication of earlier receipt bytes."
+  },
+  "private_transport": {
+    "payload_root": "docs/remediation/app29-core-c2-product-lifecycle-pg14-01",
+    "source_bundle": {
+      "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+      "private_parent_sha": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+      "ref": "refs/heads/remediation/app-29-backend-complaints",
+      "source_path": "review/working/app-29-core-c2-post-structural-private-checkpoint-01/backend.bundle",
+      "path": "docs/remediation/app29-core-c2-product-lifecycle-pg14-01/inputs/backend.bundle",
+      "sha256": "2506c18cc5e40f089cc1176a65a79d449ff02b13f4c08e0719c24d359e9882da",
+      "bytes": 217809
+    },
+    "bundle_rule": "Reuse the primary-created exact bounded singleton SHA1 v2 complete bundle. Carrier checks full header/prerequisite/ref/tip/hash/size and exact parent chain before and after. No new bundle by preparer, public private-source push, alternative ref, merge or filtered transport.",
+    "authority_rule": "Under payload_root/authority, transport exact regular files for fresh manifest, genuine preflight receipt, full snapshots/historical_input_hashes/approved_inputs/validation_tooling maps and complete_diff_path. Resolve duplicate paths only with identical hashes. Include the source bundle as approved authority and separately at its deployment path. Reject links, missing or contradictory bytes; do not subset authority to14 selected methods or19 changed paths.",
+    "unchanged_dependencies": "Retain exact final_jar/checker deployment paths, hashes and bytes from the profile. Reuse original18-member archive docs/remediation/checkpoint-2026-09-08/review-evidence.tar.gz, SHA256 da94218f74eb0f5831241c8606c8f82142e49b818acfaff027a78f2efe77faab and its existing bounded extraction route; no new acquisition lane.",
+    "checkpoint_template_not_receipt": {
+      "schema": "app29-core-c2-clean-checkpoint-v1",
+      "source_accepted": false,
+      "backend_sha": "6db944871c1584bd6a1f28263e8010cadd766fab",
+      "source_bundle": {
+        "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+        "private_parent_sha": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+        "ref": "refs/heads/remediation/app-29-backend-complaints",
+        "source_path": "review/working/app-29-core-c2-post-structural-private-checkpoint-01/backend.bundle",
+        "path": "docs/remediation/app29-core-c2-product-lifecycle-pg14-01/inputs/backend.bundle",
+        "sha256": "2506c18cc5e40f089cc1176a65a79d449ff02b13f4c08e0719c24d359e9882da",
+        "bytes": 217809
+      },
+      "manifest_path": "review/working/app-29-w03-integrated-driver-core-c2-product-lifecycle-pg14-01/manifest.json",
+      "manifest_sha256": "__PRIMARY_AFTER_FRESH_PG14_V3_FREEZE_SHA256__",
+      "local_v3_preflight": {
+        "manifest_sha256": "__PRIMARY_AFTER_FRESH_PG14_V3_FREEZE_SHA256__",
+        "tool_sha256": "e8c6a48fc26c634fbccbb081651631fb5c767099b1143ab4dbe8439f6060d0fe",
+        "receipt_path": "review/working/app-29-w03-integrated-driver-core-c2-product-lifecycle-pg14-01/hosted-local-preflight.json",
+        "receipt_sha256": "__PRIMARY_AFTER_ACTUAL_PG14_LOCAL_V3_PREFLIGHT_STDOUT_SHA256__"
+      }
+    },
+    "checkpoint_note": "Only primary creates payload_root/checkpoint.json from actual fresh evidence, separately accepts source and hashes its final bytes into a separately authorized request. The existing6e7cfcdb source transport receipt cannot fill that hash. This template is not accepted or deployed.",
+    "request_preparation_path": "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/ci/app29-gate-b.request.json",
+    "request_preparation_sha256": "2934820e9714dff3bd2fc1cdf013b611db03cabb238b2ef6676456e982a837fb",
+    "request_note": "Backend tip, bundle hash/integer size and five tool hashes are real pins. authorized=false and checkpoint_sha256=64 zeroes intentionally prevent use. Primary derives final ci/app29-gate-b.request.json without mutating this sealed source-only packet and records the new hash."
+  },
+  "retained_obligations": {
+    "budgets": {"job_minutes": 25, "controller_seconds": 1200, "preflight_seconds": 120, "validation_seconds": 900, "cleanup_seconds": 180},
+    "resources": "Gradle2GiB/512MiB metaspace; one512MiB fork, max-workers1, forkEvery0; normal compilation unchanged; minimum8GiB free and max8MiB bundle. No extra static/compile batch.",
+    "expected_container_population": {"total": 2, "postgres": 1, "ryuk": 1, "images": ["postgres:17.6-alpine", "testcontainers/ryuk:0.12.0"]},
+    "raw_scalar_rule": "Only RETURN_SAMPLE and FAILED_POST_CONSENT_TAIL; each CAPTURED BEFORE_SHUTDOWN and AFTER_SHUTDOWN, four required rows. Other12 add no labels/witnesses. Missing, duplicate or UNAVAILABLE required output cannot pass. Best-effort non-atomic scalars are not causal/completion proof.",
+    "security_and_cleanup": "No changes to bounded paths/files/archive, duplicate-key/XML guards, environment isolation, actual JDK/classpath capture, no-agent/loader checks, shared owned subreaper/session drains, sticky forced cleanup/nonzero exit, capture-before-delete or truthful UNKNOWN. Final absence must still be measured, not inferred.",
+    "dependency_limit": "Strict Gradle dependency-verification flag unchanged; absent verification metadata is not transitive dependency-byte proof.",
+    "historical_limits": "Retain PG10 accepted10 on1c91 and raw PostgreSQL kill9/die137; NORMAL_ABSENT is not graceful/zero-kill proof. Original45/47 and0/2 cleanupFAIL/containersUNKNOWN/outputs_absentfalse/six retained directories unchanged.",
+    "qualification_limits": "SQLClientInfo declaration/defaults/foreign-caller control remains outside one-class14; no second PG fixture, full47, new harness or consumer witness. Native05 UNQUALIFIED; D05 PARTIAL/not import-ready; D06 unreviewed/unexecuted; opaque eviction/first-close/liveness and W03/App29/native/full gates open."
+  },
+  "author_actions": "Private text copies/edits/diffs and passive reads/hashes only. No candidate/helper imports or execution, checker/test/build/freeze/preflight, downloads, Docker, CI, Git writes, live edits or secret handling."
+}

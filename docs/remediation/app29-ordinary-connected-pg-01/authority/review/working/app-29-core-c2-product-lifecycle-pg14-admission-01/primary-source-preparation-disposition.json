@@ -1,0 +1,15 @@
+{
+  "at_utc": "2026-09-12T15:03:15.171524+00:00",
+  "decision": "ACCEPT_SOURCE_PREPARATION_ONLY",
+  "preparation_seal_sha256": "846a81ded067851f620d80a4531845ee68923f004a2329e9018cd5c6bfa8dce2",
+  "independent_review": "review/remediation/app-29-core-c2-product-lifecycle-pg14-preparation-01-independent-review.md",
+  "independent_review_sha256": "ca56b68ac2a30d5c62f367e4ad50fd87592b70111f0e6a78c6760be84b274d21",
+  "backend_source": "6db944871c1584bd6a1f28263e8010cadd766fab",
+  "backend_integration": "b2324508dd7c3c11d894e4c9a815f5e30387369a",
+  "scope": "Five-file carrier/profile derivative, fresh466-source v3 freeze/preflight and exact private transport authorized; final request/one-run admission separate.",
+  "selection": "Prior10 plus4 existing changed-risk controls,14 ordinary cases in one class; no new tests",
+  "historical_limits": "Prior38 units and compile/statics carried; original45/47 and0/2 cleanupFAIL,Native05 unqualified,D05/D06/W03 retained. PG14 not executed.",
+  "raw_rows": "Four original required scalar rows only; non-atomic/noncausal; kill9/die137 historical preserved.",
+  "deployed_checkpoint_required": true,
+  "private_source_public_push_authorized": false
+}
