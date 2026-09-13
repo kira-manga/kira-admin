@@ -20,472 +20,28 @@ TARGETS = json.loads((ADMIN / 'ci/backend20-atomic-bootstrap.request.json').read
 CLASSES, METHODS = TARGETS['classes'], TARGETS['methods']
 
 # Primary-bound exact source checkpoint; live admission/launch remain primary-owned.
-EXPECTED_BACKEND_SHA = '1b5803aa08a3a50c005eae6c904349c7e7bb6ada'
-# Corrected-source selection:124 unchanged methods/cases in42 previously blocked JPA PostgreSQL classes.
-# Retain115 old-source passes separately; no corrected-source239-case claim.
+EXPECTED_BACKEND_SHA = 'fbc19a69a19c2e646f2a5ed5c48a491b20e93a76'
+# Two corrected assertions: exactly2 existing methods/cases in2 JPA PostgreSQL classes.
+# Retain122 hosted03 and115 older passes separately; no corrected-source239-case claim.
 EXPECTED_CLASSES = {
-    'me.manga.kira.backend.sourceconfig.FlywayMigrationIT': 3,
-    'me.manga.kira.backend.sourceconfig.StartupConsistencyIT': 12,
-    'me.manga.kira.backend.sourceconfig.admin.AuditLogIT': 1,
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapConcurrencyIT': 4,
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapEndpointIT': 4,
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapLateRollbackIT': 2,
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapPublicationGuardIT': 5,
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapReplayIT': 2,
-    'me.manga.kira.backend.sourceconfig.admin.ConcurrentDifferentSourcePublishIT': 1,
-    'me.manga.kira.backend.sourceconfig.admin.ConcurrentSameSourcePublishIT': 1,
-    'me.manga.kira.backend.sourceconfig.admin.DisableRemoveVisibilityIT': 3,
-    'me.manga.kira.backend.sourceconfig.admin.DocumentOrderDeterminismIT': 2,
-    'me.manga.kira.backend.sourceconfig.admin.EmptyDocumentPublishIT': 1,
-    'me.manga.kira.backend.sourceconfig.admin.EndpointCompletenessIT': 4,
-    'me.manga.kira.backend.sourceconfig.admin.FullBundledParityIT': 1,
-    'me.manga.kira.backend.sourceconfig.admin.ImportBundledIT': 11,
-    'me.manga.kira.backend.sourceconfig.admin.ImportCreatesSingleSnapshotIT': 1,
-    'me.manga.kira.backend.sourceconfig.admin.ImportNoChangesIsNoOpIT': 1,
-    'me.manga.kira.backend.sourceconfig.admin.LifecycleNeutralStorageIT': 2,
-    'me.manga.kira.backend.sourceconfig.admin.PublicConfigSecretsRejectedIT': 7,
-    'me.manga.kira.backend.sourceconfig.admin.PublicationFailureRollbackIT': 1,
-    'me.manga.kira.backend.sourceconfig.admin.PublishInvalidFailsIT': 1,
-    'me.manga.kira.backend.sourceconfig.admin.PublishStateRulesIT': 1,
-    'me.manga.kira.backend.sourceconfig.admin.RemovedCannotReturnIT': 1,
-    'me.manga.kira.backend.sourceconfig.admin.RetiredSourceVisibilityIT': 2,
-    'me.manga.kira.backend.sourceconfig.admin.RollbackIT': 3,
-    'me.manga.kira.backend.sourceconfig.admin.ServerManagedLifecycleIT': 2,
-    'me.manga.kira.backend.sourceconfig.admin.SnapshotTimestampConsistencyIT': 1,
-    'me.manga.kira.backend.sourceconfig.admin.SourceChangesetIT': 3,
-    'me.manga.kira.backend.sourceconfig.admin.SourceEditorDraftIT': 6,
-    'me.manga.kira.backend.sourceconfig.admin.SourceOperationalModeIT': 4,
-    'me.manga.kira.backend.sourceconfig.admin.SourcePublishFlowIT': 1,
-    'me.manga.kira.backend.sourceconfig.admin.StrictAdminParserIT': 2,
-    'me.manga.kira.backend.sourceconfig.infrastructure.AdminHistoryRepositoryIT': 3,
-    'me.manga.kira.backend.sourceconfig.public.ETagIT': 2,
-    'me.manga.kira.backend.sourceconfig.public.IfNoneMatchVariantsIT': 1,
-    'me.manga.kira.backend.sourceconfig.public.PublicSourceSummaryConsistencyIT': 2,
-    'me.manga.kira.backend.sourceconfig.public.PublicSourcesIT': 13,
-    'me.manga.kira.backend.sourceconfig.public.RawBytesChecksumIT': 1,
-    'me.manga.kira.backend.sourceconfig.public.SourceCatalogV2IT': 3,
-    'me.manga.kira.backend.sourceconfig.signing.SignedDocumentIT': 1,
-    'me.manga.kira.backend.user.SecurityMatrixIT': 2,
+    'me.manga.kira.backend.sourceconfig.admin.SourceOperationalModeIT': 1,
+    'me.manga.kira.backend.sourceconfig.public.PublicSourceSummaryConsistencyIT': 1,
 }
 EXPECTED_METHODS = {
-    'me.manga.kira.backend.sourceconfig.FlywayMigrationIT': [
-        'bootstrap constraints reject incomplete completion partial receipts and invalid phases',
-        'flyway history is exactly V1 through V13 then V13_1 and V13_2 in version order',
-        'fresh schema defaults credential version to zero and rejects negative and null versions',
-    ],
-    'me.manga.kira.backend.sourceconfig.StartupConsistencyIT': [
-        'COMPLETE requires every real origin receipt field and a nonnull pointer',
-        'a missing singleton fails closed rather than looking like an empty catalog',
-        'coherent reads reject receipt or retained origin metadata corruption after latest advances',
-        'existing snapshots with a consistent pointer pass',
-        'fresh empty DB passes both checks',
-        'minimum-server-revision not greater than bundled-revision-floor fails fast',
-        'origin foreign keys protect real history after latest advances',
-        'pointer NULL while snapshots exist fails fast',
-        'pointer not equal to MAX document revision fails fast',
-        'sequence gaps above the real completed origin remain valid',
-        'sequence-next below minimum-server-revision fails fast',
-        'sequence-next not greater than the latest revision fails fast',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.AuditLogIT': [
-        'publish and disable write hygienic audit rows',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapConcurrencyIT': [
-        'bootstrap owning G makes a creator wait and append only a later draft',
-        'creator owning G after insertion makes bootstrap wait then reject its retained extra head',
-        'normal COMPLETE materialization acquires G even when its transactional caller did not',
-        'overlapping identical raw requests serialize to one publication and the same immutable receipt',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapEndpointIT': [
-        'anonymous and USER cannot bootstrap and ADMIN still needs exact confirmation',
-        'exactly five MiB is accepted but one byte more is rejected before PENDING or COMPLETE dispatch',
-        'malformed UTF8 in an otherwise admissible provenance string is not replacement decoded',
-        'valid padded UTF8 JSON crosses the default body cap without charset transcoding',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapLateRollbackIT': [
-        'a completion update affecting zero rows is not success and rolls back its staged publication',
-        'late completion update failure rolls back source history publication receipt and audit',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapPublicationGuardIT': [
-        'PENDING permits a draft but publish editor publish and republish roll back at the shared guard',
-        'PENDING rejects ordinary import including no-op and direct empty materialization',
-        'RECONCILIATION retains public bytes but refuses import bootstrap and alternate publication',
-        'bootstrap cannot adopt an expected draft even when its content matches the approved payload',
-        'old confirmation-only POST is a nonmutating conflict before and after completion',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapReplayIT': [
-        'same bytes return the origin receipt after content addition lifecycle and policy changes',
-        'unavailable current initial policy fails a new PENDING attempt without staging',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.ConcurrentDifferentSourcePublishIT': [
-        'two concurrent publishes to different sources both survive in the final snapshot',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.ConcurrentSameSourcePublishIT': [
-        'two concurrent publishes of the same source never violate the one-published index',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.DisableRemoveVisibilityIT': [
-        'a direct active to removed is 409',
-        'a direct active to retired is 409',
-        'disable then retire then remove walk the stanza through the document',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.DocumentOrderDeterminismIT': [
-        'a bundled import serves stanzas in payload order',
-        'shuffled repository orders assemble to byte-identical canonical documents',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.EmptyDocumentPublishIT': [
-        'removing the last source publishes a valid empty document',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.EndpointCompletenessIT': [
-        'a generic source missing a required verb cannot publish',
-        'a generic source missing both home and featured cannot publish',
-        'a generic source without chapters publishes fine',
-        'a legacy source is not publicly publishable',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.FullBundledParityIT': [
-        'the full bundled document parses, validates, canonicalizes, imports, serves and re-checksums',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.ImportBundledIT': [
-        'a body over the 5 MiB import limit is rejected with 413',
-        'a terminally removed source is not revived by import',
-        'changed content for a retired source is skippedRetired and nothing is stored',
-        'database failure after the first stanza rolls back the complete import',
-        'import of the trimmed document creates + publishes + serves the sources in payload order',
-        'incoming revision and generatedAt do not drive server revision allocation',
-        'one bad stanza fails the whole import with 422 and nothing is persisted',
-        'partial catalog import adopts payload order and publishes one reordered snapshot',
-        're-import never publishes or replaces a draft-only source',
-        're-import of the identical payload is a no-op - zero new revisions and zero new snapshots',
-        'unsafe header filters reject a mixed create and update import before any public mutation',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.ImportCreatesSingleSnapshotIT': [
-        'importing four sources creates exactly one published document row',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.ImportNoChangesIsNoOpIT': [
-        're-importing an identical document with explicit lifecycle values is a no-op',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.LifecycleNeutralStorageIT': [
-        'importing a disabled stanza stores neutral content with initial status disabled, and re-import is a no-op',
-        'stored content is lifecycle-neutral while the assembled document injects the served value',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.PublicConfigSecretsRejectedIT': [
-        'a forbidden Cookie header is rejected',
-        'a real bearer token on authorization is rejected as secret-like',
-        'a url with user-info is rejected',
-        'a whitespace-padded authorization header cannot bypass publication validation',
-        'the Bearer null placeholder is accepted',
-        'the full real bundled document passes all secret-safety rules',
-        'unsafe header drafts retain content and safe diagnostics but cannot change public v1 or v2',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.PublicationFailureRollbackIT': [
-        'interrupted snapshot publication leaves no partial state',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.PublishInvalidFailsIT': [
-        'publishing an invalid revision is 422 and leaves the document unchanged',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.PublishStateRulesIT': [
-        'publishable-revision-states rules hold and there is always one published revision',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.RemovedCannotReturnIT': [
-        'a removed source refuses every transition and never reappears',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.RetiredSourceVisibilityIT': [
-        'a retired generic stanza is served as removed and can be un-retired',
-        'a retired legacy stanza cannot be un-retired',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.RollbackIT': [
-        'a never-published draft cannot use rollback as a disguised first publish',
-        'rollback copies old content into a new published revision',
-        'rollback of a disabled source leaves it disabled',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.ServerManagedLifecycleIT': [
-        'authoring a non-neutral lifecycle is 400 on create and on revision',
-        'rollback does not restore a prior server lifecycle',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.SnapshotTimestampConsistencyIT': [
-        'generatedAt equals the snapshot created_at and the audit detail instant',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.SourceChangesetIT': [
-        'changesets autosave with etags and apply two sources in one snapshot',
-        'failed changeset makes no partial lifecycle or catalog change',
-        'stale changeset write fails and apply requires one-time step-up',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.SourceEditorDraftIT': [
-        'autosave uses optimistic etags and keeps invalid JSON outside immutable history',
-        'finalize is strict and atomically advances the editor baseline',
-        'invalid draft fails strict finalization and discard is compare and swap',
-        'oversized autosave fails without changing the draft',
-        'quick publish is atomic and requires one-time password step-up',
-        'unsafe header quick publish rolls back its new revision and preserves editor and public state',
-    ],
     'me.manga.kira.backend.sourceconfig.admin.SourceOperationalModeIT': [
-        'enabled and disabled reuse working content while publishing lifecycle changes',
-        'proof is one time and invalid mode does not consume it',
-        'states outside the quick control are rejected without publishing',
         'three-state mode is protected idempotent and publishes one atomic catalog revision',
     ],
-    'me.manga.kira.backend.sourceconfig.admin.SourcePublishFlowIT': [
-        'create validate publish then the stanza is served with a matching checksum',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.StrictAdminParserIT': [
-        'the compatibility import parser accepts an unknown field and surfaces a warning',
-        'the compatibility import parser rejects genuinely malformed json',
-    ],
-    'me.manga.kira.backend.sourceconfig.infrastructure.AdminHistoryRepositoryIT': [
-        'gapped older traversal survives a newer insert and ends without duplicate or lost rows',
-        'growing TOAST histories keep query columns row consumption and deep seek bounded',
-        'real authentication still gates bounded array history reads',
-    ],
-    'me.manga.kira.backend.sourceconfig.public.ETagIT': [
-        'document serves a strong quoted etag and honors conditional GET',
-        'historical snapshots are admin-only and the public route has no revision param',
-    ],
-    'me.manga.kira.backend.sourceconfig.public.IfNoneMatchVariantsIT': [
-        'if-none-match variants follow weak comparison',
-    ],
     'me.manga.kira.backend.sourceconfig.public.PublicSourceSummaryConsistencyIT': [
-        'new revision after document selection cannot relabel old content with new metadata',
         'removal after document selection preserves the complete old summary generation',
-    ],
-    'me.manga.kira.backend.sourceconfig.public.PublicSourcesIT': [
-        'a draft-only source never appears in the list',
-        'a single source summary exposes every field',
-        'an unknown lifecycle or engine filter value is 400',
-        'by-api active serves the stanza with no lifecycle key',
-        'by-api disabled and retired carry the app lifecycle value',
-        'by-api removed is 410 and unknown or draft-only is 404',
-        'document 404 when nothing is published',
-        'document appVersion is validated',
-        'document meta reports the latest shape and 404 when none',
-        'legacy sources are never exposed even through the engine filter',
-        'no document ever published yields an empty array',
-        'the lifecycle filter maps retired to removed and filters correctly',
-        'the list is ordered by document position not by api',
-    ],
-    'me.manga.kira.backend.sourceconfig.public.RawBytesChecksumIT': [
-        'hashing the raw public document bytes reproduces the etag and checksum header',
-    ],
-    'me.manga.kira.backend.sourceconfig.public.SourceCatalogV2IT': [
-        'cutover apply rejects unexpected inventory without partial lifecycle changes',
-        'cutover is dry-run first atomic exact 12 and idempotent',
-        'signed manifest and immutable source revisions are conditional and verifiable',
-    ],
-    'me.manga.kira.backend.sourceconfig.signing.SignedDocumentIT': [
-        'published documents expose verifiable immutable signature chain and conditional GET metadata',
-    ],
-    'me.manga.kira.backend.user.SecurityMatrixIT': [
-        'ADMIN token is allowed on admin endpoints',
-        'anonymous gets 200 on the public document and sources once one is published',
     ],
 }
 # Ordinary methods keep (); parameterized XML display names are exact and unique.
 EXPECTED_CASES = {
-    'me.manga.kira.backend.sourceconfig.FlywayMigrationIT': [
-        'bootstrap constraints reject incomplete completion partial receipts and invalid phases()',
-        'flyway history is exactly V1 through V13 then V13_1 and V13_2 in version order()',
-        'fresh schema defaults credential version to zero and rejects negative and null versions()',
-    ],
-    'me.manga.kira.backend.sourceconfig.StartupConsistencyIT': [
-        'COMPLETE requires every real origin receipt field and a nonnull pointer()',
-        'a missing singleton fails closed rather than looking like an empty catalog()',
-        'coherent reads reject receipt or retained origin metadata corruption after latest advances()',
-        'existing snapshots with a consistent pointer pass()',
-        'fresh empty DB passes both checks()',
-        'minimum-server-revision not greater than bundled-revision-floor fails fast()',
-        'origin foreign keys protect real history after latest advances()',
-        'pointer NULL while snapshots exist fails fast()',
-        'pointer not equal to MAX document revision fails fast()',
-        'sequence gaps above the real completed origin remain valid()',
-        'sequence-next below minimum-server-revision fails fast()',
-        'sequence-next not greater than the latest revision fails fast()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.AuditLogIT': [
-        'publish and disable write hygienic audit rows()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapConcurrencyIT': [
-        'bootstrap owning G makes a creator wait and append only a later draft()',
-        'creator owning G after insertion makes bootstrap wait then reject its retained extra head()',
-        'normal COMPLETE materialization acquires G even when its transactional caller did not()',
-        'overlapping identical raw requests serialize to one publication and the same immutable receipt()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapEndpointIT': [
-        'anonymous and USER cannot bootstrap and ADMIN still needs exact confirmation()',
-        'exactly five MiB is accepted but one byte more is rejected before PENDING or COMPLETE dispatch()',
-        'malformed UTF8 in an otherwise admissible provenance string is not replacement decoded()',
-        'valid padded UTF8 JSON crosses the default body cap without charset transcoding()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapLateRollbackIT': [
-        'a completion update affecting zero rows is not success and rolls back its staged publication()',
-        'late completion update failure rolls back source history publication receipt and audit()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapPublicationGuardIT': [
-        'PENDING permits a draft but publish editor publish and republish roll back at the shared guard()',
-        'PENDING rejects ordinary import including no-op and direct empty materialization()',
-        'RECONCILIATION retains public bytes but refuses import bootstrap and alternate publication()',
-        'bootstrap cannot adopt an expected draft even when its content matches the approved payload()',
-        'old confirmation-only POST is a nonmutating conflict before and after completion()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.BootstrapReplayIT': [
-        'same bytes return the origin receipt after content addition lifecycle and policy changes()',
-        'unavailable current initial policy fails a new PENDING attempt without staging()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.ConcurrentDifferentSourcePublishIT': [
-        'two concurrent publishes to different sources both survive in the final snapshot()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.ConcurrentSameSourcePublishIT': [
-        'two concurrent publishes of the same source never violate the one-published index()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.DisableRemoveVisibilityIT': [
-        'a direct active to removed is 409()',
-        'a direct active to retired is 409()',
-        'disable then retire then remove walk the stanza through the document()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.DocumentOrderDeterminismIT': [
-        'a bundled import serves stanzas in payload order()',
-        'shuffled repository orders assemble to byte-identical canonical documents()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.EmptyDocumentPublishIT': [
-        'removing the last source publishes a valid empty document()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.EndpointCompletenessIT': [
-        'a generic source missing a required verb cannot publish()',
-        'a generic source missing both home and featured cannot publish()',
-        'a generic source without chapters publishes fine()',
-        'a legacy source is not publicly publishable()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.FullBundledParityIT': [
-        'the full bundled document parses, validates, canonicalizes, imports, serves and re-checksums()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.ImportBundledIT': [
-        'a body over the 5 MiB import limit is rejected with 413()',
-        'a terminally removed source is not revived by import()',
-        'changed content for a retired source is skippedRetired and nothing is stored()',
-        'database failure after the first stanza rolls back the complete import()',
-        'import of the trimmed document creates + publishes + serves the sources in payload order()',
-        'incoming revision and generatedAt do not drive server revision allocation()',
-        'one bad stanza fails the whole import with 422 and nothing is persisted()',
-        'partial catalog import adopts payload order and publishes one reordered snapshot()',
-        're-import never publishes or replaces a draft-only source()',
-        're-import of the identical payload is a no-op - zero new revisions and zero new snapshots()',
-        'unsafe header filters reject a mixed create and update import before any public mutation()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.ImportCreatesSingleSnapshotIT': [
-        'importing four sources creates exactly one published document row()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.ImportNoChangesIsNoOpIT': [
-        're-importing an identical document with explicit lifecycle values is a no-op()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.LifecycleNeutralStorageIT': [
-        'importing a disabled stanza stores neutral content with initial status disabled, and re-import is a no-op()',
-        'stored content is lifecycle-neutral while the assembled document injects the served value()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.PublicConfigSecretsRejectedIT': [
-        'a forbidden Cookie header is rejected()',
-        'a real bearer token on authorization is rejected as secret-like()',
-        'a url with user-info is rejected()',
-        'a whitespace-padded authorization header cannot bypass publication validation()',
-        'the Bearer null placeholder is accepted()',
-        'the full real bundled document passes all secret-safety rules()',
-        'unsafe header drafts retain content and safe diagnostics but cannot change public v1 or v2()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.PublicationFailureRollbackIT': [
-        'interrupted snapshot publication leaves no partial state()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.PublishInvalidFailsIT': [
-        'publishing an invalid revision is 422 and leaves the document unchanged()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.PublishStateRulesIT': [
-        'publishable-revision-states rules hold and there is always one published revision()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.RemovedCannotReturnIT': [
-        'a removed source refuses every transition and never reappears()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.RetiredSourceVisibilityIT': [
-        'a retired generic stanza is served as removed and can be un-retired()',
-        'a retired legacy stanza cannot be un-retired()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.RollbackIT': [
-        'a never-published draft cannot use rollback as a disguised first publish()',
-        'rollback copies old content into a new published revision()',
-        'rollback of a disabled source leaves it disabled()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.ServerManagedLifecycleIT': [
-        'authoring a non-neutral lifecycle is 400 on create and on revision()',
-        'rollback does not restore a prior server lifecycle()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.SnapshotTimestampConsistencyIT': [
-        'generatedAt equals the snapshot created_at and the audit detail instant()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.SourceChangesetIT': [
-        'changesets autosave with etags and apply two sources in one snapshot()',
-        'failed changeset makes no partial lifecycle or catalog change()',
-        'stale changeset write fails and apply requires one-time step-up()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.SourceEditorDraftIT': [
-        'autosave uses optimistic etags and keeps invalid JSON outside immutable history()',
-        'finalize is strict and atomically advances the editor baseline()',
-        'invalid draft fails strict finalization and discard is compare and swap()',
-        'oversized autosave fails without changing the draft()',
-        'quick publish is atomic and requires one-time password step-up()',
-        'unsafe header quick publish rolls back its new revision and preserves editor and public state()',
-    ],
     'me.manga.kira.backend.sourceconfig.admin.SourceOperationalModeIT': [
-        'enabled and disabled reuse working content while publishing lifecycle changes()',
-        'proof is one time and invalid mode does not consume it()',
-        'states outside the quick control are rejected without publishing()',
         'three-state mode is protected idempotent and publishes one atomic catalog revision()',
     ],
-    'me.manga.kira.backend.sourceconfig.admin.SourcePublishFlowIT': [
-        'create validate publish then the stanza is served with a matching checksum()',
-    ],
-    'me.manga.kira.backend.sourceconfig.admin.StrictAdminParserIT': [
-        'the compatibility import parser accepts an unknown field and surfaces a warning()',
-        'the compatibility import parser rejects genuinely malformed json()',
-    ],
-    'me.manga.kira.backend.sourceconfig.infrastructure.AdminHistoryRepositoryIT': [
-        'gapped older traversal survives a newer insert and ends without duplicate or lost rows()',
-        'growing TOAST histories keep query columns row consumption and deep seek bounded()',
-        'real authentication still gates bounded array history reads()',
-    ],
-    'me.manga.kira.backend.sourceconfig.public.ETagIT': [
-        'document serves a strong quoted etag and honors conditional GET()',
-        'historical snapshots are admin-only and the public route has no revision param()',
-    ],
-    'me.manga.kira.backend.sourceconfig.public.IfNoneMatchVariantsIT': [
-        'if-none-match variants follow weak comparison()',
-    ],
     'me.manga.kira.backend.sourceconfig.public.PublicSourceSummaryConsistencyIT': [
-        'new revision after document selection cannot relabel old content with new metadata()',
         'removal after document selection preserves the complete old summary generation()',
-    ],
-    'me.manga.kira.backend.sourceconfig.public.PublicSourcesIT': [
-        'a draft-only source never appears in the list()',
-        'a single source summary exposes every field()',
-        'an unknown lifecycle or engine filter value is 400()',
-        'by-api active serves the stanza with no lifecycle key()',
-        'by-api disabled and retired carry the app lifecycle value()',
-        'by-api removed is 410 and unknown or draft-only is 404()',
-        'document 404 when nothing is published()',
-        'document appVersion is validated()',
-        'document meta reports the latest shape and 404 when none()',
-        'legacy sources are never exposed even through the engine filter()',
-        'no document ever published yields an empty array()',
-        'the lifecycle filter maps retired to removed and filters correctly()',
-        'the list is ordered by document position not by api()',
-    ],
-    'me.manga.kira.backend.sourceconfig.public.RawBytesChecksumIT': [
-        'hashing the raw public document bytes reproduces the etag and checksum header()',
-    ],
-    'me.manga.kira.backend.sourceconfig.public.SourceCatalogV2IT': [
-        'cutover apply rejects unexpected inventory without partial lifecycle changes()',
-        'cutover is dry-run first atomic exact 12 and idempotent()',
-        'signed manifest and immutable source revisions are conditional and verifiable()',
-    ],
-    'me.manga.kira.backend.sourceconfig.signing.SignedDocumentIT': [
-        'published documents expose verifiable immutable signature chain and conditional GET metadata()',
-    ],
-    'me.manga.kira.backend.user.SecurityMatrixIT': [
-        'ADMIN token is allowed on admin endpoints()',
-        'anonymous gets 200 on the public document and sources once one is published()',
     ],
 }
 # Current66 source bytes, including the authorized12 annotation-name-only corrections.
@@ -541,7 +97,7 @@ EXPECTED_SOURCE_SHA256 = {
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/SnapshotTimestampConsistencyIT.kt': '1d339de4a9b7ead1b0ac3649f5e976cc8a9a9fe023275770d44e77feaa9ca5a5',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/SourceChangesetIT.kt': '427f7eda67a55df068688abc73c41366e638d5aaf08b7062e21c42d743e1e7a6',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/SourceEditorDraftIT.kt': 'a26764c204b98fe78221ddbdaed55d810c487256ecb1d3effd6858fb3e5595d6',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/SourceOperationalModeIT.kt': 'f0fd722742abc297b25d1e8ffdf2ba9cbdb8a2d3b1b06b41823c1e71ed3b57d7',
+    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/SourceOperationalModeIT.kt': '6a5ac6fedee59aee933b211391ba0c25cd931e08f1326195a59943a94436305d',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/SourcePublishFlowIT.kt': '2f1d50b6cfee2128d9b48cb8671254af7f281356b06cb9e573cb00de6fd23c10',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/StrictAdminParserIT.kt': '780ba482d3bb92d46a41167adf38bca8446d48a2ede15862ce0b1b1dba0fbd27',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/api/GenericV2CutoverControllerTest.kt': '5463c7cf1fcba65a24186259511d5103ed2c64469fa91b152906cd1bda1bbe2b',
@@ -549,7 +105,7 @@ EXPECTED_SOURCE_SHA256 = {
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/AdminHistoryRepositoryIT.kt': '786bac5a93a345a6c5d764ca740c797a7f882f86119952815fbaf0a3935c8f94',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/ETagIT.kt': '6d33e2702a5c74da8aa7c606915bb8196a134af8086d3a418e87aa367641c317',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/IfNoneMatchVariantsIT.kt': 'cbec6825b348256556cfca5bd4742bc74f743cc7ba8f2ab2cde2c17027b3e34f',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/PublicSourceSummaryConsistencyIT.kt': '9bcb7727fd0064a32814ba0c1a6afc814809576edf45f10e1b10f5732aa90699',
+    'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/PublicSourceSummaryConsistencyIT.kt': 'c2179ce8dc4eacfdc85488914839f97f237a4052a860972287aed7a84bdb30e8',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/PublicSourcesIT.kt': 'fa3fd72b7f8aabbc8592e3f2271ef8d1e4773c01a2d5e7e3631c3b9608e962f2',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/RawBytesChecksumIT.kt': 'd0dcb4d9cffc2ca54d881081374db384ef72a38fa23bae5355efd93b20272a5a',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/SourceCatalogV2IT.kt': 'a1053ba8636947d3ffb69cd3da34af233ea544e9301b47b699f6bd8fe1cb8d93',
@@ -786,7 +342,7 @@ try:
     require(not before, 'Expected a dedicated clean hosted runner; do not touch preexisting containers')
     require(not CANCELLED, 'Cancelled before validation')
     selectors = [name + '.' + method for name in CLASSES for method in METHODS[name]]
-    tasks = ['compileKotlin', 'compileTestKotlin', 'test'] + [part for name in selectors for part in ('--tests', name)] + ['ktlintMainSourceSetCheck', 'detekt', '--continue', '-x', 'jacocoTestReport']
+    tasks = ['compileKotlin', 'compileTestKotlin', 'test'] + [part for name in selectors for part in ('--tests', name)] + ['ktlintMainSourceSetCheck', 'ktlintTestSourceSetCheck', 'detekt', '--continue', '-x', 'jacocoTestReport']
     gradle_exit = command(['./gradlew', '--no-daemon', '--no-parallel', '--no-configuration-cache', '--console=plain', '--max-workers=1', '--no-build-cache', '-Dorg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=512m', '-Dorg.gradle.vfs.watch=false', '-Pkotlin.compiler.execution.strategy=in-process', '--init-script', str(W01 / 'original.init.gradle'), '--init-script', str(W01 / 'bootstrap-reference.init.gradle'), *tasks], 'gradle-test', 18 * 60)
     result = gradle_exit
 except (Exception, KeyboardInterrupt) as failure:
