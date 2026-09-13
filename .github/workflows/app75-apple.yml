@@ -1,0 +1,67 @@
+# Preparation only: sourceSha=null and DRAFT_NOT_AUTHORIZED refuse before source checkout/work.
+name: App75 Apple main qualification (private; explicit binding required)
+
+on:
+  push:
+    branches: [remediation/app-29-backend-complaints]
+    paths: [ci/app75-apple.request.json]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: app75-private-apple
+  cancel-in-progress: false
+
+jobs:
+  ios-compile:
+    if: >-
+      ${{ github.repository == 'kira-manga/kira-admin' &&
+          github.event.repository.private == true && github.event_name == 'push' &&
+          github.ref == 'refs/heads/remediation/app-29-backend-complaints' &&
+          github.run_attempt == 1 }}
+    runs-on: macos-26
+    timeout-minutes: 35
+    steps:
+      - name: Exact private carrier, without persisted credentials
+        timeout-minutes: 2
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.sha }}
+          path: control
+          persist-credentials: false
+      - name: Require the primary's explicit one-attempt source binding
+        id: request
+        timeout-minutes: 1
+        run: python3 -B control/ci/app75-apple.py request
+      - name: Exact reviewed public app source, without persisted credentials
+        timeout-minutes: 2
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: kira-manga/kira-app
+          ref: ${{ steps.request.outputs.source_sha }}
+          path: app75-source
+          persist-credentials: false
+      - name: Existing pinned Java setup, without a shared dependency cache
+        timeout-minutes: 2
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Compile data and UI iOS simulator ARM mains with normal Room KSP, then stop and clean
+        id: compile
+        timeout-minutes: 25
+        env:
+          APP75_RUN: ${{ runner.temp }}/app75-apple-${{ github.run_id }}-${{ github.run_attempt }}
+        run: python3 -B control/ci/app75-apple.py compile
+      - name: Retain bounded private diagnostics and two generated Room sources, never archives or klibs
+        if: always() && steps.compile.outcome != 'skipped'
+        timeout-minutes: 1
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: app75-apple-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/app75-apple-${{ github.run_id }}-${{ github.run_attempt }}/reports/*.json
+            ${{ runner.temp }}/app75-apple-${{ github.run_id }}-${{ github.run_attempt }}/reports/*.log
+          retention-days: 3
+          if-no-files-found: error
