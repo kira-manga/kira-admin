@@ -15,10 +15,10 @@ import time
 import xml.etree.ElementTree as ET
 
 CONTROL = Path(__file__).resolve().parents[1]
-CANDIDATE = '816b48d96cd407e551b9fcd5b5c6eda2d5936167'
-TREE = 'f7e4a653045f85ca5b4c6ab5e90080045a68f268'
+CANDIDATE = '6c5630695bb5952ac60679387e2b92f4d1cc042f'
+TREE = '5d6da41afb12ccd82f511271b3bb7c2c273f923b'
 PLAN = '3023bce52e43d0f80b1a4aea43018f55b586ae2f8c6d85fd21233a60e5d802d0'
-PINS_HASH = 'bc981e103eccf5764ef92b7ee8b427dd1b25eec28e1a1a0314ca7981d5f1b28b'
+PINS_HASH = '7f258b25ebbe46e043d4bfeb715efb4c8f614f9a6637387770714e7bff9498d9'
 SELECTORS_HASH = '106e7637b9b5e31ed477154ddfb8b1950e971069be006f8b440ed103c7a0d3f9'
 # Explicit primary-selected successor, with separate App44 Apple11 reviews; not App3's stale d6e5 owner.
 OWNER_HASH = '9f69c87182eba29030fcd65c49b4e8459a41749440dab9767f3fbfe0c02db6cf'
@@ -89,11 +89,11 @@ def selectors():
 
 def source_inputs():
     path = CONTROL / 'ci/reader-apple.source-pins.sha256'
-    require(digest(path) == PINS_HASH, 'Changed source49 manifest')
+    require(digest(path) == PINS_HASH, 'Changed source68 manifest')
     rows = [line.split(maxsplit=1) for line in path.read_text().splitlines()]
     result = {name: sha for sha, name in rows}
-    require(len(rows) == len(result) == 49 and all(re.fullmatch('[0-9a-f]{64}', sha)
-            and not Path(name).is_absolute() and '..' not in Path(name).parts for name, sha in result.items()), 'Invalid source49')
+    require(len(rows) == len(result) == 68 and all(re.fullmatch('[0-9a-f]{64}', sha)
+            and not Path(name).is_absolute() and '..' not in Path(name).parts for name, sha in result.items()), 'Invalid source68')
     return result
 
 

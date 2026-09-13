@@ -28,7 +28,7 @@ def reports = new File(run, 'reports')
 def sourceSha = System.getenv('READER_APPLE_SOURCE_SHA')
 def realHome = new File(System.getenv('READER_APPLE_SIMULATOR_HOME')).canonicalFile
 def device = System.getenv('READER_APPLE_DEVICE')
-require(run.isDirectory() && reports.isDirectory() && sourceSha == '816b48d96cd407e551b9fcd5b5c6eda2d5936167', 'Wrong owned source/run')
+require(run.isDirectory() && reports.isDirectory() && sourceSha == '6c5630695bb5952ac60679387e2b92f4d1cc042f', 'Wrong owned source/run')
 // Actual early-init observations, not the controller's declared tools.homes values.
 def homeObservation = [
     actualEnvironmentHome: System.getenv('HOME'),
@@ -99,7 +99,7 @@ def simulator = read('simulator.json')
 def request = read('request.json')
 def selectors = sourceBinding.selectors
 def source = new File(sourceBinding.root).canonicalFile
-require(sourceBinding.sha == sourceSha && sourceBinding.tree == 'f7e4a653045f85ca5b4c6ab5e90080045a68f268' &&
+require(sourceBinding.sha == sourceSha && sourceBinding.tree == '5d6da41afb12ccd82f511271b3bb7c2c273f923b' &&
     request.sourceSha == sourceSha && request.selectors == selectors && selectors.size() == 11 && selectors.toSet().size() == 11 &&
     simulator.udid == device && simulator.runnerHome == realHome.path, 'Different source/selector/Simulator binding')
 def arguments = roots + selectors.collectMany { ['--tests', it] } + ['--device', device]
@@ -128,7 +128,8 @@ def libraries = { collection, target, expectedProjects ->
         if (file == stdlib) return [origin: 'owned-native-stdlib', fingerprint: reference]
         require(file.toPath().startsWith(maven), 'Unattributed compiler/link library: ' + file)
         def parts = maven.relativize(file.toPath()).collect { it.toString() }
-        require(parts.size() == 5 && parts[0] != 'me.manga.kira.source' && parts[3] ==~ /[0-9a-f]{40,64}/ &&
+        // Gradle9.6.1 stores SHA-1 hex without leading zeros (GroupedAndNamedUniqueFileStore).
+        require(parts.size() == 5 && parts[0] != 'me.manga.kira.source' && parts[3] ==~ /[0-9a-f]{1,40}/ &&
             file.name.endsWith('.klib'), 'Nonpublic/non-KLIB dependency input: ' + file)
         [origin: 'normal-gradle-module-cache', coordinate: parts.take(3).join(':'), artifact: file.name, fingerprint: reference]
     }
