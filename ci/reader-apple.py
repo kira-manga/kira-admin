@@ -9,6 +9,7 @@ import pwd
 import re
 import shutil
 import signal
+import stat
 import sys
 import time
 import xml.etree.ElementTree as ET
@@ -214,6 +215,25 @@ def devices(commands, runner_home, end=None, cleaning=False):
     return [dict(row, runtime=runtime) for runtime, rows in value['devices'].items() for row in rows]
 
 
+def simulator_identity(runner_home, state, row=None):
+    require(state.get('creating') is False and state['runnerHome'] == str(runner_home)
+            and state['runtime'] == RUNTIME and state['deviceType'] == DEVICE_TYPE
+            and re.fullmatch(r'[0-9A-F]{8}(?:-[0-9A-F]{4}){3}-[0-9A-F]{12}', state['udid']),
+            'Invalid created simulator binding')
+    root = runner_home / 'Library/Developer/CoreSimulator/Devices' / state['udid']
+    data, info = root / 'data', root.lstat()
+    require(stat.S_ISDIR(info.st_mode) and info.st_uid == os.getuid() and root.resolve() == root
+            and data.is_dir() and data.resolve() == data, 'Foreign/missing/noncanonical simulator root')
+    identity = {'udid': state['udid'], 'name': state['name'], 'runtime': RUNTIME, 'deviceType': DEVICE_TYPE,
+                'runnerHome': str(runner_home), 'dataPath': str(data), 'root': str(root),
+                'rootDevice': info.st_dev, 'rootInode': info.st_ino, 'rootUid': info.st_uid}
+    if row is not None:
+        require((row['udid'], row['name'], row['runtime'], row['deviceTypeIdentifier'], row['dataPath'])
+                == (identity['udid'], identity['name'], RUNTIME, DEVICE_TYPE, identity['dataPath']),
+                'Owned simulator inventory identity/path mismatch')
+    return identity
+
+
 def create_simulator(owner, commands, runner_home, state, work_end):
     runtimes = json.loads(simctl(commands, runner_home, ['list', 'runtimes', '--json'], 'runtimes', end=work_end))['runtimes']
     matches = [row for row in runtimes if row['identifier'] == RUNTIME and row.get('isAvailable') is True]
@@ -229,15 +249,22 @@ def create_simulator(owner, commands, runner_home, state, work_end):
     require(re.fullmatch(r'[0-9A-F]{8}(?:-[0-9A-F]{4}){3}-[0-9A-F]{12}', state['udid']), 'Invalid created UUID')
     state['creating'] = False
     owner.save(commands.run / 'simulator.json', state)
+    matches = [row for row in devices(commands, runner_home, work_end)
+               if row['udid'] == state['udid'] or row['name'] == state['name']]
+    require(len(matches) == 1 and matches[0]['state'] == 'Shutdown', 'Created simulator is not uniquely shut down')
+    state['createdOwnership'] = simulator_identity(runner_home, state, matches[0])
+    state['dataPath'] = state['createdOwnership']['dataPath']
+    state['bootIntended'] = False
+    owner.save(commands.run / 'simulator.json', state)
     boot_end = min(work_end, time.monotonic() + 180)
+    require(not owner.CANCELLED and time.monotonic() < boot_end, 'Owned simulator boot cancelled/expired')
+    state['bootIntended'] = True  # Persist intent before a launch that may fail after a side effect.
+    owner.save(commands.run / 'simulator.json', state)
     simctl(commands, runner_home, ['boot', state['udid']], 'boot-owned-simulator', end=boot_end)
     simctl(commands, runner_home, ['bootstatus', state['udid'], '-b'], 'owned-bootstatus', seconds=180, end=boot_end)
-    matches = [row for row in devices(commands, runner_home, work_end) if row['udid'] == state['udid']]
-    expected = runner_home / 'Library/Developer/CoreSimulator/Devices' / state['udid'] / 'data'
-    require(len(matches) == 1 and matches[0]['name'] == state['name'] and matches[0]['runtime'] == RUNTIME
-            and matches[0]['state'] == 'Booted' and Path(matches[0]['dataPath']).resolve() == expected.resolve()
-            and expected.is_dir(), 'Owned simulator/home/data root mismatch')
-    state['dataPath'] = str(expected.resolve())
+    require(simulator_identity(runner_home, state) == state['createdOwnership'], 'Owned simulator root changed during boot')
+    require(not owner.CANCELLED and time.monotonic() < boot_end, 'Owned simulator readiness cancelled/expired')
+    state['bootReadinessEvidence'] = 'normal-same-uuid-bootstatus-and-same-owned-root'
     owner.save(commands.run / 'simulator.json', state)
     owner.save(commands.reports / 'simulator.json', state)
 
@@ -246,19 +273,29 @@ def dispose_simulator(owner, commands, runner_home, state):
     if not state.get('creating') and not state.get('udid'):
         return True
     udid = state.get('udid')
+    bound = state.get('createdOwnership')
+    if bound is not None:
+        require(simulator_identity(runner_home, state) == bound, 'Owned simulator root changed before cleanup')
+        require(type(state.get('bootIntended')) is bool, 'Missing owned simulator boot intent')
+        if state['bootIntended']:
+            simctl(commands, runner_home, ['shutdown', udid], 'shutdown-owned-simulator', cleaning=True)
     matches = [row for row in devices(commands, runner_home, cleaning=True)
                if row['name'] == state['name'] or row['udid'] == udid]
     require(len(matches) <= 1 and all(row['name'] == state['name'] and row['runtime'] == RUNTIME
             and (not udid or row['udid'] == udid) for row in matches), 'Ambiguous owned simulator; retain scratch')
+    if bound is not None:
+        require(len(matches) == 1 and matches[0]['state'] == 'Shutdown', 'Bound simulator shutdown unproven')
+        require(simulator_identity(runner_home, state, matches[0]) == bound, 'Owned simulator changed during cleanup')
     if matches:
         device = matches[0]
         udid = state['udid'] = device['udid']
         require(re.fullmatch(r'[0-9A-F]{8}(?:-[0-9A-F]{4}){3}-[0-9A-F]{12}', udid), 'Invalid disposal UUID')
         owner.save(commands.run / 'simulator.json', state)
-        if device['state'] != 'Shutdown':
-            simctl(commands, runner_home, ['shutdown', udid], 'shutdown-owned-simulator', cleaning=True)
-        current = [row for row in devices(commands, runner_home, cleaning=True) if row['udid'] == udid]
-        require(len(current) == 1 and current[0]['state'] == 'Shutdown', 'Owned shutdown unproven')
+        if bound is None:  # Uncertain create still requires inventory-based ownership recovery first.
+            if device['state'] != 'Shutdown':
+                simctl(commands, runner_home, ['shutdown', udid], 'shutdown-owned-simulator', cleaning=True)
+            current = [row for row in devices(commands, runner_home, cleaning=True) if row['udid'] == udid]
+            require(len(current) == 1 and current[0]['state'] == 'Shutdown', 'Owned shutdown unproven')
         simctl(commands, runner_home, ['delete', udid], 'delete-owned-simulator', cleaning=True)
     require(not any(row['name'] == state['name'] or row['udid'] == udid
                     for row in devices(commands, runner_home, cleaning=True)), 'Owned simulator remains')
