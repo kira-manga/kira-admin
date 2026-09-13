@@ -1,0 +1,7 @@
+src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt
+src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt
+src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt
+src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcPoolTransfer.kt
+src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt
+src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbeProcess.kt
+src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseRecipe.kt

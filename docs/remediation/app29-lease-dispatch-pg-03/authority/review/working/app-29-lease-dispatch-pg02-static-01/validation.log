@@ -1,0 +1,31 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.5/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Shared read-only dependency cache is an incubating feature.
+> Task :loadKtlintReporters
+> Task :runKtlintCheckOverKotlinScripts
+> Task :ktlintKotlinScriptCheck
+> Task :runKtlintCheckOverMainSourceSet
+> Task :ktlintMainSourceSetCheck
+> Task :runKtlintCheckOverTestSourceSet
+
+> Task :ktlintTestSourceSetCheck FAILED
+/root/projects/Kira/kira-backend/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt:1405:83 Missing { ... } (standard:multiline-if-else)
+
+> Task :detekt
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':ktlintTestSourceSetCheck'.
+> A failure occurred while executing org.jlleitschuh.gradle.ktlint.worker.ConsoleReportWorkAction
+   > KtLint found code style violations. Please see the following reports:
+     - /root/projects/Kira/.kira-validation/backend-linux/backend-build/reports/ktlint/ktlintTestSourceSetCheck/ktlintTestSourceSetCheck.txt
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 45s
+8 actionable tasks: 8 executed

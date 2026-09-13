@@ -1,0 +1,7 @@
+[
+  {
+    "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt",
+    "before_sha256": "3c0010170b07b1edef3f87894dac6833f2ae2f02e841609cd5e3e15d9ce489d5",
+    "after_sha256": "f8583ac5daef026d2e691e2c42d14be93573dfbe442bee8c5f5d3188482eca1a"
+  }
+]

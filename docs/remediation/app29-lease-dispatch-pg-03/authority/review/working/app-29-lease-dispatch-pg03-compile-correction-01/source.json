@@ -1,0 +1,13 @@
+{
+  "at_utc": "2026-09-13T19:28:49.077749+00:00",
+  "author": "primary",
+  "base": "c67ddcd30fbae2438c7b2f803f720530b598e428",
+  "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt",
+  "old_sha256": "3c0010170b07b1edef3f87894dac6833f2ae2f02e841609cd5e3e15d9ce489d5",
+  "sha256": "f8583ac5daef026d2e691e2c42d14be93573dfbe442bee8c5f5d3188482eca1a",
+  "diff_sha256": "3462e9c7d2e94bb129be635d5d1513066bf28336f84a33c7ee9e20f537a5064d",
+  "independent_failure_review": "0b70679ea085c844bdfaaf4be981fbccd6b52646fa5c80228e5ec86180f810e4",
+  "delta": "one deepest inline assertThrows call replaced with direct Java overload, lambda action unchanged;no test name/selector/budget/product edits",
+  "state": "SOURCE_CORRECTION_NOT_COMPILED_OR_ACCEPTED",
+  "prior_result": "PG02 compileTest failure0tests;263-byte generated basename;remote errno/ACL not observed;cleanup incomplete"
+}

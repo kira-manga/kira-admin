@@ -1,0 +1,17 @@
+f5f4289549c7d393379b0da4298c3b549edb879d42374d837a03d6b9d0c00e6e  ./AUTHOR_REPORT.md
+d8f8ba511272279f05c785beac89238836cb96f1bb374bcff17a73bbabb0242b  ./after/pgjdbc-mockito-test/src/test/java/org/postgresql/jdbc/KiraOwnedJdbcCutFaultTest.java
+486aba8d77f3a38b9b0b16540bf7f62010c438803bf4cc426e05bbb5c3528114  ./after/pgjdbc/src/main/java/org/postgresql/jdbc/PgConnection.java
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./backend-after-status.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./backend-before-status.txt
+e4ca813aa8e590d10492cc273109878e5366e0f7b50f7711a5904610528a74f0  ./backend-head.txt
+90088bbce330d07bb6fef218e235273aad4eebc993c980e6991ba2f809e2b27e  ./before-sha256.txt
+da6acff1d5aa2b0d8d0193c3e8043af2cb04a5d5ec12de2ce46213d1e86c5793  ./before/pgjdbc-mockito-test/src/test/java/org/postgresql/jdbc/KiraOwnedJdbcCutFaultTest.java
+05b4b69fd8f607b6a9f5310df3d136f8fbc82b231c5d1574d016886eb1440da5  ./before/pgjdbc/src/main/java/org/postgresql/jdbc/PgConnection.java
+cbfa34f5375388025d5038d357f906c016493ccea9452020b0cc7b3f446c0a60  ./protected-before-sha256.txt
+9094b34d6d2dfc09848313137d678a2455e79a1673c153e3effda24c5d3b6cdc  ./protected-readback.txt
+5be5cd1adb568dc796a01f7756b070cc7fead7c64d99ee925c12530ab8e772ae  ./source-delta.patch
+8c0d397e79fc948b157c313de9344dd8560db9300b9851e3f46cc59a079df57f  ./source-sha256.txt
+b36e5483dd1b0a7a27d4afa0968efb988a3d90b557702addef161b80f34a442d  ./test-identities.txt
+2ce5f599b6755aad5a141e787ea758f74fe4872c1d64c5b46564694a20efc0b9  ./upstream-after-sha256.txt
+b7b16a84673eadb07b85a8e8008dc099b51e9fa90e940a1e66984e21b66024c3  ./upstream-before-sha256.txt
+63b300890e316274537d06b0db5b12e6d857301437c69cd95b7f616c68f1b06a  ./upstream-preservation.diff

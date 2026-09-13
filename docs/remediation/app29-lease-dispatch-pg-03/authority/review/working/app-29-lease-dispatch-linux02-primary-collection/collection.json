@@ -1,0 +1,31 @@
+{
+  "at_utc": "2026-09-13T12:36:50.387300+00:00",
+  "status": "ACCEPTED_COMPILE_AND_STATICS_ONLY",
+  "result_sha256": "ac5607599b037b9af592ab52ddfc3376b19392c1ec35b393dbc9274617832c1e",
+  "manifest_sha256": "9888bdff82450069df09c003d48da5413c5ebe0dda6a4cfe45687f4898a1c8e7",
+  "source_count": 481,
+  "source_match": true,
+  "historical348_preserved": 348,
+  "report_hashes_match": true,
+  "normal_actions": {
+    "compileKotlin": true,
+    "compileTestKotlin": true,
+    "testClasses": true,
+    "ktlintKotlinScriptCheck": true,
+    "ktlintMainSourceSetCheck": true,
+    "ktlintTestSourceSetCheck": true,
+    "ktlintCheck": true,
+    "detekt": true
+  },
+  "static_findings_zero": true,
+  "test_evidence": {
+    "status": "NOT_REQUESTED",
+    "total": 0,
+    "identities": [],
+    "limitation": "No test execution requested"
+  },
+  "owned_cleanup_receipts_pass": true,
+  "declared_outputs_passively_absent": true,
+  "free_bytes_after": 12278816768,
+  "limitations": "No tests requested. W03 remains incomplete, PostgreSQL17+1 unexecuted; old PG01 remains20PASS/1FAIL. This releases prior temporary Backend integration-ref hold."
+}

@@ -1,0 +1,23 @@
+{
+  "schema": "app29-lease-dispatch-clean-checkpoint-v1",
+  "source_accepted": true,
+  "backend_sha": "f2e58eac0b139dca3a042c724d69c66a3d65278e",
+  "source_bundle": {
+    "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+    "private_parent_sha": "c67ddcd30fbae2438c7b2f803f720530b598e428",
+    "ref": "refs/heads/remediation/app-29-backend-complaints",
+    "source_path": "review/working/app-29-lease-dispatch-pg03-transport-source-01/backend.bundle",
+    "path": "docs/remediation/app29-lease-dispatch-pg-03/inputs/backend.bundle",
+    "sha256": "b606cb5ed40814dc23c5c8c61a564de07d917d4a05b6fbca4c4b73841bea63fe",
+    "bytes": 287442
+  },
+  "manifest_path": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-03/manifest.json",
+  "manifest_sha256": "0df6165f928d7a752d7a253d18078b099ca81eae9c7d5bc466bc828a74763f1f",
+  "local_v3_preflight": {
+    "manifest_sha256": "0df6165f928d7a752d7a253d18078b099ca81eae9c7d5bc466bc828a74763f1f",
+    "tool_sha256": "e8c6a48fc26c634fbccbb081651631fb5c767099b1143ab4dbe8439f6060d0fe",
+    "receipt_path": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-03/hosted-local-preflight.json",
+    "receipt_sha256": "7a03859975aeb73898a49bb138bd1312b79aac6bc9952a9f495642a2203a85e7"
+  },
+  "acceptance_scope": "Exact reviewed one-call PG03 source transport and genuine local-v3 preflight only; one failed2 ordinary PostgreSQL execution proposed. PG02/PG18 retained as failures; not runtime/fix/W03/integration acceptance."
+}

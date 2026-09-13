@@ -1,0 +1,25 @@
+{
+  "created_at_utc": "2026-09-13T20:44:02.872671+00:00",
+  "purpose": "Named-branch transport bundle only; not validated source or package acceptance",
+  "source_head": "f2e58eac0b139dca3a042c724d69c66a3d65278e",
+  "source_ref": "refs/heads/remediation/app-29-backend-complaints",
+  "source_tree": "e192c9430c89e4549f1840bf7e333fed75bc290a",
+  "public_prerequisite": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+  "bundle": "review/working/app-29-lease-dispatch-pg03-transport-source-01/backend.bundle",
+  "bundle_sha256": "b606cb5ed40814dc23c5c8c61a564de07d917d4a05b6fbca4c4b73841bea63fe",
+  "bundle_bytes": 287442,
+  "list_heads": "f2e58eac0b139dca3a042c724d69c66a3d65278e refs/heads/remediation/app-29-backend-complaints",
+  "verify_exit": 0,
+  "creation_argv": [
+    "git",
+    "-C",
+    "/root/projects/Kira/kira-backend",
+    "bundle",
+    "create",
+    "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-transport-source-01/backend.bundle",
+    "3d839130c807f6a0a9b1c896c1c6cca4b41c4538..refs/heads/remediation/app-29-backend-complaints"
+  ],
+  "source_manifest": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg03-source-01/manifest.json",
+  "source_manifest_sha256": "9a13d2299b7c58e23a6aaf67e1140c0a5d0c906ec7f574bcac8f3c877f0ff786",
+  "prior_HEAD_advertised_bundle_preserved": "review/working/app-29-lease-dispatch-pg03-source-checkpoint-01/backend.bundle"
+}

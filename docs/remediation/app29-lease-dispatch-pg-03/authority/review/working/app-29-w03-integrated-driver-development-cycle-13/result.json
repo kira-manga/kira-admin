@@ -1,0 +1,1382 @@
+{
+  "started_at": "2026-09-09T11:37:53.106028+00:00",
+  "source_manifest": "review/working/app-29-w03-integrated-driver-development-13/manifest.json",
+  "source_manifest_sha256": "6ec3edc2bc4500b40bc29967f90caf5f8c918f60e0d09f8f2e0643e78a73362a",
+  "scope": "DEVELOPMENT ONLY: integrated lifecycle corrections; full D1/W03/release acceptance remains incomplete",
+  "runtime_authority": "UNKNOWN",
+  "W03": "INCOMPLETE",
+  "platform": "Linux-6.1.72-x86_64-with-glibc2.39",
+  "java": {
+    "java_home": "/usr/lib/jvm/java-21-openjdk-amd64",
+    "java_version": "openjdk version \"21.0.12\" 2026-07-21\nOpenJDK Runtime Environment (build 21.0.12+8-1-24.04-Ubuntu)\nOpenJDK 64-Bit Server VM (build 21.0.12+8-1-24.04-Ubuntu, mixed mode, sharing)\n",
+    "java_binary_sha256": "377196a32c5e4442b604bbf36add1c49cfe8680cd27edd693b60872e58895e9e",
+    "java_modules_sha256": "9a8e9e8a7aab3a5e010e56c65f13449c17b08e5eede93cd7bb796b7df31c572b",
+    "read_only_dependency_cache": "/root/.gradle/caches"
+  },
+  "dependency_inputs": {
+    "manifest_sha256": "c67fcc5fe64a9a795373c4683c7c1edd6407146e3cd07609fa7018a8a98db79a",
+    "files_verified": 18,
+    "artifact_hashes": {
+      "me/manga/kira/source/source-contract/0.1.0/source-contract-0.1.0-kotlin-tooling-metadata.json": "c62d1b05a013e5f1b0e0b72f56b17bee28a4955b1111ab5a52e5e3e57e273817",
+      "me/manga/kira/source/source-contract/0.1.0/source-contract-0.1.0-sources.jar": "ff2332dbd8addbbc69b2c8c3e9c7e6d5e7d1f94e676d532be593a92cd9fafa5b",
+      "me/manga/kira/source/source-contract/0.1.0/source-contract-0.1.0.jar": "94d4c352233c4677b8e8ff9c691f63e89bcb272c690df7ab5af3904329154f2d",
+      "me/manga/kira/source/source-contract/0.1.0/source-contract-0.1.0.module": "7ef1411f69e4e10b5e3f824c6ca7f4fce075215d1a746c0c60c1c69df07090be",
+      "me/manga/kira/source/source-contract/0.1.0/source-contract-0.1.0.pom": "846fdfb2d251e513128a6bad62d70f21ac728d28eec699b1ec7bba6ca9604b70",
+      "me/manga/kira/source/source-contract-jvm/0.1.0/source-contract-jvm-0.1.0-sources.jar": "ff2332dbd8addbbc69b2c8c3e9c7e6d5e7d1f94e676d532be593a92cd9fafa5b",
+      "me/manga/kira/source/source-contract-jvm/0.1.0/source-contract-jvm-0.1.0.jar": "9eeb54df5d09f14ebe612b1255721fa536c2517502b05cbd815e8b98370e0b7d",
+      "me/manga/kira/source/source-contract-jvm/0.1.0/source-contract-jvm-0.1.0.module": "d9a8995bc42cd2aab74c7909baf0570ec948afa58365d96e785269a3c963c749",
+      "me/manga/kira/source/source-contract-jvm/0.1.0/source-contract-jvm-0.1.0.pom": "00ce4dabc53c33736b7527fd541fe7cdc1d80243bbf67244d28a114a84c58a1c",
+      "me/manga/kira/source/source-engine/0.1.0/source-engine-0.1.0-kotlin-tooling-metadata.json": "c62d1b05a013e5f1b0e0b72f56b17bee28a4955b1111ab5a52e5e3e57e273817",
+      "me/manga/kira/source/source-engine/0.1.0/source-engine-0.1.0-sources.jar": "84b4b25e9dd952a99c32618bd217571177feabe80801a6a5466e2afbe71e448d",
+      "me/manga/kira/source/source-engine/0.1.0/source-engine-0.1.0.jar": "3a2fd051891c305bdc01537fec623070b83426c39cfd8ffac872eb8026ca4a03",
+      "me/manga/kira/source/source-engine/0.1.0/source-engine-0.1.0.module": "4a11051300075778a2a6a95275c33a826886a50f111d0a6dbc046e5ab118e8ae",
+      "me/manga/kira/source/source-engine/0.1.0/source-engine-0.1.0.pom": "d8daeded7727ee0e349e9edf4a1f206e0a722f499610840e247d40eacda59e9d",
+      "me/manga/kira/source/source-engine-jvm/0.1.0/source-engine-jvm-0.1.0-sources.jar": "84b4b25e9dd952a99c32618bd217571177feabe80801a6a5466e2afbe71e448d",
+      "me/manga/kira/source/source-engine-jvm/0.1.0/source-engine-jvm-0.1.0.jar": "e2a20c63ab115dabfc75fc6a0ea33a36fd6c272c6ee22ed17ef2aa9cab840a2d",
+      "me/manga/kira/source/source-engine-jvm/0.1.0/source-engine-jvm-0.1.0.module": "322aebab1cd9bcd6dbae3d83dd3e6635f9e65cf6a23b428cad44e62b4e4036c7",
+      "me/manga/kira/source/source-engine-jvm/0.1.0/source-engine-jvm-0.1.0.pom": "97c9eba44ff26ae6a72441c6748a590bd9f3c85fc6ac1d6b4fbe44f3fc7c4dd9"
+    }
+  },
+  "dependency_mode": "offline",
+  "dependency_verification_limitation": "No project verification-metadata.xml: strict flag is NOT transitive artifact-byte proof; retained local inputs, dependency locks and wrapper checksum are narrower pins",
+  "gradle_user_home": "/root/projects/Kira/.kira-validation/backend-linux/gradle-home",
+  "commands": [
+    {
+      "name": "validation",
+      "command": [
+        "./gradlew",
+        "--no-daemon",
+        "--no-parallel",
+        "--max-workers=1",
+        "--no-build-cache",
+        "--no-configuration-cache",
+        "--dependency-verification=strict",
+        "--project-cache-dir",
+        "/root/projects/Kira/.kira-validation/backend-linux/backend-project-cache",
+        "--console=plain",
+        "-Dorg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=512m",
+        "-Dorg.gradle.vfs.watch=false",
+        "-PkiraUseMavenLocal=false",
+        "-Pkotlin.compiler.execution.strategy=in-process",
+        "-Pkotlin.project.persistent.dir=/root/projects/Kira/.kira-validation/backend-linux/backend-kotlin-cache",
+        "--init-script",
+        "/root/projects/Kira/review/working/app-29-w01-local-dependencies.init.gradle",
+        "--offline",
+        "test",
+        "--tests",
+        "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "--tests",
+        "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "--tests",
+        "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "ktlintCheck",
+        "detekt",
+        "--continue"
+      ],
+      "started_at": "2026-09-09T11:37:54.070307+00:00",
+      "joined": true,
+      "pid": 24497,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 24497,
+          "ppid": 24396,
+          "pgid": 24497,
+          "session": 24497,
+          "start_ticks": 22289033,
+          "state": "S",
+          "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+        }
+      ],
+      "exit_code": 1,
+      "finished_at": "2026-09-09T11:42:43.954194+00:00"
+    },
+    {
+      "name": "stop-after-validation",
+      "command": [
+        "./gradlew",
+        "--stop"
+      ],
+      "started_at": "2026-09-09T11:42:43.955202+00:00",
+      "joined": true,
+      "pid": 4581,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 4581,
+          "ppid": 24396,
+          "pgid": 4581,
+          "session": 4581,
+          "start_ticks": 22318021,
+          "state": "S",
+          "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+        }
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-09-09T11:42:44.685756+00:00"
+    },
+    {
+      "name": "inspect-retained-bytecode",
+      "command": [
+        "/usr/lib/jvm/java-21-openjdk-amd64/bin/javap",
+        "-c",
+        "-p",
+        "-s",
+        "/root/projects/Kira/review/working/app-29-w03-integrated-driver-development-cycle-13/bytecode/PersistenceJdbcLifecycleOwner.class",
+        "/root/projects/Kira/review/working/app-29-w03-integrated-driver-development-cycle-13/bytecode/PersistenceJdbcDriverRoot.class",
+        "/root/projects/Kira/review/working/app-29-w03-integrated-driver-development-cycle-13/bytecode/PersistenceJdbcParticipant.class",
+        "/root/projects/Kira/review/working/app-29-w03-integrated-driver-development-cycle-13/bytecode/PersistenceTerminalWork.class",
+        "/root/projects/Kira/review/working/app-29-w03-integrated-driver-development-cycle-13/bytecode/PersistenceTerminalRunner.class",
+        "/root/projects/Kira/review/working/app-29-w03-integrated-driver-development-cycle-13/bytecode/PersistencePhysicalCompletion.class",
+        "/root/projects/Kira/review/working/app-29-w03-integrated-driver-development-cycle-13/bytecode/PersistenceDriverTimer.class",
+        "/root/projects/Kira/review/working/app-29-w03-integrated-driver-development-cycle-13/bytecode/PersistencePgTimerAccess$Boundary.class",
+        "/root/projects/Kira/review/working/app-29-w03-integrated-driver-development-cycle-13/bytecode/PersistencePgTimerAccess$BoundaryCell.class",
+        "/root/projects/Kira/review/working/app-29-w03-integrated-driver-development-cycle-13/bytecode/PersistencePgTimerAccess$BoundaryTask.class",
+        "/root/projects/Kira/review/working/app-29-w03-integrated-driver-development-cycle-13/test-bytecode/PgRequireErrorHandlerTest.class"
+      ],
+      "started_at": "2026-09-09T11:42:44.825225+00:00",
+      "joined": true,
+      "pid": 4620,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 4620,
+          "ppid": 24396,
+          "pgid": 4620,
+          "session": 4620,
+          "start_ticks": 22318108,
+          "state": "S",
+          "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+        }
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-09-09T11:42:45.305437+00:00"
+    },
+    {
+      "name": "stop-after-clean",
+      "command": [
+        "./gradlew",
+        "--stop"
+      ],
+      "started_at": "2026-09-09T11:42:45.451348+00:00",
+      "joined": true,
+      "pid": 4678,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 4678,
+          "ppid": 24396,
+          "pgid": 4678,
+          "session": 4678,
+          "start_ticks": 22318171,
+          "state": "S",
+          "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+        }
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-09-09T11:42:46.235415+00:00"
+    },
+    {
+      "name": "git-diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "started_at": "2026-09-09T11:42:47.233285+00:00",
+      "joined": true,
+      "pid": 4776,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 4776,
+          "ppid": 24396,
+          "pgid": 4776,
+          "session": 4776,
+          "start_ticks": 22318349,
+          "state": "R",
+          "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+        }
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-09-09T11:42:47.250312+00:00"
+    },
+    {
+      "name": "jps-after",
+      "command": [
+        "/usr/lib/jvm/java-21-openjdk-amd64/bin/jps",
+        "-l"
+      ],
+      "started_at": "2026-09-09T11:42:47.251239+00:00",
+      "joined": true,
+      "pid": 4777,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 4777,
+          "ppid": 24396,
+          "pgid": 4777,
+          "session": 4777,
+          "start_ticks": 22318351,
+          "state": "S",
+          "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+        }
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-09-09T11:42:47.432058+00:00"
+    }
+  ],
+  "failures": [],
+  "retained_reports": [
+    {
+      "path": "reports/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest.xml",
+      "sha256": "cced5386fcfbf440334d7b4dfabcef13d0c9b26ebc8635639abbd427c2e82152"
+    },
+    {
+      "path": "reports/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest.xml",
+      "sha256": "9e98cbd03bd25047a810b680ad94f58bc00ba3f63c5aa20eb1653bc1cff2375c"
+    },
+    {
+      "path": "reports/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest.xml",
+      "sha256": "12ddd83e640f133066aead474cfecd46bee97d21212fc6c6e20671c16aee3550"
+    },
+    {
+      "path": "reports/reports/detekt/detekt.sarif",
+      "sha256": "f6be64309f09ecfab46a27b8b24a523875f905070010b85f014407011ce63201"
+    },
+    {
+      "path": "reports/reports/detekt/detekt.txt",
+      "sha256": "ad8202fd26a495e3fcb252f1260c11236e4d27a304681825a353c8d8ca2bd457"
+    },
+    {
+      "path": "reports/reports/detekt/detekt.xml",
+      "sha256": "9c133a455f981e53f88c1a5002f2b49af4b965965ac85961c325a34313888ef9"
+    },
+    {
+      "path": "reports/reports/ktlint/ktlintKotlinScriptCheck/ktlintKotlinScriptCheck.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reports/reports/ktlint/ktlintMainSourceSetCheck/ktlintMainSourceSetCheck.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reports/reports/ktlint/ktlintTestSourceSetCheck/ktlintTestSourceSetCheck.txt",
+      "sha256": "d79dd2f98a31ec22e4f1bcb18ba12270269e5190578743b685e4178acd0ff74e"
+    }
+  ],
+  "retained_bytecode": [
+    {
+      "path": "bytecode/PersistenceJdbcLifecycleOwner.class",
+      "sha256": "9c00b6f05d345d00180e579d87c9c042137552a9e01ec70998bca72eccec217b"
+    },
+    {
+      "path": "bytecode/PersistenceJdbcDriverRoot.class",
+      "sha256": "19026a76aaa5c869fcd389ed3e8767de781c0862a57ed239e26bf184742cb91c"
+    },
+    {
+      "path": "bytecode/PersistenceJdbcParticipant.class",
+      "sha256": "1f3091e85a188589b99468ab1f253589efc70e9cb8e911a7c21c9e3335565e28"
+    },
+    {
+      "path": "bytecode/PersistenceTerminalWork.class",
+      "sha256": "74a4595dfdcdb234eb2a68ed029c1e5319c0664eceb291f9a6b21a429046c8ee"
+    },
+    {
+      "path": "bytecode/PersistenceTerminalRunner.class",
+      "sha256": "ae2d1bb3c0310d4623951b554ae030ff55e3c494d6a2ff6fe051e46bc3f48ba2"
+    },
+    {
+      "path": "bytecode/PersistencePhysicalCompletion.class",
+      "sha256": "4b153aec44434f5695fc6d7fa422f381830ba7e9cef24ec1fc296eed3c811984"
+    },
+    {
+      "path": "bytecode/PersistenceDriverTimer.class",
+      "sha256": "e1e97121fbbdfcbf1bbabbefc7ee2f37542d2d92e57fa036e9a78e207ed67af5"
+    },
+    {
+      "path": "bytecode/PersistencePgTimerAccess$Boundary.class",
+      "sha256": "614c598cca5d3a5dfae710d7d35aa38bf34f2b64204809381cba87c1969b26bc"
+    },
+    {
+      "path": "bytecode/PersistencePgTimerAccess$BoundaryCell.class",
+      "sha256": "375cc16bdcc40785ca24e8d0bf0d80a82b68bc1056eb7d6a17bb098169ad5787"
+    },
+    {
+      "path": "bytecode/PersistencePgTimerAccess$BoundaryTask.class",
+      "sha256": "fd2c3a2a6432d051a1df09ff61309cb3473a27922280d9dc316ec5e4d7e2f1b9"
+    }
+  ],
+  "retained_test_bytecode": [
+    {
+      "path": "test-bytecode/PgRequireErrorHandlerTest.class",
+      "sha256": "9de6bbba1172219a1b84a2acfaae78a3edb38bb72bdd69cb284549a5def5bb7b"
+    }
+  ],
+  "minimum_free_bytes": 8589934592,
+  "free_bytes_before": 20668358656,
+  "scoped_cleanup": [
+    ".kira-validation/backend-linux/backend-build"
+  ],
+  "owned_descendant_barriers": [
+    {
+      "stage": "before-capture",
+      "returned_normally": true,
+      "receipt": {
+        "absent": true,
+        "forced": false,
+        "barrier_generation": 1,
+        "signals": [],
+        "observed": [
+          {
+            "pid": 24497,
+            "ppid": 24396,
+            "pgid": 24497,
+            "session": 24497,
+            "start_ticks": 22289033,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          },
+          {
+            "pid": 4581,
+            "ppid": 24396,
+            "pgid": 4581,
+            "session": 4581,
+            "start_ticks": 22318021,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          }
+        ],
+        "reaped": [],
+        "errors": []
+      }
+    },
+    {
+      "stage": "before-output-deletion",
+      "returned_normally": true,
+      "receipt": {
+        "absent": true,
+        "forced": false,
+        "barrier_generation": 2,
+        "signals": [],
+        "observed": [
+          {
+            "pid": 24497,
+            "ppid": 24396,
+            "pgid": 24497,
+            "session": 24497,
+            "start_ticks": 22289033,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          },
+          {
+            "pid": 4581,
+            "ppid": 24396,
+            "pgid": 4581,
+            "session": 4581,
+            "start_ticks": 22318021,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          },
+          {
+            "pid": 4620,
+            "ppid": 24396,
+            "pgid": 4620,
+            "session": 4620,
+            "start_ticks": 22318108,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          }
+        ],
+        "reaped": [],
+        "errors": []
+      }
+    },
+    {
+      "stage": "after-final-stop",
+      "returned_normally": true,
+      "receipt": {
+        "absent": true,
+        "forced": false,
+        "barrier_generation": 3,
+        "signals": [],
+        "observed": [
+          {
+            "pid": 24497,
+            "ppid": 24396,
+            "pgid": 24497,
+            "session": 24497,
+            "start_ticks": 22289033,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          },
+          {
+            "pid": 4581,
+            "ppid": 24396,
+            "pgid": 4581,
+            "session": 4581,
+            "start_ticks": 22318021,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          },
+          {
+            "pid": 4620,
+            "ppid": 24396,
+            "pgid": 4620,
+            "session": 4620,
+            "start_ticks": 22318108,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          },
+          {
+            "pid": 4678,
+            "ppid": 24396,
+            "pgid": 4678,
+            "session": 4678,
+            "start_ticks": 22318171,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          }
+        ],
+        "reaped": [],
+        "errors": []
+      }
+    },
+    {
+      "stage": "after-postflight-commands",
+      "returned_normally": true,
+      "receipt": {
+        "absent": true,
+        "forced": false,
+        "barrier_generation": 4,
+        "signals": [],
+        "observed": [
+          {
+            "pid": 24497,
+            "ppid": 24396,
+            "pgid": 24497,
+            "session": 24497,
+            "start_ticks": 22289033,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          },
+          {
+            "pid": 4581,
+            "ppid": 24396,
+            "pgid": 4581,
+            "session": 4581,
+            "start_ticks": 22318021,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          },
+          {
+            "pid": 4620,
+            "ppid": 24396,
+            "pgid": 4620,
+            "session": 4620,
+            "start_ticks": 22318108,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          },
+          {
+            "pid": 4678,
+            "ppid": 24396,
+            "pgid": 4678,
+            "session": 4678,
+            "start_ticks": 22318171,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          },
+          {
+            "pid": 4776,
+            "ppid": 24396,
+            "pgid": 4776,
+            "session": 4776,
+            "start_ticks": 22318349,
+            "state": "R",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          },
+          {
+            "pid": 4777,
+            "ppid": 24396,
+            "pgid": 4777,
+            "session": 4777,
+            "start_ticks": 22318351,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          }
+        ],
+        "reaped": [],
+        "errors": []
+      }
+    },
+    {
+      "stage": "unconditional-final-barrier",
+      "returned_normally": true,
+      "receipt": {
+        "absent": true,
+        "forced": false,
+        "barrier_generation": 5,
+        "signals": [],
+        "observed": [
+          {
+            "pid": 24497,
+            "ppid": 24396,
+            "pgid": 24497,
+            "session": 24497,
+            "start_ticks": 22289033,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          },
+          {
+            "pid": 4581,
+            "ppid": 24396,
+            "pgid": 4581,
+            "session": 4581,
+            "start_ticks": 22318021,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          },
+          {
+            "pid": 4620,
+            "ppid": 24396,
+            "pgid": 4620,
+            "session": 4620,
+            "start_ticks": 22318108,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          },
+          {
+            "pid": 4678,
+            "ppid": 24396,
+            "pgid": 4678,
+            "session": 4678,
+            "start_ticks": 22318171,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          },
+          {
+            "pid": 4776,
+            "ppid": 24396,
+            "pgid": 4776,
+            "session": 4776,
+            "start_ticks": 22318349,
+            "state": "R",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          },
+          {
+            "pid": 4777,
+            "ppid": 24396,
+            "pgid": 4777,
+            "session": 4777,
+            "start_ticks": 22318351,
+            "state": "S",
+            "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+          }
+        ],
+        "reaped": [],
+        "errors": []
+      }
+    }
+  ],
+  "child_scope_restored": true,
+  "capture_complete": true,
+  "outputs_absent": true,
+  "frozen_inputs_preserved": true,
+  "dependency_inputs_preserved": true,
+  "private_daemon_pids_after_stop": [],
+  "private_daemon_pids_after_clean": [],
+  "owned_command_pids_absent": true,
+  "owned_groups_final": {
+    "24497": [],
+    "4581": [],
+    "4620": [],
+    "4678": [],
+    "4776": [],
+    "4777": []
+  },
+  "test_evidence": {
+    "status": "FAIL",
+    "total": 145,
+    "failures": 2,
+    "errors": 0,
+    "skipped": 0,
+    "classes": [
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+      "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+      "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest"
+    ],
+    "selectors": {
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest": [
+        "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest"
+      ],
+      "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest": [
+        "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest"
+      ],
+      "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest": [
+        "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest"
+      ]
+    },
+    "identities": [
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "child assertion failure has a nonvacuous independent witness()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "[1] mode=MISSING_RECEIPT",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "[2] mode=WRONG_RECEIPT",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "[3] mode=DUPLICATE_RECEIPT",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "receipt rejection witness rejects alternate exit stage and transcript shapes()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [1] mode=INERT_SHUTDOWN",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [2] mode=ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [3] mode=DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [4] mode=BOTH_PARTICIPANTS",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [5] mode=SLOT_REUSE",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [6] mode=ORIGINAL_PROVIDER",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [7] mode=ORIGINAL_FAILURE_RETRY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [8] mode=TRACKED_FAILURE_RETRY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [9] mode=PARTIAL_PROTOCOL",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [10] mode=LATE_ORIGINAL",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [11] mode=TRACKED_TIMEOUT",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [12] mode=ORDINARY_DURING_TIMER_CAPTURE",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [13] mode=DELETION_UNSUPPORTED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [14] mode=HELD_TIMER_BOUNDARIES",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [15] mode=QUEUED_AND_CANCELED_BOUNDARIES",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [16] mode=VIRTUAL_CANDIDATE",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [17] mode=OBSERVER_REFUSALS",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [18] mode=OBSERVER_INTERRUPTED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [19] mode=OBSERVER_TIMER_MONITOR_TIMEOUT",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [20] mode=MODEL_OBSERVER_ACTOR_MONITOR_INTERRUPTED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [21] mode=MODEL_WEAK_ABORT_FAILURE",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [22] mode=MODEL_WEAK_CLOSE_FAILURE",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [23] mode=MODEL_STRONG_ABORT_FAILURE",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [24] mode=MODEL_STRONG_CLOSE_FAILURE",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [25] mode=MODEL_STRONG_ABORT_FATAL",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [26] mode=MODEL_STRONG_CLOSE_FATAL",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [27] mode=MODEL_STRONG_AUX_CLOSE_FAILURE",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [28] mode=BENIGN_PROVIDER_SUCCESS",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [29] mode=BENIGN_PROVIDER_NO_RAW",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [30] mode=MODEL_SCANNER_FAILURE_EMPTY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [31] mode=MODEL_CONTROLLER_FAILURE_EMPTY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [32] mode=MODEL_FAILED_BEFORE_CREATE",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [33] mode=MODEL_STRONG_FINAL_GATE",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [34] mode=MODEL_TIMER_THREAD_FAILURE",
+        "status": "failures"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [35] mode=MODEL_CLAIM_CONTENTION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [36] mode=MODEL_PRIMARY_PREPARE_CONTENTION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [37] mode=MODEL_PRIMARY_INSTALL_CONTENTION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [38] mode=MODEL_CLAIM_EXPIRED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [39] mode=MODEL_CLAIM_SEALED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [40] mode=MODEL_CLAIM_INTERRUPTED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [41] mode=MODEL_PRIMARY_PREPARE_EXPIRED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [42] mode=MODEL_PRIMARY_PREPARE_SEALED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [43] mode=MODEL_PRIMARY_PREPARE_INTERRUPTED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [44] mode=MODEL_PRIMARY_INSTALL_EXPIRED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [45] mode=MODEL_PRIMARY_INSTALL_SEALED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [46] mode=MODEL_PRIMARY_INSTALL_INTERRUPTED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [47] mode=DELETION_PROGRESS_DEADLINE",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [48] mode=ORDINARY_PROGRESS_CONTROL",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [49] mode=MODEL_FINAL_RECLAIM_CONTENTION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [50] mode=MODEL_FAILED_SCOPE_FINAL_SCAN",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [51] mode=MODEL_EMPTY_FINAL_SCAN",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [52] mode=TLS_VERIFY_FULL_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [53] mode=TLS_VERIFY_FULL_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [54] mode=TLS_WRONG_CA_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [55] mode=TLS_WRONG_CA_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [56] mode=TLS_WRONG_HOST_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [57] mode=TLS_WRONG_HOST_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [58] mode=TLS_PARTIAL_HANDSHAKE_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [59] mode=TLS_PARTIAL_HANDSHAKE_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [60] mode=NEGOTIATION_PREFER_E_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [61] mode=NEGOTIATION_PREFER_E_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [62] mode=NEGOTIATION_PREFER_N_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [63] mode=NEGOTIATION_PREFER_N_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [64] mode=NEGOTIATION_REQUIRE_E_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [65] mode=NEGOTIATION_REQUIRE_E_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [66] mode=NEGOTIATION_REQUIRE_N_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [67] mode=NEGOTIATION_REQUIRE_N_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [68] mode=NEGOTIATION_VERIFY_CA_E_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [69] mode=NEGOTIATION_VERIFY_CA_E_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [70] mode=NEGOTIATION_VERIFY_CA_N_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [71] mode=NEGOTIATION_VERIFY_CA_N_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [72] mode=NEGOTIATION_VERIFY_FULL_E_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [73] mode=NEGOTIATION_VERIFY_FULL_E_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [74] mode=NEGOTIATION_VERIFY_FULL_N_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [75] mode=NEGOTIATION_VERIFY_FULL_N_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [76] mode=NEGOTIATION_PREFER_RESPONSE_TIMEOUT_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [77] mode=NEGOTIATION_PREFER_RESPONSE_TIMEOUT_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [78] mode=NEGOTIATION_NEXT_HOST_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [79] mode=NEGOTIATION_NEXT_HOST_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [80] mode=NEGOTIATION_PREFER_TLS_28000_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [81] mode=NEGOTIATION_PREFER_TLS_28000_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [82] mode=NEGOTIATION_ALLOW_28000_TLS_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [83] mode=NEGOTIATION_ALLOW_28000_TLS_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [84] mode=NEGOTIATION_ALLOW_IO_TLS_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [85] mode=NEGOTIATION_ALLOW_IO_TLS_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [86] mode=HELD_CALLER_RESTORATION_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [87] mode=HELD_CALLER_RESTORATION_DELETION",
+        "status": "failures"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [88] mode=RECORD_BOUNDARY_REUSE_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [89] mode=RECORD_BOUNDARY_REUSE_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [90] mode=MODEL_RECORD_BOUNDARY_RECEIPTS_ORDINARY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [91] mode=MODEL_RECORD_BOUNDARY_RECEIPTS_DELETION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [92] mode=MODEL_RECORD_BOUNDARY_ADAPTER_AUTHORIZATION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [93] mode=TRACKED_WEAK_NO_RAW_REUSE",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [94] mode=MODEL_TRACKED_WEAK_NO_RAW_PENDING_CALL",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcLifecycleTest",
+        "name": "managed lifecycle fresh JVM preserves actual root ownership and policy-specific retirement(PgLifecycleCase) [95] mode=MODEL_TRACKED_WEAK_NO_RAW_FAILED_CONSTRUCTION",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "constructor rows cover eleven separate recipes both timeouts and both lanes with eight precise failures()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "[1] mode=ASSERTION_FAILURE",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "[2] mode=MISSING_RECEIPT",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "[3] mode=WRONG_RECEIPT",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "[4] mode=DUPLICATE_RECEIPT",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "exact receipt is single use for both its producer and consumer()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "[1] mode=wrong_nonce",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "[2] mode=wrong_case",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "[3] mode=wrong_ordinal",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "[4] mode=wrong_phase",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "[5] mode=duplicate_record",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "[6] mode=malformed_record",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "missing phase receipt expires its one original budget instead of certifying zero sessions()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "MODEL a nonterminating reader exhausts its original join allowance and is not a completed capture()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "MODEL output overflow retains exactly the bounded prefix and never becomes complete healthy output()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "forced child cleanup preserves the live prefix and actual reader facts but remains failure()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "MODEL a pipe read error retains safe earlier output instead of erasing it()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest",
+        "name": "supplemental declarations retain all thirty five identities seventy attempts and exact S F T distinctions()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "MODEL pending and thrown original calls never invent a result or inspect a hostile failure()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "MODEL parent observation resets only its local attempt markers not a relay gate()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "MODEL available bookkeeping compares exact entry attempt and original budget without advancing any fact()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "MODEL absent optional binding keeps original result and atomic facts available()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "[1] cleanup=false",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "[2] cleanup=true",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "MODEL reporter failure cannot replace original failure inspect its graph or report success()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "[1] lockName=F",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "[2] lockName=G",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "[1] state=PENDING",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "[2] state=PROCESSING_ENDED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "[3] state=PROCESSING_ENDED_UNRESOLVED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "MODEL failure diagnostic precedes owned cleanup and never releases the gate itself()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "MODEL unmatched or unavailable original receipt identity is never silently called a match()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "[1] lockName=F",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "[2] lockName=G",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "MODEL relay diagnostics classify unknown wire error without rendering its text or Throwable()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "[1] reason=NOT_READY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "[2] reason=BUSY",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "[3] reason=CLOSED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "[4] reason=BROKEN",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "[5] reason=TIMEOUT",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "[6] reason=INTERRUPTED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "[7] reason=CREATE_FAILED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "[8] reason=COORDINATION_FAILED",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "MODEL baseline and supplemental labels and both ordinals remain ASCII and below the unchanged child output cap()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseDiagnosticsTest",
+        "name": "MODEL early one shot completion keeps the exact result without needing a retained entry or rendering its candidate()",
+        "status": "passed"
+      }
+    ],
+    "limitation": "Discovery/counts only; full protected-baseline comparison remains required"
+  },
+  "child_scope_acquisition": {
+    "parent": {
+      "pid": 24396,
+      "ppid": 7746,
+      "pgid": 24396,
+      "session": 24396,
+      "start_ticks": 22288804,
+      "state": "R",
+      "boot_id": "51320f78-2dd0-46da-81aa-e4ae29ff75c3"
+    },
+    "previous_setting": 0
+  },
+  "diff_sha256": "f591a9a62ca35f99e213b56815e76566e672604fb7ec951e7d2386d97cf9d3c4",
+  "owned_groups_after_gradle_stop": {
+    "24497": [],
+    "4581": []
+  },
+  "owned_groups_after_clean": {
+    "24497": [],
+    "4581": [],
+    "4620": [],
+    "4678": []
+  },
+  "free_bytes_after": 20645736448,
+  "child_scope_restore": {
+    "active": false,
+    "restored_previous_setting": 0
+  },
+  "output_paths": [
+    ".kira-validation/backend-linux/backend-build",
+    "kira-backend/build",
+    "kira-backend/buildSrc/build"
+  ],
+  "finished_at": "2026-09-09T11:42:47.677397+00:00",
+  "static_report_coverage": {
+    "ktlint": true,
+    "detekt": true
+  },
+  "runner_status": "FAIL"
+}

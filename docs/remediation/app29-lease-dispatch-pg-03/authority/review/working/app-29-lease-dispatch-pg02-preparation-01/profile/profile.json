@@ -1,0 +1,699 @@
+{
+  "schema_version": 1,
+  "profile_id": "app-29-lease-dispatch-pg-profile-02",
+  "scope": "INERT_UNBOUND_EXACT2_PG02_FAILED_METHODS: append the reviewed two-test-file stage after immutable lease17/transport02 PG18; two noarg declaration filters, normal compilation. Prior16 remain historical. No enum, full47, consumer, Native05 or W03 qualification.",
+  "test_classes": [
+    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest"
+  ],
+  "task_args": [
+    "test",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.mixed pool creator nesting refuses wrong top fallback and unrelated lease use",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement"
+  ],
+  "test_selectors": [
+    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.mixed pool creator nesting refuses wrong top fallback and unrelated lease use",
+    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement"
+  ],
+  "expected_test_count": 2,
+  "expected_tests": [
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+      "method": "mixed pool creator nesting refuses wrong top fallback and unrelated lease use",
+      "display_name": "mixed pool creator nesting refuses wrong top fallback and unrelated lease use()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+      "method": "MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement",
+      "display_name": "MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement()"
+    }
+  ],
+  "report_directory": "reports/lease-dispatch-pg-02",
+  "witness_property_file": "worker-runtime.txt",
+  "expected_witnesses": [],
+  "original_provider_gate": "app-29-gate-b-hosted-01",
+  "original_provider_gate_note": "Retained compatibility property only. Its original-provider method and both positive-witness methods are unselected; no worker witness or consumer acceptance is expected.",
+  "final_jar": {
+    "path": "review/working/app-29-driver-cut-native-build-05/artifacts/postgresql-42.7.12-kira.1-osgi.jar",
+    "sha256": "50f7dc4a6314cc5105f4990be26ba8be65ae242e1f7e62652cc60d6a2c0e03df",
+    "bytes": 1200036,
+    "source_path": "review/working/app-29-driver-cut-native-build-05/artifacts/postgresql-42.7.12-kira.1-osgi.jar",
+    "qualification": "UNQUALIFIED",
+    "candidate_id": "app-29-driver-cut-native-build-05-isolation-getter-source-01"
+  },
+  "checker": {
+    "path": "review/working/app-29-final-jar-consumer-profile-01/inputs/checker-qual-3.55.1.jar",
+    "sha256": "857658c8bdcbff794949a8d9922f88d63ee3751c203c7cd7d21ea97f9e745288",
+    "bytes": 241885,
+    "source_path": "review/working/app-29-final-jar-consumer-profile-01/inputs/checker-qual-3.55.1.jar"
+  },
+  "removed_stock": {
+    "group": "org.postgresql",
+    "module": "postgresql",
+    "version": "42.7.12",
+    "sha256": "31fbf6f06b2217fb51d5100cee51b22625cc81640da0679b47914e54c1e6377c"
+  },
+  "original_init": {
+    "path": "review/working/app-29-w01-local-dependencies.init.gradle",
+    "sha256": "429961b98254b89f7ce1d7ba1efa61b8cba28a3bae35353bf3a8ba85f4a1c839"
+  },
+  "jdk": {
+    "feature": 21,
+    "distribution": "temurin",
+    "implementor": "Eclipse Adoptium",
+    "home": "Bound hosted JAVA_HOME; actual Gradle/Test context and JDK binary/modules hashes remain controller obligations, not positive consumer-loader proof."
+  },
+  "source_inventory": {
+    "path": "review/working/app-29-lease-dispatch-pg02-preparation-01/selection.json",
+    "sha256": "dc3ac19fb92460bf9ba8e253b7b419b6d11de0fbb76ff30fbb1818a6d05dca72",
+    "expected_test_count": 2,
+    "kind": "Inert failed-two noarg selection. Exact XML names come from the retained actual transport02 failures; no alternate naming, count-only acceptance, enum replay or claimed future result."
+  },
+  "core_source_manifest": {
+    "path": "review/working/app-29-real-pool-return-adaptation-c2-01/source-manifest.json",
+    "sha256": "e8f783786c058b39094483488a0a49045a74f81de99733a0bad00051a54d897a"
+  },
+  "binding_test": {
+    "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt",
+    "before_sha256": "2be392d5768db39dce43832be3eb12d3b6d724b60d7a569f51c8be9b704aba7a",
+    "after_sha256": "09ff840b9b3c4532c33ce24c09a60a2b0479084b480ed29f6d21478751e78f99",
+    "checkpoint_before_sha256": "a92f7a1bc152576c0bc2cd55d3dea49614ca073aea3868c2929e5bf1fea48017",
+    "proposal_path": "review/working/app-29-core-c2-diagnostics-preparation-01/proposed-source/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt",
+    "patch_path": "review/remediation/app-29-core-c2-two-case-shutdown-diagnostics-admin01.diff",
+    "patch_sha256": "9b3f80e5c18d3c82d31671d033713b71c00a16625c52bacd10e93e59b9d10338"
+  },
+  "current_source_freeze": {
+    "path": "review/working/app-29-w03-integrated-driver-core-c2-diagnostics-01/manifest.json",
+    "sha256": "2e6ba4a28bdc628d42937c3ed0f7f435c835b61d4e6f73702b50e6a2edd85511",
+    "backend_sha": "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc",
+    "source_count": 466,
+    "historical_seed_path_count": 348,
+    "snapshot_count": 199,
+    "approved_input_count": 63,
+    "historical_input_count": 102,
+    "proposed_delta": "Historical diagnostics466 -> eight product changes -> PG10 -> nineteen structural changes -> PG14 -> zero-source PG1 -> ordinary23 (11 modified/12 added) ->478 sources/211 subjects -> lease17 (14 modified/3 added) ->481/214 -> unchanged transport02 PG18. Only then append PG02 two-test-file replacements, no added/removed sources. New source checkpoint/freeze/bundle/profile guards remain UNBOUND until primary binding."
+  },
+  "predecessor_profile": {
+    "path": "review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.json",
+    "sha256": "f721c8d972206b973b2d3aefa4246bbd2d768c66f6f2908c470b3f896526b339"
+  },
+  "historical_result": {
+    "run_id": "34672394928",
+    "carrier_sha": "b25f6adcdb37b25b44b4efb783889f06c02c85d9",
+    "backend_sha": "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+    "passed": 45,
+    "failed": 2,
+    "scope": "HISTORICAL_HOSTED02_ONLY_NOT_RERUN_NOT_CURRENT47_PASS"
+  },
+  "diagnostic_authority": {
+    "review/remediation/app-29-core-c2-two-case-shutdown-diagnostics-admin01.md": "8e2ba4024e71968f33c2d4fba1ca6ad7e796554f78d383cba53393ea04a58282",
+    "review/remediation/app-29-core-c2-two-case-shutdown-diagnostics-independent-review.md": "bdcc3fdb02daa8250346b1b846db8c87324816e029ed35ebe34f54a4ceb0ee90",
+    "review/working/app-29-core-c2-diagnostics-private-checkpoint-01/checkpoint.json": "ecd9e8ffcfeac7cc5fe51dd7b8e6a68c0840a2a7b7834e92b686a99042521a9f",
+    "review/remediation/app-29-core-c2-hosted02-independent-actual-result-review.md": "9a04d2b6d23a491f1b9d6f9f24d8a90a37b653ec4d0cdaea4e2cd4cae3b24f52",
+    "review/working/app-29-core-c2-hosted-launch-02/artifact/result.json": "103b93f13e89a298653319497468b544d15a47970e1c2b9fcc1230decfca36eb",
+    "review/working/app-29-core-c2-hosted-launch-02/artifact/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.xml": "465024fa05e267de6ec2eae2a8189363e397422baf7e2004f7286992f28b816f",
+    "review/working/app-29-core-c2-hosted-launch-02/artifact/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest.xml": "ee2bfcbb25e2386967c0215e587873b730ec585d2532413d50db22c66f7ecf8c",
+    "review/remediation/app-29-core-c2-diagnostics01-independent-actual-result-review.md": "c71ebd37b3aaff6f70c77319907e61d55ee2a332d58d3b4f3331055fb4155209",
+    "review/working/app-29-core-c2-diagnostics-launch-01/artifact/result.json": "14d1f192614853639b1990f17323863683bd0fab32a4a62e9cd3f2c6810d8559",
+    "review/working/app-29-core-c2-diagnostics-launch-01/artifact/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.xml": "3d049dab1afbd0a4246a2b5c8ba1d4a1253a5e6544a9c2d133e5bebbd922169f"
+  },
+  "native_candidate_evidence": {
+    "review/remediation/app-29-native05-primary-admission.json": "f52566b9899c49999326e43d8d68346abd7f35bd5bd7f584e939b4c1e7e39d00",
+    "review/remediation/app-29-native05-independent-result-review.md": "7fc76ba1751a3db51f268449457be8ae1140711e31f1e92874facef637d5cb1c",
+    "review/remediation/app-29-core-c2-isolation-getter-primary-agreement.md": "322ac807f43a3c69011f0ae0978136853cc4fccc9dffbbc43ce2ab03da36833d",
+    "review/remediation/app-29-core-c2-isolation-getter-independent-review.md": "4f6b03f4167b12894eac04a41f67609c292803cb7c68a5c3e0ddbd260af34b9a",
+    "review/working/app-29-driver-cut-native-build-05/result.json": "93663b4ab678b90d8e4680ec9e1a10313cbdd9d6d596f2c289accd0b35296c06",
+    "review/working/app-29-driver-cut-native-build-05/primary-result-collection.json": "61e733c0236d1f01ed7676bd63cd8fc5acccae90bc2987d6fd764ed03412070c",
+    "review/working/app-29-driver-cut-native-build-05/sources-after.json": "e3ae4b1579c4e46a7571f7d0c80fd15f9ff946d4056e0089c204a70cbac0d57e",
+    "review/working/app-29-driver-cut-native-build-05/vendor-inputs.json": "45893288a3ca0d820b134e54c670b9a85175ea43930c9e9d8544ed3fd7a7bcbe",
+    "review/working/app-29-core-c2-isolation-getter-source-01/SEAL.sha256": "529c90aea9e37bbf54ed9a51cab698c877b8297c4f18b7a8427fae1ad5d5755a",
+    "review/working/app-29-core-c2-isolation-getter-source-01/source-delta.patch": "5be5cd1adb568dc796a01f7756b070cc7fead7c64d99ee925c12530ab8e772ae"
+  },
+  "historical_ordinary_limits": [
+    "One normal Test task and one512MiB worker inherited from W01, maxParallelForks1/forkEvery0/always-run and explicit JUnit parallel=false. Exactly21 literal methods: OwnershipIT15 plus CleanupIT6,43 argv elements. No wildcards, parameterized expansion, source-set narrowing, compile skip, extra task, timeout increase or retry.",
+    "Parse exactly two bounded UTF-8 XML files, comparing sorted observed and sorted expected filenames. Require each exact suite15/6 and all21 unique class/display-name identities, consistent counts and21PASS/0FAIL/0ERROR/0SKIP. Preserve actual outcomes and raw evidence before deletion, including on failure.",
+    "PG14 shutdown diagnostics are NOT_APPLICABLE with zero rows across BOTH suites. No empty-set CAPTURED inference; unexpected rows fail. Original PG14 four fixed records remain required only in its preserved original selection/result.",
+    "Two independent PER_CLASS/SAME_THREAD lazy PostgreSQL17.6-alpine fixtures, one per selected class, plus one Ryuk0.12.0: exactly3 created containers/2PostgreSQL/1Ryuk in one Testcontainers session. Per-method owned and foreign EMFs reuse their passed database. Keep custody, UUID, image, create/destroy, capture and cleanup gates unchanged.",
+    "Preserve all nonvacuous authored real-PG oracles, including positive selected/foreign EMF controls, exact armed lower BUSINESS commit failure before rollback, real Timeout/PgSleep and1..3000ms disposition, durable afterCommit plus original caller interrupt, late acquisition/RETURN tails, actual clipped JDBC/server caps and same-PID/new-epoch read-cap restoration, and six row/clock/lock controls. They are required tests, not yet observed successes.",
+    "Bind complete historical diagnostics466 -> eight replacements -> PG10 -> nineteen structural replacements -> PG14 -> unchanged PG1 to their own heads/maps/bundles. Then apply exactly11 replacements+12 additions,455 unchanged and zero newly removed to obtain the pinned target478. Preserve348 seed keys,211 snapshot subjects and102 historical pins; no seed-byte-equality claim or inventory helper edit.",
+    "Retain all188 unique path/hash provenance pairs from target19approved+8tooling and PG1170approved+10tooling without conflicts. Fresh active tooling is the same five base tools plus exactly five deployments, including the unchanged ownership helper. Final authority counts are measured from actual maps, not copied from any old receipt.",
+    "The real private source checkpoint ccdbb28f is exactly one child of6db944, with the complete older chain retained. Its actual bundle is distinct from the historical217809-byte bundle. Measure full tracked-versus-actual repository hashes afresh, separately from478 governed sources. Never push this tip or its private ancestry to public Backend.",
+    "Accepted Linux03 carries only56/56 nonDB invocations, normal main/test compilation and fresh Ktlint. Detekt was not run there; prior-byte-set reuse is bounded by ba5b6ec6/68329161. Linux01/02 zero-test failures, all original hosted/diagnostic failures and accepted PG1/PG14/PG10 results remain unchanged and are not rerun or counted among these21.",
+    "No positive consumer worker-witness methods are selected. Actual JDK/classpath/class-load logs remain context, not complete transitive-byte or Native05 qualification. Native05 remains UNQUALIFIED; original-provider/consumer/full47/opaque/native-finalizer/pin/compaction/liveness/recovery/full-P3/W03/production gates remain open.",
+    "Retain25min job/1200s total/120s preflight/900s validation/180s cleanup,8GiB floor,8MiB bundle bound,2GiB Gradle/512MiB metaspace, all four measured drains and11 output-absence obligations. Forced/nonzero cleanup, cancellation, incomplete capture or budget failure is stickyFAIL; unknown custody never permits removal. NORMAL_ABSENT is not graceful PostgreSQL shutdown or zero-kill proof; raw kill/die events remain retained.",
+    "This private author derivative is inert, not source/runtime acceptance or admission. Primary must bind final profile/init/controller hashes, independent actual-delta review, the genuine fresh complete-diff freeze/local receipt, later accepted deployment checkpoint and exact request/carrier before one separately admitted attempt. No future receipt/request/deployment checkpoint belongs inside its own manifest inputs."
+  ],
+  "historical_diagnostics_result": {
+    "run_id": "34678157417",
+    "passed": 0,
+    "failed": 2,
+    "cleanup": "FAIL",
+    "containers": "UNKNOWN",
+    "outputs_absent": false,
+    "private_directories_retained": 6,
+    "scope": "HISTORICAL_DIAGNOSTICS01_ONLY_NOT_REEVALUATED_OR_REPAIRED_BY_THIS_PREPARATION"
+  },
+  "product_lifecycle_source_delta": {
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt": {
+      "before_sha256": "a6730fbc65d378713dd89bd0794b5514a764320f1186c681c4b44efabd1d09c7",
+      "after_sha256": "9d9a6be8888aa67f5f908c1d53db998f17e528c52a1d3d8b5bcd05362635ca3c",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-product-01/after/GuardedDataSource.kt"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt": {
+      "before_sha256": "dd73ba8b486e285ac76c16e56d98bdac475027c86fed9eb5ffe3f7c1a5a820fd",
+      "after_sha256": "ff13d4a7ad481762c7d6d222c023cb60e3cb94e22fa50841767c5c6641cb89df",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-product-01/after/PersistenceJdbcLease.kt"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt": {
+      "before_sha256": "5bee8dc7f22219542a6ff28df8230e401268884c4711289afebf397c39d2d334",
+      "after_sha256": "2dd3236000c8f88f2ca00435036a54a5b1ba027aeb4f3e7d4ab66ca2106533f2",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-product-01/after/PersistenceOwnership.kt"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt": {
+      "before_sha256": "0e45d75ee8a2421b6db238ced31298b7a5012db4ad3232e8675ae0f889e8c857",
+      "after_sha256": "545d05d67fb0550c4fd4ea889144f7f0a49e2ac57b2d41676b04ea0d22a43d8b",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-product-01/after/PoolActorCustody.kt"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt": {
+      "before_sha256": "def7c6ef36145b6d1dcf71342a5e6c1956f6f40055464e231e946eff05ade9f2",
+      "after_sha256": "5105399988af7abbfac336f27cc4436c95a348e8032e39a0ba409f58c6a3400f",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-product-01/after/PoolLifecycle.kt"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt": {
+      "before_sha256": "09ff840b9b3c4532c33ce24c09a60a2b0479084b480ed29f6d21478751e78f99",
+      "after_sha256": "c65198c118b4102615100464c52774f9dbd1bec70fe8655337fadcda4895c350",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-tests-01/after/PersistencePgOwnedCutIntegrationTest.kt"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt": {
+      "before_sha256": "7ddc9fac7597febfb42de44c041e4c2ccfdc01bc864e973346738a5ffd0209fa",
+      "after_sha256": "4bf8c36b1ec8f01ea8a7b775ea7c769ca2fa8f837fc8d1d351d1172c860ce24e",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-tests-01/after/PoolActorCustodyTest.kt"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt": {
+      "before_sha256": "f5f194f46eddb89b32ba1142fcbedd5617255abae5b3ffe0bd507b26449c0665",
+      "after_sha256": "cf46316c372696c3aa91ca6e5455c582e40d436c82c791e586c3adce29173db1",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-tests-01/after/PoolLifecycleTest.kt"
+    }
+  },
+  "product_lifecycle_authority": {
+    "review/remediation/app-29-core-c2-product-lifecycle-validation-selection.md": "0582e4ac646996f9595e9d2d062a9a07f3a1c216aad83b1ffaa822a8a29c6372",
+    "review/remediation/app-29-core-c2-product-lifecycle-primary-agreement.md": "0dfc179ee33f5349283aeb2876e850d0c13f5cbbcc3edebbb15c570e736403dc",
+    "review/remediation/app-29-core-c2-diagnostics01-backend03-product-lifecycle-plan.md": "d42458d346727c947313db631f4f2ad710a45fad6fa31b2a8599e65309b791dc",
+    "review/remediation/app-29-core-c2-product-lifecycle-plan-01-independent-review.md": "70ba9317eeef7491056b4598f63c1ff2337f3a69e7fc83d155f24be3c1050555",
+    "review/remediation/app-29-core-c2-product-lifecycle-01-independent-actual-diff-review.md": "79842f030ba4b70991e805fe969c1d0d1c250e2720f69bc91725c0d2d8b5ed7e",
+    "review/remediation/app-29-core-c2-cleanup-guard-01-independent-review.md": "24c51bc306ac8bb995a6b4401af0a5749b06f468f607750f60c8a0560c167a95",
+    "review/working/app-29-core-c2-cleanup-guard-preparation-01/cleanup-guard.patch": "205bed154e68fd77d1e0d44e33929c07979cbbe620ea69fbfb2eb3c0249615c4",
+    "review/working/app-29-core-c2-product-lifecycle-product-01/product.patch": "072ebf2eaa07f9fd109d9056d2000add7cba5b25dd451cab0c86c14a876fbfda",
+    "review/working/app-29-core-c2-product-lifecycle-product-01/after.sha256": "daa73d5b0bd6275feac48edb94216a99fc388f6f08f64477b14ff5122326390e",
+    "review/working/app-29-core-c2-product-lifecycle-tests-01/tests.patch": "c5ec7b34ee75390c9e0f4c1443e7a5e69112a124023ee20c2cbf2ffb434f7d6b",
+    "review/working/app-29-core-c2-product-lifecycle-tests-01/source-pins-after.sha256": "b5eed778684969fbf3e8e3afd41a316be62f4dd5cbeb1b595de00aadfe578754",
+    "review/working/app-29-core-c2-product-lifecycle-tests-01/SHA256SUMS": "58f45260e7d130f91a56cd6e54f8ca18602ce96d8715c29a52a154e37e079fe0",
+    "review/working/app-29-core-c2-product-lifecycle-tests-01/SELECTORS.md": "050f342603128ffa6a9e1be5592d5c864c1b945bc6f8ee472a586dd24b7acb22"
+  },
+  "post_structural_predecessor": {
+    "path": "review/working/app-29-w03-integrated-driver-core-c2-product-lifecycle-pg10-01/manifest.json",
+    "sha256": "f44346d3f76072b62c61e72fa8231e318650ec0cd0da8d976f2ef043f16dbb3d",
+    "backend_sha": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+    "scope": "IMMUTABLE_PG10_SOURCE_AND_AUTHORITY_PREDECESSOR_NOT_CURRENT_RUNTIME_ACCEPTANCE"
+  },
+  "post_structural_checkpoint": {
+    "path": "review/working/app-29-core-c2-post-structural-private-checkpoint-01/checkpoint.json",
+    "sha256": "6e7cfcdb0598531092750a122b3cae985fe06f629455ee030773ba2242992556",
+    "scope": "PRIVATE_SOURCE_TRANSPORT_AND_19_PATH_DELTA_ONLY_NOT_FRESH_V3_OR_PG14_ADMISSION"
+  },
+  "post_structural_source_delta": {
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt": {
+      "after": "ca15b08299177033ca255b5de670a47e12b05e39a4077ece7078e306a7bfa398",
+      "before": "9d9a6be8888aa67f5f908c1d53db998f17e528c52a1d3d8b5bcd05362635ca3c"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt": {
+      "after": "1d2fd29239d948d30814544abdd2999e870b12bf42de780231b0ded05d5ac674",
+      "before": "0e6acaf9ca87a5f16672c3efa090c2dde8491c3e80e7b8cc19e6fb78f56f698f"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt": {
+      "after": "f45890e53648b8e4abb30fdc9ff6250de6927413a9f510cc672babef1b43462c",
+      "before": "c3c2095193dac21bae09219e75a50b79b2da6ed5512db4ad0168da88676b30c0"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt": {
+      "after": "e3e52b0ad68eb8ab929e01959ce6665a547bb2103a1d081ba0c90ca008724180",
+      "before": "ff13d4a7ad481762c7d6d222c023cb60e3cb94e22fa50841767c5c6641cb89df"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcPoolTransfer.kt": {
+      "after": "ba49d0d62fff6cc35118a4b3dbd4e7dc553432bd3a20cb7de368c9036c513c76",
+      "before": "04ff9655211046f13af24395eb9bb489c3375702fc3dd057f225792da11e3b49"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcTransaction.kt": {
+      "after": "f750a4ad1079ef638f28ad9478231c955dae6b462822254559d43c7a05475d8a",
+      "before": "55e1393e113e750a49572b39ca4217b5b701ecc4fa7edb8c338e72c7dd1fb462"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceManagedObserver.kt": {
+      "after": "e582e0ad2f7df1cf615b7da07a28588e1d35997b5f52f39fdd4fae14a8bb89ee",
+      "before": "392f637a22ca16f967ee028cbf0731f8c93622560556fa4bbef7e47657d63b23"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt": {
+      "after": "4d5d74ed2fce172ebcfe6b38d085916e9f8d34af809ddf9950b2cbceba044650",
+      "before": "2dd3236000c8f88f2ca00435036a54a5b1ba027aeb4f3e7d4ab66ca2106533f2"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutAccess.kt": {
+      "after": "6b11275185862051541d5fe1ba0c2d3b7bfa4b2a95a531161c381e01e3dc35c9",
+      "before": "4141070d8e4332dd8e5cddccf7ab6d3cdf906682cd6092aa96d9ce7b4acf4f5c"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt": {
+      "after": "fde12ce0e37fa545b9339e9baf41a443dde66dcef927f48272e7406ac2dbfee9",
+      "before": "f7127c8d922a1a17f34e7230b6ae715ec36f99e819e5bb35a907f347f40c337d"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcFacade.kt": {
+      "after": "5356b3ab244a3433410c8b40aea372715ffa1be863c8031b8d7890558cc7a230",
+      "before": "a58c7aedd83c96dc572f94351fe77387922c949a066ca5a49f80744b569b6c74"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt": {
+      "after": "c658703d6fe07c23fd67bd2db98c568cc589bc096d3dda89ea2dcdcec597a503",
+      "before": "545d05d67fb0550c4fd4ea889144f7f0a49e2ac57b2d41676b04ea0d22a43d8b"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt": {
+      "after": "24ce6c0595f4fec9774177220716b45a98d659fc33ac9b05b5d2cbc035e366aa",
+      "before": "5105399988af7abbfac336f27cc4436c95a348e8032e39a0ba409f58c6a3400f"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt": {
+      "after": "9d89acd83ef5c55784ff548969080636163e28c92a0d8373e511dd68024440bf",
+      "before": "2cbd7a055d12000953c37301a7d08839df739d391b4fafa453e8acb62944963e"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt": {
+      "after": "b87e92bb9d78fb8f37afed414bd07899c59606536b972c6a444dda1cbc677322",
+      "before": "c65198c118b4102615100464c52774f9dbd1bec70fe8655337fadcda4895c350"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbeProcess.kt": {
+      "after": "e53828932ddcbbb2142579b9a684ef307c9449af3a5f0a85e7ed0bd73f416080",
+      "before": "b115bbde5d83873d0dfa63a88571a2da601a0dbaf91c4db9c7cac1c73b09cf3a"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendantsTest.kt": {
+      "after": "a2e3ce055fcb98c350c49fff7522b959f223369568220312d5b1761c9369f2a9",
+      "before": "0997dd22f9c2ee5f36c837559a113134c0c3a59f17b4087b0746989b331407c6"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt": {
+      "after": "44a4712a49c7ea1f5b04081421b34296a8798b76d580c96b5db7bcdace00f1d1",
+      "before": "4bf8c36b1ec8f01ea8a7b775ea7c769ca2fa8f837fc8d1d351d1172c860ce24e"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt": {
+      "after": "953d018327fc7b40c53ab291bed061cae48751f8f20e0c5c0c3a369e03a2513e",
+      "before": "cf46316c372696c3aa91ca6e5455c582e40d436c82c791e586c3adce29173db1"
+    }
+  },
+  "post_structural_authority": {
+    "review/remediation/app-29-core-c2-post-structural-pg-selection-advisory.md": "d934676c715da7aaef8e008c264e0b5e5e7cb30e4a909103878f521a44bc4f64",
+    "review/working/app-29-core-c2-post-structural-private-checkpoint-01/checkpoint.json": "6e7cfcdb0598531092750a122b3cae985fe06f629455ee030773ba2242992556",
+    "review/working/app-29-core-c2-post-structural-private-checkpoint-01/reviewed-source.patch": "6e9d0fb7aa8615fe71eb0c02b7da5a188f28cae49fe67e53e87ed1fdcf7693a0",
+    "review/working/app-29-core-c2-post-structural-private-checkpoint-01/primary-compile-static-disposition.json": "dae02d3340ecf9f9288bcbc4ca72d98ce1cbaa6e86e8ba771b6ac345d7a70030",
+    "review/working/app-29-w03-integrated-driver-core-c2-residual-static-linux-01/manifest.json": "7a48620648806214d5c4158488cd33432b57e9c234a1a5c94b76015fcf36cacf",
+    "review/working/app-29-core-c2-product-lifecycle-pg10-launch-01/primary-acceptance.json": "c08b0f8ad69d674bedcb9edad54c99f51d34ccc7802c9272c53de3b81e56935a",
+    "review/remediation/app-29-core-c2-product-lifecycle-pg10-01-independent-actual-result-review.md": "bfdbbd51e446814ea861ad5ec188be8efa1f21d7eaea3b2f51a5c4c9e8e81d2a"
+  },
+  "historical_pg10_result": {
+    "run_id": "34691665288",
+    "backend_sha": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+    "passed": 10,
+    "failed": 0,
+    "scope": "HISTORICAL_EXACT_PG10_ONLY; excludes later layout/structural changes and does not qualify this PG14 source",
+    "cleanup_limit": "Controller-unforced final absence; original PostgreSQL kill9/die137 retained. Not graceful-shutdown or zero-kill proof."
+  },
+  "validation_predecessor": {
+    "path": "review/working/app-29-w03-integrated-driver-core-c2-product-lifecycle-pg14-01/manifest.json",
+    "sha256": "fc979ee558b53d18337b0a5104f2b574e0bde2147a52f5ac96585a779c56a121",
+    "backend_sha": "6db944871c1584bd6a1f28263e8010cadd766fab",
+    "scope": "HISTORICAL_IMMUTABLE_PG14_SOURCE_AND_AUTHORITY_PREDECESSOR_NOT_CURRENT_LEASE_ADMISSION"
+  },
+  "validation_predecessor_profile": {
+    "path": "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/profile/profile.json",
+    "sha256": "36c3637229efbe08186014f4c60684aa0569430b26bae9d13f8b811917e82225"
+  },
+  "selection_source_delta": {},
+  "shutdown_diagnostics": {
+    "status": "NOT_APPLICABLE",
+    "expected_record_count": 0
+  },
+  "shutdown_diagnostics_note": "The single selected class uses actual PG fixtures/owned pools without assigning shutdownDiagnosticCase. Require NOT_APPLICABLE and zero PG14 rows across its one suite. Both pool/EMF/database teardown and all existing assertions remain. The new MODEL factual line and any original stack stay raw stdout/XML evidence; no new parser or empty-set CAPTURED inference. Historical PG14 four-row obligations stay separate.",
+  "historical_pg14_shutdown_diagnostics": {
+    "scope": "REQUIRED_IN_ORIGINAL_PG14_ONLY_NOT_APPLICABLE_TO_THIS_SELECTION",
+    "required_record_count": 4,
+    "required_cases": [
+      "RETURN_SAMPLE",
+      "FAILED_POST_CONSENT_TAIL"
+    ],
+    "required_phases": [
+      "BEFORE_SHUTDOWN",
+      "AFTER_SHUTDOWN"
+    ],
+    "required_status": "CAPTURED",
+    "missing_duplicate_or_unavailable_can_pass": false
+  },
+  "selection_authority": {
+    "review/remediation/app-29-post-pg14-next-delivery-proposal.md": "b330c65b268cd6d6a0540b6a105a206ef2cf37dd55d6ddbe95d3cf4f28305dcb",
+    "review/remediation/app-29-post-pg14-next-delivery-proposal.inputs.sha256": "1af91bb07746cfe81a30a5c7b62addf4b3c62f8ea8302bd9df8418243204215f",
+    "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/SEAL.sha256": "846a81ded067851f620d80a4531845ee68923f004a2329e9018cd5c6bfa8dce2",
+    "review/remediation/app-29-core-c2-product-lifecycle-pg14-preparation-01-independent-review.md": "ca56b68ac2a30d5c62f367e4ad50fd87592b70111f0e6a78c6760be84b274d21",
+    "review/remediation/app-29-core-c2-product-lifecycle-pg14-01-independent-result-review.md": "a4e4462f8466267b36c0a29e2c0e60214f21e52d02b9019fc3c8719ecaecf788",
+    "review/working/app-29-core-c2-product-lifecycle-pg14-admission-01/primary-admission.json": "cf1ed646ff9b2f579a46dd7f9f45295a5f0526291ff2fbec71e2deb9c08a8288",
+    "review/working/app-29-core-c2-product-lifecycle-pg14-hosted-01/raw/result.json": "45384ff17fcd5dd28296aab8bd27f9f2ea9d8fadbfc26d3f3650261548ed2533",
+    "review/working/app-29-core-c2-product-lifecycle-pg14-hosted-01/raw/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.xml": "e522fd0b91191c9d62f6243522d651534506829ab48f0cd37dfd1d3555335c6e",
+    "review/working/app-29-core-c2-product-lifecycle-pg14-admission-01/primary-acceptance.json": "265d9443479871281367a38d29700814c60d475554d76fd75e105522728b6485",
+    "review/working/app-29-core-c2-sqlclientinfo-pg1-preparation-01/before/pg14-deployed-checkpoint.json": "b977d7836997e0da2866ee440dad5140452a108731f6d740b68c43032b3fe5bb"
+  },
+  "historical_pg14_result": {
+    "run_id": "34701415662",
+    "carrier_sha": "d4c6289df3f611f8efe467a4e5a19c2f6600d48c",
+    "backend_sha": "6db944871c1584bd6a1f28263e8010cadd766fab",
+    "passed": 14,
+    "failed": 0,
+    "scope": "PRIMARY_ACCEPTED_FOCUSED_PG14_ONLY; exact14 on unchanged private6db944, not rerun or included in current18; no full47/consumer/native/W03 acceptance",
+    "cleanup_limit": "Controller-unforced final absence; CURRENT PG14 PostgreSQL kill9/die137 retained. Not graceful-shutdown or zero-kill proof.",
+    "primary_disposition": "ACCEPT_FOCUSED_PG14_ONLY"
+  },
+  "expected_xml_files": [
+    "TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml"
+  ],
+  "historical_source_inventory": {
+    "path": "review/working/app-29-real-pool-return-adaptation-c2-01/test-source-inventory.json",
+    "sha256": "823f49b359b8dec60d1b024c2bfd4e3d2d6822a42fed1a8c8d0e905b5ba87650",
+    "kind": "Historical47 textual declarations only, NOT this run's executed selection. That old one-method PhysicalJdbcDescendantsTest selection is not the new expected_tests. Prior PG14 on6db944, PG10 on1c91,45 passes and diagnostics01 0/2 are preserved, not rerun or relabelled."
+  },
+  "selection_source_delta_scope": "The inherited empty selection_source_delta applies only to historical PG14 -> PG1. ordinary_source_transition remains the sealed23-row historical successor. lease_dispatch_source_delta remains the ORIGINAL17-row lease successor with its original source hashes. PG02 appends exactly the two pg02_source_delta replacements only after the immutable transport02 PG18 stage.",
+  "container_population": {
+    "total": 2,
+    "postgres": 1,
+    "ryuk": 1,
+    "images": [
+      "postgres:17.6-alpine",
+      "testcontainers/ryuk:0.12.0"
+    ],
+    "basis": "Both exact noarg methods are in one PER_CLASS/SAME_THREAD class with one lazy PgLifecycleDatabaseFixture started once and closed in AfterAll. Both mixed-test pools and the MODEL ordinary cleanup fixture reuse database.value; EMFs/pools do not create new containers. The unselected enum method cannot spawn its negative child JVMs. One Test worker/forkEvery=0 implies one required Testcontainers session and Ryuk. Counts are admission requirements, not observed outcomes."
+  },
+  "ordinary_source_predecessor": {
+    "path": "review/working/app-29-w03-integrated-driver-core-c2-sqlclientinfo-pg1-01/manifest.json",
+    "sha256": "2cde6562f651eb1240ba6fcc7e13d87400a993d10fa4d8b681acf2316cf2f99c",
+    "backend_sha": "6db944871c1584bd6a1f28263e8010cadd766fab",
+    "source_count": 466,
+    "snapshot_count": 199,
+    "approved_input_count": 170,
+    "historical_input_count": 102,
+    "scope": "HISTORICAL_COMPLETE_PG1_SOURCE_STAGE_NOT_CURRENT_W03_SELECTION"
+  },
+  "ordinary_source_predecessor_profile": {
+    "path": "review/working/app-29-core-c2-sqlclientinfo-pg1-preparation-01/profile/profile.json",
+    "sha256": "173b4f5131cacd7b89b8bd24b1700eac34218969b7921c80a6beb9dee72c0d37"
+  },
+  "historical_pg1_source_bundle": {
+    "path": "review/working/app-29-core-c2-post-structural-private-checkpoint-01/backend.bundle",
+    "sha256": "2506c18cc5e40f089cc1176a65a79d449ff02b13f4c08e0719c24d359e9882da",
+    "bytes": 217809
+  },
+  "ordinary_source_target": {
+    "path": "review/working/app-29-w03-integrated-driver-ordinary-connected-03/manifest.json",
+    "sha256": "171dc5c76663c7552bd064c343437bc6545394315769214354afec2295929913",
+    "source_count": 478,
+    "snapshot_count": 211,
+    "scope": "HISTORICAL_ACCEPTED_LINUX03_DOCUMENTARY_DIRTY_SOURCE_MAP478; PG01 later used its bytes in a clean43-argv freeze. Neither is the required new lease source/checkpoint or23-argv hosted freeze."
+  },
+  "ordinary_source_transition": {
+    "path": "review/working/app-29-ordinary-connected-pg-preparation-01/source-transition.json",
+    "sha256": "14c80ac290be008634cc26e3ade6b54737af05664f68c247e84dce66846291a8"
+  },
+  "ordinary_source_checkpoint": {
+    "path": "review/working/app-29-ordinary-connected-source-checkpoint-01/receipt.json",
+    "sha256": "4aec8adbcd3987cd8e6be152f63ab599d26178ec64020c0aba7281d9a722485b"
+  },
+  "ordinary_checkpoint_paths": {
+    "path": "review/working/app-29-ordinary-connected-source-checkpoint-01/source-paths.json",
+    "sha256": "a59581766bf4618bf7c36b7f47c021d23c9631c55b8e982c6ea2079dedecc4e2"
+  },
+  "ordinary_connected_authority": {
+    "review/working/app-29-ordinary-connected-pg-preparation-01/README.md": "d0664032094608162db43ed7a2688de41b1bc38f2603c4f8d9bdacb8906bc37e",
+    "review/working/app-29-ordinary-connected-pg-preparation-01/SEAL.sha256": "8b6c440a43568a787b7e3279264283b02a37db3f2f333c01bfc71ffc561531db",
+    "review/working/app-29-ordinary-connected-pg-preparation-01/SHA256SUMS": "62d70f6289aa82c6209eba95d38e0940b2dbc9e83aa50e82db32b9a90cd36318",
+    "review/working/app-29-ordinary-connected-pg-preparation-01/inputs.sha256": "25a09f81cc5cc46366a5e545573a589c5e2ef3fdcf9843a308897b0915841450",
+    "review/working/app-29-ordinary-connected-pg-preparation-01/recipe.json": "8d6b4a081a868ea1b304b9b8e259c75d17d96399f9aa412b6310657ec5ef885e",
+    "review/working/app-29-ordinary-connected-pg-preparation-01/selection.json": "571c264b1f8b22e575c6fdfd7c726d9918b78b3f435d27526ed76c09e700faa9",
+    "review/working/app-29-ordinary-connected-pg-preparation-01/source-transition.json": "14c80ac290be008634cc26e3ade6b54737af05664f68c247e84dce66846291a8",
+    "review/remediation/app-29-ordinary-connected-pg-preparation-01-independent-review.md": "5314a77f600bdfb20a7739120aaaa6e2437d4210b866d3fc5c5620d027876adf",
+    "review/working/app-29-ordinary-connected-source-checkpoint-01/receipt.json": "4aec8adbcd3987cd8e6be152f63ab599d26178ec64020c0aba7281d9a722485b",
+    "review/working/app-29-ordinary-connected-source-checkpoint-01/source-paths.json": "a59581766bf4618bf7c36b7f47c021d23c9631c55b8e982c6ea2079dedecc4e2",
+    "review/working/app-29-ordinary-connected-source-checkpoint-01/primary-disposition.md": "7c7bd192153e92dcb7aa91e9b75c55785c0ed25a788337878d8532752e24ec88",
+    "review/working/app-29-ordinary-connected-source-checkpoint-01/ordinary-connected-source.bundle": "63d9469a1ac0145f807129e8b6c7ee865a309676ee3e188eacf413d8de40b3a3",
+    "review/working/app-29-ordinary-connected-linux-03/result.json": "c9787405e0fa2f75c1d006b42eb695fc4fbad7653de1393597d7de08c0472c83",
+    "review/remediation/app-29-ordinary-connected-linux03-independent-actual-result.md": "d7322dc3304c150ca5378a3a2d390928bffb7dbc7936298fd60a2fb264859caf",
+    "review/working/app-29-ordinary-connected-linux-03/primary-acceptance.md": "e1ca7e62c46e51c5b55efc1c49044f860cf4060d604132ee55e3777b5154cca3",
+    "review/working/app-29-core-c2-sqlclientinfo-pg1-admission-01/launch-03/primary-acceptance.json": "b5df18dc41891d0e5fe770f9fb1ca05936a5d45bc0357c4cb04a330548075821",
+    "review/remediation/app-29-core-c2-sqlclientinfo-pg1-actual-result-independent-review-01.md": "1fdb1b65facf80ac79c44f847358e6ad280be1e976484b8ac19259dd3c965c77",
+    "review/working/app-29-core-c2-sqlclientinfo-pg1-admission-01/launch-03/artifacts/result.json": "5d640b6fc1b39a521577374e1e47186368f860b49e3d1bb55da98ab61a478fe1"
+  },
+  "historical_pg1_result": {
+    "run_id": "34709458222",
+    "carrier_sha": "02ebe6024d151e082c1f685cb58280000f81e4a0",
+    "backend_sha": "6db944871c1584bd6a1f28263e8010cadd766fab",
+    "passed": 1,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "primary_disposition": "ACCEPT_FOCUSED_SQLCLIENTINFO_PG1_ONLY",
+    "scope": "HISTORICAL_PRIMARY_ACCEPTED_EXACT_ONE_SQLCLIENTINFO_CASE_ONLY_NOT_RERUN_OR_INCLUDED_IN_CURRENT18",
+    "cleanup_limit": "Original PG1 PostgreSQL kill9/die137/destroy retained. Controller-unforced final absence is not graceful-shutdown or zero-kill proof."
+  },
+  "accepted_linux03_result": {
+    "result_sha256": "c9787405e0fa2f75c1d006b42eb695fc4fbad7653de1393597d7de08c0472c83",
+    "source_manifest_sha256": "171dc5c76663c7552bd064c343437bc6545394315769214354afec2295929913",
+    "passed": 56,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "test_class_counts": {
+      "PersistenceJdbcTransactionTest": 7,
+      "PersistenceJdbcGuardProtocolTest": 11,
+      "PhysicalJdbcFacadeTest": 11,
+      "PersistenceOwnershipTest": 8,
+      "PoolLifecycleTest": 19
+    },
+    "normal_main_test_compilation": "ACCEPTED",
+    "ktlint": "FRESH_ACCEPTED",
+    "detekt": "NOT_RUN; bounded prior-byte-set reuse only under ba5b6ec6c268dda62230abb6530ca581faef1428560d482d13a28b67dcbb45dc and683291612d4c4b6312201aa312f3a76d40745cfb45be260a273f742bae95c7ce, not a new Detekt pass for changed test bytes",
+    "scope": "PRIMARY_ACCEPTED_FOCUSED_NONDB56_ONLY_NOT_PG_EXECUTION_OR_W03_ACCEPTANCE; supersedes sealed preparation ACTIVE-at-assignment attribution without changing that sealed history"
+  },
+  "ordinary_selection": {
+    "path": "review/working/app-29-ordinary-connected-pg-preparation-01/selection.json",
+    "sha256": "571c264b1f8b22e575c6fdfd7c726d9918b78b3f435d27526ed76c09e700faa9"
+  },
+  "historical_ordinary_source": {
+    "path": "review/working/app-29-w03-integrated-driver-ordinary-connected-pg-01/manifest.json",
+    "sha256": "7c5e775dc0250948ead0ba20aff89cb38e2565fdbb82751575291fa96a80d63c"
+  },
+  "historical_ordinary_source_bundle": {
+    "path": "review/working/app-29-ordinary-connected-source-checkpoint-01/ordinary-connected-source.bundle",
+    "sha256": "63d9469a1ac0145f807129e8b6c7ee865a309676ee3e188eacf413d8de40b3a3",
+    "bytes": 257140
+  },
+  "historical_ordinary_result": {
+    "path": "review/working/app-29-ordinary-connected-pg-admission-01/launch-01/artifacts/result.json",
+    "sha256": "750de524bf2a76805a33f0453a93177e4fe14b74a810bcacdb74bc04073eb30c",
+    "passed": 20,
+    "failed": 1,
+    "errors": 0,
+    "skipped": 0,
+    "scope": "HISTORICAL_PG01_FAIL20_21; close-executor actor/queue mechanism unmeasured. Do not infer historical causation from the new source route or a later PASS."
+  },
+  "lease_source_stage_status": "BOUND_BY_PRIMARY",
+  "lease_source_target": {
+    "path": "review/working/app-29-w03-integrated-driver-lease-dispatch-linux-02/manifest.json",
+    "sha256": "9888bdff82450069df09c003d48da5413c5ebe0dda6a4cfe45687f4898a1c8e7",
+    "source_count": 481,
+    "snapshot_count": 214
+  },
+  "lease_source_checkpoint": {
+    "path": "review/working/app-29-lease-dispatch-source-checkpoint-01/checkpoint.json",
+    "sha256": "2d291cf217291106d35343c6f74f4d892299e766b72615620bec122ee0f79e37"
+  },
+  "lease_checkpoint_paths": {
+    "path": "review/working/app-29-lease-dispatch-source-checkpoint-01/paths.json",
+    "sha256": "4ec760ce6a72f4c2d63200018d6a60637b98800050d115b6e731b11a5456248a"
+  },
+  "lease_dispatch_source_delta": {
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt": {
+      "before_sha256": "aa6ac2b7abee81370eb5a78d67d5e6af11b5e2a71aedd4bf380bc32426fdf81a",
+      "after_sha256": "7395aa04bfbb6702043dddf1a6393cf94b2abd67128bf669ee81ff39df2ca448"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt": {
+      "before_sha256": "9a7ce9fcb0022420975b8144eb6c55328ffe0f9ba270da84b1f0d83c62634697",
+      "after_sha256": "28e63d187150a4768661ee7fb257cf4d5e29d99b7a0e642619abfb2661705afd"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardCall.kt": {
+      "before_sha256": "44d1945e376ecba2c20355aad2905c241ce5edcd78eaca6bac09abab81c901bf",
+      "after_sha256": "8f01ed4e07207701fe9a7ed999e8cbe854633902fe1153e5e0fe376918f44457"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt": {
+      "before_sha256": "03abd003fa21d8aa62ccc6b1faf9e5a12b6b0a16965a8ca9abb69b7b73351e7c",
+      "after_sha256": "f0209738f66ed56298799a1b58d1f8e67e518d8a5d3f5bc591f944224cd43063"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt": {
+      "before_sha256": "22cb07b46e0d3a3093cd1753598027dc30c972c5f5aec53a22a5fdc6b9a0e0d5",
+      "after_sha256": "e22262871a9ad7e35f12b99d8c17615827e8e31294b7d2f7bb272b6bcc524693"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLeaseInvocation.kt": {
+      "before_sha256": null,
+      "after_sha256": "467ce125c4732f785ef0924a3474c64909f267a3922de446326bb0c43b05a1e6"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcPoolTransfer.kt": {
+      "before_sha256": "ba49d0d62fff6cc35118a4b3dbd4e7dc553432bd3a20cb7de368c9036c513c76",
+      "after_sha256": "d77f0b6c32d970e6bc121dd3c87d5b81fbf2cc43632fe02bc8160833155ca8bf"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceLeaseCompletion.kt": {
+      "before_sha256": "1feea05f30d7ce3badbb3fdbf7d0d3f44877c526732122ed5d5cfcb89ef9f33d",
+      "after_sha256": "87ed0ed516ec98b8c9e86ceef1b264997cf127c4d084c4386ad1851019f1fb66"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt": {
+      "before_sha256": "0bd9bec8de141db1b930dad8dea250eeda0ee5fec526c066b3fa61783e9f2c30",
+      "after_sha256": "db0cea829ce45998d824eab1acbd67154217acac5bee532f8aa3261cbee73959"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt": {
+      "before_sha256": "a919897ed97ffe30c0969faaace1ab878d7e4229d068945d544eaea2776ff286",
+      "after_sha256": "70aa9d92b96ad0595b321ed30dcc05cd73cc370c921fd05dfc87f370a1868220"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt": {
+      "before_sha256": "ff6be1f140c9a103fa4d1211df0ef9ce753b778bb4795be1cc97ec7635743d8a",
+      "after_sha256": "ca8ea5d15b8935d62564c9257abb6cd32340f995c535d5f40e4c4fea85c07ecf"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt": {
+      "before_sha256": "9d89acd83ef5c55784ff548969080636163e28c92a0d8373e511dd68024440bf",
+      "after_sha256": "9230a12733c13823366adb833b28e4783f19d8426da774fffaea7b53646bc12f"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbe.kt": {
+      "before_sha256": "b7d0df49b6d27c7d2f21ca801ba80b419dcf9a46277705cd4c609bd66a10a424",
+      "after_sha256": "93b43e3bb48c0c7f1ea4f2e5588b7b81009592cf2546f074ab2b152eb6ba423f"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbeProcess.kt": {
+      "before_sha256": "e53828932ddcbbb2142579b9a684ef307c9449af3a5f0a85e7ed0bd73f416080",
+      "after_sha256": "f8dd59a17d0334a5d8cc9c9b577b26e5ecead537a7f30180c975d0a25b88264a"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseRecipe.kt": {
+      "before_sha256": "59c151faec761164dae849abc8b408fd6dd956ca43a368bcbfadfc8d07ce734f",
+      "after_sha256": "e405d48f71463bd8512a9433311509e92b387807f1b4c6682843dc9708ac128e"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OwnedPoolLeaseCreatorPendingProbe.kt": {
+      "before_sha256": null,
+      "after_sha256": "8b27c8c4a33da10b9675eb07b3634ca8a6e0ada8a7bef599c9024bef2b227764"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt": {
+      "before_sha256": null,
+      "after_sha256": "db140c4c0e93a349608b6e05e80033fd07e298aee4c272932e78b6d69564ce4a"
+    }
+  },
+  "lease_dispatch_provenance": {
+    "review/remediation/app-29-lease-dispatch-creator-independent-actual-diff-review-01.md": "aa5bfc6822ca9c4330b499d322126da0cc3bb9a3954407fae3ff72875105682d",
+    "review/working/app-29-lease-dispatch-creator-visibility-correction-01/receipt.json": "80ada48647b1a0689b393db81cf9808934805be75e217835366bf3028edc5579",
+    "review/remediation/app-29-ordinary-connected-pg-result-independent-review-01.md": "2df511863517be99ac0cd53099926df64b2eaae71414727205f225cae9561f40",
+    "review/working/app-29-w03-integrated-driver-development-cycle-13/result.json": "4bc6a8075d74f0153b94299813fd7b881d23083df08dc5896d4a02cb5a13601a",
+    "review/working/app-29-w03-integrated-driver-development-13/manifest.json": "6ec3edc2bc4500b40bc29967f90caf5f8c918f60e0d09f8f2e0643e78a73362a",
+    "review/working/app-29-w03-integrated-driver-development-cycle-13/reports/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest.xml": "9e98cbd03bd25047a810b680ad94f58bc00ba3f63c5aa20eb1653bc1cff2375c",
+    "review/working/app-29-w03-integrated-driver-development-13/sources/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseControlsTest.kt": "ae098432000c15bdd4e90c45ddbf7ebb02e819dde2ebdf0db535b6ff720c056e"
+  },
+  "limits": [
+    "Exactly2 literal noarg declaration filters/5 task argv/2 XML cases in PoolLeaseDispatchCreatorIntegrationTest. No enum, prior16, OwnershipIT, wildcard, source-set narrowing, compile skip, extra task, timeout increase or retry.",
+    "Normal main/test compilation remains enabled; the unchanged W01 init supplies one512MiB worker and the driver/checker overlay. maxParallelForks1, forkEvery0 and JUnit parallel=false remain. No negative enum child JVM is selected; the unchanged shared OwnedChildren helper still owns every launched process.",
+    "Exactly one PostgreSQL17.6-alpine fixture and one Ryuk0.12.0 in one required session. Paired real pools reuse the class database. Exact create/destroy IDs, image pins, clean daemon, session/UUID checks, unknown-custody refusal and sticky forced/nonzero cleanup remain mandatory.",
+    "Keep the historical lease17 source rows/checkpoint/bundle and PG18 profile/manifest/16PASS2FAIL raw result unchanged. Append only the reviewed two-test-file delta. A later failed2 PASS cannot relabel historical16 as fresh or establish either earlier failure mechanism.",
+    "Preserve all348 development07 seed keys, complete481 source map,214 review subjects/snapshots and102 historical pins. Preserve every old approved/tooling pin without contradiction; no source subset, stale snapshot, permissive provenance or copied counts from a previous result.",
+    "Primary supplies actual clean one-child PG02 tip/tree, preliminary source freeze and checkpoint/path pins, complete private singleton-ref bundle, final profile/init/controller pins, whole issue-baseline diff, fresh hosted v3 freeze and genuine local receipt. No author-fabricated receipt or self/receipt/request cycle.",
+    "New source stage, tip/tree, bundle, final profile/init guard and request remain UNBOUND/unauthorized. Source hashes are reviewed input pins only, not source checkpoint/runtime acceptance. Distinct derivative review and separate one-attempt primary admission are still required.",
+    "The MODEL attempt can still FAIL; improved diagnostics alone carry no correctness credit. Preserve first Throwable/suppressed restoration/reporting context and factual finite stages; suppression-disabled primary and unobserved pre-callback EMF-init masking remain limits. No new diagnostic acceptance parser.",
+    "PG14 diagnostic rows are NOT_APPLICABLE/zero here; all original PG14 requirements/results stay historical. Native05 remains UNQUALIFIED, with original MODEL fatal/ClientInfo/declared-stream and unregistered-tail limits. No original-provider/consumer-witness selection.",
+    "Preserve25min/1200s total/120s preflight/900s validation/180s cleanup,8GiB floor,8MiB bundle,2GiB Gradle/512MiB metaspace and all inherited drains/capture/owned-output absence gates. Forced/nonzero cleanup, cancellation, incomplete evidence and budget failure are stickyFAIL. NORMAL_ABSENT is not graceful or zero-kill proof; retain raw events.",
+    "Full47/consumer/opaque/native/liveness/W03/full-P3/production/new-backend-data and installation recovery remain open; W06 excluded. No integration or public private-ancestry push authority. This author does not independently approve this preparation."
+  ],
+  "historical_pg18_source_inventory": {
+    "path": "review/working/app-29-lease-dispatch-linux01-preparation/selection.json",
+    "sha256": "075948a19f2be69a8c726c12f4772f9dd82aa7060dbd04f4051babc15e595ab6",
+    "expected_test_count": 18,
+    "kind": "Inert source identity proposal:9 no-arg plus8 enum invocations plus1 unchanged failed method. XML spelling is fixed here from retained default-name evidence, not observed new outcomes."
+  },
+  "historical_pg18_profile": {
+    "path": "review/working/app-29-lease-dispatch-pg-carrier-02/profile/profile.json",
+    "sha256": "315509d24f0fd4c84fd8172231e7eb79639bad1a0ae589db6e18ce0268b4ed79"
+  },
+  "historical_pg18_source": {
+    "path": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-01-transport-02/manifest.json",
+    "sha256": "1387f68bccac8797a5fc413d58495d748c3b28715f60b6074f7dca7e19ef94ba",
+    "backend_sha": "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3",
+    "source_count": 481,
+    "snapshot_count": 214,
+    "scope": "IMMUTABLE_TRANSPORT02_PG18_SOURCE_SELECTION_AND_AUTHORITY_BEFORE_PG02"
+  },
+  "historical_lease_source_bundle": {
+    "path": "review/working/app-29-lease-dispatch-source-checkpoint-01/backend.bundle",
+    "sha256": "235fca34c51710930fd9ced4444d0931e5273137bd4178169c3b8c9c4010ec50",
+    "bytes": 280735
+  },
+  "historical_pg18_result": {
+    "path": "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/result.json",
+    "sha256": "e64b94410e240f7585ac6d4a2d70c90b3b8952d75e61cfa5e055f15fb1e69bc9",
+    "run_id": "34762007741",
+    "attempt": 1,
+    "carrier_sha": "6794795c9d40b6a99a4af9b4c46cf6e7a0f68d27",
+    "backend_sha": "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3",
+    "passed": 16,
+    "failed": 2,
+    "errors": 0,
+    "skipped": 0,
+    "scope": "HISTORICAL_TRANSPORT02_FAIL_16_PASS_2_FAIL_NOT_REWRITTEN_OR_REPLAYED. Only those two failures are current candidates; no credit for an anticipated diagnostic improvement.",
+    "cleanup_limit": "All six sticky controller failures remain in the raw result. NORMAL_ABSENT means bounded final absence, not successful test execution or graceful/zero-kill shutdown. Both PG kill9/die137 and Ryuk die0 remain historical raw events."
+  },
+  "pg02_source_stage_status": "UNBOUND",
+  "pg02_source_target": {
+    "path": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg02-static-02/manifest.json",
+    "sha256": null,
+    "source_count": null,
+    "snapshot_count": null
+  },
+  "pg02_source_checkpoint": {
+    "path": "review/working/app-29-lease-dispatch-pg02-source-checkpoint-01/checkpoint.json",
+    "sha256": null
+  },
+  "pg02_checkpoint_paths": {
+    "path": "review/working/app-29-lease-dispatch-pg02-source-checkpoint-01/paths.json",
+    "sha256": null
+  },
+  "pg02_source_delta": {
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt": {
+      "before_sha256": "b87e92bb9d78fb8f37afed414bd07899c59606536b972c6a444dda1cbc677322",
+      "after_sha256": "1660f8dbb5d71033d7fb0606f1a5d20248dd4c6204a7773aca75a6a0663e77cb"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt": {
+      "before_sha256": "db140c4c0e93a349608b6e05e80033fd07e298aee4c272932e78b6d69564ce4a",
+      "after_sha256": "3c0010170b07b1edef3f87894dac6833f2ae2f02e841609cd5e3e15d9ce489d5"
+    }
+  },
+  "pg02_reviewed_source_diff": {
+    "path": "review/working/app-29-lease-dispatch-pg02-preparation-01/source-delta.patch",
+    "sha256": "6a966a7589070d249c309d10ed824838c778ca42a4ff378eec3e3b515e220df4",
+    "base": "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3",
+    "scope": "Full-index complete TWO-FILE delta only; not a replacement for the primary fresh whole issue-baseline diff in the v3 freeze."
+  },
+  "historical_text_note": "Inherited fields named historical_* (including historical_ordinary_limits) preserve the preceding profile documentary context. References there to current18/previous selections are quotations of that historical stage, not PG02 selectors, admission or results.",
+  "pg02_provenance": {
+    "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-01-transport-02/issue-baseline.patch": "212c7f80101fa9a772ef4d9d88d7b78b570b5134d46c9229aeb0bd7243e44853",
+    "review/remediation/app-29-lease-dispatch-pg01-transport02-independent-actual-result-review-01.md": "0cd81ef933388b61e3f512bcd915962e9eced17ede60f32a6ce0698b76a1f8d4",
+    "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/result.json": "e64b94410e240f7585ac6d4a2d70c90b3b8952d75e61cfa5e055f15fb1e69bc9",
+    "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/collection.json": "dded7894078740b37f22ec22b2c5ca6cd09982169240bb4759bf6cef4374cc93",
+    "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/run-final.json": "3793e3a58f73cd93cae2222db537582a7130d145d000e2be17c0cb785c3d8b05",
+    "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": "1e40141e4e41cd40b9f8ba7544da766d3e6bb1e10c16e47e72bb772b0ec2acdd",
+    "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.xml": "d4aebf27f8ed9ed58e43889be5e2613d33b0728712bc827aee222db19f1d257d",
+    "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/gradle-test.log": "3d13c1dd5a353540b1165990724d5c896915946881949516607b89b7f05a6e6c",
+    "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/container-events.log": "969782bcad4c82a6bcc9814aa7eacc8e9ffeee9f1739c2d3edbed7b6ca3f8d61",
+    "review/remediation/app-29-lease-dispatch-pg02-primary-correction-plan-01.md": "b67977472e0e31c1c4c30d23de3c61338c13f8d0ca515786dbe7d048cbc7f335",
+    "review/remediation/app-29-lease-dispatch-pg02-test-authoring-report-01.md": "384fadaf7c93b3f8a661cb917f9661d3204c494ea6bd2932ce4b8a1e0b8f4155",
+    "review/remediation/app-29-lease-dispatch-pg02-independent-actual-diff-review-01.md": "20aa2d84cb1733042c5524e99c322b43558875a333ecde52150d3fff66f13a1c",
+    "review/remediation/app-29-lease-dispatch-pg02-independent-r1r2-recheck-01.md": "21006a592a75ea7008188934f1f8566496671d6a3acb2f3bced88e9aa9b2387d",
+    "review/remediation/app-29-lease-dispatch-pg02-braces-independent-review-01.md": "704b4d894bf32788552d7cf5c621b43ccc8b1be40cc02cd9254c93f1d213b89d",
+    "review/working/app-29-lease-dispatch-pg02-static-01/result.json": "044f039be04e2d4de855e4af53a001737f6daa4b5a9060c27e90a31485d84238",
+    "review/working/app-29-lease-dispatch-pg02-static-01/validation.log": "3111270b2049977076d6a0707f7a4f71e85c0a35c7c2f533ae85ebf969e501a7",
+    "review/working/app-29-lease-dispatch-pg02-static-02/result.json": "005f0c70d7bccafa68a956ec354368ded8da1f4bdfc42dcfb1baf52f72b23be6",
+    "review/working/app-29-lease-dispatch-pg02-static-02/validation.log": "50d265201838fbd5a3faca4d9cf8f40ef065ea354bb3d5ecc879b97eda98082f",
+    "review/working/app-29-lease-dispatch-pg02-preparation-01/source-delta.patch": "6a966a7589070d249c309d10ed824838c778ca42a4ff378eec3e3b515e220df4"
+  }
+}

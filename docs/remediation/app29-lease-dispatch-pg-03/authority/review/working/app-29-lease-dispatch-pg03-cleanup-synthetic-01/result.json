@@ -1,0 +1,4108 @@
+{
+  "status": "PASS",
+  "scope": "FOUR_SYNTHETIC_CLEANUP_GROUPS_ONLY_NOT_PG_OR_OWNERSHIP",
+  "python": "3.12.3 (main, Jun 19 2026, 12:46:00) [GCC 13.3.0]",
+  "pid": 23590,
+  "argv": [
+    "review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/test_cleanup_synthetic.py"
+  ],
+  "tests_run": 4,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "failure_ids": [],
+  "error_ids": [],
+  "elapsed_seconds": 0.11444075100007467,
+  "candidate_sha256_after": "30b9ab8a43b6b9277ac401569ddfa62ef44282929d6bb21badbf2f7abe5c1024",
+  "candidate_preserved": true,
+  "test_source_sha256": "f0358214820ad2d03ba9e1d05825513961212a26e25ca00b3954cc46f1fdb367",
+  "tests_log_sha256": "63171750c3fa3ae816c6b45f6c7132d1bcfe8497c9c197c35f88e3978efc2dd6",
+  "disposable_fixtures_absent": true,
+  "fixtures": [
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-47wtxenh",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-8xbyxmm7",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-unsixwah",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-0xliumsm",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-0qyya4qp",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-gy6z0l04",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-vk8vhjcd",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-kpcg9ka6",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-lgr43_0p",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-4ss9im7u",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-hb1dtjyr",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-2r_1kswe",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-dmd8u_9v",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-3cf_6re5",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-cs255u5m",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-5l5rq9fo",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-zqag0viy",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-kmw4fb7w",
+      "removed": true
+    },
+    {
+      "path": "/root/projects/Kira/review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/fixture-4os2rdr8",
+      "removed": true
+    }
+  ],
+  "case_count": 19,
+  "cases": [
+    {
+      "case": "known_empty_both_roots_absent",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "after-immediate-stop-nonzero-child",
+            "type": "RuntimeError"
+          },
+          {
+            "stage": "container-required-topology",
+            "type": "ValueError",
+            "guard": "CONTAINER_REQUIRED_TOPOLOGY"
+          },
+          {
+            "stage": "required-capture-inventory",
+            "type": "ValueError",
+            "guard": "CAPTURE_ROOT"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-after-cleanup",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "NORMAL_ABSENT",
+        "container_topology_complete": false,
+        "capture_complete": true,
+        "required_capture_complete": false,
+        "capture_roots": {
+          "test-results": "ABSENT",
+          "reports": "ABSENT"
+        },
+        "captured_file_hashes": {},
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          }
+        },
+        "diagnostics": {
+          "status": "NOT_EVALUATED"
+        },
+        "outputs_absent": true,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "before-file-cleanup",
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "missing_first_root_existing_reports",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "required-capture-inventory",
+            "type": "ValueError",
+            "guard": "CAPTURE_ROOT"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-0",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "postgres:17.6-alpine"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-1",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "testcontainers/ryuk:0.12.0"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-after-cleanup",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "NORMAL_ABSENT",
+        "container_topology_complete": true,
+        "capture_complete": true,
+        "required_capture_complete": false,
+        "capture_roots": {
+          "test-results": "ABSENT",
+          "reports": "CAPTURED"
+        },
+        "captured_file_hashes": {
+          "reports/available/evidence.json": {
+            "bytes": 25,
+            "sha256": "e12a7a9fc8032b255422043f9e93fdc9c646505944d0515f54377f0e70ba9a35"
+          },
+          "reports/available/evidence.log": {
+            "bytes": 24,
+            "sha256": "26c93971c0133479b17c34cd3ba1639bf66abec93a6a05b171fe60974bf4c8d6"
+          },
+          "reports/available/evidence.txt": {
+            "bytes": 24,
+            "sha256": "73ab842d219bbb1ee767f807636ddd22d8e3997f6c1ae89ca4bdc748045f4ab0"
+          },
+          "reports/available/evidence.xml": {
+            "bytes": 24,
+            "sha256": "fb44755d6d68797e8e3aeea3b9659a581a8cb7e5f0ddbc229ae0627f974328a1"
+          }
+        },
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          }
+        },
+        "diagnostics": {
+          "status": "NOT_EVALUATED"
+        },
+        "outputs_absent": true,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "before-file-cleanup",
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "present_roots_missing_required_xml",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "required-capture-inventory",
+            "type": "ValueError",
+            "guard": "CAPTURE_REQUIRED_INVENTORY"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-0",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "postgres:17.6-alpine"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-1",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "testcontainers/ryuk:0.12.0"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-after-cleanup",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "NORMAL_ABSENT",
+        "container_topology_complete": true,
+        "capture_complete": true,
+        "required_capture_complete": false,
+        "capture_roots": {
+          "test-results": "CAPTURED",
+          "reports": "CAPTURED"
+        },
+        "captured_file_hashes": {
+          "reports/synthetic-context/class-load-123.txt": {
+            "bytes": 26,
+            "sha256": "cfda676abdab8b339cf18f6a3a97a95ec81886f54d08a1a22668aee2fe703f5d"
+          },
+          "reports/synthetic-context/effective-classpath.txt": {
+            "bytes": 72,
+            "sha256": "1410e98d227186611166946e0e7d5f901c9b1d127a4e966f885a9fc81348aad0"
+          }
+        },
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          }
+        },
+        "diagnostics": {
+          "status": "NOT_EVALUATED"
+        },
+        "outputs_absent": true,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "before-file-cleanup",
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "ignored_raw_event",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "containers",
+            "type": "ValueError"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "UNKNOWN",
+        "container_topology_complete": false,
+        "capture_complete": true,
+        "required_capture_complete": true,
+        "capture_roots": {
+          "test-results": "CAPTURED",
+          "reports": "CAPTURED"
+        },
+        "captured_file_hashes": {
+          "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": {
+            "bytes": 611,
+            "sha256": "62dbd95029457a6303a29d6f1759b34e2a782a4de2bd22b6f6f4f80bfdf631b8"
+          },
+          "reports/synthetic-context/class-load-123.txt": {
+            "bytes": 26,
+            "sha256": "cfda676abdab8b339cf18f6a3a97a95ec81886f54d08a1a22668aee2fe703f5d"
+          },
+          "reports/synthetic-context/effective-classpath.txt": {
+            "bytes": 72,
+            "sha256": "1410e98d227186611166946e0e7d5f901c9b1d127a4e966f885a9fc81348aad0"
+          }
+        },
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          }
+        },
+        "diagnostics": {
+          "test_status": "PASS",
+          "fixed_scalar_capture": "NOT_APPLICABLE",
+          "synthetic_boundary": true
+        },
+        "outputs_absent": false,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [
+        "SYNTHETIC_SUCCESS_BOUNDARY_ONLY"
+      ],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "unknown_current_id",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "containers",
+            "type": "ValueError"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "UNKNOWN",
+        "container_topology_complete": false,
+        "capture_complete": true,
+        "required_capture_complete": true,
+        "capture_roots": {
+          "test-results": "CAPTURED",
+          "reports": "CAPTURED"
+        },
+        "captured_file_hashes": {
+          "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": {
+            "bytes": 611,
+            "sha256": "62dbd95029457a6303a29d6f1759b34e2a782a4de2bd22b6f6f4f80bfdf631b8"
+          },
+          "reports/synthetic-context/class-load-123.txt": {
+            "bytes": 26,
+            "sha256": "cfda676abdab8b339cf18f6a3a97a95ec81886f54d08a1a22668aee2fe703f5d"
+          },
+          "reports/synthetic-context/effective-classpath.txt": {
+            "bytes": 72,
+            "sha256": "1410e98d227186611166946e0e7d5f901c9b1d127a4e966f885a9fc81348aad0"
+          }
+        },
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          }
+        },
+        "diagnostics": {
+          "test_status": "PASS",
+          "fixed_scalar_capture": "NOT_APPLICABLE",
+          "synthetic_boundary": true
+        },
+        "outputs_absent": false,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [
+        "SYNTHETIC_SUCCESS_BOUNDARY_ONLY"
+      ],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "orphan_destroy",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "containers",
+            "type": "ValueError"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "UNKNOWN",
+        "container_topology_complete": false,
+        "capture_complete": true,
+        "required_capture_complete": true,
+        "capture_roots": {
+          "test-results": "CAPTURED",
+          "reports": "CAPTURED"
+        },
+        "captured_file_hashes": {
+          "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": {
+            "bytes": 611,
+            "sha256": "62dbd95029457a6303a29d6f1759b34e2a782a4de2bd22b6f6f4f80bfdf631b8"
+          },
+          "reports/synthetic-context/class-load-123.txt": {
+            "bytes": 26,
+            "sha256": "cfda676abdab8b339cf18f6a3a97a95ec81886f54d08a1a22668aee2fe703f5d"
+          },
+          "reports/synthetic-context/effective-classpath.txt": {
+            "bytes": 72,
+            "sha256": "1410e98d227186611166946e0e7d5f901c9b1d127a4e966f885a9fc81348aad0"
+          }
+        },
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          }
+        },
+        "diagnostics": {
+          "test_status": "PASS",
+          "fixed_scalar_capture": "NOT_APPLICABLE",
+          "synthetic_boundary": true
+        },
+        "outputs_absent": false,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [
+        "SYNTHETIC_SUCCESS_BOUNDARY_ONLY"
+      ],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "partial_topology",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "containers",
+            "type": "ValueError"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "UNKNOWN",
+        "container_topology_complete": false,
+        "capture_complete": true,
+        "required_capture_complete": true,
+        "capture_roots": {
+          "test-results": "CAPTURED",
+          "reports": "CAPTURED"
+        },
+        "captured_file_hashes": {
+          "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": {
+            "bytes": 611,
+            "sha256": "62dbd95029457a6303a29d6f1759b34e2a782a4de2bd22b6f6f4f80bfdf631b8"
+          },
+          "reports/synthetic-context/class-load-123.txt": {
+            "bytes": 26,
+            "sha256": "cfda676abdab8b339cf18f6a3a97a95ec81886f54d08a1a22668aee2fe703f5d"
+          },
+          "reports/synthetic-context/effective-classpath.txt": {
+            "bytes": 72,
+            "sha256": "1410e98d227186611166946e0e7d5f901c9b1d127a4e966f885a9fc81348aad0"
+          }
+        },
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          }
+        },
+        "diagnostics": {
+          "test_status": "PASS",
+          "fixed_scalar_capture": "NOT_APPLICABLE",
+          "synthetic_boundary": true
+        },
+        "outputs_absent": false,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [
+        "SYNTHETIC_SUCCESS_BOUNDARY_ONLY"
+      ],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "unknown_image",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "containers",
+            "type": "ValueError"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "UNKNOWN",
+        "container_topology_complete": false,
+        "capture_complete": true,
+        "required_capture_complete": true,
+        "capture_roots": {
+          "test-results": "CAPTURED",
+          "reports": "CAPTURED"
+        },
+        "captured_file_hashes": {
+          "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": {
+            "bytes": 611,
+            "sha256": "62dbd95029457a6303a29d6f1759b34e2a782a4de2bd22b6f6f4f80bfdf631b8"
+          },
+          "reports/synthetic-context/class-load-123.txt": {
+            "bytes": 26,
+            "sha256": "cfda676abdab8b339cf18f6a3a97a95ec81886f54d08a1a22668aee2fe703f5d"
+          },
+          "reports/synthetic-context/effective-classpath.txt": {
+            "bytes": 72,
+            "sha256": "1410e98d227186611166946e0e7d5f901c9b1d127a4e966f885a9fc81348aad0"
+          }
+        },
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          }
+        },
+        "diagnostics": {
+          "test_status": "PASS",
+          "fixed_scalar_capture": "NOT_APPLICABLE",
+          "synthetic_boundary": true
+        },
+        "outputs_absent": false,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [
+        "SYNTHETIC_SUCCESS_BOUNDARY_ONLY"
+      ],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "fresh_census_nonempty",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "container-required-topology",
+            "type": "ValueError",
+            "guard": "CONTAINER_REQUIRED_TOPOLOGY"
+          },
+          {
+            "stage": "containers",
+            "type": "ValueError"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-after-cleanup",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "UNKNOWN",
+        "container_topology_complete": false,
+        "capture_complete": true,
+        "required_capture_complete": true,
+        "capture_roots": {
+          "test-results": "CAPTURED",
+          "reports": "CAPTURED"
+        },
+        "captured_file_hashes": {
+          "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": {
+            "bytes": 611,
+            "sha256": "62dbd95029457a6303a29d6f1759b34e2a782a4de2bd22b6f6f4f80bfdf631b8"
+          },
+          "reports/synthetic-context/class-load-123.txt": {
+            "bytes": 26,
+            "sha256": "cfda676abdab8b339cf18f6a3a97a95ec81886f54d08a1a22668aee2fe703f5d"
+          },
+          "reports/synthetic-context/effective-classpath.txt": {
+            "bytes": 72,
+            "sha256": "1410e98d227186611166946e0e7d5f901c9b1d127a4e966f885a9fc81348aad0"
+          }
+        },
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          }
+        },
+        "diagnostics": {
+          "test_status": "PASS",
+          "fixed_scalar_capture": "NOT_APPLICABLE",
+          "synthetic_boundary": true
+        },
+        "outputs_absent": false,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [
+        "SYNTHETIC_SUCCESS_BOUNDARY_ONLY"
+      ],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "fresh_census_error",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "container-required-topology",
+            "type": "ValueError",
+            "guard": "CONTAINER_REQUIRED_TOPOLOGY"
+          },
+          {
+            "stage": "containers",
+            "type": "RuntimeError"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-after-cleanup",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 1,
+            "outcome": "UNKNOWN"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "UNKNOWN",
+        "container_topology_complete": false,
+        "capture_complete": true,
+        "required_capture_complete": true,
+        "capture_roots": {
+          "test-results": "CAPTURED",
+          "reports": "CAPTURED"
+        },
+        "captured_file_hashes": {
+          "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": {
+            "bytes": 611,
+            "sha256": "62dbd95029457a6303a29d6f1759b34e2a782a4de2bd22b6f6f4f80bfdf631b8"
+          },
+          "reports/synthetic-context/class-load-123.txt": {
+            "bytes": 26,
+            "sha256": "cfda676abdab8b339cf18f6a3a97a95ec81886f54d08a1a22668aee2fe703f5d"
+          },
+          "reports/synthetic-context/effective-classpath.txt": {
+            "bytes": 72,
+            "sha256": "1410e98d227186611166946e0e7d5f901c9b1d127a4e966f885a9fc81348aad0"
+          }
+        },
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CONTAINER_CLEANUP_NOT_ABSENT",
+            "absent": false
+          }
+        },
+        "diagnostics": {
+          "test_status": "PASS",
+          "fixed_scalar_capture": "NOT_APPLICABLE",
+          "synthetic_boundary": true
+        },
+        "outputs_absent": false,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [
+        "SYNTHETIC_SUCCESS_BOUNDARY_ONLY"
+      ],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "root_permission_error",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "capture-reports",
+            "type": "PermissionError"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-0",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "postgres:17.6-alpine"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-1",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "testcontainers/ryuk:0.12.0"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-after-cleanup",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "NORMAL_ABSENT",
+        "container_topology_complete": true,
+        "capture_complete": false,
+        "required_capture_complete": false,
+        "capture_roots": {
+          "test-results": "UNKNOWN"
+        },
+        "captured_file_hashes": {},
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          }
+        },
+        "diagnostics": {
+          "status": "NOT_EVALUATED"
+        },
+        "outputs_absent": false,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "before-file-cleanup",
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "root_regular_file",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "capture-reports",
+            "type": "ValueError",
+            "guard": "CAPTURE_ROOT"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-0",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "postgres:17.6-alpine"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-1",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "testcontainers/ryuk:0.12.0"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-after-cleanup",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "NORMAL_ABSENT",
+        "container_topology_complete": true,
+        "capture_complete": false,
+        "required_capture_complete": false,
+        "capture_roots": {
+          "test-results": "UNKNOWN"
+        },
+        "captured_file_hashes": {},
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          }
+        },
+        "diagnostics": {
+          "status": "NOT_EVALUATED"
+        },
+        "outputs_absent": false,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "before-file-cleanup",
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "nested_link",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "capture-reports",
+            "type": "ValueError",
+            "guard": "CAPTURE_LINK"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-0",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "postgres:17.6-alpine"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-1",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "testcontainers/ryuk:0.12.0"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-after-cleanup",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "NORMAL_ABSENT",
+        "container_topology_complete": true,
+        "capture_complete": false,
+        "required_capture_complete": false,
+        "capture_roots": {
+          "test-results": "CAPTURED",
+          "reports": "UNKNOWN"
+        },
+        "captured_file_hashes": {
+          "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": {
+            "bytes": 611,
+            "sha256": "62dbd95029457a6303a29d6f1759b34e2a782a4de2bd22b6f6f4f80bfdf631b8"
+          },
+          "reports/synthetic-context/class-load-123.txt": {
+            "bytes": 26,
+            "sha256": "cfda676abdab8b339cf18f6a3a97a95ec81886f54d08a1a22668aee2fe703f5d"
+          },
+          "reports/synthetic-context/effective-classpath.txt": {
+            "bytes": 72,
+            "sha256": "1410e98d227186611166946e0e7d5f901c9b1d127a4e966f885a9fc81348aad0"
+          }
+        },
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          }
+        },
+        "diagnostics": {
+          "status": "NOT_EVALUATED"
+        },
+        "outputs_absent": false,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "before-file-cleanup",
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "nested_fifo",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "capture-reports",
+            "type": "ValueError",
+            "guard": "CAPTURE_TYPE"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-0",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "postgres:17.6-alpine"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-1",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "testcontainers/ryuk:0.12.0"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-after-cleanup",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "NORMAL_ABSENT",
+        "container_topology_complete": true,
+        "capture_complete": false,
+        "required_capture_complete": false,
+        "capture_roots": {
+          "test-results": "CAPTURED",
+          "reports": "UNKNOWN"
+        },
+        "captured_file_hashes": {
+          "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": {
+            "bytes": 611,
+            "sha256": "62dbd95029457a6303a29d6f1759b34e2a782a4de2bd22b6f6f4f80bfdf631b8"
+          },
+          "reports/synthetic-context/class-load-123.txt": {
+            "bytes": 26,
+            "sha256": "cfda676abdab8b339cf18f6a3a97a95ec81886f54d08a1a22668aee2fe703f5d"
+          },
+          "reports/synthetic-context/effective-classpath.txt": {
+            "bytes": 72,
+            "sha256": "1410e98d227186611166946e0e7d5f901c9b1d127a4e966f885a9fc81348aad0"
+          }
+        },
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          }
+        },
+        "diagnostics": {
+          "status": "NOT_EVALUATED"
+        },
+        "outputs_absent": false,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "before-file-cleanup",
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "walk_error",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "capture-reports",
+            "type": "PermissionError"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-0",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "postgres:17.6-alpine"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-1",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "testcontainers/ryuk:0.12.0"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-after-cleanup",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "NORMAL_ABSENT",
+        "container_topology_complete": true,
+        "capture_complete": false,
+        "required_capture_complete": false,
+        "capture_roots": {
+          "test-results": "UNKNOWN"
+        },
+        "captured_file_hashes": {},
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          }
+        },
+        "diagnostics": {
+          "status": "NOT_EVALUATED"
+        },
+        "outputs_absent": false,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "before-file-cleanup",
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "enumerated_entry_disappears",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "capture-reports",
+            "type": "FileNotFoundError"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-0",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "postgres:17.6-alpine"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-1",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "testcontainers/ryuk:0.12.0"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-after-cleanup",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "NORMAL_ABSENT",
+        "container_topology_complete": true,
+        "capture_complete": false,
+        "required_capture_complete": false,
+        "capture_roots": {
+          "test-results": "CAPTURED",
+          "reports": "UNKNOWN"
+        },
+        "captured_file_hashes": {
+          "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": {
+            "bytes": 611,
+            "sha256": "62dbd95029457a6303a29d6f1759b34e2a782a4de2bd22b6f6f4f80bfdf631b8"
+          },
+          "reports/synthetic-context/class-load-123.txt": {
+            "bytes": 26,
+            "sha256": "cfda676abdab8b339cf18f6a3a97a95ec81886f54d08a1a22668aee2fe703f5d"
+          },
+          "reports/synthetic-context/effective-classpath.txt": {
+            "bytes": 72,
+            "sha256": "1410e98d227186611166946e0e7d5f901c9b1d127a4e966f885a9fc81348aad0"
+          }
+        },
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          }
+        },
+        "diagnostics": {
+          "status": "NOT_EVALUATED"
+        },
+        "outputs_absent": false,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "before-file-cleanup",
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "copy_drift",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "capture-reports",
+            "type": "ValueError",
+            "guard": "CAPTURE_COPY_DRIFT"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-0",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "postgres:17.6-alpine"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-1",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "testcontainers/ryuk:0.12.0"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-after-cleanup",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "NORMAL_ABSENT",
+        "container_topology_complete": true,
+        "capture_complete": false,
+        "required_capture_complete": false,
+        "capture_roots": {
+          "test-results": "UNKNOWN"
+        },
+        "captured_file_hashes": {
+          "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": {
+            "bytes": 611,
+            "sha256": null
+          }
+        },
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          }
+        },
+        "diagnostics": {
+          "status": "NOT_EVALUATED"
+        },
+        "outputs_absent": false,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "before-file-cleanup",
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "oversized_file",
+      "assertions_completed": true,
+      "result": {
+        "status": "FAIL",
+        "failures": [
+          {
+            "stage": "capture-reports",
+            "type": "ValueError",
+            "guard": "BOUNDED_REGULAR_FILE"
+          }
+        ],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-0",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "postgres:17.6-alpine"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-1",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "testcontainers/ryuk:0.12.0"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-after-cleanup",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "NORMAL_ABSENT",
+        "container_topology_complete": true,
+        "capture_complete": false,
+        "required_capture_complete": false,
+        "capture_roots": {
+          "test-results": "CAPTURED",
+          "reports": "UNKNOWN"
+        },
+        "captured_file_hashes": {
+          "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": {
+            "bytes": 611,
+            "sha256": "62dbd95029457a6303a29d6f1759b34e2a782a4de2bd22b6f6f4f80bfdf631b8"
+          },
+          "reports/synthetic-context/class-load-123.txt": {
+            "bytes": 26,
+            "sha256": "cfda676abdab8b339cf18f6a3a97a95ec81886f54d08a1a22668aee2fe703f5d"
+          },
+          "reports/synthetic-context/effective-classpath.txt": {
+            "bytes": 72,
+            "sha256": "1410e98d227186611166946e0e7d5f901c9b1d127a4e966f885a9fc81348aad0"
+          },
+          "reports/synthetic-context/oversized.log": {
+            "bytes": null,
+            "sha256": null
+          }
+        },
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": false,
+            "cleanup_complete": false,
+            "cleanup_skipped_reason": "CAPTURE_INCOMPLETE",
+            "absent": false
+          }
+        },
+        "diagnostics": {
+          "status": "NOT_EVALUATED"
+        },
+        "outputs_absent": false,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "before-file-cleanup",
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [],
+      "new_pass_flag_probes": {}
+    },
+    {
+      "case": "complete_inventory_valid_topology_predicate_only",
+      "assertions_completed": true,
+      "result": {
+        "status": "PASS",
+        "failures": [],
+        "commands": [
+          {
+            "name": "containers-before",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-normal-0",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "container-events",
+            "argv": [
+              "docker",
+              "events",
+              "--since",
+              "1234567890",
+              "--until",
+              "1234567891",
+              "--filter",
+              "type=container",
+              "--format",
+              "{{json .}}"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-0",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "postgres:17.6-alpine"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "image-1",
+            "argv": [
+              "docker",
+              "image",
+              "inspect",
+              "--format",
+              "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+              "testcontainers/ryuk:0.12.0"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-after-cleanup",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          },
+          {
+            "name": "containers-final",
+            "argv": [
+              "docker",
+              "ps",
+              "-aq",
+              "--no-trunc"
+            ],
+            "synthetic": true,
+            "actual_exit": 0,
+            "outcome": "NORMAL"
+          }
+        ],
+        "containers": "NORMAL_ABSENT",
+        "container_topology_complete": true,
+        "capture_complete": true,
+        "required_capture_complete": true,
+        "capture_roots": {
+          "test-results": "CAPTURED",
+          "reports": "CAPTURED"
+        },
+        "captured_file_hashes": {
+          "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": {
+            "bytes": 611,
+            "sha256": "62dbd95029457a6303a29d6f1759b34e2a782a4de2bd22b6f6f4f80bfdf631b8"
+          },
+          "reports/synthetic-context/class-load-123.txt": {
+            "bytes": 26,
+            "sha256": "cfda676abdab8b339cf18f6a3a97a95ec81886f54d08a1a22668aee2fe703f5d"
+          },
+          "reports/synthetic-context/effective-classpath.txt": {
+            "bytes": 72,
+            "sha256": "1410e98d227186611166946e0e7d5f901c9b1d127a4e966f885a9fc81348aad0"
+          }
+        },
+        "owned_output_cleanup": {
+          "<test-created-fixture>/backend/.gradle": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/backend/.kotlin": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/backend/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/backend/buildSrc/build": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/backend/out": {
+            "cleanup_stage": "backend-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/w01": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/project-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/kotlin-cache": {
+            "cleanup_stage": "private-output-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/gradle": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/tmp": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          },
+          "<test-created-fixture>/run/home": {
+            "cleanup_stage": "private-home-cleanup",
+            "cleanup_attempted": true,
+            "cleanup_complete": true,
+            "cleanup_skipped_reason": null,
+            "absent": true
+          }
+        },
+        "diagnostics": {
+          "test_status": "PASS",
+          "fixed_scalar_capture": "NOT_APPLICABLE",
+          "synthetic_boundary": true
+        },
+        "outputs_absent": true,
+        "inputs_preserved": true,
+        "retained_inventory_complete": true,
+        "elapsed_seconds": 0,
+        "final_children_absent": true,
+        "final_containers_absent": true
+      },
+      "synthetic_drains": [
+        "before-file-cleanup",
+        "after-final-stop",
+        "before-home-cleanup"
+      ],
+      "diagnostics_boundary_calls": [
+        "SYNTHETIC_SUCCESS_BOUNDARY_ONLY"
+      ],
+      "new_pass_flag_probes": {
+        "capture_complete": "FAIL",
+        "required_capture_complete": "FAIL",
+        "container_topology_complete": "FAIL"
+      }
+    }
+  ],
+  "real_docker_gradle_ci_commands": 0,
+  "owner_or_controller_module_imported": false,
+  "spawned_children": 0,
+  "live_product_admin_edits": 0,
+  "limitations": "Actual selected function/slice control flow over synthetic inputs and private file fixtures only. Diagnostic success and custody/drains are stubs. No full execute/main, real Docker, JVM, CI, resource ownership, PG test result, source binding or public validation is established."
+}

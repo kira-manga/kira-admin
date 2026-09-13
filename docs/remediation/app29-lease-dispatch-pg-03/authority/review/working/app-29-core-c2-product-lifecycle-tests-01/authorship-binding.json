@@ -1,0 +1,43 @@
+{
+  "status": "AUTHORSHIP_ONLY_NOT_RUN",
+  "repository": "kira-backend",
+  "baseline": "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc",
+  "owned_paths": [
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt",
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt",
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt"
+  ],
+  "primary_agreement": {
+    "path": "review/remediation/app-29-core-c2-product-lifecycle-primary-agreement.md",
+    "sha256": "0dfc179ee33f5349283aeb2876e850d0c13f5cbbcc3edebbb15c570e736403dc"
+  },
+  "plan": {
+    "path": "review/remediation/app-29-core-c2-diagnostics01-backend03-product-lifecycle-plan.md",
+    "sha256": "d42458d346727c947313db631f4f2ad710a45fad6fa31b2a8599e65309b791dc"
+  },
+  "independent_plan_review": {
+    "path": "review/remediation/app-29-core-c2-product-lifecycle-plan-01-independent-review.md",
+    "sha256": "70ba9317eeef7491056b4598f63c1ff2337f3a69e7fc83d155f24be3c1050555"
+  },
+  "product_candidate": {
+    "path": "review/working/app-29-core-c2-product-lifecycle-product-01",
+    "report_sha256": "de7d19df1a92130c6cfff04e8d579715ef613a18c57f421194221b637bf565ee",
+    "patch_sha256": "072ebf2eaa07f9fd109d9056d2000add7cba5b25dd451cab0c86c14a876fbfda",
+    "after_manifest_sha256": "daa73d5b0bd6275feac48edb94216a99fc388f6f08f64477b14ff5122326390e"
+  },
+  "tests_candidate": {
+    "patch": "tests.patch",
+    "patch_sha256": "c5ec7b34ee75390c9e0f4c1443e7a5e69112a124023ee20c2cbf2ffb434f7d6b",
+    "after_manifest": "source-pins-after.sha256",
+    "after_manifest_sha256": "b5eed778684969fbf3e8e3afd41a316be62f4dd5cbeb1b595de00aadfe578754",
+    "selectors": "SELECTORS.md",
+    "new_test_methods": 3,
+    "new_declared_invocations": 5,
+    "execution_authorized": false,
+    "executed": false
+  },
+  "untouched_fixture_pins": {
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OwnedCallerTestScope.kt": "0c77a20900256ef113d4b22ba1d38e4cbbc346a6851c262cd64d06ff779b4ee5",
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleTestScope.kt": "7574167d18008256a43ff056e5797d5882abe1defc4ffcdda46e72a02a0ae9ec"
+  }
+}

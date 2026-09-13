@@ -1,0 +1,125 @@
+{
+  "schema": "app-29-lease-dispatch-inert-selection-proposal-v1",
+  "status": "AUTHOR_PREPARATION_ONLY_UNEXECUTED_NOT_APPROVED",
+  "execution_authorized": false,
+  "local": {
+    "runner": "review/working/run_app29_integrated_driver_validation_linux_v3.py",
+    "dependency_mode": "offline",
+    "task_args": ["testClasses", "ktlintCheck", "detekt", "--continue"],
+    "expected_test_invocations": 0,
+    "required_test_evidence_status": "NOT_REQUESTED",
+    "source_scope": "Normal complete backend main/test compilation, resources and configured aggregate Ktlint/Detekt. No new source exclusions or compile/static skips."
+  },
+  "hosted": {
+    "route": "One later separately admitted private Linux successor of ordinary-connected-PG01; no executable derivative supplied",
+    "focused_class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+    "focused_noarg_methods": [
+      "MODEL fatal connection commit creates the first real Hikari close Worker and drains its task",
+      "MODEL fatal Hikari statement execution creates the first real close Worker and drains its task",
+      "repeated nested admitted dispatches retain one future RETURN and no lower native fallback",
+      "only exact admitted guard dispatch lease epoch and issuer can enter a creator",
+      "mixed pool creator nesting refuses wrong top fallback and unrelated lease use",
+      "present returned dispatch cannot upgrade through pool authority and a revoked lease cannot enter a prepared creator",
+      "foreign actual statement cancellation keeps only its own outer tail while original RETURN waits for it",
+      "real post core outer tail refuses reentrant self wait and remains in exact terminal and loan proofs",
+      "MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement"
+    ],
+    "focused_parameterized_method": {
+      "method": "actual creator publication restoration and outer adapter faults retain exact obligations through process only exit",
+      "parameter": "mode",
+      "enum_class": "me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseMode",
+      "enum_values": [
+        "POOL_LEASE_CREATOR_ENTRY_BEFORE_TL",
+        "POOL_LEASE_CREATOR_ENTRY_AFTER_TL",
+        "POOL_LEASE_CREATOR_END_BEFORE_TL",
+        "POOL_LEASE_CREATOR_END_AFTER_TL",
+        "POOL_LEASE_CREATOR_CORE_BEFORE_TL",
+        "POOL_LEASE_CREATOR_CORE_AFTER_TL",
+        "POOL_LEASE_CREATOR_CLIENT_INFO_TAIL",
+        "POOL_LEASE_CREATOR_DECLARED_TAIL"
+      ],
+      "expected_invocations": 8,
+      "identity_status": "Source EnumSource identities only; the method filter selects the declaration, not individual enum rows",
+      "xml_identity_binding": "Pending small derivative review of normal Gradle/JUnit signature, index and argument spelling; retain raw names and require exact eight distinct method/mode identities, not only a total",
+      "negative_lane": "Existing owned sanitized child, live RETAINED/EXIT, exit23, PROCESS_ONLY product_end=false; the positive awaitVerified oracle must reject this exit"
+    },
+    "focused_expected_invocations": 17,
+    "unchanged_previously_failed_method": {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
+      "method": "native commit failure stays unknown after Spring cleanup while authentic local quiescence permits only refund",
+      "source_path": "kira-backend/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupOwnershipIT.kt",
+      "source_sha256": "a1ab8749ca4bf90d03bc8716e478c5f122f3f3917b17756f02e1175868fef557",
+      "source_method_lines": "512-550",
+      "expected_invocations": 1,
+      "historical_result": "PG01 FAIL: required owned-pool teardown remained pending. Mechanism unmeasured; retain unchanged assertions and budgets."
+    },
+    "method_filter_count": 11,
+    "task_argv_count": 23,
+    "task_args": [
+      "test",
+      "--tests", "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL fatal connection commit creates the first real Hikari close Worker and drains its task",
+      "--tests", "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL fatal Hikari statement execution creates the first real close Worker and drains its task",
+      "--tests", "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.repeated nested admitted dispatches retain one future RETURN and no lower native fallback",
+      "--tests", "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.only exact admitted guard dispatch lease epoch and issuer can enter a creator",
+      "--tests", "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.mixed pool creator nesting refuses wrong top fallback and unrelated lease use",
+      "--tests", "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.present returned dispatch cannot upgrade through pool authority and a revoked lease cannot enter a prepared creator",
+      "--tests", "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.foreign actual statement cancellation keeps only its own outer tail while original RETURN waits for it",
+      "--tests", "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.real post core outer tail refuses reentrant self wait and remains in exact terminal and loan proofs",
+      "--tests", "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement",
+      "--tests", "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.actual creator publication restoration and outer adapter faults retain exact obligations through process only exit",
+      "--tests", "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.native commit failure stays unknown after Spring cleanup while authentic local quiescence permits only refund"
+    ],
+    "expected_test_counts": {
+      "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest": 17,
+      "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT": 1
+    },
+    "expected_test_invocations": 18,
+    "expected_xml_files": [
+      "TEST-me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.xml",
+      "TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml"
+    ],
+    "xml_rule": "Two exact suites,17/1 distinct source-bound cases and consistent actual outcomes; zero missing, extra, duplicate, failed, errored or skipped cases for PASS. The old method+'()' derivation is valid only for the ten no-arg declarations, not the eight parameterized invocations.",
+    "container_population": {
+      "postgres_17_6_alpine": 2,
+      "ryuk_0_12_0": 1,
+      "test_workers": 1,
+      "fork_every": 0,
+      "junit_parallel_enabled": false,
+      "reason": "Each selected PER_CLASS/SAME_THREAD class owns one lazy real PG fixture. The eight negative child JVMs reuse the focused class's local mapped port; they are not eight extra containers."
+    },
+    "shutdown_diagnostics": {"status": "NOT_APPLICABLE", "expected_record_count": 0},
+    "normal_compilation": "All current backend main/test sources; no filtering of compilation inputs",
+    "budgets": {
+      "job_minutes": 25,
+      "controller_seconds": 1200,
+      "preflight_seconds": 120,
+      "validation_seconds": 900,
+      "cleanup_seconds": 180
+    }
+  },
+  "shared_heavy_lock": ".kira-validation/backend-linux/batch.lock",
+  "future_inventory": {
+    "tool": "review/working/freeze_app29_integrated_driver_v3.py",
+    "seed_manifest": "review/working/app-29-w03-integrated-driver-development-07/manifest.json",
+    "seed_manifest_sha256": "3effe74b4b9daa5198a7ce24347e195da495bf26aeed3aa9519820dd917e4a6a",
+    "required_seed_keys": 348,
+    "rule": "Additive preservation of every seed and retained predecessor source member plus all current changed/new files; fresh actual hashes, snapshots and issue diff. Preserve historical manifests. No inventory tooling or source freeze executed here."
+  },
+  "new_bindings": {
+    "independent_tooling_review": null,
+    "local_source_manifest": null,
+    "local_admission": null,
+    "hosted_derivative": null,
+    "hosted_clean_checkpoint_and_bundle": null,
+    "hosted_source_manifest_and_preflight": null,
+    "hosted_admission": null
+  },
+  "limitations": [
+    "All17 focused invocations require real PostgreSQL despite MODEL labels; none is a local non-PG test.",
+    "Primary F1 visibility correction is applied but remains uncompiled/unexecuted.",
+    "No retained-creator/absent-tail injection was authorized; registered-tail rows do not cover it.",
+    "No full56, PG1, prior PG21, Native05, full47, consumer, W03 or production qualification.",
+    "PG01 remains20 PASS/1 FAIL; its close-executor actor/queue mechanism remains unmeasured.",
+    "This author does not independently approve this tooling; neither selection nor future PASS proves historical failure causation."
+  ]
+}

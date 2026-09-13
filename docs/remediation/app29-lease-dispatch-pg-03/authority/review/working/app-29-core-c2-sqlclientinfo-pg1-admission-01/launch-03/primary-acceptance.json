@@ -1,0 +1,45 @@
+{
+  "at_utc": "2026-09-12T18:33:46.987476+00:00",
+  "disposition": "ACCEPT_FOCUSED_SQLCLIENTINFO_PG1_ONLY",
+  "run_url": "https://github.com/kira-manga/kira-admin/actions/runs/34709458222",
+  "run_id": 34709458222,
+  "attempt": 1,
+  "carrier_sha": "02ebe6024d151e082c1f685cb58280000f81e4a0",
+  "backend_sha": "6db944871c1584bd6a1f28263e8010cadd766fab",
+  "actual_tests": {
+    "pass": 1,
+    "fail": 0,
+    "error": 0,
+    "skip": 0,
+    "method": "real lease preserves Properties client info defaults and declared stale and foreign failure shapes()"
+  },
+  "diagnostics": "NOT_APPLICABLE; original PG14 four rows remain separately required",
+  "raw_files_verified": 56,
+  "raw_bytes": 1918599,
+  "retained_hashes_verified": 55,
+  "commands_exit0": 48,
+  "unforced_empty_drains": 4,
+  "owned_outputs_absent": 11,
+  "source_before_after_equal": true,
+  "independent_source_continuity": "474 authority files;466 sources/348 seeds/199 snapshots;851 tracked hashes match accepted PG14, per reviewed independent receipt",
+  "postgreSQL_cleanup": "Current PG1 kill(signal9) -> die(exit137) -> destroy. Controller-unforced absence does NOT prove graceful shutdown or zero kill. Ryuk die0 -> destroy.",
+  "local_collector": "Session27323 previously reaped exit0; no new runtime/check performed",
+  "elapsed_controller_seconds": 358.269596882,
+  "pins": {
+    "review/remediation/app-29-core-c2-sqlclientinfo-pg1-actual-result-independent-review-01.md": "1fdb1b65facf80ac79c44f847358e6ad280be1e976484b8ac19259dd3c965c77",
+    "review/remediation/app-29-core-c2-sqlclientinfo-pg1-actual-result-independent-review-01.inputs.sha256": "9ddbbbc42182a16d9a0f9327f6101a72860137efb08f19d5005a76bed12f6040",
+    "review/working/app-29-core-c2-sqlclientinfo-pg1-admission-01/launch-03/artifacts/result.json": "5d640b6fc1b39a521577374e1e47186368f860b49e3d1bb55da98ab61a478fe1",
+    "review/working/app-29-core-c2-sqlclientinfo-pg1-admission-01/launch-03/artifacts/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest.xml": "5ebe3fd65ccc2c1b57116f4be6c63bb3c235794890bf7beb0c03645e9a740185",
+    "review/working/app-29-core-c2-sqlclientinfo-pg1-admission-01/launch-03/run-final.json": "2bf66dde2bd35a7545946ecd073e9016d46edf0b0aa767a275ad5fe1b48bdd3b",
+    "review/working/app-29-core-c2-sqlclientinfo-pg1-admission-01/launch-03/collection.json": "af165183b5fedf7548079009165ebc4642d1173fb7c59f28a0129980830f9fe5",
+    "review/working/app-29-core-c2-sqlclientinfo-pg1-admission-01/launch-03/artifacts/container-events.log": "53e502f5f5d11ea41c316038abb7a59fe2133657bc28feccf4057447a08958fb"
+  },
+  "limits": [
+    "Only the named SQLClientInfo assertions; no stale String-overload/every-finally-failure claim",
+    "Native05/original-provider/consumer/full47/opaque/native-finalizer/pin/compaction/liveness/full-P3/W03 remain OPEN",
+    "No complaint cutover/Firebase retirement/issue integration/production enablement/closure",
+    "ZIP digest is metadata corroboration only; extracted hashes verified",
+    "lane-release embedded run snapshot is stale; run-final.json is final identity authority",
+    "All historical failing/accepted evidence retained; no unchanged rerun"
+  ]
+}

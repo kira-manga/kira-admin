@@ -1,0 +1,872 @@
+{
+  "graph_started": true,
+  "graph_exit": 0,
+  "timed_out": false,
+  "runner_error_type": null,
+  "evidence_error_type": null,
+  "final_text_redaction_admitted": true,
+  "cleanup": true,
+  "source_unchanged": true,
+  "selected_tests": {
+    "basis": "ACTUAL copied XML, not source declaration/discovery inference",
+    "expected_invocations": {
+      "org.postgresql.jdbc.KiraOwnedJdbcCutFaultTest": 3
+    },
+    "actual_by_suite": {
+      "org.postgresql.jdbc.KiraOwnedJdbcCutFaultTest": 3
+    },
+    "actual_testcases": 3,
+    "xml_files": 1,
+    "problems": [],
+    "matches_expected": true,
+    "qualification": "Focused native suites only; no aggregate/native-finalizer acceptance"
+  },
+  "artifact_method23": null,
+  "focused_evidence_complete": true,
+  "focused_evidence_scope": "Three getter methods plus one new OSGi candidate; no new method23 javap or qualification",
+  "source_corrections": [
+    {
+      "path": "pgjdbc/src/main/java/org/postgresql/jdbc/PgConnection.java",
+      "before_sha256": "05b4b69fd8f607b6a9f5310df3d136f8fbc82b231c5d1574d016886eb1440da5",
+      "after_sha256": "486aba8d77f3a38b9b0b16540bf7f62010c438803bf4cc426e05bbb5c3528114",
+      "after_bytes": 67237
+    },
+    {
+      "path": "pgjdbc-mockito-test/src/test/java/org/postgresql/jdbc/KiraOwnedJdbcCutFaultTest.java",
+      "before_sha256": "da6acff1d5aa2b0d8d0193c3e8043af2cb04a5d5ec12de2ce46213d1e86c5793",
+      "after_sha256": "d8f8ba511272279f05c785beac89238836cb96f1bb374bcff17a73bbabb0242b",
+      "after_bytes": 52877
+    }
+  ],
+  "historical_build03_failure": {
+    "path": "review/working/app-29-driver-cut-native-build-03/result.json",
+    "sha256": "ba92cdab695e635d3c61881bbc57da1f9d50761b53b8e12af207e8d3f0e95b80",
+    "bytes": 33728,
+    "outcome": "72 passed /1 failed /0 skipped; graph exit1, no timeout, recorded cleanup/source-unchanged true. Preserved historical FAIL, not a pass prerequisite or fresh service probe."
+  },
+  "historical_build04_focused_pass": {
+    "path": "review/working/app-29-driver-cut-native-build-04/result.json",
+    "sha256": "51bb6b2d510b83d5f8c6977954b682f1afc8b29c17fc385118931529589195f6",
+    "bytes": 26737,
+    "outcome": "Separate ten-case test-helper correction evidence only; graph0/10 pass with recorded normal cleanup. Not a replay, new getter result or blanket native qualification."
+  },
+  "preserved_build03_osgi_jar": {
+    "path": "review/working/app-29-driver-cut-native-build-03/artifacts/postgresql-42.7.12-kira.1-osgi.jar",
+    "sha256": "a4150232fa8f30797ae67091e65417da4e8d26c98610a1bac541d953ad6403d3",
+    "bytes": 1199855,
+    "qualified": false,
+    "read_only": true,
+    "use": "Provenance/preservation check only; never substitute this JAR for the module SHADOWED project dependency or stage/relabel it as new output.",
+    "unchanged_verified": true
+  },
+  "staged_osgi_jar": {
+    "path": "artifacts/postgresql-42.7.12-kira.1-osgi.jar",
+    "sha256": "50f7dc4a6314cc5105f4990be26ba8be65ae242e1f7e62652cc60d6a2c0e03df",
+    "bytes": 1200036,
+    "qualified": false,
+    "candidate_id": "app-29-driver-cut-native-build-05-isolation-getter-source-01"
+  },
+  "acceptance": "UNQUALIFIED; primary adjudication and Core rebind/retry still required",
+  "partial_test_gaps": "Native03 historical73 and native04 historical10, upstream mapping/default regressions and other native classes not replayed. Native-finalizer interiors, pin/compaction, successful wire cancel, shipping destructive-cut/exception-table/initialization, packaged runtime/OSGi/service/SCRAM/one-driver/unshaded dependencies/private POM, connected consumers, all348 v3 source-seed/Core/P3/ABI/W03 gates remain open; W06 excluded.",
+  "commands": [
+    {
+      "argv": [
+        "/usr/lib/jvm/java-21-openjdk-amd64/bin/java",
+        "-version"
+      ],
+      "log": "java-version.log",
+      "started_utc": "2026-09-12T00:44:43.128015+00:00",
+      "pid": 19111,
+      "exit": 0,
+      "finished_utc": "2026-09-12T00:44:43.400618+00:00"
+    },
+    {
+      "argv": [
+        "/opt/kira-validation/postgresql-17.6-02/bin/postgres",
+        "--version"
+      ],
+      "log": "postgres-version.log",
+      "started_utc": "2026-09-12T00:44:43.400920+00:00",
+      "pid": 19167,
+      "exit": 0,
+      "finished_utc": "2026-09-12T00:44:43.413348+00:00"
+    },
+    {
+      "argv": [
+        "/opt/kira-validation/postgresql-17.6-02/bin/initdb",
+        "-D",
+        "/tmp/kira-native-build05-v7yc3fa5/data",
+        "--locale=C",
+        "--encoding=UTF8",
+        "--auth-local=scram-sha-256",
+        "--auth-host=scram-sha-256",
+        "--username=kira_native",
+        "--pwfile=/tmp/kira-native-build05-v7yc3fa5/initdb-password",
+        "--no-instructions"
+      ],
+      "log": "initdb.log",
+      "started_utc": "2026-09-12T00:44:43.413693+00:00",
+      "pid": 19168,
+      "exit": 0,
+      "finished_utc": "2026-09-12T00:44:43.940538+00:00"
+    },
+    {
+      "argv": [
+        "/opt/kira-validation/postgresql-17.6-02/bin/postgres",
+        "-D",
+        "/tmp/kira-native-build05-v7yc3fa5/data"
+      ],
+      "pid": 19181,
+      "uid": 1000,
+      "log": "postgres.log",
+      "started_utc": "2026-09-12T00:44:43.959732+00:00"
+    },
+    {
+      "argv": [
+        "/opt/kira-validation/postgresql-17.6-02/bin/psql",
+        "-X",
+        "-A",
+        "-t",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "32857",
+        "-U",
+        "kira_native",
+        "-d",
+        "postgres",
+        "-c",
+        "CREATE DATABASE kira_native",
+        "-c",
+        "\\connect kira_native",
+        "-c",
+        "SELECT json_build_object('version_num', current_setting('server_version_num')::int, 'version', version(), 'recovery', pg_is_in_recovery(), 'address', inet_server_addr(), 'port', inet_server_port(), 'database', current_database(), 'user', current_user, 'password_encryption', current_setting('password_encryption'), 'scram_role', (SELECT rolpassword LIKE 'SCRAM-SHA-256$%' FROM pg_authid WHERE rolname=current_user));"
+      ],
+      "log": "database-witness.log",
+      "started_utc": "2026-09-12T00:44:44.160770+00:00",
+      "pid": 19188,
+      "exit": 0,
+      "finished_utc": "2026-09-12T00:44:44.440642+00:00"
+    },
+    {
+      "argv": [
+        "./gradlew",
+        "--offline",
+        "--no-daemon",
+        "--no-parallel",
+        "--max-workers=1",
+        "--no-build-cache",
+        "--no-configuration-cache",
+        "--no-scan",
+        "--console=plain",
+        "--stacktrace",
+        "--project-cache-dir",
+        "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/project-cache-build-05",
+        "-Dorg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8",
+        "-Dorg.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64",
+        "-Dorg.gradle.vfs.watch=false",
+        "-Porg.gradle.java.installations.auto-download=false",
+        "-Porg.gradle.java.installations.auto-detect=false",
+        "-Porg.gradle.java.installations.paths=/usr/lib/jvm/java-21-openjdk-amd64",
+        "-Pkotlin.compiler.execution.strategy=in-process",
+        "-Pkotlin.project.persistent.dir=/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/kotlin-cache-build-05",
+        "-Prelease=true",
+        "-Ppgjdbc.version=42.7.12-kira.1",
+        "-Psigning.pgp.enabled=OFF",
+        "-PjdkBuildVersion=21",
+        "-PjdkTestVersion=21",
+        "-PtargetJavaVersion=8",
+        "-PenableMavenLocal=false",
+        "-Ps3.build.cache=false",
+        "-PenableGettext=false",
+        "-Duser.language=en",
+        "-Duser.country=US",
+        "-Djunit.jupiter.execution.parallel.enabled=false",
+        "-Dtest.url.PGHOST=127.0.0.1",
+        "-Dtest.url.PGPORT=32857",
+        "-Dtest.url.PGDBNAME=kira_native",
+        "-Duser=kira_native",
+        ":postgresql:osgiJar",
+        ":pgjdbc-mockito-test:test",
+        "--tests",
+        "org.postgresql.jdbc.KiraOwnedJdbcCutFaultTest.isolationGetterRepeatedSuccessClosesBothResourcesWithoutBeginningATransaction",
+        "--tests",
+        "org.postgresql.jdbc.KiraOwnedJdbcCutFaultTest.isolationGetterExecuteFailureClosesItsStatementAndPreservesTheException",
+        "--tests",
+        "org.postgresql.jdbc.KiraOwnedJdbcCutFaultTest.isolationGetterReadFailureClosesBothResourcesAndPreservesTheException"
+      ],
+      "log": "gradle.log",
+      "started_utc": "2026-09-12T00:44:44.441553+00:00",
+      "pid": 19193,
+      "exit": 0,
+      "finished_utc": "2026-09-12T00:47:14.430314+00:00"
+    },
+    {
+      "argv": [
+        "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/gradle-home/wrapper/dists/gradle-9.4.1-bin/arn2x92ynaizyzdaamcbpbhtj/gradle-9.4.1/bin/gradle",
+        "--stop"
+      ],
+      "log": "stop-immediate.log",
+      "started_utc": "2026-09-12T00:47:14.431091+00:00",
+      "pid": 26480,
+      "exit": 0,
+      "finished_utc": "2026-09-12T00:47:15.212598+00:00"
+    },
+    {
+      "argv": [
+        "/opt/kira-validation/postgresql-17.6-02/bin/pg_ctl",
+        "-D",
+        "/tmp/kira-native-build05-v7yc3fa5/data",
+        "-m",
+        "fast",
+        "-w",
+        "-t",
+        "60",
+        "stop"
+      ],
+      "log": "postgres-stop.log",
+      "started_utc": "2026-09-12T00:47:15.212782+00:00",
+      "pid": 26593,
+      "exit": 0,
+      "finished_utc": "2026-09-12T00:47:15.482273+00:00"
+    },
+    {
+      "argv": [
+        "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/gradle-home/wrapper/dists/gradle-9.4.1-bin/arn2x92ynaizyzdaamcbpbhtj/gradle-9.4.1/bin/gradle",
+        "--stop"
+      ],
+      "log": "stop-final.log",
+      "started_utc": "2026-09-12T00:47:16.797988+00:00",
+      "pid": 26820,
+      "exit": 0,
+      "finished_utc": "2026-09-12T00:47:17.565588+00:00"
+    }
+  ],
+  "barriers": [
+    {
+      "absent": true,
+      "forced": false,
+      "barrier_generation": 1,
+      "signals": [],
+      "observed": [
+        {
+          "pid": 19111,
+          "ppid": 19011,
+          "pgid": 19111,
+          "session": 19111,
+          "start_ticks": 4343997,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19167,
+          "ppid": 19011,
+          "pgid": 19167,
+          "session": 19167,
+          "start_ticks": 4344024,
+          "state": "Z",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19168,
+          "ppid": 19011,
+          "pgid": 19168,
+          "session": 19168,
+          "start_ticks": 4344025,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19181,
+          "ppid": 19011,
+          "pgid": 19181,
+          "session": 19181,
+          "start_ticks": 4344078,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19188,
+          "ppid": 19011,
+          "pgid": 19188,
+          "session": 19188,
+          "start_ticks": 4344100,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19182,
+          "ppid": 19181,
+          "pgid": 19182,
+          "session": 19182,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19183,
+          "ppid": 19181,
+          "pgid": 19183,
+          "session": 19183,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19185,
+          "ppid": 19181,
+          "pgid": 19185,
+          "session": 19185,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19186,
+          "ppid": 19181,
+          "pgid": 19186,
+          "session": 19186,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19187,
+          "ppid": 19181,
+          "pgid": 19187,
+          "session": 19187,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19189,
+          "ppid": 19181,
+          "pgid": 19189,
+          "session": 19189,
+          "start_ticks": 4344101,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19193,
+          "ppid": 19011,
+          "pgid": 19193,
+          "session": 19193,
+          "start_ticks": 4344128,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19234,
+          "ppid": 19193,
+          "pgid": 19234,
+          "session": 19234,
+          "start_ticks": 4344212,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 26480,
+          "ppid": 19011,
+          "pgid": 26480,
+          "session": 26480,
+          "start_ticks": 4359127,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 26593,
+          "ppid": 19011,
+          "pgid": 26593,
+          "session": 26593,
+          "start_ticks": 4359205,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        }
+      ],
+      "reaped": [],
+      "errors": []
+    },
+    {
+      "absent": true,
+      "forced": false,
+      "barrier_generation": 2,
+      "signals": [],
+      "observed": [
+        {
+          "pid": 19111,
+          "ppid": 19011,
+          "pgid": 19111,
+          "session": 19111,
+          "start_ticks": 4343997,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19167,
+          "ppid": 19011,
+          "pgid": 19167,
+          "session": 19167,
+          "start_ticks": 4344024,
+          "state": "Z",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19168,
+          "ppid": 19011,
+          "pgid": 19168,
+          "session": 19168,
+          "start_ticks": 4344025,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19181,
+          "ppid": 19011,
+          "pgid": 19181,
+          "session": 19181,
+          "start_ticks": 4344078,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19188,
+          "ppid": 19011,
+          "pgid": 19188,
+          "session": 19188,
+          "start_ticks": 4344100,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19182,
+          "ppid": 19181,
+          "pgid": 19182,
+          "session": 19182,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19183,
+          "ppid": 19181,
+          "pgid": 19183,
+          "session": 19183,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19185,
+          "ppid": 19181,
+          "pgid": 19185,
+          "session": 19185,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19186,
+          "ppid": 19181,
+          "pgid": 19186,
+          "session": 19186,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19187,
+          "ppid": 19181,
+          "pgid": 19187,
+          "session": 19187,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19189,
+          "ppid": 19181,
+          "pgid": 19189,
+          "session": 19189,
+          "start_ticks": 4344101,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19193,
+          "ppid": 19011,
+          "pgid": 19193,
+          "session": 19193,
+          "start_ticks": 4344128,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19234,
+          "ppid": 19193,
+          "pgid": 19234,
+          "session": 19234,
+          "start_ticks": 4344212,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 26480,
+          "ppid": 19011,
+          "pgid": 26480,
+          "session": 26480,
+          "start_ticks": 4359127,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 26593,
+          "ppid": 19011,
+          "pgid": 26593,
+          "session": 26593,
+          "start_ticks": 4359205,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        }
+      ],
+      "reaped": [],
+      "errors": []
+    },
+    {
+      "absent": true,
+      "forced": false,
+      "barrier_generation": 3,
+      "signals": [],
+      "observed": [
+        {
+          "pid": 19111,
+          "ppid": 19011,
+          "pgid": 19111,
+          "session": 19111,
+          "start_ticks": 4343997,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19167,
+          "ppid": 19011,
+          "pgid": 19167,
+          "session": 19167,
+          "start_ticks": 4344024,
+          "state": "Z",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19168,
+          "ppid": 19011,
+          "pgid": 19168,
+          "session": 19168,
+          "start_ticks": 4344025,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19181,
+          "ppid": 19011,
+          "pgid": 19181,
+          "session": 19181,
+          "start_ticks": 4344078,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19188,
+          "ppid": 19011,
+          "pgid": 19188,
+          "session": 19188,
+          "start_ticks": 4344100,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19182,
+          "ppid": 19181,
+          "pgid": 19182,
+          "session": 19182,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19183,
+          "ppid": 19181,
+          "pgid": 19183,
+          "session": 19183,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19185,
+          "ppid": 19181,
+          "pgid": 19185,
+          "session": 19185,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19186,
+          "ppid": 19181,
+          "pgid": 19186,
+          "session": 19186,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19187,
+          "ppid": 19181,
+          "pgid": 19187,
+          "session": 19187,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19189,
+          "ppid": 19181,
+          "pgid": 19189,
+          "session": 19189,
+          "start_ticks": 4344101,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19193,
+          "ppid": 19011,
+          "pgid": 19193,
+          "session": 19193,
+          "start_ticks": 4344128,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19234,
+          "ppid": 19193,
+          "pgid": 19234,
+          "session": 19234,
+          "start_ticks": 4344212,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 26480,
+          "ppid": 19011,
+          "pgid": 26480,
+          "session": 26480,
+          "start_ticks": 4359127,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 26593,
+          "ppid": 19011,
+          "pgid": 26593,
+          "session": 26593,
+          "start_ticks": 4359205,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 26820,
+          "ppid": 19011,
+          "pgid": 26820,
+          "session": 26820,
+          "start_ticks": 4359364,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        }
+      ],
+      "reaped": [],
+      "errors": []
+    },
+    {
+      "absent": true,
+      "forced": false,
+      "barrier_generation": 4,
+      "signals": [],
+      "observed": [
+        {
+          "pid": 19111,
+          "ppid": 19011,
+          "pgid": 19111,
+          "session": 19111,
+          "start_ticks": 4343997,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19167,
+          "ppid": 19011,
+          "pgid": 19167,
+          "session": 19167,
+          "start_ticks": 4344024,
+          "state": "Z",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19168,
+          "ppid": 19011,
+          "pgid": 19168,
+          "session": 19168,
+          "start_ticks": 4344025,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19181,
+          "ppid": 19011,
+          "pgid": 19181,
+          "session": 19181,
+          "start_ticks": 4344078,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19188,
+          "ppid": 19011,
+          "pgid": 19188,
+          "session": 19188,
+          "start_ticks": 4344100,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19182,
+          "ppid": 19181,
+          "pgid": 19182,
+          "session": 19182,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19183,
+          "ppid": 19181,
+          "pgid": 19183,
+          "session": 19183,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19185,
+          "ppid": 19181,
+          "pgid": 19185,
+          "session": 19185,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19186,
+          "ppid": 19181,
+          "pgid": 19186,
+          "session": 19186,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19187,
+          "ppid": 19181,
+          "pgid": 19187,
+          "session": 19187,
+          "start_ticks": 4344080,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19189,
+          "ppid": 19181,
+          "pgid": 19189,
+          "session": 19189,
+          "start_ticks": 4344101,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19193,
+          "ppid": 19011,
+          "pgid": 19193,
+          "session": 19193,
+          "start_ticks": 4344128,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 19234,
+          "ppid": 19193,
+          "pgid": 19234,
+          "session": 19234,
+          "start_ticks": 4344212,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 26480,
+          "ppid": 19011,
+          "pgid": 26480,
+          "session": 26480,
+          "start_ticks": 4359127,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 26593,
+          "ppid": 19011,
+          "pgid": 26593,
+          "session": 26593,
+          "start_ticks": 4359205,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        },
+        {
+          "pid": 26820,
+          "ppid": 19011,
+          "pgid": 26820,
+          "session": 26820,
+          "start_ticks": 4359364,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        }
+      ],
+      "reaped": [],
+      "errors": []
+    }
+  ],
+  "ownership_restore": {
+    "active": false,
+    "restored_previous_setting": 0
+  },
+  "outputs_absent": true,
+  "removed_paths": [
+    "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/upstream/build",
+    "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/upstream/pgjdbc/build",
+    "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/upstream/pgjdbc-mockito-test/build",
+    "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/upstream/testkit/build",
+    "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/upstream/build-logic-commons/gradle-plugin/build",
+    "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/upstream/build-logic/root-build/build",
+    "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/upstream/build-logic/basics/build",
+    "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/upstream/build-logic/java-comment-preprocessor/build",
+    "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/upstream/build-logic/build-parameters/build",
+    "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/upstream/build-logic/verification/build",
+    "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/upstream/build-logic/publishing/build",
+    "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/upstream/build-logic/jvm/build",
+    "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/home-build-05",
+    "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/project-cache-build-05",
+    "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/kotlin-cache-build-05",
+    "/tmp/kira-native-build05-v7yc3fa5"
+  ],
+  "retained_dependency_cache": "/root/projects/Kira/.kira-validation/pgjdbc-owned-cut/gradle-home",
+  "finished_utc": "2026-09-12T00:47:17.717683+00:00"
+}

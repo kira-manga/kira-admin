@@ -1,0 +1,29 @@
+{
+  "status": "PRIVATE_TRANSPORT_CHECKPOINT_NOT_FIX_ACCEPTANCE",
+  "at_utc": "2026-09-13T20:19:37.595739+00:00",
+  "head": "f2e58eac0b139dca3a042c724d69c66a3d65278e",
+  "parent": "c67ddcd30fbae2438c7b2f803f720530b598e428",
+  "tree": "e192c9430c89e4549f1840bf7e333fed75bc290a",
+  "branch": "remediation/app-29-backend-complaints",
+  "public_prerequisite": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+  "source_manifest": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg03-source-01/manifest.json",
+  "source_manifest_sha256": "9a13d2299b7c58e23a6aaf67e1140c0a5d0c906ec7f574bcac8f3c877f0ff786",
+  "source_count": 481,
+  "development07_seed_keys_preserved": 348,
+  "modified_paths": 1,
+  "newly_tracked_paths": 0,
+  "source_bytes_unchanged": true,
+  "clean_worktree": true,
+  "public_push_forbidden": true,
+  "integration_changed": false,
+  "integration_observed_at_checkpoint": "7f0172ef8fff815b22d0c9992b2733a7d82490c5",
+  "tests_run": false,
+  "bundle": {
+    "path": "review/working/app-29-lease-dispatch-pg03-source-checkpoint-01/backend.bundle",
+    "sha256": "04a50353016f2a57621e6a9810c25be6864ce42d45ea42c5d72cdb67d127052f",
+    "bytes": 287398
+  },
+  "semantic_review_sha256": "c1483080fbf958b5f5604781e82aa4edf10487894c2bf637685b4ce219bdb7cc",
+  "validation": "Not compiled;no static replay or PG execution;normal changed-source hosted compilation/two cases remains required",
+  "prior_failure_preserved": true
+}

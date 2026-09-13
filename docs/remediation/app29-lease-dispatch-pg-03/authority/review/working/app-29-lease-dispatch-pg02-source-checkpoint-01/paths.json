@@ -1,0 +1,12 @@
+[
+  {
+    "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt",
+    "before_sha256": "b87e92bb9d78fb8f37afed414bd07899c59606536b972c6a444dda1cbc677322",
+    "after_sha256": "1660f8dbb5d71033d7fb0606f1a5d20248dd4c6204a7773aca75a6a0663e77cb"
+  },
+  {
+    "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt",
+    "before_sha256": "db140c4c0e93a349608b6e05e80033fd07e298aee4c272932e78b6d69564ce4a",
+    "after_sha256": "3c0010170b07b1edef3f87894dac6833f2ae2f02e841609cd5e3e15d9ce489d5"
+  }
+]

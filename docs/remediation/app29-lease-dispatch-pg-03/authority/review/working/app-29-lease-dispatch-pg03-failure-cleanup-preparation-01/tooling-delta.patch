@@ -1,0 +1,130 @@
+--- a/ci/app29-gate-b.py
++++ b/ci/app29-gate-b.py
+@@ -8,6 +8,7 @@
+ import re
+ import shutil
+ import signal
++import stat
+ import subprocess
+ import tarfile
+ import time
+@@ -129,8 +130,10 @@
+     'Symlink in bound input/output': 'BOUND_LINK',
+     'Missing/oversized regular input': 'BOUNDED_REGULAR_FILE',
+     'Duplicate JSON key': 'DUPLICATE_KEY',
++    'Required PostgreSQL/Ryuk topology missing': 'CONTAINER_REQUIRED_TOPOLOGY',
+     'Required test/report root missing': 'CAPTURE_ROOT',
+     'Report link': 'CAPTURE_LINK',
++    'Report entry is not a regular file/directory': 'CAPTURE_TYPE',
+     'Evidence copy drift': 'CAPTURE_COPY_DRIFT',
+     'Required raw evidence inventory missing': 'CAPTURE_REQUIRED_INVENTORY',
+     'Wrong diagnostic XML inventory': 'XML_INVENTORY',
+@@ -805,7 +808,8 @@
+         self.reports, self.w01 = self.run / 'reports', self.run / 'w01'
+         self.result = {'status': 'FAIL', 'gate': GATE, 'backend_sha': binding['backend_sha'],
+                        'carrier_sha': os.environ['GITHUB_SHA'], 'commands': [], 'failures': [], 'processes': [],
+-                       'containers': 'UNKNOWN', 'outputs_absent': False, 'capture_complete': False,
++                       'containers': 'UNKNOWN', 'container_topology_complete': False, 'outputs_absent': False,
++                       'capture_complete': False, 'required_capture_complete': False, 'capture_roots': {},
+                        'captured_file_hashes': {}, 'owned_output_cleanup': {}, 'diagnostics': {'status': 'NOT_EVALUATED'},
+                        'consumer': {'status': 'NOT_EVALUATED', 'scope': 'OUTSIDE_LEASE_DISPATCH_PG_VALIDATION'}}
+         self.java = Path(os.environ['JAVA_HOME']).resolve()
+@@ -1007,6 +1011,14 @@
+                 created[cid] = labels
+             else:
+                 destroyed.add(cid)
++        if not created:
++            require(not journal and not destroyed and not remaining, 'Incomplete/unexpected container journal')
++            # Compilation may fail before any fixture exists: absence permits disposal, not test success.
++            self.fail('container-required-topology', ValueError('Required PostgreSQL/Ryuk topology missing'))
++            save(self.reports / 'owned-containers.json', {'created': created, 'destroyed': [], 'remaining': []})
++            require(not self.census('containers-after-cleanup'), 'Container absence unproved')
++            self.result['containers'] = 'NORMAL_ABSENT'
++            return True
+         # Both selected methods reuse the one PER_CLASS fixture; paired pools do not create PostgreSQL containers.
+         require(len(created) == 2 and sum(r['image'] == 'postgres:17.6-alpine' for r in created.values()) == 1
+                 and sum(r['image'] == 'testcontainers/ryuk:0.12.0' for r in created.values()) == 1
+@@ -1026,6 +1038,7 @@
+             require(re.fullmatch('sha256:[0-9a-f]{64}', identity['id']) and image in identity['tags']
+                     and identity['digests'] and all(re.fullmatch(r'[^\s]+@sha256:[0-9a-f]{64}', d) for d in identity['digests']),
+                     'Incomplete resolved image identity')
++        self.result['container_topology_complete'] = True
+         if remaining:
+             self.result['containers'] = 'FORCED_PENDING'
+             self.result['container_forced'] = True
+@@ -1039,21 +1052,30 @@
+         return True
+ 
+ 
+-def capture_reports(gate, profile):
++def capture_reports(gate):
+     inventory = gate.result['captured_file_hashes']
++    roots = gate.result['capture_roots']
+     build = safe(gate.run, 'w01/backend-build')
+     reports = safe(gate.run, 'reports')
+     def scan_error(error):
+         raise error
+-    for name in ('test-results', 'reports'):
+-        source = safe(build, name)
+-        require(source.is_dir(), 'Required test/report root missing')
++    for root_name in ('test-results', 'reports'):
++        roots[root_name] = 'UNKNOWN'
++        source = safe(build, root_name)
++        try:
++            mode = source.lstat().st_mode
++        except FileNotFoundError:
++            roots[root_name] = 'ABSENT'
++            continue
++        require(stat.S_ISDIR(mode), 'Required test/report root missing')
+         for folder, directories, files in os.walk(source, followlinks=False, onerror=scan_error):
+             directories.sort()
+             for name in sorted(directories + files):
+                 path = Path(folder) / name
+-                require(not path.is_symlink(), 'Report link')
+-                if path.is_file() and path.suffix in ('.xml', '.txt', '.json', '.log'):
++                mode = path.lstat().st_mode
++                require(not stat.S_ISLNK(mode), 'Report link')
++                require(stat.S_ISDIR(mode) or stat.S_ISREG(mode), 'Report entry is not a regular file/directory')
++                if stat.S_ISREG(mode) and path.suffix in ('.xml', '.txt', '.json', '.log'):
+                     relative = path.relative_to(build).as_posix()
+                     row = {'bytes': None, 'sha256': None}
+                     inventory[relative] = row
+@@ -1064,6 +1086,15 @@
+                     shutil.copyfile(path, destination)
+                     require(digest(destination, 64 * 1024**2) == before == digest(path, 64 * 1024**2), 'Evidence copy drift')
+                     row['sha256'] = before
++        roots[root_name] = 'CAPTURED'
++    # All available evidence copied, or its root positively absent; required success evidence is separate.
++    return True
++
++
++def required_capture_inventory(gate, profile):
++    inventory = gate.result['captured_file_hashes']
++    require(gate.result['capture_roots'] == {'test-results': 'CAPTURED', 'reports': 'CAPTURED'},
++            'Required test/report root missing')
+     required = {'test-results/test/TEST-' + name + '.xml' for name in TEST_COUNTS}
+     required.add(profile['report_directory'] + '/effective-classpath.txt')
+     class_logs = [p for p in inventory if PurePosixPath(p).parent.as_posix() == profile['report_directory']
+@@ -1227,9 +1258,11 @@
+         containers_gone = gate.attempt('containers', gate.containers) if workers_gone and gate.started else False
+         if workers_gone:
+             gate.result['source_bundle_after'] = gate.attempt('source-bundle-postflight', lambda: read_source_bundle(binding))
+-            gate.result['capture_complete'] = gate.attempt('capture-reports', lambda: capture_reports(gate, profile)) is True
++            gate.result['capture_complete'] = gate.attempt('capture-reports', lambda: capture_reports(gate)) is True
+             if gate.result['capture_complete']:
+-                gate.result['diagnostics'] = gate.attempt('diagnostics', lambda: diagnostics(gate.reports, profile, gate.java)) or {'status': 'FAIL'}
++                gate.result['required_capture_complete'] = gate.attempt('required-capture-inventory', lambda: required_capture_inventory(gate, profile)) is True
++                if gate.result['required_capture_complete']:
++                    gate.result['diagnostics'] = gate.attempt('diagnostics', lambda: diagnostics(gate.reports, profile, gate.java)) or {'status': 'FAIL'}
+             def postflight():
+                 require(baseline is not None and gate.sources('after', cleaning=True) == baseline, 'Effective source changed')
+                 require(request() == binding, 'Initially accepted request changed')
+@@ -1289,6 +1322,8 @@
+         gate.result['retained_inventory_complete'] = gate.attempt('retained-file-inventory', inventory) is True
+         gate.result['elapsed_seconds'] = time.monotonic() - gate.start
+         passed = (not gate.result['failures'] and not gate.cancelled and gate.result['elapsed_seconds'] < 1200
++                  and gate.result['capture_complete'] and gate.result['required_capture_complete']
++                  and gate.result['container_topology_complete']
+                   and gate.result['outputs_absent'] and gate.result['retained_inventory_complete'] and gate.result.get('inputs_preserved') is True
+                   and gate.result.get('diagnostics', {}).get('test_status') == 'PASS'
+                   and gate.result['diagnostics'].get('fixed_scalar_capture') == 'NOT_APPLICABLE' and gate.result['containers'] == 'NORMAL_ABSENT'

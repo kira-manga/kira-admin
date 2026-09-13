@@ -1,0 +1,15 @@
+diff --git a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt
+index 553b1b7e9bccf2bc434302831c7d12db19b599e1..5f5de703b02a813c0a85bd2583b272ef835fad16 100644
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt
+@@ -576,7 +576,9 @@ internal class PoolLeaseDispatchCreatorIntegrationTest {
+                                             entry.jdbc.requestRetirement(lease.state.epoch)
+                                             awaitLifecycleFact { !entry.jdbc.permitsCleanup(lease.state.epoch) && entry.terminalWork != null }
+                                             diagnostics.reached(CreatorTailStage.RETIREMENT_OBSERVED)
+-                                            assertThrows<SQLException> { lease.enterDispatch() }
++                                            org.junit.jupiter.api.Assertions.assertThrows(SQLException::class.java) {
++                                                lease.enterDispatch()
++                                            }
+                                             assertFalse(f.ownedPool.lifecycle.isAuthenticPoolCaller())
+                                             assertFalse(lease.completion.quiescent())
+                                             assertEquals(1, f.admission.activeOwners())

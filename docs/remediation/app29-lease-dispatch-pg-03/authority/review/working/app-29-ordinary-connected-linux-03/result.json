@@ -1,0 +1,947 @@
+{
+  "started_at": "2026-09-13T05:53:50.305100+00:00",
+  "source_manifest": "review/working/app-29-w03-integrated-driver-ordinary-connected-03/manifest.json",
+  "source_manifest_sha256": "171dc5c76663c7552bd064c343437bc6545394315769214354afec2295929913",
+  "scope": "DEVELOPMENT ONLY: integrated lifecycle corrections; full D1/W03/release acceptance remains incomplete",
+  "runtime_authority": "UNKNOWN",
+  "W03": "INCOMPLETE",
+  "platform": "Linux-6.1.72-x86_64-with-glibc2.39",
+  "java": {
+    "java_home": "/usr/lib/jvm/java-21-openjdk-amd64",
+    "java_version": "openjdk version \"21.0.12\" 2026-07-21\nOpenJDK Runtime Environment (build 21.0.12+8-1-24.04-Ubuntu)\nOpenJDK 64-Bit Server VM (build 21.0.12+8-1-24.04-Ubuntu, mixed mode, sharing)\n",
+    "java_binary_sha256": "377196a32c5e4442b604bbf36add1c49cfe8680cd27edd693b60872e58895e9e",
+    "java_modules_sha256": "9a8e9e8a7aab3a5e010e56c65f13449c17b08e5eede93cd7bb796b7df31c572b",
+    "read_only_dependency_cache": "/root/.gradle/caches"
+  },
+  "dependency_inputs": {
+    "manifest_sha256": "c67fcc5fe64a9a795373c4683c7c1edd6407146e3cd07609fa7018a8a98db79a",
+    "files_verified": 18,
+    "artifact_hashes": {
+      "me/manga/kira/source/source-contract/0.1.0/source-contract-0.1.0-kotlin-tooling-metadata.json": "c62d1b05a013e5f1b0e0b72f56b17bee28a4955b1111ab5a52e5e3e57e273817",
+      "me/manga/kira/source/source-contract/0.1.0/source-contract-0.1.0-sources.jar": "ff2332dbd8addbbc69b2c8c3e9c7e6d5e7d1f94e676d532be593a92cd9fafa5b",
+      "me/manga/kira/source/source-contract/0.1.0/source-contract-0.1.0.jar": "94d4c352233c4677b8e8ff9c691f63e89bcb272c690df7ab5af3904329154f2d",
+      "me/manga/kira/source/source-contract/0.1.0/source-contract-0.1.0.module": "7ef1411f69e4e10b5e3f824c6ca7f4fce075215d1a746c0c60c1c69df07090be",
+      "me/manga/kira/source/source-contract/0.1.0/source-contract-0.1.0.pom": "846fdfb2d251e513128a6bad62d70f21ac728d28eec699b1ec7bba6ca9604b70",
+      "me/manga/kira/source/source-contract-jvm/0.1.0/source-contract-jvm-0.1.0-sources.jar": "ff2332dbd8addbbc69b2c8c3e9c7e6d5e7d1f94e676d532be593a92cd9fafa5b",
+      "me/manga/kira/source/source-contract-jvm/0.1.0/source-contract-jvm-0.1.0.jar": "9eeb54df5d09f14ebe612b1255721fa536c2517502b05cbd815e8b98370e0b7d",
+      "me/manga/kira/source/source-contract-jvm/0.1.0/source-contract-jvm-0.1.0.module": "d9a8995bc42cd2aab74c7909baf0570ec948afa58365d96e785269a3c963c749",
+      "me/manga/kira/source/source-contract-jvm/0.1.0/source-contract-jvm-0.1.0.pom": "00ce4dabc53c33736b7527fd541fe7cdc1d80243bbf67244d28a114a84c58a1c",
+      "me/manga/kira/source/source-engine/0.1.0/source-engine-0.1.0-kotlin-tooling-metadata.json": "c62d1b05a013e5f1b0e0b72f56b17bee28a4955b1111ab5a52e5e3e57e273817",
+      "me/manga/kira/source/source-engine/0.1.0/source-engine-0.1.0-sources.jar": "84b4b25e9dd952a99c32618bd217571177feabe80801a6a5466e2afbe71e448d",
+      "me/manga/kira/source/source-engine/0.1.0/source-engine-0.1.0.jar": "3a2fd051891c305bdc01537fec623070b83426c39cfd8ffac872eb8026ca4a03",
+      "me/manga/kira/source/source-engine/0.1.0/source-engine-0.1.0.module": "4a11051300075778a2a6a95275c33a826886a50f111d0a6dbc046e5ab118e8ae",
+      "me/manga/kira/source/source-engine/0.1.0/source-engine-0.1.0.pom": "d8daeded7727ee0e349e9edf4a1f206e0a722f499610840e247d40eacda59e9d",
+      "me/manga/kira/source/source-engine-jvm/0.1.0/source-engine-jvm-0.1.0-sources.jar": "84b4b25e9dd952a99c32618bd217571177feabe80801a6a5466e2afbe71e448d",
+      "me/manga/kira/source/source-engine-jvm/0.1.0/source-engine-jvm-0.1.0.jar": "e2a20c63ab115dabfc75fc6a0ea33a36fd6c272c6ee22ed17ef2aa9cab840a2d",
+      "me/manga/kira/source/source-engine-jvm/0.1.0/source-engine-jvm-0.1.0.module": "322aebab1cd9bcd6dbae3d83dd3e6635f9e65cf6a23b428cad44e62b4e4036c7",
+      "me/manga/kira/source/source-engine-jvm/0.1.0/source-engine-jvm-0.1.0.pom": "97c9eba44ff26ae6a72441c6748a590bd9f3c85fc6ac1d6b4fbe44f3fc7c4dd9"
+    }
+  },
+  "dependency_mode": "offline",
+  "dependency_verification_limitation": "No project verification-metadata.xml: strict flag is NOT transitive artifact-byte proof; retained local inputs, dependency locks and wrapper checksum are narrower pins",
+  "gradle_user_home": "/root/projects/Kira/.kira-validation/backend-linux/gradle-home",
+  "commands": [
+    {
+      "name": "validation",
+      "command": [
+        "./gradlew",
+        "--no-daemon",
+        "--no-parallel",
+        "--max-workers=1",
+        "--no-build-cache",
+        "--no-configuration-cache",
+        "--dependency-verification=strict",
+        "--project-cache-dir",
+        "/root/projects/Kira/.kira-validation/backend-linux/backend-project-cache",
+        "--console=plain",
+        "-Dorg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=512m",
+        "-Dorg.gradle.vfs.watch=false",
+        "-PkiraUseMavenLocal=false",
+        "-Pkotlin.compiler.execution.strategy=in-process",
+        "-Pkotlin.project.persistent.dir=/root/projects/Kira/.kira-validation/backend-linux/backend-kotlin-cache",
+        "--init-script",
+        "/root/projects/Kira/review/working/app-29-w01-local-dependencies.init.gradle",
+        "--offline",
+        "test",
+        "--tests",
+        "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcTransactionTest",
+        "--tests",
+        "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcGuardProtocolTest",
+        "--tests",
+        "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcFacadeTest",
+        "--tests",
+        "me.manga.kira.backend.common.infrastructure.persistence.PersistenceOwnershipTest",
+        "--tests",
+        "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "ktlintCheck",
+        "--continue"
+      ],
+      "started_at": "2026-09-13T05:53:51.439636+00:00",
+      "joined": true,
+      "pid": 31107,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 31107,
+          "ppid": 31029,
+          "pgid": 31107,
+          "session": 31107,
+          "start_ticks": 14838828,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        }
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-09-13T05:55:32.457552+00:00"
+    },
+    {
+      "name": "stop-after-validation",
+      "command": [
+        "./gradlew",
+        "--stop"
+      ],
+      "started_at": "2026-09-13T05:55:32.459660+00:00",
+      "joined": true,
+      "pid": 32408,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 32408,
+          "ppid": 31029,
+          "pgid": 32408,
+          "session": 32408,
+          "start_ticks": 14848930,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        }
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-09-13T05:55:33.240120+00:00"
+    },
+    {
+      "name": "inspect-retained-bytecode",
+      "command": [
+        "/usr/lib/jvm/java-21-openjdk-amd64/bin/javap",
+        "-c",
+        "-p",
+        "-s",
+        "/root/projects/Kira/review/working/app-29-ordinary-connected-linux-03/bytecode/PersistenceJdbcLifecycleOwner.class",
+        "/root/projects/Kira/review/working/app-29-ordinary-connected-linux-03/bytecode/PersistenceJdbcDriverRoot.class",
+        "/root/projects/Kira/review/working/app-29-ordinary-connected-linux-03/bytecode/PersistenceJdbcParticipant.class",
+        "/root/projects/Kira/review/working/app-29-ordinary-connected-linux-03/bytecode/PersistenceTerminalWork.class",
+        "/root/projects/Kira/review/working/app-29-ordinary-connected-linux-03/bytecode/PersistenceTerminalRunner.class",
+        "/root/projects/Kira/review/working/app-29-ordinary-connected-linux-03/bytecode/PersistencePhysicalCompletion.class",
+        "/root/projects/Kira/review/working/app-29-ordinary-connected-linux-03/bytecode/PersistenceDriverTimer.class",
+        "/root/projects/Kira/review/working/app-29-ordinary-connected-linux-03/bytecode/PersistencePgTimerAccess$Boundary.class",
+        "/root/projects/Kira/review/working/app-29-ordinary-connected-linux-03/bytecode/PersistencePgTimerAccess$BoundaryCell.class",
+        "/root/projects/Kira/review/working/app-29-ordinary-connected-linux-03/bytecode/PersistencePgTimerAccess$BoundaryTask.class",
+        "/root/projects/Kira/review/working/app-29-ordinary-connected-linux-03/test-bytecode/PgRequireErrorHandlerTest.class"
+      ],
+      "started_at": "2026-09-13T05:55:33.703816+00:00",
+      "joined": true,
+      "pid": 32528,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 32528,
+          "ppid": 31029,
+          "pgid": 32528,
+          "session": 32528,
+          "start_ticks": 14849054,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        }
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-09-13T05:55:34.128760+00:00"
+    },
+    {
+      "name": "stop-after-clean",
+      "command": [
+        "./gradlew",
+        "--stop"
+      ],
+      "started_at": "2026-09-13T05:55:34.323952+00:00",
+      "joined": true,
+      "pid": 32560,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 32560,
+          "ppid": 31029,
+          "pgid": 32560,
+          "session": 32560,
+          "start_ticks": 14849117,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        }
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-09-13T05:55:35.055791+00:00"
+    },
+    {
+      "name": "git-diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "started_at": "2026-09-13T05:55:36.168094+00:00",
+      "joined": true,
+      "pid": 32677,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 32677,
+          "ppid": 31029,
+          "pgid": 32677,
+          "session": 32677,
+          "start_ticks": 14849301,
+          "state": "Z",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        }
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-09-13T05:55:36.183663+00:00"
+    },
+    {
+      "name": "jps-after",
+      "command": [
+        "/usr/lib/jvm/java-21-openjdk-amd64/bin/jps",
+        "-l"
+      ],
+      "started_at": "2026-09-13T05:55:36.184608+00:00",
+      "joined": true,
+      "pid": 32678,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 32678,
+          "ppid": 31029,
+          "pgid": 32678,
+          "session": 32678,
+          "start_ticks": 14849303,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        }
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-09-13T05:55:36.363029+00:00"
+    }
+  ],
+  "failures": [],
+  "retained_reports": [
+    {
+      "path": "reports/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcGuardProtocolTest.xml",
+      "sha256": "53417a3684395563dbce0153984803f91f12c275e25dc1aaa2a942dcdd10c8d0"
+    },
+    {
+      "path": "reports/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcTransactionTest.xml",
+      "sha256": "573290c1c309b22eb69e7be8f31c0e0e8560c7e88953e08d380d7719f4d91869"
+    },
+    {
+      "path": "reports/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PersistenceOwnershipTest.xml",
+      "sha256": "f644b1ace56f52775b5732d1d0fc695f4c13c7dc5765af4cc41e25baf9ccfecd"
+    },
+    {
+      "path": "reports/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcFacadeTest.xml",
+      "sha256": "1df2bab7b7b2614c5bb3ecb6312e75fd84f1ba05b9c0fb834a64a52114f5eecf"
+    },
+    {
+      "path": "reports/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest.xml",
+      "sha256": "082c90bacb514680969291a2e761edf493ea7100e2193920e854f38e87f26d8f"
+    },
+    {
+      "path": "reports/reports/jacoco/test/jacocoTestReport.xml",
+      "sha256": "14e83a91af8e0b55a945404714d26a31af9b82d2b6cd56aa15afd70aaa7817c0"
+    },
+    {
+      "path": "reports/reports/ktlint/ktlintKotlinScriptCheck/ktlintKotlinScriptCheck.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reports/reports/ktlint/ktlintMainSourceSetCheck/ktlintMainSourceSetCheck.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reports/reports/ktlint/ktlintTestSourceSetCheck/ktlintTestSourceSetCheck.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "retained_bytecode": [
+    {
+      "path": "bytecode/PersistenceJdbcLifecycleOwner.class",
+      "sha256": "fa594075e1523724a05bc66d9ed6b9f9e7f4a9cb2362f5b341a2f44fb7017175"
+    },
+    {
+      "path": "bytecode/PersistenceJdbcDriverRoot.class",
+      "sha256": "01c14417a8f1ddcaca7b5caefaef8f287110d4db38b394a0f33788fcfea9869b"
+    },
+    {
+      "path": "bytecode/PersistenceJdbcParticipant.class",
+      "sha256": "fde6f9b4194dac5ea324ce18243bb09a0937efbd170048e035970a6416e8b893"
+    },
+    {
+      "path": "bytecode/PersistenceTerminalWork.class",
+      "sha256": "62e823c309c5cb4a8491b4bfe54c6f4a10ecc021bbb7a953872234d22480c8a4"
+    },
+    {
+      "path": "bytecode/PersistenceTerminalRunner.class",
+      "sha256": "ae2d1bb3c0310d4623951b554ae030ff55e3c494d6a2ff6fe051e46bc3f48ba2"
+    },
+    {
+      "path": "bytecode/PersistencePhysicalCompletion.class",
+      "sha256": "452497d6d4fd62433de6c2f3f97018f3f21b28c4f374d83dbf7e21e559acaaea"
+    },
+    {
+      "path": "bytecode/PersistenceDriverTimer.class",
+      "sha256": "e1e97121fbbdfcbf1bbabbefc7ee2f37542d2d92e57fa036e9a78e207ed67af5"
+    },
+    {
+      "path": "bytecode/PersistencePgTimerAccess$Boundary.class",
+      "sha256": "614c598cca5d3a5dfae710d7d35aa38bf34f2b64204809381cba87c1969b26bc"
+    },
+    {
+      "path": "bytecode/PersistencePgTimerAccess$BoundaryCell.class",
+      "sha256": "375cc16bdcc40785ca24e8d0bf0d80a82b68bc1056eb7d6a17bb098169ad5787"
+    },
+    {
+      "path": "bytecode/PersistencePgTimerAccess$BoundaryTask.class",
+      "sha256": "fd2c3a2a6432d051a1df09ff61309cb3473a27922280d9dc316ec5e4d7e2f1b9"
+    }
+  ],
+  "retained_test_bytecode": [
+    {
+      "path": "test-bytecode/PgRequireErrorHandlerTest.class",
+      "sha256": "9de6bbba1172219a1b84a2acfaae78a3edb38bb72bdd69cb284549a5def5bb7b"
+    }
+  ],
+  "minimum_free_bytes": 8589934592,
+  "free_bytes_before": 13884604416,
+  "scoped_cleanup": [
+    ".kira-validation/backend-linux/backend-build"
+  ],
+  "owned_descendant_barriers": [
+    {
+      "stage": "before-capture",
+      "returned_normally": true,
+      "receipt": {
+        "absent": true,
+        "forced": false,
+        "barrier_generation": 1,
+        "signals": [],
+        "observed": [
+          {
+            "pid": 31107,
+            "ppid": 31029,
+            "pgid": 31107,
+            "session": 31107,
+            "start_ticks": 14838828,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 32408,
+            "ppid": 31029,
+            "pgid": 32408,
+            "session": 32408,
+            "start_ticks": 14848930,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          }
+        ],
+        "reaped": [],
+        "errors": []
+      }
+    },
+    {
+      "stage": "before-output-deletion",
+      "returned_normally": true,
+      "receipt": {
+        "absent": true,
+        "forced": false,
+        "barrier_generation": 2,
+        "signals": [],
+        "observed": [
+          {
+            "pid": 31107,
+            "ppid": 31029,
+            "pgid": 31107,
+            "session": 31107,
+            "start_ticks": 14838828,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 32408,
+            "ppid": 31029,
+            "pgid": 32408,
+            "session": 32408,
+            "start_ticks": 14848930,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 32528,
+            "ppid": 31029,
+            "pgid": 32528,
+            "session": 32528,
+            "start_ticks": 14849054,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          }
+        ],
+        "reaped": [],
+        "errors": []
+      }
+    },
+    {
+      "stage": "after-final-stop",
+      "returned_normally": true,
+      "receipt": {
+        "absent": true,
+        "forced": false,
+        "barrier_generation": 3,
+        "signals": [],
+        "observed": [
+          {
+            "pid": 31107,
+            "ppid": 31029,
+            "pgid": 31107,
+            "session": 31107,
+            "start_ticks": 14838828,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 32408,
+            "ppid": 31029,
+            "pgid": 32408,
+            "session": 32408,
+            "start_ticks": 14848930,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 32528,
+            "ppid": 31029,
+            "pgid": 32528,
+            "session": 32528,
+            "start_ticks": 14849054,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 32560,
+            "ppid": 31029,
+            "pgid": 32560,
+            "session": 32560,
+            "start_ticks": 14849117,
+            "state": "R",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          }
+        ],
+        "reaped": [],
+        "errors": []
+      }
+    },
+    {
+      "stage": "after-postflight-commands",
+      "returned_normally": true,
+      "receipt": {
+        "absent": true,
+        "forced": false,
+        "barrier_generation": 4,
+        "signals": [],
+        "observed": [
+          {
+            "pid": 31107,
+            "ppid": 31029,
+            "pgid": 31107,
+            "session": 31107,
+            "start_ticks": 14838828,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 32408,
+            "ppid": 31029,
+            "pgid": 32408,
+            "session": 32408,
+            "start_ticks": 14848930,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 32528,
+            "ppid": 31029,
+            "pgid": 32528,
+            "session": 32528,
+            "start_ticks": 14849054,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 32560,
+            "ppid": 31029,
+            "pgid": 32560,
+            "session": 32560,
+            "start_ticks": 14849117,
+            "state": "R",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 32677,
+            "ppid": 31029,
+            "pgid": 32677,
+            "session": 32677,
+            "start_ticks": 14849301,
+            "state": "Z",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 32678,
+            "ppid": 31029,
+            "pgid": 32678,
+            "session": 32678,
+            "start_ticks": 14849303,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          }
+        ],
+        "reaped": [],
+        "errors": []
+      }
+    },
+    {
+      "stage": "unconditional-final-barrier",
+      "returned_normally": true,
+      "receipt": {
+        "absent": true,
+        "forced": false,
+        "barrier_generation": 5,
+        "signals": [],
+        "observed": [
+          {
+            "pid": 31107,
+            "ppid": 31029,
+            "pgid": 31107,
+            "session": 31107,
+            "start_ticks": 14838828,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 32408,
+            "ppid": 31029,
+            "pgid": 32408,
+            "session": 32408,
+            "start_ticks": 14848930,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 32528,
+            "ppid": 31029,
+            "pgid": 32528,
+            "session": 32528,
+            "start_ticks": 14849054,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 32560,
+            "ppid": 31029,
+            "pgid": 32560,
+            "session": 32560,
+            "start_ticks": 14849117,
+            "state": "R",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 32677,
+            "ppid": 31029,
+            "pgid": 32677,
+            "session": 32677,
+            "start_ticks": 14849301,
+            "state": "Z",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 32678,
+            "ppid": 31029,
+            "pgid": 32678,
+            "session": 32678,
+            "start_ticks": 14849303,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          }
+        ],
+        "reaped": [],
+        "errors": []
+      }
+    }
+  ],
+  "child_scope_restored": true,
+  "capture_complete": true,
+  "outputs_absent": true,
+  "frozen_inputs_preserved": true,
+  "dependency_inputs_preserved": true,
+  "private_daemon_pids_after_stop": [],
+  "private_daemon_pids_after_clean": [],
+  "owned_command_pids_absent": true,
+  "owned_groups_final": {
+    "31107": [],
+    "32408": [],
+    "32528": [],
+    "32560": [],
+    "32677": [],
+    "32678": []
+  },
+  "test_evidence": {
+    "status": "PASS",
+    "total": 56,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "classes": [
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcGuardProtocolTest",
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcTransactionTest",
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistenceOwnershipTest",
+      "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcFacadeTest",
+      "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest"
+    ],
+    "selectors": {
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcTransactionTest": [
+        "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcTransactionTest"
+      ],
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcGuardProtocolTest": [
+        "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcGuardProtocolTest"
+      ],
+      "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcFacadeTest": [
+        "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcFacadeTest"
+      ],
+      "me.manga.kira.backend.common.infrastructure.persistence.PersistenceOwnershipTest": [
+        "me.manga.kira.backend.common.infrastructure.persistence.PersistenceOwnershipTest"
+      ],
+      "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest": [
+        "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest"
+      ]
+    },
+    "identities": [
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcGuardProtocolTest",
+        "name": "foreign duplicate and out of order guard ends cannot release or poison another actual frame()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcGuardProtocolTest",
+        "name": "explicit wrapping or uncleared output poisons before boxing and actual end without unsafe Throwable reads(boolean) [1] explicitWrapping=false",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcGuardProtocolTest",
+        "name": "explicit wrapping or uncleared output poisons before boxing and actual end without unsafe Throwable reads(boolean) [2] explicitWrapping=true",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcGuardProtocolTest",
+        "name": "fabricated child cannot decrement the genuine private child summary()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcGuardProtocolTest",
+        "name": "failed first child close cannot become clean through a duplicate and does not fake a forever executing native call()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcGuardProtocolTest",
+        "name": "foreign cancellation checks the exact open child without gaining foreground authority and ends under G contention()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcGuardProtocolTest",
+        "name": "ordinary business failure remains exact while compatibility-only provenance never certifies strict reuse()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcGuardProtocolTest",
+        "name": "original work expiry does not manufacture a new budget or revoke preauthenticated cleanup before terminal seal()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcGuardProtocolTest",
+        "name": "different calls authenticate the same owner tuple without equating resource objects or consulting them()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcGuardProtocolTest",
+        "name": "foreign context identity and foreign foreground use are refused without an admission count()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcGuardProtocolTest",
+        "name": "business stop and poison leave only existing cleanup authority until permanent terminal seal()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcTransactionTest",
+        "name": "savepoint rollback is not a completed physical transaction()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcTransactionTest",
+        "name": "acknowledged commit is not erased by rollback or later reset failure()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcTransactionTest",
+        "name": "failed rollback has no fabricated acknowledged outcome()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcTransactionTest",
+        "name": "successor inherits clean settings but never the old transaction result()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcTransactionTest",
+        "name": "post outcome native descendant work again prevents clean return()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcTransactionTest",
+        "name": "acknowledged rollback and clean local state are not the same fact()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceJdbcTransactionTest",
+        "name": "unknown commit stays unknown after a returned rollback and refuses auto commit reset()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceOwnershipTest",
+        "name": "simultaneous cancellation callers all end under held G without releasing the foreground lineage()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceOwnershipTest",
+        "name": "foreign foreground entry and foreign token end cannot impersonate the original caller()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceOwnershipTest",
+        "name": "ordinary foreground nesting has no small depth cap and zero needs a permanent terminal seal()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceOwnershipTest",
+        "name": "unended frames block successors and stale duplicate or fabricated ends cannot decrement or poison a successor()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceOwnershipTest",
+        "name": "supplied budget is not restarted and ordinary no-budget business failure does not poison()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceOwnershipTest",
+        "name": "authentic nested admission and poison end publish while another thread holds G()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceOwnershipTest",
+        "name": "opaque final claim permanently refuses epoch promotion without touching the raw connection()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistenceOwnershipTest",
+        "name": "actual retirement projection preserves CLOSED before opaque delivery exclusion()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcFacadeTest",
+        "name": "foreign terminal request does not wait for active native foreground and actual tail still blocks drain()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcFacadeTest",
+        "name": "lower self unwrap is guarded and vendor or private delegate escape never delegates()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcFacadeTest",
+        "name": "physical close requests existing exact retirement and duplicate close performs no native action()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcFacadeTest",
+        "name": "ordinary checked business failure preserves exact exception and does not poison the physical owner()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcFacadeTest",
+        "name": "pool epoch adopts successive actual foreground callers rather than the factory caller forever()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcFacadeTest",
+        "name": "current-thread ownership lock denies native invocation rather than calling JDBC under G()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcFacadeTest",
+        "name": "ordinary root reentry has no small depth cap and genuine calls end while G is held elsewhere()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcFacadeTest",
+        "name": "accepted but unstarted supplied-executor abort remains counted after permanent terminal seal()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcFacadeTest",
+        "name": "setClientInfo refusal preserves its checked declaration without raw work()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcFacadeTest",
+        "name": "supplied-executor rejection before or after command entry never invents disposal or double-decrements(boolean) [1] runFirst=false",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcFacadeTest",
+        "name": "supplied-executor rejection before or after command entry never invents disposal or double-decrements(boolean) [2] runFirst=true",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "MODEL first failed or interrupted close stays unknown without a successful retry(String) [1] mode=THREW",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "MODEL first failed or interrupted close stays unknown without a successful retry(String) [2] mode=THREW_INTERRUPT",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "MODEL first failed or interrupted close stays unknown without a successful retry(String) [3] mode=CAUGHT_INTERRUPT",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "MODEL exact RETURN incident retains custody and seals only the empty UNKNOWN cut()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "original acquisition budget is never restarted and a sealed zero still needs genuine shutdown conjunctions()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "nested caller-owned acquisitions have no pool-capacity cap and no cross-pool shutdown wait cycle()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "wrong pool foreign caller and fabricated tickets cannot hand off or forget a privately captured handle()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "MODEL close caller bookkeeping failure restores its pool frame but never upgrades the first close outcome(String) [1] failureAt=sample",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "MODEL close caller bookkeeping failure restores its pool frame but never upgrades the first close outcome(String) [2] failureAt=restore",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "foreign and fabricated return entitlements never enter or consume the authentic future right()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "MODEL held first close frame cannot observe its own completion and duplicate close never replaces its outcome()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "unused entitlement revocation and original operation budget exclude later eviction without a replacement budget()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "MODEL entry bookkeeping failure remains sticky and restores the authentic enclosing caller frame()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "future return entitlement prevents a closed-population claim until consumed and the actual outer tail ends()",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "the first shutdown budget is retained across duplicate requests and cannot be replenished by observation(String) [1] origin=request",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "the first shutdown budget is retained across duplicate requests and cannot be replenished by observation(String) [2] origin=handoff",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "native close and possibly waiting observation are refused beneath actual ownership locks(String) [1] held=F",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "native close and possibly waiting observation are refused beneath actual ownership locks(String) [2] held=G",
+        "status": "passed"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+        "name": "many ambiguous callers coalesce one receipt and one authentic held acquisition tail keeps it pending()",
+        "status": "passed"
+      }
+    ],
+    "limitation": "Discovery/counts only; full protected-baseline comparison remains required"
+  },
+  "child_scope_acquisition": {
+    "parent": {
+      "pid": 31029,
+      "ppid": 32337,
+      "pgid": 31029,
+      "session": 31029,
+      "start_ticks": 14838578,
+      "state": "R",
+      "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+    },
+    "previous_setting": 0
+  },
+  "diff_sha256": "d1611039f10b12263b2de9066cbc6f66256fcfd8907c53677924a97eb4a4ee5a",
+  "owned_groups_after_gradle_stop": {
+    "31107": [],
+    "32408": []
+  },
+  "owned_groups_after_clean": {
+    "31107": [],
+    "32408": [],
+    "32528": [],
+    "32560": []
+  },
+  "free_bytes_after": 13870731264,
+  "child_scope_restore": {
+    "active": false,
+    "restored_previous_setting": 0
+  },
+  "output_paths": [
+    ".kira-validation/backend-linux/backend-build",
+    "kira-backend/build",
+    "kira-backend/buildSrc/build"
+  ],
+  "finished_at": "2026-09-13T05:55:36.593514+00:00",
+  "static_report_coverage": {
+    "ktlint": true
+  },
+  "runner_status": "PASS"
+}
