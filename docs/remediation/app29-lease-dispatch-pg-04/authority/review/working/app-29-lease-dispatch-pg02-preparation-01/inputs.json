@@ -1,0 +1,192 @@
+{
+  "schema": "app-29-pg02-preparation-read-inputs-v1",
+  "scope": "PASSIVE_READS_NOT_ADMISSION_OR_EXECUTION",
+  "inputs": [
+    {
+      "path": "kira-admin/ci/app29-gate-b.py",
+      "sha256": "384cca997993d9892c2b0ef8669c414bc17e2053ecfad5c32cd4bb41f716d83f",
+      "bytes": 89895,
+      "role": "active PG18 controller"
+    },
+    {
+      "path": "kira-admin/.github/workflows/app29-gate-b.yml",
+      "sha256": "05158eb71361ccf813c7cbb18a91489ea13c85a64d82a12a86ad4d2f94e5974e",
+      "bytes": 2548,
+      "role": "active PG18 workflow"
+    },
+    {
+      "path": "kira-admin/ci/app29-gate-b.request.json",
+      "sha256": "4d6e013dab6e34e0c3b164707d9de6583e4211d717aeb43fbd26dbff83540560",
+      "bytes": 1555,
+      "role": "active prior request; not new authority"
+    },
+    {
+      "path": "kira-admin/review/working/app-29-lease-dispatch-pg-carrier-02/profile/profile.json",
+      "sha256": "315509d24f0fd4c84fd8172231e7eb79639bad1a0ae589db6e18ce0268b4ed79",
+      "bytes": 59117,
+      "role": "active PG18 profile"
+    },
+    {
+      "path": "kira-admin/review/working/app-29-lease-dispatch-pg-carrier-02/profile/profile.init.gradle",
+      "sha256": "d7315be66f9bf654e2ae62b164e9252c7ee3deeeccc66a5b6e826104707e7a2d",
+      "bytes": 11920,
+      "role": "active PG18 init"
+    },
+    {
+      "path": "kira-admin/ci/app29_owned_children.py",
+      "sha256": "56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385",
+      "bytes": 3982,
+      "role": "unchanged shared owner"
+    },
+    {
+      "path": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-01-transport-02/manifest.json",
+      "sha256": "1387f68bccac8797a5fc413d58495d748c3b28715f60b6074f7dca7e19ef94ba",
+      "bytes": 354315,
+      "role": "immutable PG18 freeze"
+    },
+    {
+      "path": "review/working/app-29-lease-dispatch-linux01-preparation/selection.json",
+      "sha256": "075948a19f2be69a8c726c12f4772f9dd82aa7060dbd04f4051babc15e595ab6",
+      "bytes": 9548,
+      "role": "immutable PG18 source selection"
+    },
+    {
+      "path": "review/working/app-29-lease-dispatch-source-checkpoint-01/checkpoint.json",
+      "sha256": "2d291cf217291106d35343c6f74f4d892299e766b72615620bec122ee0f79e37",
+      "bytes": 1269,
+      "role": "historical lease17 checkpoint"
+    },
+    {
+      "path": "review/working/app-29-lease-dispatch-source-checkpoint-01/paths.json",
+      "sha256": "4ec760ce6a72f4c2d63200018d6a60637b98800050d115b6e731b11a5456248a",
+      "bytes": 4927,
+      "role": "historical lease17 paths"
+    },
+    {
+      "path": "review/working/app-29-lease-dispatch-pg02-source-checkpoint-01/checkpoint.json",
+      "sha256": "3c3751bf5a856b51abea015b1caabc9f638b0e0d4645524e35484e753f8681f3",
+      "bytes": 1699,
+      "role": "primary checkpoint read for shape only; UNBOUND in draft"
+    },
+    {
+      "path": "kira-backend/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt",
+      "sha256": "1660f8dbb5d71033d7fb0606f1a5d20248dd4c6204a7773aca75a6a0663e77cb",
+      "bytes": 129941,
+      "role": "primary-supplied reviewed PG02 source bytes"
+    },
+    {
+      "path": "kira-backend/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt",
+      "sha256": "3c0010170b07b1edef3f87894dac6833f2ae2f02e841609cd5e3e15d9ce489d5",
+      "bytes": 51391,
+      "role": "primary-supplied reviewed PG02 source bytes"
+    },
+    {
+      "path": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-01-transport-02/issue-baseline.patch",
+      "sha256": "212c7f80101fa9a772ef4d9d88d7b78b570b5134d46c9229aeb0bd7243e44853",
+      "bytes": 3908057,
+      "role": "retained source/result/provenance input"
+    },
+    {
+      "path": "review/remediation/app-29-lease-dispatch-pg01-transport02-independent-actual-result-review-01.md",
+      "sha256": "0cd81ef933388b61e3f512bcd915962e9eced17ede60f32a6ce0698b76a1f8d4",
+      "bytes": 16386,
+      "role": "retained source/result/provenance input"
+    },
+    {
+      "path": "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/result.json",
+      "sha256": "e64b94410e240f7585ac6d4a2d70c90b3b8952d75e61cfa5e055f15fb1e69bc9",
+      "bytes": 79812,
+      "role": "retained source/result/provenance input"
+    },
+    {
+      "path": "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/collection.json",
+      "sha256": "dded7894078740b37f22ec22b2c5ca6cd09982169240bb4759bf6cef4374cc93",
+      "bytes": 9467,
+      "role": "retained source/result/provenance input"
+    },
+    {
+      "path": "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/run-final.json",
+      "sha256": "3793e3a58f73cd93cae2222db537582a7130d145d000e2be17c0cb785c3d8b05",
+      "bytes": 12529,
+      "role": "retained source/result/provenance input"
+    },
+    {
+      "path": "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml",
+      "sha256": "1e40141e4e41cd40b9f8ba7544da766d3e6bb1e10c16e47e72bb772b0ec2acdd",
+      "bytes": 47772,
+      "role": "retained source/result/provenance input"
+    },
+    {
+      "path": "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.xml",
+      "sha256": "d4aebf27f8ed9ed58e43889be5e2613d33b0728712bc827aee222db19f1d257d",
+      "bytes": 14187,
+      "role": "retained source/result/provenance input"
+    },
+    {
+      "path": "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/gradle-test.log",
+      "sha256": "3d13c1dd5a353540b1165990724d5c896915946881949516607b89b7f05a6e6c",
+      "bytes": 4431,
+      "role": "retained source/result/provenance input"
+    },
+    {
+      "path": "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/container-events.log",
+      "sha256": "969782bcad4c82a6bcc9814aa7eacc8e9ffeee9f1739c2d3edbed7b6ca3f8d61",
+      "bytes": 7791,
+      "role": "retained source/result/provenance input"
+    },
+    {
+      "path": "review/remediation/app-29-lease-dispatch-pg02-primary-correction-plan-01.md",
+      "sha256": "b67977472e0e31c1c4c30d23de3c61338c13f8d0ca515786dbe7d048cbc7f335",
+      "bytes": 5396,
+      "role": "retained source/result/provenance input"
+    },
+    {
+      "path": "review/remediation/app-29-lease-dispatch-pg02-test-authoring-report-01.md",
+      "sha256": "384fadaf7c93b3f8a661cb917f9661d3204c494ea6bd2932ce4b8a1e0b8f4155",
+      "bytes": 9205,
+      "role": "retained source/result/provenance input"
+    },
+    {
+      "path": "review/remediation/app-29-lease-dispatch-pg02-independent-actual-diff-review-01.md",
+      "sha256": "20aa2d84cb1733042c5524e99c322b43558875a333ecde52150d3fff66f13a1c",
+      "bytes": 8299,
+      "role": "retained source/result/provenance input"
+    },
+    {
+      "path": "review/remediation/app-29-lease-dispatch-pg02-independent-r1r2-recheck-01.md",
+      "sha256": "21006a592a75ea7008188934f1f8566496671d6a3acb2f3bced88e9aa9b2387d",
+      "bytes": 3427,
+      "role": "retained source/result/provenance input"
+    },
+    {
+      "path": "review/remediation/app-29-lease-dispatch-pg02-braces-independent-review-01.md",
+      "sha256": "704b4d894bf32788552d7cf5c621b43ccc8b1be40cc02cd9254c93f1d213b89d",
+      "bytes": 2550,
+      "role": "retained source/result/provenance input"
+    },
+    {
+      "path": "review/working/app-29-lease-dispatch-pg02-static-01/result.json",
+      "sha256": "044f039be04e2d4de855e4af53a001737f6daa4b5a9060c27e90a31485d84238",
+      "bytes": 16715,
+      "role": "retained source/result/provenance input"
+    },
+    {
+      "path": "review/working/app-29-lease-dispatch-pg02-static-01/validation.log",
+      "sha256": "3111270b2049977076d6a0707f7a4f71e85c0a35c7c2f533ae85ebf969e501a7",
+      "bytes": 1500,
+      "role": "retained source/result/provenance input"
+    },
+    {
+      "path": "review/working/app-29-lease-dispatch-pg02-static-02/result.json",
+      "sha256": "005f0c70d7bccafa68a956ec354368ded8da1f4bdfc42dcfb1baf52f72b23be6",
+      "bytes": 16215,
+      "role": "retained source/result/provenance input"
+    },
+    {
+      "path": "review/working/app-29-lease-dispatch-pg02-static-02/validation.log",
+      "sha256": "50d265201838fbd5a3faca4d9cf8f40ef065ea354bb3d5ecc879b97eda98082f",
+      "bytes": 664,
+      "role": "retained source/result/provenance input"
+    }
+  ]
+}

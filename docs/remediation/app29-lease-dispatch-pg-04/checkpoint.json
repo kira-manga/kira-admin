@@ -1,0 +1,23 @@
+{
+  "schema": "app29-lease-dispatch-clean-checkpoint-v1",
+  "source_accepted": true,
+  "backend_sha": "0582abc737a89a663e770e78a5456961743330f6",
+  "source_bundle": {
+    "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+    "private_parent_sha": "f2e58eac0b139dca3a042c724d69c66a3d65278e",
+    "ref": "refs/heads/remediation/app-29-backend-complaints",
+    "source_path": "review/working/app-29-lease-dispatch-pg04-transport-source-01/backend.bundle",
+    "path": "docs/remediation/app29-lease-dispatch-pg-04/inputs/backend.bundle",
+    "sha256": "1e9ad1a4b4b14017b67f1b6576cef8cb20aef08fecdbba2566f2887163b0acef",
+    "bytes": 287825
+  },
+  "manifest_path": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-04/manifest.json",
+  "manifest_sha256": "9cd074aa8dd9b85268370fbbdaec01cb446ed339087b387e33b311bd32d0cf1f",
+  "local_v3_preflight": {
+    "manifest_sha256": "9cd074aa8dd9b85268370fbbdaec01cb446ed339087b387e33b311bd32d0cf1f",
+    "tool_sha256": "e8c6a48fc26c634fbccbb081651631fb5c767099b1143ab4dbe8439f6060d0fe",
+    "receipt_path": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-04/hosted-local-preflight.json",
+    "receipt_sha256": "7a03859975aeb73898a49bb138bd1312b79aac6bc9952a9f495642a2203a85e7"
+  },
+  "acceptance_scope": "Exact reviewed PG04 MODEL-only source transport and genuine local-v3 preflight only. PG03 mixed-pool PASS reused; original MODEL FAIL retained. Not runtime/fix/W03/integration acceptance."
+}

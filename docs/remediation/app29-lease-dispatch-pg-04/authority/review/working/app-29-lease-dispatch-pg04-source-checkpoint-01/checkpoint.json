@@ -1,0 +1,14 @@
+{
+  "at_utc": "2026-09-13T23:00:35.092302+00:00",
+  "parent": "f2e58eac0b139dca3a042c724d69c66a3d65278e",
+  "head": "0582abc737a89a663e770e78a5456961743330f6",
+  "tree": "d20c606f9d0b34b37696806988c28c05b69453ed",
+  "branch": "remediation/app-29-backend-complaints",
+  "status": "",
+  "source_path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt",
+  "source_sha256": "915785fe0ddefa5444ba088792345e9141c129529d518ff3e525658cf9e6132e",
+  "independent_review": "review/remediation/app-29-lease-dispatch-pg03-stack-witness-correction-independent-review-01.md",
+  "independent_review_sha256": "a3349629a9e031923b08dc5b65035de0c7d3593419da8443cb256d1180e70e99",
+  "scope": "SOURCE-ONLY CHECKPOINT; exact one-site assertion correction. Old PG03 FAIL remains. Not integrated, not validated, not public-pushed.",
+  "next_validation": "Only former failing MODEL literal case; unchanged PG03 mixed-pool PASS reused. Genuine full-source freeze must retain all348 development07 seeds; primary admission pending."
+}

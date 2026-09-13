@@ -1,0 +1,257 @@
+{
+  "at_utc": "2026-09-13T14:19:54.313673+00:00",
+  "run_url": "https://github.com/kira-manga/kira-admin/actions/runs/34762007741",
+  "carrier_sha": "6794795c9d40b6a99a4af9b4c46cf6e7a0f68d27",
+  "attempt": 1,
+  "conclusion": "failure",
+  "files": {
+    "after-backend-branch.log": {
+      "sha256": "7b48f4083ede426131b1eff936e7c0d0297d2281a7221979a6ae135706be019b",
+      "bytes": 38
+    },
+    "after-backend-commit.log": {
+      "sha256": "442cb8c7fc00925710a2ae1575745f5b7af278971d2cf468852fd481dcc3b228",
+      "bytes": 379
+    },
+    "after-backend-sha.log": {
+      "sha256": "8e76dfffca5ebb5eed333ed8ad08910d559f1a656489d6a8022155eaf94397c4",
+      "bytes": 41
+    },
+    "after-core-baseline-commit.log": {
+      "sha256": "98cdf85b08d699721c6350fa51e484a662d4ab3dd0ffc7112d8c3b9a56e2b516",
+      "bytes": 639
+    },
+    "after-diagnostic-parent-commit.log": {
+      "sha256": "cf767d2023a74d90e99c620b5495ce90d60c83cb103786fa6e149816f4f2abc2",
+      "bytes": 352
+    },
+    "after-ordinary-parent-commit.log": {
+      "sha256": "9ceb2818497ac397b00665bf8b63ea4ac161aeab36bf4062001aa220211123f0",
+      "bytes": 520
+    },
+    "after-post-structural-parent-commit.log": {
+      "sha256": "cbe394112a049b6a605d8b0196ba48f94f9fdb4629bf434d15ac38e140ccca34",
+      "bytes": 344
+    },
+    "after-previous-private-parent-commit.log": {
+      "sha256": "0116d0a9fa46cb8dc2a1125ec38db5c1d9d75b85e9bff64e4ddc53e054ace7ab",
+      "bytes": 361
+    },
+    "after-private-parent-commit.log": {
+      "sha256": "78f53743490218d3e856c68dffaae952360f89a7585c7679e87ca1cc1ffeb2e2",
+      "bytes": 373
+    },
+    "after-product-lifecycle-parent-commit.log": {
+      "sha256": "90b0ed3b9c7a6b61c61998c320086226d64ee593a6c69abb9a97394f24abab00",
+      "bytes": 368
+    },
+    "after-source-hashes.json": {
+      "sha256": "d65f6ecf66fabd482e897ccb09e44e78ce95d25fad1951a49630ca20ec080f8c",
+      "bytes": 136393
+    },
+    "after-status.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "after-tracked.log": {
+      "sha256": "9102056caf1667ee94c14fb11023387f4adbee0d3e3caf6f069dc5b8794dfda3",
+      "bytes": 73172
+    },
+    "before-backend-branch.log": {
+      "sha256": "7b48f4083ede426131b1eff936e7c0d0297d2281a7221979a6ae135706be019b",
+      "bytes": 38
+    },
+    "before-backend-commit.log": {
+      "sha256": "442cb8c7fc00925710a2ae1575745f5b7af278971d2cf468852fd481dcc3b228",
+      "bytes": 379
+    },
+    "before-backend-sha.log": {
+      "sha256": "8e76dfffca5ebb5eed333ed8ad08910d559f1a656489d6a8022155eaf94397c4",
+      "bytes": 41
+    },
+    "before-core-baseline-commit.log": {
+      "sha256": "98cdf85b08d699721c6350fa51e484a662d4ab3dd0ffc7112d8c3b9a56e2b516",
+      "bytes": 639
+    },
+    "before-diagnostic-parent-commit.log": {
+      "sha256": "cf767d2023a74d90e99c620b5495ce90d60c83cb103786fa6e149816f4f2abc2",
+      "bytes": 352
+    },
+    "before-ordinary-parent-commit.log": {
+      "sha256": "9ceb2818497ac397b00665bf8b63ea4ac161aeab36bf4062001aa220211123f0",
+      "bytes": 520
+    },
+    "before-post-structural-parent-commit.log": {
+      "sha256": "cbe394112a049b6a605d8b0196ba48f94f9fdb4629bf434d15ac38e140ccca34",
+      "bytes": 344
+    },
+    "before-previous-private-parent-commit.log": {
+      "sha256": "0116d0a9fa46cb8dc2a1125ec38db5c1d9d75b85e9bff64e4ddc53e054ace7ab",
+      "bytes": 361
+    },
+    "before-private-parent-commit.log": {
+      "sha256": "78f53743490218d3e856c68dffaae952360f89a7585c7679e87ca1cc1ffeb2e2",
+      "bytes": 373
+    },
+    "before-product-lifecycle-parent-commit.log": {
+      "sha256": "90b0ed3b9c7a6b61c61998c320086226d64ee593a6c69abb9a97394f24abab00",
+      "bytes": 368
+    },
+    "before-source-hashes.json": {
+      "sha256": "d65f6ecf66fabd482e897ccb09e44e78ce95d25fad1951a49630ca20ec080f8c",
+      "bytes": 136393
+    },
+    "before-status.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "before-tracked.log": {
+      "sha256": "9102056caf1667ee94c14fb11023387f4adbee0d3e3caf6f069dc5b8794dfda3",
+      "bytes": 73172
+    },
+    "carrier-sha.log": {
+      "sha256": "176b61f8d3d329fd91a4a196c1a1e8de1f325002c50e4093ee3ead019ef4c768",
+      "bytes": 41
+    },
+    "container-events.log": {
+      "sha256": "969782bcad4c82a6bcc9814aa7eacc8e9ffeee9f1739c2d3edbed7b6ca3f8d61",
+      "bytes": 7791
+    },
+    "containers-after-cleanup.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "containers-before.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "containers-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "containers-normal-0.log": {
+      "sha256": "d58e5601cca4bf4cb19aeb744b5ffc948f1a8146e7a0a62734e11f94801e87c9",
+      "bytes": 65
+    },
+    "containers-normal-1.log": {
+      "sha256": "d58e5601cca4bf4cb19aeb744b5ffc948f1a8146e7a0a62734e11f94801e87c9",
+      "bytes": 65
+    },
+    "containers-normal-2.log": {
+      "sha256": "d58e5601cca4bf4cb19aeb744b5ffc948f1a8146e7a0a62734e11f94801e87c9",
+      "bytes": 65
+    },
+    "containers-normal-3.log": {
+      "sha256": "d58e5601cca4bf4cb19aeb744b5ffc948f1a8146e7a0a62734e11f94801e87c9",
+      "bytes": 65
+    },
+    "containers-normal-4.log": {
+      "sha256": "d58e5601cca4bf4cb19aeb744b5ffc948f1a8146e7a0a62734e11f94801e87c9",
+      "bytes": 65
+    },
+    "containers-normal-5.log": {
+      "sha256": "d58e5601cca4bf4cb19aeb744b5ffc948f1a8146e7a0a62734e11f94801e87c9",
+      "bytes": 65
+    },
+    "containers-normal-6.log": {
+      "sha256": "d58e5601cca4bf4cb19aeb744b5ffc948f1a8146e7a0a62734e11f94801e87c9",
+      "bytes": 65
+    },
+    "containers-normal-7.log": {
+      "sha256": "d58e5601cca4bf4cb19aeb744b5ffc948f1a8146e7a0a62734e11f94801e87c9",
+      "bytes": 65
+    },
+    "containers-normal-8.log": {
+      "sha256": "d58e5601cca4bf4cb19aeb744b5ffc948f1a8146e7a0a62734e11f94801e87c9",
+      "bytes": 65
+    },
+    "containers-normal-9.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "docker-version.log": {
+      "sha256": "a634037cf6df509bb12f1496d80dd258857175c09727b4a4cfe8167cf1951716",
+      "bytes": 792
+    },
+    "gradle-stop-final.log": {
+      "sha256": "9bb9c19238f3fdde3213f2be84912b0c7e87b3e2295ec372ec245deab200d46d",
+      "bytes": 31
+    },
+    "gradle-stop-immediate.log": {
+      "sha256": "9bb9c19238f3fdde3213f2be84912b0c7e87b3e2295ec372ec245deab200d46d",
+      "bytes": 31
+    },
+    "gradle-test.log": {
+      "sha256": "3d13c1dd5a353540b1165990724d5c896915946881949516607b89b7f05a6e6c",
+      "bytes": 4431
+    },
+    "image-0.log": {
+      "sha256": "42f9580f26e131dd7eaaea13e73f7b73e182f2eb870be56499f9cf697d911a42",
+      "bytes": 208
+    },
+    "image-1.log": {
+      "sha256": "2fcef07881f4f4e9564c412f22f516b80bbaaf19b5735c750d25961945316f40",
+      "bytes": 225
+    },
+    "initial-backend-branch.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "initial-backend-sha.log": {
+      "sha256": "f8f42cc7bc7d592bf99e042b3aa9953662f86136ed64204a86e469f1804c3fdb",
+      "bytes": 41
+    },
+    "initial-backend-status.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "jdk-version.log": {
+      "sha256": "fcf5286ecd3d9a5e0d5063b9373e9178a7cc61f51b0b0b0a1ea95dcf20039b03",
+      "bytes": 2170
+    },
+    "jdk.json": {
+      "sha256": "f95c67557fd2ae701f15f089ab0b7a6bdffef78c432a699e6411a45b24c30589",
+      "bytes": 2023
+    },
+    "owned-containers.json": {
+      "sha256": "20061594ebecd7cdf3fda62cf50c8ccbfc741583403b944a1a982a6ef292f2bd",
+      "bytes": 1342
+    },
+    "reports/lease-dispatch-pg-01/class-load-2645.txt": {
+      "sha256": "66293704bda9fa6d99a868bd5085e85763c1f67e2d65444722f850e9a50eef83",
+      "bytes": 3360560
+    },
+    "reports/lease-dispatch-pg-01/effective-classpath.txt": {
+      "sha256": "019d964757fb49aa74d0fc023a2d12fddf7da898ad14e821cb7f89313ed7628d",
+      "bytes": 85682
+    },
+    "result.json": {
+      "sha256": "e64b94410e240f7585ac6d4a2d70c90b3b8952d75e61cfa5e055f15fb1e69bc9",
+      "bytes": 79812
+    },
+    "source-bundle-checkout.log": {
+      "sha256": "0cb3d81d86240f35738133180b56b184a7f5af12cd850cd9cfd2096230b17326",
+      "bytes": 171
+    },
+    "source-bundle-fetch.log": {
+      "sha256": "2cbef0e2db1aafd37fe88cb2ad728b0f51447c41e2c7742aada78e795b0be424",
+      "bytes": 230
+    },
+    "source-bundle-verify.log": {
+      "sha256": "fa6815c4cdd890981d20f21cf0ee35bdbd5f2751467dcc06949abe95b39e8cf8",
+      "bytes": 367
+    },
+    "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.xml": {
+      "sha256": "d4aebf27f8ed9ed58e43889be5e2613d33b0728712bc827aee222db19f1d257d",
+      "bytes": 14187
+    },
+    "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": {
+      "sha256": "1e40141e4e41cd40b9f8ba7544da766d3e6bb1e10c16e47e72bb772b0ec2acdd",
+      "bytes": 47772
+    }
+  },
+  "artifact": "app29-lease-dispatch-pg-01-34762007741-1",
+  "disposition": "RAW_RESULT_REVIEW_REQUIRED",
+  "local_builds": 0,
+  "disk_free_bytes": 11796791296
+}

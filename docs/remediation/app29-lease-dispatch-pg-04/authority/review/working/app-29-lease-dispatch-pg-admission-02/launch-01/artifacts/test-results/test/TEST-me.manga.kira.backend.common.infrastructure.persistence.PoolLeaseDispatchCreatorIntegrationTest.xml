@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" tests="17" skipped="0" failures="2" errors="0" timestamp="2026-09-13T14:18:37.205Z" hostname="runnervmlun5p" time="31.808">
+  <properties/>
+  <testcase name="foreign actual statement cancellation keeps only its own outer tail while original RETURN waits for it()" classname="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" time="1.377"/>
+  <testcase name="only exact admitted guard dispatch lease epoch and issuer can enter a creator()" classname="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" time="0.072"/>
+  <testcase name="present returned dispatch cannot upgrade through pool authority and a revoked lease cannot enter a prepared creator()" classname="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" time="0.075"/>
+  <testcase name="repeated nested admitted dispatches retain one future RETURN and no lower native fallback()" classname="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" time="0.058"/>
+  <testcase name="MODEL fatal Hikari statement execution creates the first real close Worker and drains its task()" classname="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" time="0.056"/>
+  <testcase name="mixed pool creator nesting refuses wrong top fallback and unrelated lease use()" classname="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" time="20.087">
+    <failure message="me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryException: Persistence boundary rejected: TIME_BUDGET_EXHAUSTED." type="me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryException">me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryException: Persistence boundary rejected: TIME_BUDGET_EXHAUSTED.
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistenceBoundaryFailureKt.rejectPersistenceBoundary(PersistenceBoundaryFailure.kt:28)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistenceTimeBudget.remainingMillis(PersistenceTimeBudget.kt:25)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleTestScopeKt.awaitLifecycleFact(PgLifecycleTestScope.kt:86)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleTestScopeKt.awaitLifecycleFact$default(PgLifecycleTestScope.kt:84)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.OwnedCutPool.close(PersistencePgOwnedCutIntegrationTest.kt:1415)
+	at app//kotlin.jdk7.AutoCloseableKt.closeFinally(AutoCloseableJVM.kt:42)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTestKt.withOwnedCutPool(PersistencePgOwnedCutIntegrationTest.kt:1379)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.mixed_pool_creator_nesting_refuses_wrong_top_fallback_and_unrelated_lease_use$lambda$31(PoolLeaseDispatchCreatorIntegrationTest.kt:327)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTestKt.withOwnedCutPool(PersistencePgOwnedCutIntegrationTest.kt:1384)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.mixed pool creator nesting refuses wrong top fallback and unrelated lease use(PoolLeaseDispatchCreatorIntegrationTest.kt:326)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+	Suppressed: java.lang.IllegalStateException: Managed shutdown did not satisfy expected evidence: PENDING
+		at me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleTestScope.close(PgLifecycleTestScope.kt:61)
+		at kotlin.jdk7.AutoCloseableKt.closeFinally(AutoCloseableJVM.kt:45)
+		at me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTestKt.withOwnedCutPool(PersistencePgOwnedCutIntegrationTest.kt:1377)
+		... 6 more
+</failure>
+  </testcase>
+  <testcase name="[1] mode=POOL_LEASE_CREATOR_ENTRY_BEFORE_TL" classname="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" time="1.144"/>
+  <testcase name="[2] mode=POOL_LEASE_CREATOR_ENTRY_AFTER_TL" classname="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" time="1.013"/>
+  <testcase name="[3] mode=POOL_LEASE_CREATOR_END_BEFORE_TL" classname="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" time="1.007"/>
+  <testcase name="[4] mode=POOL_LEASE_CREATOR_END_AFTER_TL" classname="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" time="0.969"/>
+  <testcase name="[5] mode=POOL_LEASE_CREATOR_CORE_BEFORE_TL" classname="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" time="1.002"/>
+  <testcase name="[6] mode=POOL_LEASE_CREATOR_CORE_AFTER_TL" classname="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" time="1.015"/>
+  <testcase name="[7] mode=POOL_LEASE_CREATOR_CLIENT_INFO_TAIL" classname="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" time="1.002"/>
+  <testcase name="[8] mode=POOL_LEASE_CREATOR_DECLARED_TAIL" classname="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" time="1.077"/>
+  <testcase name="MODEL fatal connection commit creates the first real Hikari close Worker and drains its task()" classname="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" time="0.067"/>
+  <testcase name="real post core outer tail refuses reentrant self wait and remains in exact terminal and loan proofs()" classname="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" time="0.059"/>
+  <testcase name="MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement()" classname="me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest" time="1.648">
+    <failure message="org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:31)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:183)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL_work_expiry_inside_actual_afterJdbcCall_cannot_erase_its_admitted_creator_after_epoch_retirement$lambda$59(PoolLeaseDispatchCreatorIntegrationTest.kt:613)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupFixtureKt.withOrdinarySourceGrantCleanup$lambda$1(OrdinarySourceGrantCleanupFixture.kt:51)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTestKt.withOwnedCutPool(PersistencePgOwnedCutIntegrationTest.kt:1384)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupFixtureKt.withOrdinarySourceGrantCleanup(OrdinarySourceGrantCleanupFixture.kt:47)
+	at app//me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement(PoolLeaseDispatchCreatorIntegrationTest.kt:532)
+	at java.base@21.0.12.1/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.12.1/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[14:18:37.214 [Test worker] INFO tc.postgres:17.6-alpine -- Creating container for image: postgres:17.6-alpine
+14:18:37.237 [Test worker] INFO tc.postgres:17.6-alpine -- Container postgres:17.6-alpine is starting: 79887447ca6c7739ddff2a53e503c3e0fcae2ff46741d0a7fe4382f54482f922
+14:18:38.467 [Test worker] INFO tc.postgres:17.6-alpine -- Container postgres:17.6-alpine started in PT1.252689071S
+14:18:38.467 [Test worker] INFO tc.postgres:17.6-alpine -- Container is started (JDBC URL: jdbc:postgresql://localhost:32770/w03_lifecycle?loggerLevel=OFF)
+14:18:38.528 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-2 - Starting...
+14:18:38.529 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-2 - Start completed.
+OWNED_CALLER_SCOPE_EXIT thread_ids=[67,68] all_terminated=true
+14:18:38.557 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-2 - Shutdown initiated...
+14:18:38.575 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-2 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+14:18:38.595 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-3 - Starting...
+14:18:38.596 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-3 - Start completed.
+14:18:38.625 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-3 - Shutdown initiated...
+14:18:38.655 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-3 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+14:18:38.671 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-4 - Starting...
+14:18:38.672 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-4 - Start completed.
+14:18:38.705 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-4 - Shutdown initiated...
+14:18:38.729 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-4 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+14:18:38.746 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-5 - Starting...
+14:18:38.746 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-5 - Start completed.
+14:18:38.765 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-5 - Shutdown initiated...
+14:18:38.792 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-5 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+14:18:38.804 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-6 - Starting...
+14:18:38.804 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-6 - Start completed.
+14:18:38.822 [Test worker] WARN com.zaxxer.hikari.pool.ProxyConnection -- HikariPool-6 - Connection PhysicalJdbcFacade(redacted) marked as broken because of SQLSTATE(57P01), ErrorCode(0)
+java.sql.SQLException: Controlled creator-route failure, not a native PG result.
+	at me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.fatalRoute$lambda$10(PoolLeaseDispatchCreatorIntegrationTest.kt:101)
+	at me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTestKt.withOwnedCutPool(PersistencePgOwnedCutIntegrationTest.kt:1384)
+	at me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.fatalRoute(PoolLeaseDispatchCreatorIntegrationTest.kt:56)
+	at me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL fatal Hikari statement execution creates the first real close Worker and drains its task(PoolLeaseDispatchCreatorIntegrationTest.kt:54)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:775)
+	at org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:479)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:161)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:152)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:91)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:112)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:94)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:87)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:216)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:212)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:137)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:156)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:201)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:170)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:94)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:59)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:142)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$1(InterceptingLauncher.java:39)
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25)
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:38)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor$CollectAllTestClassesExecutor.processAllTestClasses(JUnitPlatformTestClassProcessor.java:124)
+	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor$CollectAllTestClassesExecutor.access$000(JUnitPlatformTestClassProcessor.java:99)
+	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor.stop(JUnitPlatformTestClassProcessor.java:94)
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.stop(SuiteTestClassProcessor.java:63)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:33)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:92)
+	at jdk.proxy1/jdk.proxy1.$Proxy4.stop(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker$3.run(TestWorker.java:200)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.executeAndMaintainThreadName(TestWorker.java:132)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:103)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:63)
+	at org.gradle.process.internal.worker.child.ActionExecutionWorker.execute(ActionExecutionWorker.java:56)
+	at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:122)
+	at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:72)
+	at worker.org.gradle.process.internal.worker.GradleWorkerMain.run(GradleWorkerMain.java:69)
+	at worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
+OWNED_CALLER_SCOPE_EXIT thread_ids=[] all_terminated=true
+14:18:38.843 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-6 - Shutdown initiated...
+14:18:38.848 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-6 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+14:18:38.868 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-7 - Starting...
+14:18:38.870 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-7 - Start completed.
+14:18:38.894 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-8 - Starting...
+14:18:38.895 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-8 - Start completed.
+14:18:38.912 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-8 - Shutdown initiated...
+14:18:38.940 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-8 - Shutdown completed.
+14:18:58.914 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-7 - Shutdown initiated...
+14:18:58.916 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-7 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+PG_POOL_PENDING_RETAINED mode=POOL_LEASE_CREATOR_ENTRY_BEFORE_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=0ba0a543-2fa1-476e-9411-2b905e0944e5 cut=LEASE_CREATOR_ENTRY_BEFORE_TL core_producer_ended=true active_operations=0 future_entries=1 outer_tails=1 adapter=NONE caller_terminated=true product_end=false
+PG_POOL_PENDING_EXIT_REQUESTED mode=POOL_LEASE_CREATOR_ENTRY_BEFORE_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=0ba0a543-2fa1-476e-9411-2b905e0944e5 cleanup=PROCESS_ONLY product_end=false
+
+PG_DATABASE_CHILD_CLEANUP mode=POOL_LEASE_CREATOR_ENTRY_BEFORE_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=0ba0a543-2fa1-476e-9411-2b905e0944e5 pid=3281 alive=false forced=false reader_joined=true streams_closed=true output_bytes=491 output_overflow=false output_read_failed=false output_eof=true reader_alive=false reader_state=TERMINATED
+PG_POOL_PENDING_PROCESS_OBSERVED mode=POOL_LEASE_CREATOR_ENTRY_BEFORE_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=0ba0a543-2fa1-476e-9411-2b905e0944e5 cleanup=PROCESS_ONLY product_end=false
+PG_POOL_PENDING_RETAINED mode=POOL_LEASE_CREATOR_ENTRY_AFTER_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=25c6af29-132c-465a-b843-b6ae8c30d382 cut=LEASE_CREATOR_ENTRY_AFTER_TL core_producer_ended=true active_operations=0 future_entries=1 outer_tails=1 adapter=NONE caller_terminated=true product_end=false
+PG_POOL_PENDING_EXIT_REQUESTED mode=POOL_LEASE_CREATOR_ENTRY_AFTER_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=25c6af29-132c-465a-b843-b6ae8c30d382 cleanup=PROCESS_ONLY product_end=false
+
+PG_DATABASE_CHILD_CLEANUP mode=POOL_LEASE_CREATOR_ENTRY_AFTER_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=25c6af29-132c-465a-b843-b6ae8c30d382 pid=3315 alive=false forced=false reader_joined=true streams_closed=true output_bytes=488 output_overflow=false output_read_failed=false output_eof=true reader_alive=false reader_state=TERMINATED
+PG_POOL_PENDING_PROCESS_OBSERVED mode=POOL_LEASE_CREATOR_ENTRY_AFTER_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=25c6af29-132c-465a-b843-b6ae8c30d382 cleanup=PROCESS_ONLY product_end=false
+PG_POOL_PENDING_RETAINED mode=POOL_LEASE_CREATOR_END_BEFORE_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=72975b6b-13fe-4d5a-819c-b1b141b8d243 cut=LEASE_CREATOR_END_BEFORE_TL core_producer_ended=true active_operations=1 future_entries=1 outer_tails=1 adapter=NONE caller_terminated=true product_end=false
+PG_POOL_PENDING_EXIT_REQUESTED mode=POOL_LEASE_CREATOR_END_BEFORE_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=72975b6b-13fe-4d5a-819c-b1b141b8d243 cleanup=PROCESS_ONLY product_end=false
+
+PG_DATABASE_CHILD_CLEANUP mode=POOL_LEASE_CREATOR_END_BEFORE_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=72975b6b-13fe-4d5a-819c-b1b141b8d243 pid=3348 alive=false forced=false reader_joined=true streams_closed=true output_bytes=485 output_overflow=false output_read_failed=false output_eof=true reader_alive=false reader_state=TERMINATED
+PG_POOL_PENDING_PROCESS_OBSERVED mode=POOL_LEASE_CREATOR_END_BEFORE_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=72975b6b-13fe-4d5a-819c-b1b141b8d243 cleanup=PROCESS_ONLY product_end=false
+PG_POOL_PENDING_RETAINED mode=POOL_LEASE_CREATOR_END_AFTER_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=3a39f613-00bc-4e59-97dd-d60b56b0cd49 cut=LEASE_CREATOR_END_AFTER_TL core_producer_ended=true active_operations=1 future_entries=1 outer_tails=1 adapter=NONE caller_terminated=true product_end=false
+PG_POOL_PENDING_EXIT_REQUESTED mode=POOL_LEASE_CREATOR_END_AFTER_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=3a39f613-00bc-4e59-97dd-d60b56b0cd49 cleanup=PROCESS_ONLY product_end=false
+
+PG_DATABASE_CHILD_CLEANUP mode=POOL_LEASE_CREATOR_END_AFTER_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=3a39f613-00bc-4e59-97dd-d60b56b0cd49 pid=3381 alive=false forced=false reader_joined=true streams_closed=true output_bytes=482 output_overflow=false output_read_failed=false output_eof=true reader_alive=false reader_state=TERMINATED
+PG_POOL_PENDING_PROCESS_OBSERVED mode=POOL_LEASE_CREATOR_END_AFTER_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=3a39f613-00bc-4e59-97dd-d60b56b0cd49 cleanup=PROCESS_ONLY product_end=false
+PG_POOL_PENDING_RETAINED mode=POOL_LEASE_CREATOR_CORE_BEFORE_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=94604344-7e1d-4417-a17a-fb875c34ecdf cut=LEASE_CREATOR_CORE_BEFORE_TL core_producer_ended=false active_operations=1 future_entries=1 outer_tails=1 adapter=NONE caller_terminated=true product_end=false
+PG_POOL_PENDING_EXIT_REQUESTED mode=POOL_LEASE_CREATOR_CORE_BEFORE_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=94604344-7e1d-4417-a17a-fb875c34ecdf cleanup=PROCESS_ONLY product_end=false
+
+PG_DATABASE_CHILD_CLEANUP mode=POOL_LEASE_CREATOR_CORE_BEFORE_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=94604344-7e1d-4417-a17a-fb875c34ecdf pid=3414 alive=false forced=false reader_joined=true streams_closed=true output_bytes=489 output_overflow=false output_read_failed=false output_eof=true reader_alive=false reader_state=TERMINATED
+PG_POOL_PENDING_PROCESS_OBSERVED mode=POOL_LEASE_CREATOR_CORE_BEFORE_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=94604344-7e1d-4417-a17a-fb875c34ecdf cleanup=PROCESS_ONLY product_end=false
+PG_POOL_PENDING_RETAINED mode=POOL_LEASE_CREATOR_CORE_AFTER_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=6389d7bc-4ccc-4156-a513-7e650c401b60 cut=LEASE_CREATOR_CORE_AFTER_TL core_producer_ended=false active_operations=1 future_entries=1 outer_tails=1 adapter=NONE caller_terminated=true product_end=false
+PG_POOL_PENDING_EXIT_REQUESTED mode=POOL_LEASE_CREATOR_CORE_AFTER_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=6389d7bc-4ccc-4156-a513-7e650c401b60 cleanup=PROCESS_ONLY product_end=false
+
+PG_DATABASE_CHILD_CLEANUP mode=POOL_LEASE_CREATOR_CORE_AFTER_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=6389d7bc-4ccc-4156-a513-7e650c401b60 pid=3447 alive=false forced=false reader_joined=true streams_closed=true output_bytes=486 output_overflow=false output_read_failed=false output_eof=true reader_alive=false reader_state=TERMINATED
+PG_POOL_PENDING_PROCESS_OBSERVED mode=POOL_LEASE_CREATOR_CORE_AFTER_TL lane=ORDINARY recipe=DEFAULT q=0 nonce=6389d7bc-4ccc-4156-a513-7e650c401b60 cleanup=PROCESS_ONLY product_end=false
+PG_POOL_PENDING_RETAINED mode=POOL_LEASE_CREATOR_CLIENT_INFO_TAIL lane=ORDINARY recipe=DEFAULT q=0 nonce=3b9c8746-b141-4b9c-b9fd-1480d9a9c10b cut=LEASE_CREATOR_CLIENT_INFO_TAIL core_producer_ended=false active_operations=1 future_entries=1 outer_tails=1 adapter=SQLClientInfoException caller_terminated=true product_end=false
+PG_POOL_PENDING_EXIT_REQUESTED mode=POOL_LEASE_CREATOR_CLIENT_INFO_TAIL lane=ORDINARY recipe=DEFAULT q=0 nonce=3b9c8746-b141-4b9c-b9fd-1480d9a9c10b cleanup=PROCESS_ONLY product_end=false
+
+PG_DATABASE_CHILD_CLEANUP mode=POOL_LEASE_CREATOR_CLIENT_INFO_TAIL lane=ORDINARY recipe=DEFAULT q=0 nonce=3b9c8746-b141-4b9c-b9fd-1480d9a9c10b pid=3480 alive=false forced=false reader_joined=true streams_closed=true output_bytes=513 output_overflow=false output_read_failed=false output_eof=true reader_alive=false reader_state=TERMINATED
+PG_POOL_PENDING_PROCESS_OBSERVED mode=POOL_LEASE_CREATOR_CLIENT_INFO_TAIL lane=ORDINARY recipe=DEFAULT q=0 nonce=3b9c8746-b141-4b9c-b9fd-1480d9a9c10b cleanup=PROCESS_ONLY product_end=false
+PG_POOL_PENDING_RETAINED mode=POOL_LEASE_CREATOR_DECLARED_TAIL lane=ORDINARY recipe=DEFAULT q=0 nonce=1726fdcc-b473-483b-9922-d3474751b814 cut=LEASE_CREATOR_DECLARED_TAIL core_producer_ended=false active_operations=1 future_entries=1 outer_tails=1 adapter=IOException caller_terminated=true product_end=false
+PG_POOL_PENDING_EXIT_REQUESTED mode=POOL_LEASE_CREATOR_DECLARED_TAIL lane=ORDINARY recipe=DEFAULT q=0 nonce=1726fdcc-b473-483b-9922-d3474751b814 cleanup=PROCESS_ONLY product_end=false
+
+PG_DATABASE_CHILD_CLEANUP mode=POOL_LEASE_CREATOR_DECLARED_TAIL lane=ORDINARY recipe=DEFAULT q=0 nonce=1726fdcc-b473-483b-9922-d3474751b814 pid=3513 alive=false forced=false reader_joined=true streams_closed=true output_bytes=493 output_overflow=false output_read_failed=false output_eof=true reader_alive=false reader_state=TERMINATED
+PG_POOL_PENDING_PROCESS_OBSERVED mode=POOL_LEASE_CREATOR_DECLARED_TAIL lane=ORDINARY recipe=DEFAULT q=0 nonce=1726fdcc-b473-483b-9922-d3474751b814 cleanup=PROCESS_ONLY product_end=false
+14:19:07.246 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-9 - Starting...
+14:19:07.247 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-9 - Start completed.
+14:19:07.273 [Test worker] WARN com.zaxxer.hikari.pool.ProxyConnection -- HikariPool-9 - Connection me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest$fatalRoute$1$1$2@38d60f9b marked as broken because of SQLSTATE(57P01), ErrorCode(0)
+java.sql.SQLException: Controlled creator-route failure, not a native PG result.
+	at me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.fatalRoute$lambda$10(PoolLeaseDispatchCreatorIntegrationTest.kt:101)
+	at me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTestKt.withOwnedCutPool(PersistencePgOwnedCutIntegrationTest.kt:1384)
+	at me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.fatalRoute(PoolLeaseDispatchCreatorIntegrationTest.kt:56)
+	at me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL fatal connection commit creates the first real Hikari close Worker and drains its task(PoolLeaseDispatchCreatorIntegrationTest.kt:51)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:775)
+	at org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:479)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:161)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:152)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:91)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:112)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:94)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:87)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:216)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:212)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:137)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:156)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:201)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:170)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:94)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:59)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:142)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$1(InterceptingLauncher.java:39)
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25)
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:38)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor$CollectAllTestClassesExecutor.processAllTestClasses(JUnitPlatformTestClassProcessor.java:124)
+	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor$CollectAllTestClassesExecutor.access$000(JUnitPlatformTestClassProcessor.java:99)
+	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor.stop(JUnitPlatformTestClassProcessor.java:94)
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.stop(SuiteTestClassProcessor.java:63)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:33)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:92)
+	at jdk.proxy1/jdk.proxy1.$Proxy4.stop(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker$3.run(TestWorker.java:200)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.executeAndMaintainThreadName(TestWorker.java:132)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:103)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:63)
+	at org.gradle.process.internal.worker.child.ActionExecutionWorker.execute(ActionExecutionWorker.java:56)
+	at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:122)
+	at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:72)
+	at worker.org.gradle.process.internal.worker.GradleWorkerMain.run(GradleWorkerMain.java:69)
+	at worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
+OWNED_CALLER_SCOPE_EXIT thread_ids=[] all_terminated=true
+14:19:07.283 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-9 - Shutdown initiated...
+14:19:07.303 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-9 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+14:19:07.317 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-10 - Starting...
+14:19:07.318 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-10 - Start completed.
+14:19:07.341 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-10 - Shutdown initiated...
+14:19:07.364 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-10 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+14:19:07.391 [Test worker] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:32770/w03_lifecycle (PostgreSQL 17.6)
+14:19:07.410 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+14:19:07.412 [Test worker] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 14 migrations (execution time 00:00.010s)
+14:19:07.422 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+14:19:07.451 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": << Empty Schema >>
+14:19:07.455 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "1 - users"
+14:19:07.482 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "2 - source config"
+14:19:07.521 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "3 - published documents"
+14:19:07.543 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "4 - audit log"
+14:19:07.558 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "5 - completions"
+14:19:07.575 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "6 - completion retention"
+14:19:07.586 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "7 - signed published documents"
+14:19:07.594 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "8 - enforce completion result xor"
+14:19:07.606 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "9 - tutorials"
+14:19:07.658 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "10 - source catalog v2"
+14:19:07.685 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "11 - source editor drafts"
+14:19:07.702 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "12 - admin step up grants"
+14:19:07.715 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "13 - source changesets"
+14:19:07.770 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "14 - backend owned complaints"
+14:19:08.027 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 14 migrations to schema "public", now at version v14 (execution time 00:00.433s)
+14:19:08.063 [Test worker] INFO org.hibernate.jpa.internal.util.LogHelper -- HHH000204: Processing PersistenceUnitInfo [name: default]
+14:19:08.066 [Test worker] INFO org.hibernate.cache.internal.RegionFactoryInitiator -- HHH000026: Second-level cache disabled
+14:19:08.429 [Test worker] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+14:19:08.432 [Test worker] WARN org.hibernate.orm.deprecation -- HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+14:19:08.432 [Test worker] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [undefined/unknown]
+	Database driver: undefined/unknown
+	Database version: 12.0
+	Autocommit mode: undefined/unknown
+	Isolation level: <unknown>
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+14:19:08.503 [Test worker] INFO org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+14:19:08.503 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-11 - Starting...
+14:19:08.504 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-11 - Start completed.
+14:19:08.841 [Test worker] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+14:19:08.995 [Test worker] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+14:19:08.996 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-11 - Shutdown initiated...
+14:19:08.998 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-11 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

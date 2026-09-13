@@ -1,0 +1,64 @@
+{
+  "recorded_at_utc": "2026-09-13T23:37:05.576715+00:00",
+  "scope": "SOURCE_TRANSPORT_ONLY_NO_RUNTIME_ADMISSION_NO_PUBLIC_BACKEND_PUSH",
+  "source_head": "0582abc737a89a663e770e78a5456961743330f6",
+  "source_tree": "d20c606f9d0b34b37696806988c28c05b69453ed",
+  "private_parent": "f2e58eac0b139dca3a042c724d69c66a3d65278e",
+  "source_ref": "refs/heads/remediation/app-29-backend-complaints",
+  "public_prerequisite": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+  "source_checkpoint": "review/working/app-29-lease-dispatch-pg04-source-checkpoint-01/checkpoint.json",
+  "source_checkpoint_sha256": "a5367797cb6eca5bcf39e35a457e45b2aae0062eddc8033d6581a9ea803784eb",
+  "bundle": "review/working/app-29-lease-dispatch-pg04-transport-source-01/backend.bundle",
+  "bundle_sha256": "1e9ad1a4b4b14017b67f1b6576cef8cb20aef08fecdbba2566f2887163b0acef",
+  "bundle_bytes": 287825,
+  "header": [
+    "# v2 git bundle",
+    "-3d839130c807f6a0a9b1c896c1c6cca4b41c4538 Checkpoint reviewed App29 development21 diagnostics and ownership foundation",
+    "0582abc737a89a663e770e78a5456961743330f6 refs/heads/remediation/app-29-backend-complaints"
+  ],
+  "list_heads": "0582abc737a89a663e770e78a5456961743330f6 refs/heads/remediation/app-29-backend-complaints",
+  "verify_exit": 0,
+  "commands": [
+    {
+      "name": "bundle-create",
+      "argv": [
+        "git",
+        "-C",
+        "/root/projects/Kira/kira-backend",
+        "bundle",
+        "create",
+        "--version=2",
+        "/root/projects/Kira/review/working/app-29-lease-dispatch-pg04-transport-source-01/backend.bundle",
+        "refs/heads/remediation/app-29-backend-complaints",
+        "^3d839130c807f6a0a9b1c896c1c6cca4b41c4538"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "bundle-list-heads",
+      "argv": [
+        "git",
+        "-C",
+        "/root/projects/Kira/kira-backend",
+        "bundle",
+        "list-heads",
+        "/root/projects/Kira/review/working/app-29-lease-dispatch-pg04-transport-source-01/backend.bundle"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "bundle-verify",
+      "argv": [
+        "git",
+        "-C",
+        "/root/projects/Kira/kira-backend",
+        "bundle",
+        "verify",
+        "/root/projects/Kira/review/working/app-29-lease-dispatch-pg04-transport-source-01/backend.bundle"
+      ],
+      "exit": 0
+    }
+  ],
+  "source_preserved": true,
+  "cleanup": "All three owned Git commands completed/reaped; no temporary output or service created. Bundle/raw logs retained as required private transport evidence."
+}

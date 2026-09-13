@@ -1,0 +1,2717 @@
+{
+  "status": "FAIL",
+  "gate": "app-29-lease-dispatch-pg-03",
+  "backend_sha": "f2e58eac0b139dca3a042c724d69c66a3d65278e",
+  "carrier_sha": "69997b8bf003e89b7e976a3d0a305e526d2c04ef",
+  "commands": [
+    {
+      "name": "carrier-sha",
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/admin",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2217
+    },
+    {
+      "name": "initial-backend-sha",
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2218
+    },
+    {
+      "name": "initial-backend-branch",
+      "argv": [
+        "git",
+        "branch",
+        "--show-current"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2219
+    },
+    {
+      "name": "initial-backend-status",
+      "argv": [
+        "git",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2220
+    },
+    {
+      "name": "source-bundle-verify",
+      "argv": [
+        "git",
+        "bundle",
+        "verify",
+        "/home/runner/work/kira-admin/kira-admin/admin/docs/remediation/app29-lease-dispatch-pg-03/inputs/backend.bundle"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2221
+    },
+    {
+      "name": "source-bundle-fetch",
+      "argv": [
+        "git",
+        "-c",
+        "protocol.allow=never",
+        "-c",
+        "protocol.file.allow=always",
+        "fetch",
+        "--no-tags",
+        "--no-recurse-submodules",
+        "--no-write-fetch-head",
+        "--no-auto-maintenance",
+        "--",
+        "/home/runner/work/kira-admin/kira-admin/admin/docs/remediation/app29-lease-dispatch-pg-03/inputs/backend.bundle",
+        "refs/heads/remediation/app-29-backend-complaints:refs/heads/remediation/app-29-backend-complaints"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2223
+    },
+    {
+      "name": "source-bundle-checkout",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "checkout",
+        "--no-guess",
+        "--no-recurse-submodules",
+        "remediation/app-29-backend-complaints"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2229
+    },
+    {
+      "name": "before-backend-sha",
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2230
+    },
+    {
+      "name": "before-backend-branch",
+      "argv": [
+        "git",
+        "branch",
+        "--show-current"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2231
+    },
+    {
+      "name": "before-backend-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "HEAD"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2232
+    },
+    {
+      "name": "before-pg02-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "c67ddcd30fbae2438c7b2f803f720530b598e428"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2233
+    },
+    {
+      "name": "before-lease-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2234
+    },
+    {
+      "name": "before-ordinary-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "ccdbb28f6362117882501b4da040257be6fc1990"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2235
+    },
+    {
+      "name": "before-post-structural-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "6db944871c1584bd6a1f28263e8010cadd766fab"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2236
+    },
+    {
+      "name": "before-product-lifecycle-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2237
+    },
+    {
+      "name": "before-diagnostic-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2238
+    },
+    {
+      "name": "before-private-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "989a8c07b90d956a5f2484f223be41b5d99a8a3c"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2239
+    },
+    {
+      "name": "before-previous-private-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "926927ab805a2a3b78957862f3b744d0fe399ac5"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2240
+    },
+    {
+      "name": "before-core-baseline-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "49da0919d9ec3091cb7bb041009dc9bd5f3e090f"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2241
+    },
+    {
+      "name": "before-status",
+      "argv": [
+        "git",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2242
+    },
+    {
+      "name": "before-tracked",
+      "argv": [
+        "git",
+        "ls-files",
+        "-z"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2243
+    },
+    {
+      "name": "jdk-version",
+      "argv": [
+        "/usr/lib/jvm/temurin-21-jdk-amd64/bin/java",
+        "-Djava.io.tmpdir=/home/runner/work/_temp/app29-lease-dispatch-pg-03-34786407104-1/tmp",
+        "-Duser.home=/home/runner/work/_temp/app29-lease-dispatch-pg-03-34786407104-1/home",
+        "-XshowSettings:properties",
+        "-version"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2249
+    },
+    {
+      "name": "docker-version",
+      "argv": [
+        "docker",
+        "version"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2266
+    },
+    {
+      "name": "containers-before",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2280
+    },
+    {
+      "name": "gradle-test",
+      "argv": [
+        "./gradlew",
+        "--no-daemon",
+        "--no-parallel",
+        "--no-build-cache",
+        "--no-configuration-cache",
+        "--dependency-verification=strict",
+        "--max-workers=1",
+        "--console=plain",
+        "--project-cache-dir",
+        "/home/runner/work/_temp/app29-lease-dispatch-pg-03-34786407104-1/project-cache",
+        "-Djava.io.tmpdir=/home/runner/work/_temp/app29-lease-dispatch-pg-03-34786407104-1/tmp",
+        "-Duser.home=/home/runner/work/_temp/app29-lease-dispatch-pg-03-34786407104-1/home",
+        "-Dorg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=512m -Djava.io.tmpdir=/home/runner/work/_temp/app29-lease-dispatch-pg-03-34786407104-1/tmp -Duser.home=/home/runner/work/_temp/app29-lease-dispatch-pg-03-34786407104-1/home",
+        "-Dorg.gradle.vfs.watch=false",
+        "-PkiraUseMavenLocal=false",
+        "-Pkotlin.compiler.execution.strategy=in-process",
+        "-Pkotlin.project.persistent.dir=/home/runner/work/_temp/app29-lease-dispatch-pg-03-34786407104-1/kotlin-cache",
+        "-Porg.gradle.java.installations.auto-download=false",
+        "-Porg.gradle.java.installations.auto-detect=false",
+        "-Porg.gradle.java.installations.paths=/usr/lib/jvm/temurin-21-jdk-amd64",
+        "--init-script",
+        "/home/runner/work/kira-admin/kira-admin/admin/review/working/app-29-lease-dispatch-pg03-bound-01/profile/profile.init.gradle",
+        "test",
+        "--tests",
+        "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.mixed pool creator nesting refuses wrong top fallback and unrelated lease use",
+        "--tests",
+        "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 1,
+      "outcome": "UNKNOWN",
+      "pid": 2287
+    },
+    {
+      "name": "gradle-stop-immediate",
+      "argv": [
+        "./gradlew",
+        "--stop"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2860
+    },
+    {
+      "name": "containers-normal-0",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2892
+    },
+    {
+      "name": "containers-normal-1",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2899
+    },
+    {
+      "name": "containers-normal-2",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2906
+    },
+    {
+      "name": "containers-normal-3",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2913
+    },
+    {
+      "name": "containers-normal-4",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2920
+    },
+    {
+      "name": "containers-normal-5",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2927
+    },
+    {
+      "name": "containers-normal-6",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2934
+    },
+    {
+      "name": "containers-normal-7",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2942
+    },
+    {
+      "name": "containers-normal-8",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2949
+    },
+    {
+      "name": "containers-normal-9",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2999
+    },
+    {
+      "name": "container-events",
+      "argv": [
+        "docker",
+        "events",
+        "--since",
+        "1789337939",
+        "--until",
+        "1789338173",
+        "--filter",
+        "type=container",
+        "--format",
+        "{{json .}}"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3006
+    },
+    {
+      "name": "image-0",
+      "argv": [
+        "docker",
+        "image",
+        "inspect",
+        "--format",
+        "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+        "postgres:17.6-alpine"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3013
+    },
+    {
+      "name": "image-1",
+      "argv": [
+        "docker",
+        "image",
+        "inspect",
+        "--format",
+        "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+        "testcontainers/ryuk:0.12.0"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3020
+    },
+    {
+      "name": "containers-after-cleanup",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3027
+    },
+    {
+      "name": "after-backend-sha",
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3034
+    },
+    {
+      "name": "after-backend-branch",
+      "argv": [
+        "git",
+        "branch",
+        "--show-current"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3035
+    },
+    {
+      "name": "after-backend-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "HEAD"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3036
+    },
+    {
+      "name": "after-pg02-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "c67ddcd30fbae2438c7b2f803f720530b598e428"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3037
+    },
+    {
+      "name": "after-lease-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3038
+    },
+    {
+      "name": "after-ordinary-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "ccdbb28f6362117882501b4da040257be6fc1990"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3039
+    },
+    {
+      "name": "after-post-structural-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "6db944871c1584bd6a1f28263e8010cadd766fab"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3040
+    },
+    {
+      "name": "after-product-lifecycle-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3041
+    },
+    {
+      "name": "after-diagnostic-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3042
+    },
+    {
+      "name": "after-private-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "989a8c07b90d956a5f2484f223be41b5d99a8a3c"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3043
+    },
+    {
+      "name": "after-previous-private-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "926927ab805a2a3b78957862f3b744d0fe399ac5"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3044
+    },
+    {
+      "name": "after-core-baseline-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "49da0919d9ec3091cb7bb041009dc9bd5f3e090f"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3045
+    },
+    {
+      "name": "after-status",
+      "argv": [
+        "git",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3046
+    },
+    {
+      "name": "after-tracked",
+      "argv": [
+        "git",
+        "ls-files",
+        "-z"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3047
+    },
+    {
+      "name": "gradle-stop-final",
+      "argv": [
+        "./gradlew",
+        "--stop"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3048
+    },
+    {
+      "name": "containers-final",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3079
+    }
+  ],
+  "failures": [
+    {
+      "stage": "interrupted-gradle-test-nonzero-child",
+      "type": "RuntimeError"
+    },
+    {
+      "stage": "validation",
+      "type": "ValueError"
+    },
+    {
+      "stage": "after-immediate-stop-nonzero-child",
+      "type": "RuntimeError"
+    },
+    {
+      "stage": "before-file-cleanup-nonzero-child",
+      "type": "RuntimeError"
+    },
+    {
+      "stage": "after-final-stop-nonzero-child",
+      "type": "RuntimeError"
+    },
+    {
+      "stage": "before-home-cleanup-nonzero-child",
+      "type": "RuntimeError"
+    }
+  ],
+  "processes": [
+    {
+      "stage": "interrupted-gradle-test",
+      "outcome": "NORMAL_ABSENT",
+      "receipt": {
+        "ok": true,
+        "empty": true,
+        "remaining": [],
+        "active_popen": [],
+        "leaders": [
+          {
+            "pid": 2217,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2218,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2219,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2220,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2221,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2223,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2229,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2230,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2231,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2232,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2233,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2234,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2235,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2236,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2237,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2238,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2239,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2240,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2241,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2242,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2243,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2249,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2266,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2280,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2287,
+            "actual_exit": 1
+          }
+        ],
+        "adopted": [],
+        "term": [],
+        "kill": [],
+        "errors": {},
+        "elapsed_seconds": 0.0001821250000375585
+      }
+    },
+    {
+      "stage": "after-immediate-stop",
+      "outcome": "NORMAL_ABSENT",
+      "receipt": {
+        "ok": true,
+        "empty": true,
+        "remaining": [],
+        "active_popen": [],
+        "leaders": [
+          {
+            "pid": 2217,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2218,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2219,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2220,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2221,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2223,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2229,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2230,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2231,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2232,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2233,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2234,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2235,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2236,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2237,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2238,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2239,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2240,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2241,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2242,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2243,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2249,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2266,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2280,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2287,
+            "actual_exit": 1
+          },
+          {
+            "pid": 2860,
+            "actual_exit": 0
+          }
+        ],
+        "adopted": [],
+        "term": [],
+        "kill": [],
+        "errors": {},
+        "elapsed_seconds": 9.082700000817567e-05
+      }
+    },
+    {
+      "stage": "before-file-cleanup",
+      "outcome": "NORMAL_ABSENT",
+      "receipt": {
+        "ok": true,
+        "empty": true,
+        "remaining": [],
+        "active_popen": [],
+        "leaders": [
+          {
+            "pid": 2217,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2218,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2219,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2220,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2221,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2223,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2229,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2230,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2231,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2232,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2233,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2234,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2235,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2236,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2237,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2238,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2239,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2240,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2241,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2242,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2243,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2249,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2266,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2280,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2287,
+            "actual_exit": 1
+          },
+          {
+            "pid": 2860,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2892,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2899,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2906,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2913,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2920,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2927,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2934,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2942,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2949,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2999,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3006,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3013,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3020,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3027,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3034,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3035,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3036,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3037,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3038,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3039,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3040,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3041,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3042,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3043,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3044,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3045,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3046,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3047,
+            "actual_exit": 0
+          }
+        ],
+        "adopted": [],
+        "term": [],
+        "kill": [],
+        "errors": {},
+        "elapsed_seconds": 0.0001023039999950015
+      }
+    },
+    {
+      "stage": "after-final-stop",
+      "outcome": "NORMAL_ABSENT",
+      "receipt": {
+        "ok": true,
+        "empty": true,
+        "remaining": [],
+        "active_popen": [],
+        "leaders": [
+          {
+            "pid": 2217,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2218,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2219,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2220,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2221,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2223,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2229,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2230,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2231,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2232,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2233,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2234,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2235,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2236,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2237,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2238,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2239,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2240,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2241,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2242,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2243,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2249,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2266,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2280,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2287,
+            "actual_exit": 1
+          },
+          {
+            "pid": 2860,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2892,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2899,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2906,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2913,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2920,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2927,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2934,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2942,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2949,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2999,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3006,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3013,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3020,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3027,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3034,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3035,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3036,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3037,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3038,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3039,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3040,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3041,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3042,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3043,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3044,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3045,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3046,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3047,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3048,
+            "actual_exit": 0
+          }
+        ],
+        "adopted": [],
+        "term": [],
+        "kill": [],
+        "errors": {},
+        "elapsed_seconds": 8.269500000324115e-05
+      }
+    },
+    {
+      "stage": "before-home-cleanup",
+      "outcome": "NORMAL_ABSENT",
+      "receipt": {
+        "ok": true,
+        "empty": true,
+        "remaining": [],
+        "active_popen": [],
+        "leaders": [
+          {
+            "pid": 2217,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2218,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2219,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2220,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2221,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2223,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2229,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2230,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2231,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2232,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2233,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2234,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2235,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2236,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2237,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2238,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2239,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2240,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2241,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2242,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2243,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2249,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2266,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2280,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2287,
+            "actual_exit": 1
+          },
+          {
+            "pid": 2860,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2892,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2899,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2906,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2913,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2920,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2927,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2934,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2942,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2949,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2999,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3006,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3013,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3020,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3027,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3034,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3035,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3036,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3037,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3038,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3039,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3040,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3041,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3042,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3043,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3044,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3045,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3046,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3047,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3048,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3079,
+            "actual_exit": 0
+          }
+        ],
+        "adopted": [],
+        "term": [],
+        "kill": [],
+        "errors": {},
+        "elapsed_seconds": 7.044599999517231e-05
+      }
+    }
+  ],
+  "containers": "NORMAL_ABSENT",
+  "container_topology_complete": true,
+  "outputs_absent": true,
+  "capture_complete": true,
+  "required_capture_complete": true,
+  "capture_roots": {
+    "test-results": "CAPTURED",
+    "reports": "CAPTURED"
+  },
+  "captured_file_hashes": {
+    "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": {
+      "bytes": 22800,
+      "sha256": "7b9e31356522d9c22dac2e79839c65f5f5e80d456fa52e855eafdab74e41a943"
+    },
+    "reports/lease-dispatch-pg-03/class-load-2421.txt": {
+      "bytes": 3257866,
+      "sha256": "84a642eb1ebf872e6da2e71999d0d79763c6588ee26b9b7c1d2f89e16274de39"
+    },
+    "reports/lease-dispatch-pg-03/effective-classpath.txt": {
+      "bytes": 85617,
+      "sha256": "5956dd8fa2c2fdea6cf57b5a9680d8ee8453d078a29bf9ee489d72472d9352e2"
+    }
+  },
+  "owned_output_cleanup": {
+    "/home/runner/work/kira-admin/kira-admin/backend/.gradle": {
+      "cleanup_stage": "backend-output-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/kira-admin/kira-admin/backend/.kotlin": {
+      "cleanup_stage": "backend-output-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/kira-admin/kira-admin/backend/build": {
+      "cleanup_stage": "backend-output-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/kira-admin/kira-admin/backend/buildSrc/build": {
+      "cleanup_stage": "backend-output-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/kira-admin/kira-admin/backend/out": {
+      "cleanup_stage": "backend-output-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/_temp/app29-lease-dispatch-pg-03-34786407104-1/w01": {
+      "cleanup_stage": "private-output-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/_temp/app29-lease-dispatch-pg-03-34786407104-1/project-cache": {
+      "cleanup_stage": "private-output-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/_temp/app29-lease-dispatch-pg-03-34786407104-1/kotlin-cache": {
+      "cleanup_stage": "private-output-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/_temp/app29-lease-dispatch-pg-03-34786407104-1/gradle": {
+      "cleanup_stage": "private-home-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/_temp/app29-lease-dispatch-pg-03-34786407104-1/tmp": {
+      "cleanup_stage": "private-home-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/_temp/app29-lease-dispatch-pg-03-34786407104-1/home": {
+      "cleanup_stage": "private-home-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    }
+  },
+  "diagnostics": {
+    "status": "RECORDED",
+    "test_status": "FAIL",
+    "tests": 2,
+    "classes": {
+      "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest": 2
+    },
+    "identities": [
+      [
+        "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+        "MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement()"
+      ],
+      [
+        "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+        "mixed pool creator nesting refuses wrong top fallback and unrelated lease use()"
+      ]
+    ],
+    "outcomes": [
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+        "display_name": "mixed pool creator nesting refuses wrong top fallback and unrelated lease use()",
+        "status": "PASS"
+      },
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+        "display_name": "MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement()",
+        "status": "FAIL"
+      }
+    ],
+    "counts": {
+      "PASS": 1,
+      "FAIL": 1,
+      "ERROR": 0,
+      "SKIP": 0
+    },
+    "suites": [
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+        "tests": 2,
+        "counts": {
+          "PASS": 1,
+          "FAIL": 1,
+          "ERROR": 0,
+          "SKIP": 0
+        }
+      }
+    ],
+    "profile": "app-29-lease-dispatch-pg-profile-03",
+    "fixed_scalar_capture": "NOT_APPLICABLE",
+    "raw_shutdown_diagnostics": [],
+    "diagnostic_coverage": {},
+    "diagnostic_limit": "The single selected class uses actual PG fixtures/owned pools without assigning shutdownDiagnosticCase. Require NOT_APPLICABLE and zero PG14 rows across its one suite. Both pool/EMF/database teardown and all existing assertions remain. The new MODEL factual line and any original stack stay raw stdout/XML evidence; no new parser or empty-set CAPTURED inference. Historical PG14 four-row obligations stay separate.",
+    "diagnostic_scope": {
+      "status": "NOT_APPLICABLE",
+      "expected_record_count": 0
+    },
+    "historical_pg14_result": {
+      "run_id": "34701415662",
+      "carrier_sha": "d4c6289df3f611f8efe467a4e5a19c2f6600d48c",
+      "backend_sha": "6db944871c1584bd6a1f28263e8010cadd766fab",
+      "passed": 14,
+      "failed": 0,
+      "scope": "PRIMARY_ACCEPTED_FOCUSED_PG14_ONLY; exact14 on unchanged private6db944, not rerun or included in current18; no full47/consumer/native/W03 acceptance",
+      "cleanup_limit": "Controller-unforced final absence; CURRENT PG14 PostgreSQL kill9/die137 retained. Not graceful-shutdown or zero-kill proof.",
+      "primary_disposition": "ACCEPT_FOCUSED_PG14_ONLY"
+    },
+    "historical_pg10_result": {
+      "run_id": "34691665288",
+      "backend_sha": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+      "passed": 10,
+      "failed": 0,
+      "scope": "HISTORICAL_EXACT_PG10_ONLY; excludes later layout/structural changes and does not qualify this PG14 source",
+      "cleanup_limit": "Controller-unforced final absence; original PostgreSQL kill9/die137 retained. Not graceful-shutdown or zero-kill proof."
+    },
+    "historical_pg1_result": {
+      "run_id": "34709458222",
+      "carrier_sha": "02ebe6024d151e082c1f685cb58280000f81e4a0",
+      "backend_sha": "6db944871c1584bd6a1f28263e8010cadd766fab",
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "primary_disposition": "ACCEPT_FOCUSED_SQLCLIENTINFO_PG1_ONLY",
+      "scope": "HISTORICAL_PRIMARY_ACCEPTED_EXACT_ONE_SQLCLIENTINFO_CASE_ONLY_NOT_RERUN_OR_INCLUDED_IN_CURRENT18",
+      "cleanup_limit": "Original PG1 PostgreSQL kill9/die137/destroy retained. Controller-unforced final absence is not graceful-shutdown or zero-kill proof."
+    },
+    "accepted_linux03_result": {
+      "result_sha256": "c9787405e0fa2f75c1d006b42eb695fc4fbad7653de1393597d7de08c0472c83",
+      "source_manifest_sha256": "171dc5c76663c7552bd064c343437bc6545394315769214354afec2295929913",
+      "passed": 56,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "test_class_counts": {
+        "PersistenceJdbcTransactionTest": 7,
+        "PersistenceJdbcGuardProtocolTest": 11,
+        "PhysicalJdbcFacadeTest": 11,
+        "PersistenceOwnershipTest": 8,
+        "PoolLifecycleTest": 19
+      },
+      "normal_main_test_compilation": "ACCEPTED",
+      "ktlint": "FRESH_ACCEPTED",
+      "detekt": "NOT_RUN; bounded prior-byte-set reuse only under ba5b6ec6c268dda62230abb6530ca581faef1428560d482d13a28b67dcbb45dc and683291612d4c4b6312201aa312f3a76d40745cfb45be260a273f742bae95c7ce, not a new Detekt pass for changed test bytes",
+      "scope": "PRIMARY_ACCEPTED_FOCUSED_NONDB56_ONLY_NOT_PG_EXECUTION_OR_W03_ACCEPTANCE; supersedes sealed preparation ACTIVE-at-assignment attribution without changing that sealed history"
+    },
+    "historical_ordinary_result": {
+      "path": "review/working/app-29-ordinary-connected-pg-admission-01/launch-01/artifacts/result.json",
+      "sha256": "750de524bf2a76805a33f0453a93177e4fe14b74a810bcacdb74bc04073eb30c",
+      "passed": 20,
+      "failed": 1,
+      "errors": 0,
+      "skipped": 0,
+      "scope": "HISTORICAL_PG01_FAIL20_21; close-executor actor/queue mechanism unmeasured. Do not infer historical causation from the new source route or a later PASS."
+    },
+    "historical_pg18_result": {
+      "path": "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/result.json",
+      "sha256": "e64b94410e240f7585ac6d4a2d70c90b3b8952d75e61cfa5e055f15fb1e69bc9",
+      "run_id": "34762007741",
+      "attempt": 1,
+      "carrier_sha": "6794795c9d40b6a99a4af9b4c46cf6e7a0f68d27",
+      "backend_sha": "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3",
+      "passed": 16,
+      "failed": 2,
+      "errors": 0,
+      "skipped": 0,
+      "scope": "HISTORICAL_TRANSPORT02_FAIL_16_PASS_2_FAIL_NOT_REWRITTEN_OR_REPLAYED. Only those two failures are current candidates; no credit for an anticipated diagnostic improvement.",
+      "cleanup_limit": "All six sticky controller failures remain in the raw result. NORMAL_ABSENT means bounded final absence, not successful test execution or graceful/zero-kill shutdown. Both PG kill9/die137 and Ryuk die0 remain historical raw events."
+    },
+    "historical_pg02_result": {
+      "path": "review/working/app-29-lease-dispatch-pg02-admission-01/launch-01/artifacts/result.json",
+      "sha256": "dbd0e7635561d9d733f644d40520581b25efcfb8afb20a60d4330399d738c0df",
+      "run_id": "34774646772",
+      "attempt": 1,
+      "carrier_sha": "b6e2a2cf7c35eca56a2478a6a1973dc8b6c94428",
+      "backend_sha": "c67ddcd30fbae2438c7b2f803f720530b598e428",
+      "status": "FAIL",
+      "selected_cases": 2,
+      "test_execution": "NOT_REACHED_COMPILE_TEST_FAILURE_NO_XML",
+      "scope": "Retain original compileTestKotlin failure, all seven sticky failures, unavailable capture and retained outputs; not two runtime test failures and no retroactive cleanup credit."
+    },
+    "historical_result": {
+      "run_id": "34672394928",
+      "carrier_sha": "b25f6adcdb37b25b44b4efb783889f06c02c85d9",
+      "backend_sha": "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+      "passed": 45,
+      "failed": 2,
+      "scope": "HISTORICAL_HOSTED02_ONLY_NOT_RERUN_NOT_CURRENT47_PASS"
+    },
+    "historical_diagnostics_result": {
+      "run_id": "34678157417",
+      "passed": 0,
+      "failed": 2,
+      "cleanup": "FAIL",
+      "containers": "UNKNOWN",
+      "outputs_absent": false,
+      "private_directories_retained": 6,
+      "scope": "HISTORICAL_DIAGNOSTICS01_ONLY_NOT_REEVALUATED_OR_REPAIRED_BY_THIS_PREPARATION"
+    },
+    "candidate_qualification": "UNQUALIFIED"
+  },
+  "consumer": {
+    "status": "NOT_EVALUATED",
+    "scope": "OUTSIDE_LEASE_DISPATCH_PG_VALIDATION"
+  },
+  "historical_result": {
+    "run_id": "34672394928",
+    "carrier_sha": "b25f6adcdb37b25b44b4efb783889f06c02c85d9",
+    "backend_sha": "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+    "passed": 45,
+    "failed": 2,
+    "scope": "HISTORICAL_HOSTED02_ONLY_NOT_RERUN_NOT_CURRENT47_PASS"
+  },
+  "historical_diagnostics_result": {
+    "run_id": "34678157417",
+    "passed": 0,
+    "failed": 2,
+    "cleanup": "FAIL",
+    "containers": "UNKNOWN",
+    "outputs_absent": false,
+    "private_directories_retained": 6,
+    "scope": "HISTORICAL_DIAGNOSTICS01_ONLY_NOT_REEVALUATED_OR_REPAIRED_BY_THIS_PREPARATION"
+  },
+  "historical_pg14_result": {
+    "run_id": "34701415662",
+    "carrier_sha": "d4c6289df3f611f8efe467a4e5a19c2f6600d48c",
+    "backend_sha": "6db944871c1584bd6a1f28263e8010cadd766fab",
+    "passed": 14,
+    "failed": 0,
+    "scope": "PRIMARY_ACCEPTED_FOCUSED_PG14_ONLY; exact14 on unchanged private6db944, not rerun or included in current18; no full47/consumer/native/W03 acceptance",
+    "cleanup_limit": "Controller-unforced final absence; CURRENT PG14 PostgreSQL kill9/die137 retained. Not graceful-shutdown or zero-kill proof.",
+    "primary_disposition": "ACCEPT_FOCUSED_PG14_ONLY"
+  },
+  "historical_pg10_result": {
+    "run_id": "34691665288",
+    "backend_sha": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+    "passed": 10,
+    "failed": 0,
+    "scope": "HISTORICAL_EXACT_PG10_ONLY; excludes later layout/structural changes and does not qualify this PG14 source",
+    "cleanup_limit": "Controller-unforced final absence; original PostgreSQL kill9/die137 retained. Not graceful-shutdown or zero-kill proof."
+  },
+  "historical_pg1_result": {
+    "run_id": "34709458222",
+    "carrier_sha": "02ebe6024d151e082c1f685cb58280000f81e4a0",
+    "backend_sha": "6db944871c1584bd6a1f28263e8010cadd766fab",
+    "passed": 1,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "primary_disposition": "ACCEPT_FOCUSED_SQLCLIENTINFO_PG1_ONLY",
+    "scope": "HISTORICAL_PRIMARY_ACCEPTED_EXACT_ONE_SQLCLIENTINFO_CASE_ONLY_NOT_RERUN_OR_INCLUDED_IN_CURRENT18",
+    "cleanup_limit": "Original PG1 PostgreSQL kill9/die137/destroy retained. Controller-unforced final absence is not graceful-shutdown or zero-kill proof."
+  },
+  "accepted_linux03_result": {
+    "result_sha256": "c9787405e0fa2f75c1d006b42eb695fc4fbad7653de1393597d7de08c0472c83",
+    "source_manifest_sha256": "171dc5c76663c7552bd064c343437bc6545394315769214354afec2295929913",
+    "passed": 56,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "test_class_counts": {
+      "PersistenceJdbcTransactionTest": 7,
+      "PersistenceJdbcGuardProtocolTest": 11,
+      "PhysicalJdbcFacadeTest": 11,
+      "PersistenceOwnershipTest": 8,
+      "PoolLifecycleTest": 19
+    },
+    "normal_main_test_compilation": "ACCEPTED",
+    "ktlint": "FRESH_ACCEPTED",
+    "detekt": "NOT_RUN; bounded prior-byte-set reuse only under ba5b6ec6c268dda62230abb6530ca581faef1428560d482d13a28b67dcbb45dc and683291612d4c4b6312201aa312f3a76d40745cfb45be260a273f742bae95c7ce, not a new Detekt pass for changed test bytes",
+    "scope": "PRIMARY_ACCEPTED_FOCUSED_NONDB56_ONLY_NOT_PG_EXECUTION_OR_W03_ACCEPTANCE; supersedes sealed preparation ACTIVE-at-assignment attribution without changing that sealed history"
+  },
+  "historical_ordinary_result": {
+    "path": "review/working/app-29-ordinary-connected-pg-admission-01/launch-01/artifacts/result.json",
+    "sha256": "750de524bf2a76805a33f0453a93177e4fe14b74a810bcacdb74bc04073eb30c",
+    "passed": 20,
+    "failed": 1,
+    "errors": 0,
+    "skipped": 0,
+    "scope": "HISTORICAL_PG01_FAIL20_21; close-executor actor/queue mechanism unmeasured. Do not infer historical causation from the new source route or a later PASS."
+  },
+  "historical_pg18_result": {
+    "path": "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/result.json",
+    "sha256": "e64b94410e240f7585ac6d4a2d70c90b3b8952d75e61cfa5e055f15fb1e69bc9",
+    "run_id": "34762007741",
+    "attempt": 1,
+    "carrier_sha": "6794795c9d40b6a99a4af9b4c46cf6e7a0f68d27",
+    "backend_sha": "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3",
+    "passed": 16,
+    "failed": 2,
+    "errors": 0,
+    "skipped": 0,
+    "scope": "HISTORICAL_TRANSPORT02_FAIL_16_PASS_2_FAIL_NOT_REWRITTEN_OR_REPLAYED. Only those two failures are current candidates; no credit for an anticipated diagnostic improvement.",
+    "cleanup_limit": "All six sticky controller failures remain in the raw result. NORMAL_ABSENT means bounded final absence, not successful test execution or graceful/zero-kill shutdown. Both PG kill9/die137 and Ryuk die0 remain historical raw events."
+  },
+  "historical_pg02_result": {
+    "path": "review/working/app-29-lease-dispatch-pg02-admission-01/launch-01/artifacts/result.json",
+    "sha256": "dbd0e7635561d9d733f644d40520581b25efcfb8afb20a60d4330399d738c0df",
+    "run_id": "34774646772",
+    "attempt": 1,
+    "carrier_sha": "b6e2a2cf7c35eca56a2478a6a1973dc8b6c94428",
+    "backend_sha": "c67ddcd30fbae2438c7b2f803f720530b598e428",
+    "status": "FAIL",
+    "selected_cases": 2,
+    "test_execution": "NOT_REACHED_COMPILE_TEST_FAILURE_NO_XML",
+    "scope": "Retain original compileTestKotlin failure, all seven sticky failures, unavailable capture and retained outputs; not two runtime test failures and no retroactive cleanup credit."
+  },
+  "source_checkout_initial": {
+    "head": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+    "branch": "",
+    "status": ""
+  },
+  "source_bundle_before": {
+    "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+    "private_parent_sha": "c67ddcd30fbae2438c7b2f803f720530b598e428",
+    "ref": "refs/heads/remediation/app-29-backend-complaints",
+    "source_path": "review/working/app-29-lease-dispatch-pg03-transport-source-01/backend.bundle",
+    "path": "docs/remediation/app29-lease-dispatch-pg-03/inputs/backend.bundle",
+    "sha256": "b606cb5ed40814dc23c5c8c61a564de07d917d4a05b6fbca4c4b73841bea63fe",
+    "bytes": 287442,
+    "format": "git-bundle-v2-sha1-complete",
+    "tip": "f2e58eac0b139dca3a042c724d69c66a3d65278e"
+  },
+  "source_checkout_final": {
+    "before": {
+      "head": "f2e58eac0b139dca3a042c724d69c66a3d65278e",
+      "branch": "remediation/app-29-backend-complaints",
+      "parents": [
+        "c67ddcd30fbae2438c7b2f803f720530b598e428"
+      ],
+      "trees": [
+        "e192c9430c89e4549f1840bf7e333fed75bc290a"
+      ],
+      "pg02_parent": {
+        "head": "c67ddcd30fbae2438c7b2f803f720530b598e428",
+        "parents": [
+          "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3"
+        ],
+        "trees": [
+          "6fd90f08e176233688927b51cfde8fad5e8f003f"
+        ]
+      },
+      "lease_parent": {
+        "head": "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3",
+        "parents": [
+          "ccdbb28f6362117882501b4da040257be6fc1990"
+        ],
+        "trees": [
+          "fc480e82630091138da145ade1812cedcd75e58e"
+        ]
+      },
+      "ordinary_parent": {
+        "head": "ccdbb28f6362117882501b4da040257be6fc1990",
+        "parents": [
+          "6db944871c1584bd6a1f28263e8010cadd766fab"
+        ],
+        "trees": [
+          "d172ecf246a9606194f43023a0703d778b877566"
+        ]
+      },
+      "post_structural_parent": {
+        "head": "6db944871c1584bd6a1f28263e8010cadd766fab",
+        "parents": [
+          "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1"
+        ]
+      },
+      "product_lifecycle_parent": {
+        "head": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+        "parents": [
+          "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc"
+        ]
+      },
+      "diagnostic_parent": {
+        "head": "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc",
+        "parents": [
+          "989a8c07b90d956a5f2484f223be41b5d99a8a3c"
+        ]
+      },
+      "private_parent": {
+        "head": "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+        "parents": [
+          "926927ab805a2a3b78957862f3b744d0fe399ac5"
+        ]
+      },
+      "previous_private_parent": {
+        "head": "926927ab805a2a3b78957862f3b744d0fe399ac5",
+        "parents": [
+          "49da0919d9ec3091cb7bb041009dc9bd5f3e090f"
+        ]
+      },
+      "core_baseline": {
+        "head": "49da0919d9ec3091cb7bb041009dc9bd5f3e090f",
+        "parents": [
+          "3d839130c807f6a0a9b1c896c1c6cca4b41c4538"
+        ]
+      },
+      "tracked_path_count": 866
+    },
+    "after": {
+      "head": "f2e58eac0b139dca3a042c724d69c66a3d65278e",
+      "branch": "remediation/app-29-backend-complaints",
+      "parents": [
+        "c67ddcd30fbae2438c7b2f803f720530b598e428"
+      ],
+      "trees": [
+        "e192c9430c89e4549f1840bf7e333fed75bc290a"
+      ],
+      "pg02_parent": {
+        "head": "c67ddcd30fbae2438c7b2f803f720530b598e428",
+        "parents": [
+          "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3"
+        ],
+        "trees": [
+          "6fd90f08e176233688927b51cfde8fad5e8f003f"
+        ]
+      },
+      "lease_parent": {
+        "head": "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3",
+        "parents": [
+          "ccdbb28f6362117882501b4da040257be6fc1990"
+        ],
+        "trees": [
+          "fc480e82630091138da145ade1812cedcd75e58e"
+        ]
+      },
+      "ordinary_parent": {
+        "head": "ccdbb28f6362117882501b4da040257be6fc1990",
+        "parents": [
+          "6db944871c1584bd6a1f28263e8010cadd766fab"
+        ],
+        "trees": [
+          "d172ecf246a9606194f43023a0703d778b877566"
+        ]
+      },
+      "post_structural_parent": {
+        "head": "6db944871c1584bd6a1f28263e8010cadd766fab",
+        "parents": [
+          "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1"
+        ]
+      },
+      "product_lifecycle_parent": {
+        "head": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+        "parents": [
+          "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc"
+        ]
+      },
+      "diagnostic_parent": {
+        "head": "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc",
+        "parents": [
+          "989a8c07b90d956a5f2484f223be41b5d99a8a3c"
+        ]
+      },
+      "private_parent": {
+        "head": "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+        "parents": [
+          "926927ab805a2a3b78957862f3b744d0fe399ac5"
+        ]
+      },
+      "previous_private_parent": {
+        "head": "926927ab805a2a3b78957862f3b744d0fe399ac5",
+        "parents": [
+          "49da0919d9ec3091cb7bb041009dc9bd5f3e090f"
+        ]
+      },
+      "core_baseline": {
+        "head": "49da0919d9ec3091cb7bb041009dc9bd5f3e090f",
+        "parents": [
+          "3d839130c807f6a0a9b1c896c1c6cca4b41c4538"
+        ]
+      },
+      "tracked_path_count": 866
+    }
+  },
+  "source_binding_before": {
+    "manifest_sha256": "0df6165f928d7a752d7a253d18078b099ca81eae9c7d5bc466bc828a74763f1f",
+    "sources": 481,
+    "seed_paths": 348,
+    "local_v3": "PRIMARY_BOUND_LOCAL_RECEIPT_NOT_HOSTED_REEXECUTION",
+    "authority_files": 708,
+    "core_sources": 21,
+    "snapshots": 214,
+    "profile": "app-29-lease-dispatch-pg-profile-03",
+    "validation_predecessor_sha256": "2cde6562f651eb1240ba6fcc7e13d87400a993d10fa4d8b681acf2316cf2f99c",
+    "historical_pg14_manifest_sha256": "fc979ee558b53d18337b0a5104f2b574e0bde2147a52f5ac96585a779c56a121",
+    "historical_ordinary_target_sha256": "171dc5c76663c7552bd064c343437bc6545394315769214354afec2295929913",
+    "historical_ordinary_transition_sha256": "14c80ac290be008634cc26e3ade6b54737af05664f68c247e84dce66846291a8",
+    "historical_pg18_manifest_sha256": "1387f68bccac8797a5fc413d58495d748c3b28715f60b6074f7dca7e19ef94ba",
+    "historical_lease_source_manifest_sha256": "9888bdff82450069df09c003d48da5413c5ebe0dda6a4cfe45687f4898a1c8e7",
+    "historical_lease_source_checkpoint_sha256": "2d291cf217291106d35343c6f74f4d892299e766b72615620bec122ee0f79e37",
+    "historical_lease_selection_source_delta_count": 17,
+    "historical_lease_source_delta": {
+      "changed": 14,
+      "added": 3,
+      "unchanged": 464,
+      "removed": 0
+    },
+    "historical_pg02_manifest_sha256": "5c395d687ea6cd6afc67f2b21282583546e09b16c9ce89f35bf35bd3af633da8",
+    "historical_pg02_selection_source_delta_count": 2,
+    "target_source_manifest_sha256": "9a13d2299b7c58e23a6aaf67e1140c0a5d0c906ec7f574bcac8f3c877f0ff786",
+    "source_checkpoint_sha256": "e669901c4b15d6342b897313c6b87096f2f3b7031bc7a19b1b96f6ba2f9bb86b",
+    "transport_checkpoint_sha256": "571d37796e8dbf453aa6b5869e88eed74330d190e0f22ea6be20666ec3ec6c34",
+    "selection_source_delta_count": 1,
+    "source_delta": {
+      "changed": 1,
+      "added": 0,
+      "unchanged": 480,
+      "removed": 0
+    },
+    "historical_pg1_selection_source_delta_count": 0,
+    "historical_ordinary_selection_source_delta_count": 23,
+    "provenance_pairs": 325,
+    "candidate_id": "app-29-driver-cut-native-build-05-isolation-getter-source-01",
+    "candidate_sha256": "50f7dc4a6314cc5105f4990be26ba8be65ae242e1f7e62652cc60d6a2c0e03df",
+    "candidate_qualification": "UNQUALIFIED"
+  },
+  "source_bundle_after": {
+    "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+    "private_parent_sha": "c67ddcd30fbae2438c7b2f803f720530b598e428",
+    "ref": "refs/heads/remediation/app-29-backend-complaints",
+    "source_path": "review/working/app-29-lease-dispatch-pg03-transport-source-01/backend.bundle",
+    "path": "docs/remediation/app29-lease-dispatch-pg-03/inputs/backend.bundle",
+    "sha256": "b606cb5ed40814dc23c5c8c61a564de07d917d4a05b6fbca4c4b73841bea63fe",
+    "bytes": 287442,
+    "format": "git-bundle-v2-sha1-complete",
+    "tip": "f2e58eac0b139dca3a042c724d69c66a3d65278e"
+  },
+  "source_binding_after": {
+    "manifest_sha256": "0df6165f928d7a752d7a253d18078b099ca81eae9c7d5bc466bc828a74763f1f",
+    "sources": 481,
+    "seed_paths": 348,
+    "local_v3": "PRIMARY_BOUND_LOCAL_RECEIPT_NOT_HOSTED_REEXECUTION",
+    "authority_files": 708,
+    "core_sources": 21,
+    "snapshots": 214,
+    "profile": "app-29-lease-dispatch-pg-profile-03",
+    "validation_predecessor_sha256": "2cde6562f651eb1240ba6fcc7e13d87400a993d10fa4d8b681acf2316cf2f99c",
+    "historical_pg14_manifest_sha256": "fc979ee558b53d18337b0a5104f2b574e0bde2147a52f5ac96585a779c56a121",
+    "historical_ordinary_target_sha256": "171dc5c76663c7552bd064c343437bc6545394315769214354afec2295929913",
+    "historical_ordinary_transition_sha256": "14c80ac290be008634cc26e3ade6b54737af05664f68c247e84dce66846291a8",
+    "historical_pg18_manifest_sha256": "1387f68bccac8797a5fc413d58495d748c3b28715f60b6074f7dca7e19ef94ba",
+    "historical_lease_source_manifest_sha256": "9888bdff82450069df09c003d48da5413c5ebe0dda6a4cfe45687f4898a1c8e7",
+    "historical_lease_source_checkpoint_sha256": "2d291cf217291106d35343c6f74f4d892299e766b72615620bec122ee0f79e37",
+    "historical_lease_selection_source_delta_count": 17,
+    "historical_lease_source_delta": {
+      "changed": 14,
+      "added": 3,
+      "unchanged": 464,
+      "removed": 0
+    },
+    "historical_pg02_manifest_sha256": "5c395d687ea6cd6afc67f2b21282583546e09b16c9ce89f35bf35bd3af633da8",
+    "historical_pg02_selection_source_delta_count": 2,
+    "target_source_manifest_sha256": "9a13d2299b7c58e23a6aaf67e1140c0a5d0c906ec7f574bcac8f3c877f0ff786",
+    "source_checkpoint_sha256": "e669901c4b15d6342b897313c6b87096f2f3b7031bc7a19b1b96f6ba2f9bb86b",
+    "transport_checkpoint_sha256": "571d37796e8dbf453aa6b5869e88eed74330d190e0f22ea6be20666ec3ec6c34",
+    "selection_source_delta_count": 1,
+    "source_delta": {
+      "changed": 1,
+      "added": 0,
+      "unchanged": 480,
+      "removed": 0
+    },
+    "historical_pg1_selection_source_delta_count": 0,
+    "historical_ordinary_selection_source_delta_count": 23,
+    "provenance_pairs": 325,
+    "candidate_id": "app-29-driver-cut-native-build-05-isolation-getter-source-01",
+    "candidate_sha256": "50f7dc4a6314cc5105f4990be26ba8be65ae242e1f7e62652cc60d6a2c0e03df",
+    "candidate_qualification": "UNQUALIFIED"
+  },
+  "inputs_preserved": true,
+  "final_children_absent": true,
+  "final_containers_absent": true,
+  "cancelled": false,
+  "retained_file_hashes": {
+    "containers-normal-3.log": {
+      "bytes": 65,
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "error": null
+    },
+    "before-diagnostic-parent-commit.log": {
+      "bytes": 352,
+      "sha256": "cf767d2023a74d90e99c620b5495ce90d60c83cb103786fa6e149816f4f2abc2",
+      "error": null
+    },
+    "containers-normal-9.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "error": null
+    },
+    "before-pg02-parent-commit.log": {
+      "bytes": 362,
+      "sha256": "9f07b8944680894c1c7f03011629162f22eb429e0fa41abc3701860a618f3755",
+      "error": null
+    },
+    "before-private-parent-commit.log": {
+      "bytes": 373,
+      "sha256": "78f53743490218d3e856c68dffaae952360f89a7585c7679e87ca1cc1ffeb2e2",
+      "error": null
+    },
+    "containers-final.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "error": null
+    },
+    "containers-normal-5.log": {
+      "bytes": 65,
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "error": null
+    },
+    "before-core-baseline-commit.log": {
+      "bytes": 639,
+      "sha256": "98cdf85b08d699721c6350fa51e484a662d4ab3dd0ffc7112d8c3b9a56e2b516",
+      "error": null
+    },
+    "before-source-hashes.json": {
+      "bytes": 136393,
+      "sha256": "27faee0fc277bab7113b95cc0f8479e57aa533cd5e1fed36d1803306076238e2",
+      "error": null
+    },
+    "after-core-baseline-commit.log": {
+      "bytes": 639,
+      "sha256": "98cdf85b08d699721c6350fa51e484a662d4ab3dd0ffc7112d8c3b9a56e2b516",
+      "error": null
+    },
+    "owned-containers.json": {
+      "bytes": 923,
+      "sha256": "6e2acb1a987fe5d5690aab1c9eca0d5c17a6ff6c34e505fc1422fc307b27593c",
+      "error": null
+    },
+    "after-pg02-parent-commit.log": {
+      "bytes": 362,
+      "sha256": "9f07b8944680894c1c7f03011629162f22eb429e0fa41abc3701860a618f3755",
+      "error": null
+    },
+    "gradle-test.log": {
+      "bytes": 4161,
+      "sha256": "e03efc80fee2874fcf80a932fd3ba908cf07d194367dd6e217a356527ba80816",
+      "error": null
+    },
+    "source-bundle-verify.log": {
+      "bytes": 354,
+      "sha256": "1740f49daace4367a97372bf0f7e7e66b385551bdc3bb333d60d89a481286b7e",
+      "error": null
+    },
+    "before-previous-private-parent-commit.log": {
+      "bytes": 361,
+      "sha256": "0116d0a9fa46cb8dc2a1125ec38db5c1d9d75b85e9bff64e4ddc53e054ace7ab",
+      "error": null
+    },
+    "before-product-lifecycle-parent-commit.log": {
+      "bytes": 368,
+      "sha256": "90b0ed3b9c7a6b61c61998c320086226d64ee593a6c69abb9a97394f24abab00",
+      "error": null
+    },
+    "image-1.log": {
+      "bytes": 225,
+      "sha256": "2fcef07881f4f4e9564c412f22f516b80bbaaf19b5735c750d25961945316f40",
+      "error": null
+    },
+    "containers-normal-2.log": {
+      "bytes": 65,
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "error": null
+    },
+    "after-status.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "error": null
+    },
+    "after-post-structural-parent-commit.log": {
+      "bytes": 344,
+      "sha256": "cbe394112a049b6a605d8b0196ba48f94f9fdb4629bf434d15ac38e140ccca34",
+      "error": null
+    },
+    "containers-normal-7.log": {
+      "bytes": 65,
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "error": null
+    },
+    "source-bundle-checkout.log": {
+      "bytes": 171,
+      "sha256": "0cb3d81d86240f35738133180b56b184a7f5af12cd850cd9cfd2096230b17326",
+      "error": null
+    },
+    "containers-normal-4.log": {
+      "bytes": 65,
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "error": null
+    },
+    "container-events.log": {
+      "bytes": 5051,
+      "sha256": "37b8168275b843434c6c20b613f4c027d50caf12e2ef72af3954b6ccdbd5cd64",
+      "error": null
+    },
+    "before-post-structural-parent-commit.log": {
+      "bytes": 344,
+      "sha256": "cbe394112a049b6a605d8b0196ba48f94f9fdb4629bf434d15ac38e140ccca34",
+      "error": null
+    },
+    "after-backend-branch.log": {
+      "bytes": 38,
+      "sha256": "7b48f4083ede426131b1eff936e7c0d0297d2281a7221979a6ae135706be019b",
+      "error": null
+    },
+    "containers-after-cleanup.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "error": null
+    },
+    "containers-normal-8.log": {
+      "bytes": 65,
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "error": null
+    },
+    "containers-before.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "error": null
+    },
+    "after-product-lifecycle-parent-commit.log": {
+      "bytes": 368,
+      "sha256": "90b0ed3b9c7a6b61c61998c320086226d64ee593a6c69abb9a97394f24abab00",
+      "error": null
+    },
+    "containers-normal-1.log": {
+      "bytes": 65,
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "error": null
+    },
+    "after-ordinary-parent-commit.log": {
+      "bytes": 520,
+      "sha256": "9ceb2818497ac397b00665bf8b63ea4ac161aeab36bf4062001aa220211123f0",
+      "error": null
+    },
+    "after-lease-parent-commit.log": {
+      "bytes": 379,
+      "sha256": "442cb8c7fc00925710a2ae1575745f5b7af278971d2cf468852fd481dcc3b228",
+      "error": null
+    },
+    "after-private-parent-commit.log": {
+      "bytes": 373,
+      "sha256": "78f53743490218d3e856c68dffaae952360f89a7585c7679e87ca1cc1ffeb2e2",
+      "error": null
+    },
+    "before-status.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "error": null
+    },
+    "after-backend-sha.log": {
+      "bytes": 41,
+      "sha256": "238a711982c37e721f630a85ef1415933371b9021a37b57e8fac1dc133df66f3",
+      "error": null
+    },
+    "image-0.log": {
+      "bytes": 208,
+      "sha256": "42f9580f26e131dd7eaaea13e73f7b73e182f2eb870be56499f9cf697d911a42",
+      "error": null
+    },
+    "before-ordinary-parent-commit.log": {
+      "bytes": 520,
+      "sha256": "9ceb2818497ac397b00665bf8b63ea4ac161aeab36bf4062001aa220211123f0",
+      "error": null
+    },
+    "before-backend-commit.log": {
+      "bytes": 353,
+      "sha256": "8b4ddf60c3c31039c26700df27675b8f3998337c6609da6b34ef3b6dcff47b57",
+      "error": null
+    },
+    "before-backend-sha.log": {
+      "bytes": 41,
+      "sha256": "238a711982c37e721f630a85ef1415933371b9021a37b57e8fac1dc133df66f3",
+      "error": null
+    },
+    "after-source-hashes.json": {
+      "bytes": 136393,
+      "sha256": "27faee0fc277bab7113b95cc0f8479e57aa533cd5e1fed36d1803306076238e2",
+      "error": null
+    },
+    "initial-backend-sha.log": {
+      "bytes": 41,
+      "sha256": "f8f42cc7bc7d592bf99e042b3aa9953662f86136ed64204a86e469f1804c3fdb",
+      "error": null
+    },
+    "initial-backend-branch.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "error": null
+    },
+    "jdk-version.log": {
+      "bytes": 2170,
+      "sha256": "518f792493e383498960228f2d45f05936986623538bbd69bc5cc4d7ee35c457",
+      "error": null
+    },
+    "gradle-stop-immediate.log": {
+      "bytes": 31,
+      "sha256": "9bb9c19238f3fdde3213f2be84912b0c7e87b3e2295ec372ec245deab200d46d",
+      "error": null
+    },
+    "source-bundle-fetch.log": {
+      "bytes": 217,
+      "sha256": "b194bbfaa017325358b10dc93d625f9363783acf1e9a63c3311d08240d28fa1e",
+      "error": null
+    },
+    "docker-version.log": {
+      "bytes": 792,
+      "sha256": "a634037cf6df509bb12f1496d80dd258857175c09727b4a4cfe8167cf1951716",
+      "error": null
+    },
+    "after-backend-commit.log": {
+      "bytes": 353,
+      "sha256": "8b4ddf60c3c31039c26700df27675b8f3998337c6609da6b34ef3b6dcff47b57",
+      "error": null
+    },
+    "after-previous-private-parent-commit.log": {
+      "bytes": 361,
+      "sha256": "0116d0a9fa46cb8dc2a1125ec38db5c1d9d75b85e9bff64e4ddc53e054ace7ab",
+      "error": null
+    },
+    "initial-backend-status.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "error": null
+    },
+    "containers-normal-6.log": {
+      "bytes": 65,
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "error": null
+    },
+    "after-diagnostic-parent-commit.log": {
+      "bytes": 352,
+      "sha256": "cf767d2023a74d90e99c620b5495ce90d60c83cb103786fa6e149816f4f2abc2",
+      "error": null
+    },
+    "after-tracked.log": {
+      "bytes": 73172,
+      "sha256": "9102056caf1667ee94c14fb11023387f4adbee0d3e3caf6f069dc5b8794dfda3",
+      "error": null
+    },
+    "before-tracked.log": {
+      "bytes": 73172,
+      "sha256": "9102056caf1667ee94c14fb11023387f4adbee0d3e3caf6f069dc5b8794dfda3",
+      "error": null
+    },
+    "containers-normal-0.log": {
+      "bytes": 65,
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "error": null
+    },
+    "before-backend-branch.log": {
+      "bytes": 38,
+      "sha256": "7b48f4083ede426131b1eff936e7c0d0297d2281a7221979a6ae135706be019b",
+      "error": null
+    },
+    "before-lease-parent-commit.log": {
+      "bytes": 379,
+      "sha256": "442cb8c7fc00925710a2ae1575745f5b7af278971d2cf468852fd481dcc3b228",
+      "error": null
+    },
+    "jdk.json": {
+      "bytes": 2023,
+      "sha256": "f95c67557fd2ae701f15f089ab0b7a6bdffef78c432a699e6411a45b24c30589",
+      "error": null
+    },
+    "gradle-stop-final.log": {
+      "bytes": 31,
+      "sha256": "9bb9c19238f3fdde3213f2be84912b0c7e87b3e2295ec372ec245deab200d46d",
+      "error": null
+    },
+    "carrier-sha.log": {
+      "bytes": 41,
+      "sha256": "ca509e9c9cc1c2bdb19569e0b23d3730eb178566f251072d3cde43ddac8878bb",
+      "error": null
+    },
+    "reports/lease-dispatch-pg-03/class-load-2421.txt": {
+      "bytes": 3257866,
+      "sha256": "84a642eb1ebf872e6da2e71999d0d79763c6588ee26b9b7c1d2f89e16274de39",
+      "error": null
+    },
+    "reports/lease-dispatch-pg-03/effective-classpath.txt": {
+      "bytes": 85617,
+      "sha256": "5956dd8fa2c2fdea6cf57b5a9680d8ee8453d078a29bf9ee489d72472d9352e2",
+      "error": null
+    },
+    "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": {
+      "bytes": 22800,
+      "sha256": "7b9e31356522d9c22dac2e79839c65f5f5e80d456fa52e855eafdab74e41a943",
+      "error": null
+    }
+  },
+  "retained_inventory_complete": true,
+  "elapsed_seconds": 242.0550715,
+  "limitation": "Only the two failed PG18 noarg creator methods are selected:2 declaration filters/5 task argv/2 cases. No enum or previous16 replay; normal main/test compilation is unchanged. PG03 appends only the reviewed one-call Java assertThrows compile repair after c67ddcd; historical PG02 remains its original compileTestKotlin failure with no test XML/evaluated diagnostics, seven sticky failures and retained outputs. Verified available-evidence capture and known-empty absence can permit disposal but cannot satisfy required topology/XML or qualify PASS. Historical transport02 PG18 remains16 PASS/2 FAIL on8938526, with its raw failures and six sticky controller failures retained separately; a later two-case outcome cannot rewrite history or demonstrate its earlier cause. The MODEL attempt may still FAIL and grants no correctness credit for improved diagnostics alone. Prior PG01 remains20 PASS/1 FAIL, actor/queue mechanism unmeasured. Suppression-disabled primary Throwable and unobserved pre-callback EMF-init masking limits remain. PG14 diagnostics are NOT_APPLICABLE; the new MODEL factual line remains raw stdout, not a new parser or acceptance oracle. Original Linux03/PG1/PG14/PG10/lease17 records remain historical. Registered-tail and MODEL fatal/ClientInfo/declared-stream limitations remain; unselected negative-child exit23 is PROCESS_ONLY product_end=false, never product disposal. Preserve raw kill/die events: NORMAL_ABSENT is not graceful-shutdown or zero-kill proof. UNKNOWN grants no retry authority. Native05 UNQUALIFIED; full47/consumer/opaque/liveness/W03/full-P3/production/new-data and installation recovery remain open; W06 excluded. No integration or public private-ancestry push authority."
+}

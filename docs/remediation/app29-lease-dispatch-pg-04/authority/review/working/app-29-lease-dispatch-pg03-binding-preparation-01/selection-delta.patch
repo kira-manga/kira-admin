@@ -1,0 +1,46 @@
+--- a/selection.json
++++ b/selection.json
+@@ -1,5 +1,5 @@
+ {
+-  "schema": "app-29-lease-dispatch-pg02-failed-two-selection-v1",
++  "schema": "app-29-lease-dispatch-pg03-failed-two-selection-v1",
+   "status": "INERT_SOURCE_SCOPE_ONLY_NO_EXECUTION_AUTHORITY",
+   "historical_pg18_manifest": {
+     "path": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-01-transport-02/manifest.json",
+@@ -10,18 +10,13 @@
+     "sha256": "e64b94410e240f7585ac6d4a2d70c90b3b8952d75e61cfa5e055f15fb1e69bc9"
+   },
+   "source_delta": {
+-    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt": {
+-      "before_sha256": "b87e92bb9d78fb8f37afed414bd07899c59606536b972c6a444dda1cbc677322",
+-      "after_sha256": "1660f8dbb5d71033d7fb0606f1a5d20248dd4c6204a7773aca75a6a0663e77cb"
+-    },
+     "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt": {
+-      "before_sha256": "db140c4c0e93a349608b6e05e80033fd07e298aee4c272932e78b6d69564ce4a",
+-      "after_sha256": "3c0010170b07b1edef3f87894dac6833f2ae2f02e841609cd5e3e15d9ce489d5"
++      "before_sha256": "3c0010170b07b1edef3f87894dac6833f2ae2f02e841609cd5e3e15d9ce489d5",
++      "after_sha256": "f8583ac5daef026d2e691e2c42d14be93573dfbe442bee8c5f5d3188482eca1a"
+     }
+   },
+   "source_hashes": {
+-    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt": "1660f8dbb5d71033d7fb0606f1a5d20248dd4c6204a7773aca75a6a0663e77cb",
+-    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt": "3c0010170b07b1edef3f87894dac6833f2ae2f02e841609cd5e3e15d9ce489d5"
++    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt": "f8583ac5daef026d2e691e2c42d14be93573dfbe442bee8c5f5d3188482eca1a"
+   },
+   "test_classes": [
+     "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest"
+@@ -73,5 +68,13 @@
+     "basis": "Both exact noarg methods are in one PER_CLASS/SAME_THREAD class with one lazy PgLifecycleDatabaseFixture started once and closed in AfterAll. Both mixed-test pools and the MODEL ordinary cleanup fixture reuse database.value; EMFs/pools do not create new containers. The unselected enum method cannot spawn its negative child JVMs. One Test worker/forkEvery=0 implies one required Testcontainers session and Ryuk. Counts are admission requirements, not observed outcomes."
+   },
+   "normal_compilation": "All ordinary main/test compilation and required task dependencies remain enabled; filters narrow test execution only.",
+-  "scope": "Only the two recorded PG18 failures. Prior16 passes, all eight enum invocations and former OwnershipIT case stay historical and unselected. Expected identities do not claim future results. Native05 remains UNQUALIFIED; no W03/full47/consumer/production acceptance."
++  "scope": "Only the two recorded PG18 failures. Prior16 passes, all eight enum invocations and former OwnershipIT case stay historical and unselected. Expected identities do not claim future results. Native05 remains UNQUALIFIED; no W03/full47/consumer/production acceptance. PG03 adds only the reviewed single Java-overload assertion-call repair after the immutable PG02 checkpoint. PG02 remains compileTestKotlin failure/no test XML, not two runtime failures. Known-empty absence and faithful available capture may allow disposal while missing required topology/evidence remains FAIL.",
++  "historical_pg02_manifest": {
++    "path": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-02/manifest.json",
++    "sha256": "5c395d687ea6cd6afc67f2b21282583546e09b16c9ce89f35bf35bd3af633da8"
++  },
++  "historical_pg02_result": {
++    "path": "review/working/app-29-lease-dispatch-pg02-admission-01/launch-01/artifacts/result.json",
++    "sha256": "dbd0e7635561d9d733f644d40520581b25efcfb8afb20a60d4330399d738c0df"
++  }
+ }

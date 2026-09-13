@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" tests="18" skipped="0" failures="0" errors="0" timestamp="2026-09-09T11:42:14.457Z" hostname="oblien" time="1.278">
+  <properties/>
+  <testcase name="constructor rows cover eleven separate recipes both timeouts and both lanes with eight precise failures()" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.011"/>
+  <testcase name="[1] mode=ASSERTION_FAILURE" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.174"/>
+  <testcase name="[2] mode=MISSING_RECEIPT" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.169"/>
+  <testcase name="[3] mode=WRONG_RECEIPT" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.151"/>
+  <testcase name="[4] mode=DUPLICATE_RECEIPT" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.138"/>
+  <testcase name="exact receipt is single use for both its producer and consumer()" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.012"/>
+  <testcase name="[1] mode=wrong_nonce" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.003"/>
+  <testcase name="[2] mode=wrong_case" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.002"/>
+  <testcase name="[3] mode=wrong_ordinal" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.002"/>
+  <testcase name="[4] mode=wrong_phase" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.002"/>
+  <testcase name="[5] mode=duplicate_record" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.001"/>
+  <testcase name="[6] mode=malformed_record" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.002"/>
+  <testcase name="missing phase receipt expires its one original budget instead of certifying zero sessions()" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.029"/>
+  <testcase name="MODEL a nonterminating reader exhausts its original join allowance and is not a completed capture()" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.03"/>
+  <testcase name="MODEL output overflow retains exactly the bounded prefix and never becomes complete healthy output()" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.005"/>
+  <testcase name="forced child cleanup preserves the live prefix and actual reader facts but remains failure()" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.519"/>
+  <testcase name="MODEL a pipe read error retains safe earlier output instead of erasing it()" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.004"/>
+  <testcase name="supplemental declarations retain all thirty five identities seventy attempts and exact S F T distinctions()" classname="me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseControlsTest" time="0.006"/>
+  <system-out><![CDATA[PG_DATABASE_EXPECTED_ASSERTION mode=ASSERTION_FAILURE lane=ORDINARY recipe=DEFAULT q=0 nonce=89ee7d5e-2b77-46b2-89cb-0f8e525e17c6
+Exception in thread "main" java.lang.IllegalStateException: Deliberate synthetic database assertion.
+	at me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseProbe.negative(PgLifecycleDatabaseProbe.kt:58)
+	at me.manga.kira.backend.common.infrastructure.persistence.PgLifecycleDatabaseProbe.main(PgLifecycleDatabaseProbe.kt:28)
+
+PG_DATABASE_CHILD_CLEANUP mode=ASSERTION_FAILURE lane=ORDINARY recipe=DEFAULT q=0 nonce=89ee7d5e-2b77-46b2-89cb-0f8e525e17c6 pid=3904 alive=false forced=false reader_joined=true streams_closed=true output_bytes=479 output_overflow=false output_read_failed=false output_eof=true reader_alive=false reader_state=TERMINATED
+PG_DATABASE_SCENARIO_CLEANUP mode=MISSING_RECEIPT lane=ORDINARY recipe=DEFAULT q=0 all_terminated=true
+
+PG_DATABASE_CHILD_CLEANUP mode=MISSING_RECEIPT lane=ORDINARY recipe=DEFAULT q=0 nonce=9e80f8f7-c105-4980-874d-1cd93ca54549 pid=3926 alive=false forced=false reader_joined=true streams_closed=true output_bytes=103 output_overflow=false output_read_failed=false output_eof=true reader_alive=false reader_state=TERMINATED
+PG_DATABASE_SCENARIO_CLEANUP mode=WRONG_RECEIPT lane=ORDINARY recipe=DEFAULT q=0 all_terminated=true
+PG_DATABASE_VERIFIED mode=WRONG_RECEIPT lane=ORDINARY recipe=DEFAULT q=0 nonce=wrong
+
+PG_DATABASE_CHILD_CLEANUP mode=WRONG_RECEIPT lane=ORDINARY recipe=DEFAULT q=0 nonce=efff76c7-9d03-4670-a8e5-116a6221ad4b pid=3948 alive=false forced=false reader_joined=true streams_closed=true output_bytes=186 output_overflow=false output_read_failed=false output_eof=true reader_alive=false reader_state=TERMINATED
+PG_DATABASE_SCENARIO_CLEANUP mode=DUPLICATE_RECEIPT lane=ORDINARY recipe=DEFAULT q=0 all_terminated=true
+PG_DATABASE_VERIFIED mode=DUPLICATE_RECEIPT lane=ORDINARY recipe=DEFAULT q=0 nonce=1af075fe-e79b-4d40-8385-eb1339df1cb2
+PG_DATABASE_VERIFIED mode=DUPLICATE_RECEIPT lane=ORDINARY recipe=DEFAULT q=0 nonce=1af075fe-e79b-4d40-8385-eb1339df1cb2
+
+PG_DATABASE_CHILD_CLEANUP mode=DUPLICATE_RECEIPT lane=ORDINARY recipe=DEFAULT q=0 nonce=1af075fe-e79b-4d40-8385-eb1339df1cb2 pid=3968 alive=false forced=false reader_joined=true streams_closed=true output_bytes=345 output_overflow=false output_read_failed=false output_eof=true reader_alive=false reader_state=TERMINATED
+PG_DATABASE_CHILD_STAGE v=1 mode=MATRIX lane=ORDINARY recipe=DEFAULT q=0 nonce=5015de54-83d2-4079-9222-99da02500614 ordinal=0 observation=CHILD_STACK stage=WAIT_START
+
+PG_DATABASE_CHILD_CLEANUP mode=MATRIX lane=ORDINARY recipe=DEFAULT q=0 nonce=5015de54-83d2-4079-9222-99da02500614 pid=4008 alive=false forced=true reader_joined=true streams_closed=true output_bytes=167 output_overflow=false output_read_failed=false output_eof=true reader_alive=false reader_state=TERMINATED
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

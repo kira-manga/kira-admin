@@ -1,0 +1,19 @@
+diff --git a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt
+index 5f5de703b02a813c0a85bd2583b272ef835fad16..a3c28046889ea199743e8f6a5f1536e83fc29555 100644
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt
+@@ -561,7 +561,13 @@ internal class PoolLeaseDispatchCreatorIntegrationTest {
+                                             diagnostics.reached(CreatorTailStage.CLOCK_ENTERED)
+                                             val frame = requireNotNull(PoolCallFrames.current())
+                                             val ticket = ownedCutField(frame, "leaseCreator") as PoolLifecycle.LeaseDispatchCreator
+-                                            assertTrue(Thread.currentThread().stackTrace.any { it.methodName == "afterJdbcCall" })
++                                            // The normal kira-backend JVM build mangles this internal method with its module name.
++                                            assertTrue(
++                                                Thread.currentThread().stackTrace.any {
++                                                    it.className == PersistencePhaseContext::class.java.name &&
++                                                        it.methodName == "afterJdbcCall\$kira_backend"
++                                                },
++                                            )
+                                             assertSame(lease, ticket.lease)
+                                             assertSame(originalBudget, ticket.call.budget)
+                                             assertSame(originalBudget, frame.admittedBudget)

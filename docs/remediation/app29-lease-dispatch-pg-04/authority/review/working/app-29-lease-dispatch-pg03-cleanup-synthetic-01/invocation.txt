@@ -1,0 +1,1 @@
+timeout --signal=TERM --kill-after=5s 90s python3 -I -B review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/test_cleanup_synthetic.py

@@ -1,0 +1,839 @@
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedJpaTransactionManager.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedJpaTransactionManager.kt
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedJpaTransactionManager.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedJpaTransactionManager.kt
+@@ -10,10 +10,8 @@
+ import org.springframework.transaction.TransactionStatus
+ 
+ /** No bean or injectable delegate. The dormant slice fixes the real ordinary JPA/EMF/resource pair. */
+-internal class GuardedJpaTransactionManager(
+-    internal val entityManagerFactory: EntityManagerFactory,
+-    internal val dataSource: GuardedDataSource,
+-) : PlatformTransactionManager {
++internal class GuardedJpaTransactionManager(internal val entityManagerFactory: EntityManagerFactory, internal val dataSource: GuardedDataSource) :
++    PlatformTransactionManager {
+     private val factoryInfo = entityManagerFactory as? EntityManagerFactoryInfo
+         ?: throw PersistencePhaseException(PersistencePhaseFailureCode.RESOURCE_REFUSED)
+ 
+@@ -22,6 +20,7 @@
+     }
+ 
+     private val supportedDialect = HibernateJpaDialect()
++
+     // Deliberately no customizers, execution listeners or EntityManager initializer. This dormant
+     // controlled composition is not future Boot bean/customizer compatibility certification.
+     private val delegate = object : JpaTransactionManager() {
+@@ -39,7 +38,7 @@
+         }
+         // Factory-supplied dialect customization is not part of this fixed composition. Pin AFTER
+         // autodetection; do not reset the DS to conceal an invalid factory/provider association.
+-        jpaDialect = supportedDialect
++        setJpaDialect(supportedDialect)
+     }
+ 
+     init {
+@@ -57,7 +56,9 @@
+         requireResourcePair() // Also guards unscoped begin; no EM may be created for a changed pair.
+         if (PersistencePhaseOwnership.current() != null &&
+             (delegate.transactionExecutionListeners.isNotEmpty() || delegate.isNestedTransactionAllowed)
+-        ) throw PersistencePhaseException(PersistencePhaseFailureCode.MANAGER_REFUSED)
++        ) {
++            throw PersistencePhaseException(PersistencePhaseFailureCode.MANAGER_REFUSED)
++        }
+         return dispatch.getTransaction(definition)
+     }
+     override fun commit(status: TransactionStatus) = dispatch.complete(status, commit = true)
+@@ -68,7 +69,9 @@
+         requireFactoryResource()
+         if (delegate.entityManagerFactory !== entityManagerFactory || delegate.dataSource !== dataSource ||
+             delegate.jpaDialect !== supportedDialect
+-        ) throw PersistencePhaseException(PersistencePhaseFailureCode.RESOURCE_REFUSED)
++        ) {
++            throw PersistencePhaseException(PersistencePhaseFailureCode.RESOURCE_REFUSED)
++        }
+     }
+ 
+     private fun requireFactoryResource() {
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt
+@@ -51,6 +51,8 @@
+         throw failure
+     }
+ 
++    // The checked-failure adapter and dispatch finally must enclose the same single connection invocation.
++    @Suppress("CyclomaticComplexMethod")
+     private fun invokeConnection(proxy: Any, method: Method, args: Array<out Any?>?): Any? {
+         if (method.declaringClass === Any::class.java) {
+             return when (method.name) {
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt
+@@ -52,7 +52,11 @@
+     }
+ }
+ 
+-/** One entry's lower graph, fixed summaries only. The admitted caller owns all dynamic descendant storage. */
++/**
++ * One entry's lower graph, fixed summaries only. The admitted caller owns all dynamic descendant storage.
++ * Entry, child, native-driver and phase seams deliberately share this exact graph and its private authorities.
++ */
++@Suppress("TooManyFunctions")
+ internal class PersistenceJdbcGuardContext private constructor(
+     private val ownership: PersistenceOwnership,
+     private val pool: PersistenceJdbcPoolIdentity,
+@@ -76,6 +80,7 @@
+     // A canonical Life must have its OWN first return even if its parent implicitly closes it.
+     private val exposedNative = IdentityHashMap<Any, PersistencePgOwnedCutAccess.Life>()
+     internal val transaction = PersistenceJdbcTransaction()
++
+     @Volatile private var phase: PersistencePhaseContext? = null
+ 
+     internal fun attachPhase(owner: PersistencePhaseContext) {
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt
+@@ -75,7 +75,9 @@
+             }
+             if (kind !== PersistenceJdbcGuardCallKind.CANCELLATION &&
+                 (Thread.currentThread() !== original || completion.phase !== PersistencePhaseOwnership.current())
+-            ) PersistenceJdbcGuardContext.refuse()
++            ) {
++                PersistenceJdbcGuardContext.refuse()
++            }
+         }
+     }
+ 
+@@ -123,7 +125,8 @@
+         }
+     }
+ 
+-    @Suppress("TooGenericExceptionCaught")
++    // Every reuse veto stays inside the original return attempt, before Hikari close and its retained finally tail.
++    @Suppress("TooGenericExceptionCaught", "ComplexCondition")
+     private fun closeActual(budget: PersistenceTimeBudget, retire: Boolean = false) {
+         if (phase.get() !== Phase.OPEN) return
+         if (Thread.currentThread() !== original) PersistenceJdbcGuardContext.refuse()
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePhaseContext.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePhaseContext.kt
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePhaseContext.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePhaseContext.kt
+@@ -14,7 +14,11 @@
+ import java.util.concurrent.atomic.AtomicReference
+ import java.util.concurrent.locks.LockSupport
+ 
+-/** One synchronous named source-cleanup owner. No application lambda, foreign thread or resource switch. */
++/**
++ * One synchronous named source-cleanup owner. No application lambda, foreign thread or resource switch.
++ * All guarded transitions share this retained phase/permit/lease rather than splitting their custody.
++ */
++@Suppress("TooManyFunctions")
+ internal class PersistencePhaseContext(
+     private val ownership: PersistencePhaseOwnership,
+     private val permit: LocalPersistencePermit,
+@@ -24,8 +28,11 @@
+     private val manager = ownership.manager
+     private val failure = AtomicReference<PersistencePhaseFailureCode?>()
+     private val refunded = AtomicBoolean()
++
+     @Volatile private var stage = Stage.PREPARED
++
+     @Volatile private var work: PersistenceTimeBudget? = null
++
+     @Volatile private var emergency: PersistenceTimeBudget? = null
+     private var acquisition: PersistenceLeaseCompletion? = null
+     private var lease: PersistenceJdbcLease? = null
+@@ -54,7 +61,7 @@
+         if (stage !== Stage.PREPARED) refuse(PersistencePhaseFailureCode.MANAGER_REFUSED)
+         stage = Stage.STARTING
+         val definition = DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED).apply {
+-            name = "SOURCE_GRANT_CLEANUP"
++            setName("SOURCE_GRANT_CLEANUP")
+             timeout = 2
+         }
+         manager.getTransaction(definition)
+@@ -124,6 +131,8 @@
+         if (status === rootStatus) beginEnded = true
+     }
+ 
++    // Selected resource/start stage and unspent single-borrow authority are one pre-checkout gate.
++    @Suppress("ComplexCondition")
+     internal fun authorizeAcquisition(dataSource: GuardedDataSource) {
+         requireCaller()
+         if (dataSource !== manager.dataSource || stage !== Stage.STARTING || !acquisitionAuthority || acquisitionSpent) {
+@@ -176,6 +185,8 @@
+         requireWork()
+     }
+ 
++    // Short-circuit Spring-state/holder identity checks before consulting the retained holder's connection.
++    @Suppress("ComplexCondition")
+     private fun requireSelectedHolder() {
+         if (!TransactionSynchronizationManager.isActualTransactionActive() || !TransactionSynchronizationManager.isSynchronizationActive() ||
+             TransactionSynchronizationManager.getResource(manager.dataSource) !== holder ||
+@@ -203,6 +214,8 @@
+         requireWork()
+     }
+ 
++    // Root completion must match its commit/rollback stage with no overlapping completion dispatch.
++    @Suppress("ComplexCondition")
+     internal fun beforeCompletion(candidate: PlatformTransactionManager, status: PersistenceManagedStatus, commit: Boolean) {
+         requireCaller()
+         if (candidate !== manager || !status.hasReturnedStatus()) refuse(PersistencePhaseFailureCode.MANAGER_REFUSED)
+@@ -237,7 +250,9 @@
+                 restoreInterrupt = true
+                 PersistencePhaseFailureCode.INTERRUPTED
+             }
++
+             is PersistencePhaseException -> problem.code
++
+             else -> PersistencePhaseFailureCode.WORK_FAILED
+         }
+         failure.compareAndSet(null, reason) // Preserve our refusal code; DB/cleanup facts still come from this exact owner.
+@@ -249,8 +264,9 @@
+ 
+     /** Lower/upper dispatch uses this budget; no business worker or copied Spring context exists. */
+     internal fun callBudget(kind: PersistenceJdbcGuardCallKind): PersistenceTimeBudget {
+-        if (kind === PersistenceJdbcGuardCallKind.CANCELLATION) return emergency ?: work
+-            ?: refuse(PersistencePhaseFailureCode.RESOURCE_REFUSED)
++        if (kind === PersistenceJdbcGuardCallKind.CANCELLATION) {
++            return emergency ?: work ?: refuse(PersistencePhaseFailureCode.RESOURCE_REFUSED)
++        }
+         if (kind === PersistenceJdbcGuardCallKind.BUSINESS) {
+             requireWork()
+             if (stage !in BUSINESS_STAGES || databaseOutcome() !== PersistenceDatabaseOutcome.NONE) {
+@@ -261,6 +277,8 @@
+         return cleanupBudget()
+     }
+ 
++    // Keep the closed JDBC capability table and exact rollback-stage conjunction together; no fallback grants cleanup authority.
++    @Suppress("CyclomaticComplexMethod", "ComplexCondition")
+     internal fun connectionKind(method: Method, arguments: Array<out Any?>?): PersistenceJdbcGuardCallKind {
+         requireCaller()
+         if (changingReadCap && method.name in READ_CAP_METHODS) return requireNotNull(readCapKind)
+@@ -271,17 +289,23 @@
+                 if (stage !== Stage.COMMITTING || !completionActive) refuse(PersistencePhaseFailureCode.MANAGER_REFUSED)
+                 PersistenceJdbcGuardCallKind.BUSINESS
+             }
++
+             "rollback" -> {
+                 if (arguments?.isNotEmpty() == true ||
+                     !((completionActive && stage in setOf(Stage.COMMITTING, Stage.ROLLING_BACK)) || (stage === Stage.STARTING && !beginEnded))
+-                ) refuse(PersistencePhaseFailureCode.MANAGER_REFUSED)
++                ) {
++                    refuse(PersistencePhaseFailureCode.MANAGER_REFUSED)
++                }
+                 PersistenceJdbcGuardCallKind.CLEANUP
+             }
++
+             "setSavepoint", "releaseSavepoint" -> refuse(PersistencePhaseFailureCode.MANAGER_REFUSED)
++
+             "setNetworkTimeout" -> {
+                 if (!changingReadCap && !restoringReadCap) refuse(PersistencePhaseFailureCode.RESOURCE_REFUSED)
+                 if (completion) PersistenceJdbcGuardCallKind.CLEANUP else PersistenceJdbcGuardCallKind.BUSINESS
+             }
++
+             "setAutoCommit" -> {
+                 if (arguments?.singleOrNull() == false) {
+                     if (stage !== Stage.STARTING || !acquisitionAuthority) refuse(PersistencePhaseFailureCode.MANAGER_REFUSED)
+@@ -291,7 +315,9 @@
+                     PersistenceJdbcGuardCallKind.CLEANUP
+                 }
+             }
++
+             in COMPLETION_LOCAL_METHODS -> if (completion) PersistenceJdbcGuardCallKind.CLEANUP else PersistenceJdbcGuardCallKind.BUSINESS
++
+             else -> PersistenceJdbcGuardCallKind.BUSINESS
+         }
+     }
+@@ -343,12 +369,17 @@
+         if (stage !== Stage.FINALIZING || candidate !== lease || !springSettled) refuse(PersistencePhaseFailureCode.RESOURCE_REFUSED)
+     }
+ 
+-    /** Caller finally owns rollback, restoration, the real return, and proof observation in that order. */
++    /**
++     * Caller finally owns rollback, restoration, the real return, and proof observation in that order.
++     * Broad catches retain bounded failure/interrupt state through cleanup; nested restoration always resets its read-cap flag.
++     */
++    @Suppress("TooGenericExceptionCaught", "NestedBlockDepth", "ComplexCondition")
+     internal fun finish() {
+         requireCaller()
+         acquisitionAuthority = false
+         try {
+             val status = rootStatus
++            // Roll back only a returned, incomplete status after begin ends and outside any completion dispatch.
+             if (status?.hasReturnedStatus() == true && !status.isCompleted && beginEnded && !completionActive) {
+                 stage = Stage.ROLLING_BACK
+                 try {
+@@ -388,7 +419,8 @@
+             try {
+                 caller.restoreAfterFailure()
+                 if (restoreInterrupt) Thread.currentThread().interrupt()
+-            } catch (problem: Throwable) {
++            } catch (_: Throwable) {
++                // Discard raw restoration details, but retain unresolved custody instead of claiming settlement/refund.
+                 failure.set(PersistencePhaseFailureCode.CLEANUP_UNRESOLVED)
+                 springSettled = false
+             }
+@@ -400,6 +432,8 @@
+         }
+     }
+ 
++    // Empty Spring state alone cannot settle an unfinished dispatch or a no-status begin without exact EM custody.
++    @Suppress("ComplexCondition")
+     private fun springCompletionProven(): Boolean {
+         if (!PersistencePhaseOwnership.springConnectionFree() || completionActive || (beginDispatched && !beginEnded)) return false
+         val status = rootStatus
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePhaseOwnership.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePhaseOwnership.kt
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePhaseOwnership.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePhaseOwnership.kt
+@@ -15,6 +15,7 @@
+     internal val nanoClock: PersistenceNanoClock = SystemPersistenceNanoClock,
+ ) {
+     private val admissionCut = ReentrantLock()
++
+     // Exactly the existing bounded permits. Resolved slots are removed, never kept as a history.
+     private val phases = AtomicReferenceArray<PersistencePhaseContext?>(admission.ownerLimit)
+ 
+@@ -22,6 +23,8 @@
+         manager.bindPhaseOwner(this)
+     }
+ 
++    // Refusals precede their own side effects; catch every entry failure to settle only unused custody and retain bounded reasons.
++    @Suppress("ThrowsCount", "TooGenericExceptionCaught")
+     internal fun enterSourceGrantCleanup(): PersistencePhaseContext {
+         requireConnectionFree() // Before even a fail-fast permit attempt, including unbound loans.
+         manager.requireResourcePair() // A changed/unprovable EMF/resource pair cannot spend a phase permit.
+@@ -137,6 +140,8 @@
+ 
+ /** Public Spring dispatch is guarded by composition: APTM's final methods cannot be overridden. */
+ internal class PersistenceManagerDispatch(private val identity: PlatformTransactionManager, private val delegate: PlatformTransactionManager) {
++    // Any scoped begin/validation failure belongs to this retained status; unscoped failures are rethrown unchanged.
++    @Suppress("TooGenericExceptionCaught")
+     fun getTransaction(definition: TransactionDefinition?): TransactionStatus {
+         val phase = PersistencePhaseOwnership.current()
+         val root = phase?.beforeGetTransaction(identity, definition) == true
+@@ -155,6 +160,8 @@
+         }
+     }
+ 
++    // Retain scoped failure/interrupt state before the dispatch finally; never replace the separately observed DB outcome.
++    @Suppress("TooGenericExceptionCaught")
+     fun complete(candidate: TransactionStatus, commit: Boolean) {
+         val status = candidate as? PersistenceManagedStatus ?: throw PersistencePhaseException(PersistencePhaseFailureCode.MANAGER_REFUSED)
+         status.requireOwner(identity)
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt
+@@ -10,6 +10,7 @@
+     private val state = AtomicReference(State())
+     private val issuance = Any()
+     private val cleanup = PersistenceJdbcCleanup.prepare(this, issuance)
++
+     @Volatile private var phase: PersistencePhaseContext? = null
+ 
+     internal fun attachPhase(owner: PersistencePhaseContext) {
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt
+@@ -461,7 +461,8 @@
+         throw declaredFailure(method, failure)
+     }
+ 
+-    @Suppress("TooGenericExceptionCaught")
++    // One child invocation retains logical close, driver/output custody and final dispatch accounting in the same extent.
++    @Suppress("TooGenericExceptionCaught", "LongMethod")
+     private fun invokeGuarded(method: Method, arguments: Array<Any?>): Any? {
+         if (method.declaringClass === Any::class.java) return invokeObject(method, arguments)
+         if (!surface.accepts(method)) PersistenceJdbcGuardContext.refuse()
+diff --git a/src/main/kotlin/me/manga/kira/backend/complaint/infrastructure/transaction/OrdinaryPersistencePhaseExecutor.kt b/src/main/kotlin/me/manga/kira/backend/complaint/infrastructure/transaction/OrdinaryPersistencePhaseExecutor.kt
+--- a/src/main/kotlin/me/manga/kira/backend/complaint/infrastructure/transaction/OrdinaryPersistencePhaseExecutor.kt
++++ b/src/main/kotlin/me/manga/kira/backend/complaint/infrastructure/transaction/OrdinaryPersistencePhaseExecutor.kt
+@@ -10,6 +10,8 @@
+     private val sourceGrantCleanup: SourceGrantCleanup,
+     private val clock: Clock,
+ ) {
++    // Every work/completion failure must reach the same phase finalizer; only its bounded outcome/refund result escapes.
++    @Suppress("TooGenericExceptionCaught")
+     fun cleanupSourceGrants(): Int {
+         val phase = ownership.enterSourceGrantCleanup()
+         var count = 0
+diff --git a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupFixture.kt b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupFixture.kt
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupFixture.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupFixture.kt
+@@ -83,10 +83,8 @@
+         )
+     }
+ 
+-    fun newExecutor(
+-        store: SourceGrantCleanup = sourceStore,
+-        clock: Clock = Clock.fixed(cutoff, ZoneOffset.UTC),
+-    ): OrdinaryPersistencePhaseExecutor = OrdinaryPersistencePhaseExecutor(ownership, store, clock)
++    fun newExecutor(store: SourceGrantCleanup = sourceStore, clock: Clock = Clock.fixed(cutoff, ZoneOffset.UTC)): OrdinaryPersistencePhaseExecutor =
++        OrdinaryPersistencePhaseExecutor(ownership, store, clock)
+ 
+     fun seedGrant(id: UUID, scope: String, expiresAt: Instant, usedAt: Instant? = null) {
+         independent.update(
+diff --git a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupIT.kt b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupIT.kt
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupIT.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupIT.kt
+@@ -44,55 +44,52 @@
+         }
+ 
+     @Test
+-    fun `mixed scope cleanup preserves active source grants and every complaint lifecycle`() =
+-        withOrdinarySourceGrantCleanup(database.value) { f ->
+-            f.seedGrant(grantId(1), SOURCE_ADMIN_MUTATION_SCOPE, f.cutoff.plusSeconds(60))
+-            f.seedGrant(grantId(2), SOURCE_ADMIN_MUTATION_SCOPE, f.cutoff.minusSeconds(60))
+-            f.seedGrant(grantId(3), SOURCE_ADMIN_MUTATION_SCOPE, f.cutoff.plusSeconds(60), f.cutoff.minusSeconds(1))
+-            f.seedGrant(grantId(4), COMPLAINT_SCOPE, f.cutoff.minusSeconds(60))
+-            f.seedGrant(grantId(5), COMPLAINT_SCOPE, f.cutoff.plusSeconds(60), f.cutoff.minusSeconds(1))
+-            f.seedGrant(grantId(6), COMPLAINT_SCOPE, f.cutoff.minusSeconds(60), f.cutoff.minusSeconds(61))
+-            f.seedGrant(grantId(7), COMPLAINT_SCOPE, f.cutoff.plusSeconds(60))
+-            f.seedGrant(grantId(8), COMPLAINT_SCOPE, f.cutoff)
+-            assertEquals((1L..8L).map(::grantId).toSet(), f.grantIds())
++    fun `mixed scope cleanup preserves active source grants and every complaint lifecycle`() = withOrdinarySourceGrantCleanup(database.value) { f ->
++        f.seedGrant(grantId(1), SOURCE_ADMIN_MUTATION_SCOPE, f.cutoff.plusSeconds(60))
++        f.seedGrant(grantId(2), SOURCE_ADMIN_MUTATION_SCOPE, f.cutoff.minusSeconds(60))
++        f.seedGrant(grantId(3), SOURCE_ADMIN_MUTATION_SCOPE, f.cutoff.plusSeconds(60), f.cutoff.minusSeconds(1))
++        f.seedGrant(grantId(4), COMPLAINT_SCOPE, f.cutoff.minusSeconds(60))
++        f.seedGrant(grantId(5), COMPLAINT_SCOPE, f.cutoff.plusSeconds(60), f.cutoff.minusSeconds(1))
++        f.seedGrant(grantId(6), COMPLAINT_SCOPE, f.cutoff.minusSeconds(60), f.cutoff.minusSeconds(61))
++        f.seedGrant(grantId(7), COMPLAINT_SCOPE, f.cutoff.plusSeconds(60))
++        f.seedGrant(grantId(8), COMPLAINT_SCOPE, f.cutoff)
++        assertEquals((1L..8L).map(::grantId).toSet(), f.grantIds())
+ 
+-            assertEquals(2, f.newExecutor().cleanupSourceGrants())
+-            assertEquals(setOf(1L, 4L, 5L, 6L, 7L, 8L).map(::grantId).toSet(), f.grantIds())
+-        }
++        assertEquals(2, f.newExecutor().cleanupSourceGrants())
++        assertEquals(setOf(1L, 4L, 5L, 6L, 7L, 8L).map(::grantId).toSet(), f.grantIds())
++    }
+ 
+     @Test
+-    fun `one invocation commits only the first fifty eligible UUIDs and leaves the remaining batch`() =
+-        withOrdinarySourceGrantCleanup(database.value) { f ->
+-            val eligible = (101L..170L).map(::grantId)
+-            // Reverse insertion order so the row-set oracle is UUID order, not fixture insertion order.
+-            eligible.reversed().forEach { f.seedGrant(it, SOURCE_ADMIN_MUTATION_SCOPE, f.cutoff) }
+-            f.seedGrant(grantId(1), SOURCE_ADMIN_MUTATION_SCOPE, f.cutoff.plusSeconds(60))
+-            f.seedGrant(grantId(2), COMPLAINT_SCOPE, f.cutoff.minusSeconds(60))
+-            val protected = setOf(grantId(1), grantId(2))
+-            assertEquals(eligible.toSet() + protected, f.grantIds())
++    fun `one invocation commits only the first fifty eligible UUIDs and leaves the remaining batch`() = withOrdinarySourceGrantCleanup(database.value) { f ->
++        val eligible = (101L..170L).map(::grantId)
++        // Reverse insertion order so the row-set oracle is UUID order, not fixture insertion order.
++        eligible.reversed().forEach { f.seedGrant(it, SOURCE_ADMIN_MUTATION_SCOPE, f.cutoff) }
++        f.seedGrant(grantId(1), SOURCE_ADMIN_MUTATION_SCOPE, f.cutoff.plusSeconds(60))
++        f.seedGrant(grantId(2), COMPLAINT_SCOPE, f.cutoff.minusSeconds(60))
++        val protected = setOf(grantId(1), grantId(2))
++        assertEquals(eligible.toSet() + protected, f.grantIds())
+ 
+-            assertEquals(50, f.newExecutor().cleanupSourceGrants())
+-            assertEquals(eligible.drop(50).toSet() + protected, f.grantIds())
+-        }
++        assertEquals(50, f.newExecutor().cleanupSourceGrants())
++        assertEquals(eligible.drop(50).toSet() + protected, f.grantIds())
++    }
+ 
+     @Test
+-    fun `an independently locked earliest eligible grant is skipped while fifty other rows commit`() =
+-        withOrdinarySourceGrantCleanup(database.value) { f ->
+-            val eligible = (1L..52L).map(::grantId)
+-            eligible.forEach { f.seedGrant(it, SOURCE_ADMIN_MUTATION_SCOPE, f.cutoff) }
+-            assertEquals(eligible.toSet(), f.grantIds())
+-            val survivors = setOf(eligible.first(), eligible.last())
++    fun `an independently locked earliest eligible grant is skipped while fifty other rows commit`() = withOrdinarySourceGrantCleanup(database.value) { f ->
++        val eligible = (1L..52L).map(::grantId)
++        eligible.forEach { f.seedGrant(it, SOURCE_ADMIN_MUTATION_SCOPE, f.cutoff) }
++        assertEquals(eligible.toSet(), f.grantIds())
++        val survivors = setOf(eligible.first(), eligible.last())
+ 
+-            // The independent transaction keeps this actual row lock until cleanup has returned.
+-            // No worker, Future timeout, sleep or lock release makes the successful call possible.
+-            f.lockGrant(eligible.first()).use {
+-                assertEquals(50, f.newExecutor().cleanupSourceGrants())
+-                assertEquals(survivors, f.grantIds())
+-            }
++        // The independent transaction keeps this actual row lock until cleanup has returned.
++        // No worker, Future timeout, sleep or lock release makes the successful call possible.
++        f.lockGrant(eligible.first()).use {
++            assertEquals(50, f.newExecutor().cleanupSourceGrants())
+             assertEquals(survivors, f.grantIds())
+-            assertEquals(2, f.newExecutor().cleanupSourceGrants())
+-            assertTrue(f.grantIds().isEmpty())
+         }
++        assertEquals(survivors, f.grantIds())
++        assertEquals(2, f.newExecutor().cleanupSourceGrants())
++        assertTrue(f.grantIds().isEmpty())
++    }
+ 
+     @Test
+     fun `the trusted Clock is sampled once and its committed cutoff is durable to an independent reader`() =
+diff --git a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupOwnershipIT.kt b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupOwnershipIT.kt
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupOwnershipIT.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupOwnershipIT.kt
+@@ -104,7 +104,9 @@
+                 val epoch = lease.state.epoch
+                 val futures = f.ownedPool.lifecycle.actorSnapshot().futureLeaseEntries
+                 TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+-                    override fun suspend() { suspended++ }
++                    override fun suspend() {
++                        suspended++
++                    }
+                 })
+                 val forbidden = listOf(
+                     TransactionDefinition.PROPAGATION_REQUIRES_NEW,
+@@ -183,36 +185,35 @@
+         }
+ 
+     @Test
+-    fun `missing or foreign selected holder cannot authorize cleanup even with true transaction flags`() =
+-        withOrdinarySourceGrantCleanup(database.value) { f ->
+-            var refusals = 0
+-            val store = cleanupPort { cutoff ->
+-                val holder = TransactionSynchronizationManager.unbindResource(f.pool)
++    fun `missing or foreign selected holder cannot authorize cleanup even with true transaction flags`() = withOrdinarySourceGrantCleanup(database.value) { f ->
++        var refusals = 0
++        val store = cleanupPort { cutoff ->
++            val holder = TransactionSynchronizationManager.unbindResource(f.pool)
++            try {
++                assertThrows<PersistencePhaseException> { f.sourceStore.deleteEligibleSourceGrants(cutoff) }
++                refusals++
++                TransactionSynchronizationManager.bindResource(f.pool, ConnectionHolder(foreignConnectionSentinel()))
+                 try {
+                     assertThrows<PersistencePhaseException> { f.sourceStore.deleteEligibleSourceGrants(cutoff) }
+                     refusals++
+-                    TransactionSynchronizationManager.bindResource(f.pool, ConnectionHolder(foreignConnectionSentinel()))
+-                    try {
+-                        assertThrows<PersistencePhaseException> { f.sourceStore.deleteEligibleSourceGrants(cutoff) }
+-                        refusals++
+-                    } finally {
+-                        TransactionSynchronizationManager.unbindResource(f.pool)
+-                    }
+                 } finally {
+-                    TransactionSynchronizationManager.bindResource(f.pool, holder)
+-                }
+-                f.sourceStore.deleteEligibleSourceGrants(cutoff)
+-            }
+-            assertEquals(0, f.newExecutor(store).cleanupSourceGrants())
+-            assertEquals(2, refusals)
+-        }
++                    TransactionSynchronizationManager.unbindResource(f.pool)
++                }
++            } finally {
++                TransactionSynchronizationManager.bindResource(f.pool, holder)
++            }
++            f.sourceStore.deleteEligibleSourceGrants(cutoff)
++        }
++        assertEquals(0, f.newExecutor(store).cleanupSourceGrants())
++        assertEquals(2, refusals)
++    }
+ 
+     @Test
+     fun `wrapped unscoped JPA commits and releases immediately without acquiring short phase ownership`() =
+         withOrdinarySourceGrantCleanup(database.value) { f ->
+             val id = UUID(0, 102)
+             f.seedGrant(id, SOURCE_ADMIN_MUTATION_SCOPE, f.cutoff)
+-            val status = f.manager.getTransaction(DefaultTransactionDefinition().apply { name = "ordinary-positive-control" })
++            val status = f.manager.getTransaction(DefaultTransactionDefinition().apply { setName("ordinary-positive-control") })
+             val lease = ownedPoolLease(selectedHolder(f).connection)
+             assertEquals("ordinary-positive-control", status.transactionName)
+             assertNull(PersistencePhaseOwnership.current())
+@@ -281,24 +282,23 @@
+         }
+ 
+     @Test
+-    fun `private JPA composition refuses execution listener configuration before any begin or lease`() =
+-        withOrdinarySourceGrantCleanup(database.value) { f ->
+-            val delegate = ownedCutField(f.manager, "delegate") as JpaTransactionManager
+-            assertSame(f.entityManagerFactory, delegate.entityManagerFactory)
+-            assertSame(f.pool, delegate.dataSource)
+-            assertEquals(HibernateJpaDialect::class.java, delegate.jpaDialect.javaClass)
+-            assertNotSame((f.entityManagerFactory as EntityManagerFactoryInfo).jpaDialect, delegate.jpaDialect)
+-            delegate.setTransactionExecutionListeners(listOf(object : TransactionExecutionListener {}))
+-            try {
+-                assertThrows<PersistencePhaseException> { f.newExecutor().cleanupSourceGrants() }
+-                assertEquals(0, f.admission.activeOwners())
+-                assertEquals(0L, f.ownedPool.lifecycle.activeAcquisitions())
+-                assertEquals(0L, f.ownedPool.lifecycle.actorSnapshot().futureLeaseEntries)
+-            } finally {
+-                delegate.setTransactionExecutionListeners(emptyList())
+-            }
+-            assertEquals(0, f.newExecutor().cleanupSourceGrants())
+-        }
++    fun `private JPA composition refuses execution listener configuration before any begin or lease`() = withOrdinarySourceGrantCleanup(database.value) { f ->
++        val delegate = ownedCutField(f.manager, "delegate") as JpaTransactionManager
++        assertSame(f.entityManagerFactory, delegate.entityManagerFactory)
++        assertSame(f.pool, delegate.dataSource)
++        assertEquals(HibernateJpaDialect::class.java, delegate.jpaDialect.javaClass)
++        assertNotSame((f.entityManagerFactory as EntityManagerFactoryInfo).jpaDialect, delegate.jpaDialect)
++        delegate.setTransactionExecutionListeners(listOf(object : TransactionExecutionListener {}))
++        try {
++            assertThrows<PersistencePhaseException> { f.newExecutor().cleanupSourceGrants() }
++            assertEquals(0, f.admission.activeOwners())
++            assertEquals(0L, f.ownedPool.lifecycle.activeAcquisitions())
++            assertEquals(0L, f.ownedPool.lifecycle.actorSnapshot().futureLeaseEntries)
++        } finally {
++            delegate.setTransactionExecutionListeners(emptyList())
++        }
++        assertEquals(0, f.newExecutor().cleanupSourceGrants())
++    }
+ 
+     @Test
+     fun `accepted real lease survives failed begin with no returned status until actual rollback close and receipt`() =
+@@ -314,7 +314,10 @@
+             val ownership = PersistencePhaseOwnership(f.admission, manager)
+             val executor = OrdinaryPersistencePhaseExecutor(
+                 ownership,
+-                cleanupPort { body.set(true); 0 },
++                cleanupPort {
++                    body.set(true)
++                    0
++                },
+                 Clock.fixed(f.cutoff, ZoneOffset.UTC),
+             )
+             val failure = assertThrows<PersistencePhaseException> { executor.cleanupSourceGrants() }
+@@ -339,7 +342,14 @@
+             val fault = PostBeginHolderFailure(f.entityManagerFactory)
+             val manager = GuardedJpaTransactionManager(fault.factory, f.pool)
+             val ownership = PersistencePhaseOwnership(f.admission, manager)
+-            val executor = OrdinaryPersistencePhaseExecutor(ownership, cleanupPort { body = true; 0 }, Clock.fixed(f.cutoff, ZoneOffset.UTC))
++            val executor = OrdinaryPersistencePhaseExecutor(
++                ownership,
++                cleanupPort {
++                    body = true
++                    0
++                },
++                Clock.fixed(f.cutoff, ZoneOffset.UTC),
++            )
+             val failure = assertThrows<PersistencePhaseException> {
+                 executor.cleanupSourceGrants()
+             }
+@@ -369,7 +379,10 @@
+                 barrier.set(tail)
+                 ready.countDown()
+                 try {
+-                    f.newExecutor(cleanupPort { body.set(true); 0 }).cleanupSourceGrants()
++                    f.newExecutor(cleanupPort {
++                        body.set(true)
++                        0
++                    }).cleanupSourceGrants()
+                 } catch (failure: Throwable) {
+                     outcome.set(failure)
+                 }
+@@ -627,7 +640,11 @@
+                     val next = ownedPoolLease(successor)
+                     assertNotSame(lease.state.epoch, next.state.epoch)
+                     assertEquals(pid.get().toInt(), ownedPoolScalar(successor, "SELECT pg_backend_pid()"))
+-                    assertEquals(originalSettings.first, successor.networkTimeout, "The same physical session must restore its actual JDBC read cap before reuse.")
++                    assertEquals(
++                        originalSettings.first,
++                        successor.networkTimeout,
++                        "The same physical session must restore its actual JDBC read cap before reuse.",
++                    )
+                     tail.release()
+                     thread.join(5_000)
+                     assertFalse(thread.isAlive)
+@@ -655,8 +672,7 @@
+     override fun deleteEligibleSourceGrants(cutoff: Instant): Int = block(cutoff)
+ }
+ 
+-private fun selectedHolder(f: OrdinarySourceGrantCleanupFixture): ConnectionHolder =
+-    TransactionSynchronizationManager.getResource(f.pool) as ConnectionHolder
++private fun selectedHolder(f: OrdinarySourceGrantCleanupFixture): ConnectionHolder = TransactionSynchronizationManager.getResource(f.pool) as ConnectionHolder
+ 
+ private fun transactionIdentity(f: OrdinarySourceGrantCleanupFixture): Pair<Int, Long> = f.jdbc.queryForObject(
+     "SELECT pg_backend_pid(), txid_current()",
+@@ -664,7 +680,12 @@
+ )!!
+ 
+ private fun settleCallingOwner() {
+-    awaitLifecycleFact { runCatching { requireConnectionFree(); true }.getOrDefault(false) }
++    awaitLifecycleFact {
++        runCatching {
++            requireConnectionFree()
++            true
++        }.getOrDefault(false)
++    }
+ }
+ 
+ private class CleanupFixtureFailure : RuntimeException("Synthetic cleanup fixture failure.")
+@@ -672,7 +693,9 @@
+ private class OffsetNanoClock : PersistenceNanoClock {
+     private val offset = AtomicLong()
+     override fun nanoTime(): Long = System.nanoTime() + offset.get()
+-    fun advance(millis: Long) { offset.addAndGet(millis * 1_000_000) }
++    fun advance(millis: Long) {
++        offset.addAndGet(millis * 1_000_000)
++    }
+ }
+ 
+ private fun intervalMillis(value: String): Long {
+@@ -698,8 +721,11 @@
+     ) { proxy, method, args ->
+         when (method.name) {
+             "equals" -> proxy === args?.singleOrNull()
++
+             "hashCode" -> System.identityHashCode(proxy)
++
+             "toString" -> "ObservedCleanupFactory(redacted)"
++
+             "createEntityManager", "createNativeEntityManager" -> {
+                 creations.incrementAndGet()
+                 val entity = invokeFixture(original, method, args) as EntityManager
+@@ -715,6 +741,7 @@
+                     }
+                 }
+             }
++
+             else -> invokeFixture(original, method, args)
+         }
+     } as EntityManagerFactory
+@@ -748,10 +775,13 @@
+ } as EntityManagerFactory
+ 
+ /** Calibrated caller-local acquisition history, not a sample of outstanding-acquisition occupancy. */
+-private class OrdinaryAcquisitionObservation(private val lifecycle: PoolLifecycle) : ThreadLocal<PoolCallFrame?>(), AutoCloseable {
++private class OrdinaryAcquisitionObservation(private val lifecycle: PoolLifecycle) :
++    ThreadLocal<PoolCallFrame?>(),
++    AutoCloseable {
+     private val caller = Thread.currentThread()
+     private val storage = requireNotNull(ownedCutField(PoolCallFrames, "storage"))
+     private val field = storage.javaClass.getDeclaredField("current").apply { check(trySetAccessible()) }
++
+     @Suppress("UNCHECKED_CAST")
+     private val delegate = field.get(storage) as ThreadLocal<PoolCallFrame?>
+     var entries = 0
+@@ -782,11 +812,14 @@
+  * Same own-project instance-TL/driver-Invocation observation seam as the retained owned-cut tests.
+  * No call, driver, transaction result or completion field is written. Original TL storage is delegated.
+  */
+-private class OrdinaryCommitObservation(lease: PersistenceJdbcLease) : ThreadLocal<PersistenceJdbcGuardCall?>(), AutoCloseable {
++private class OrdinaryCommitObservation(lease: PersistenceJdbcLease) :
++    ThreadLocal<PersistenceJdbcGuardCall?>(),
++    AutoCloseable {
+     private val caller = Thread.currentThread()
+     private val context = lease.state.context
+     private val root = ownedPoolRoot(lease)
+     private val field = context.javaClass.getDeclaredField("frames").apply { check(trySetAccessible()) }
++
+     @Suppress("UNCHECKED_CAST")
+     private val delegate = field.get(context) as ThreadLocal<PersistenceJdbcGuardCall?>
+     private val driver = PersistenceJdbcGuardCall::class.java.getDeclaredField("driver").apply { check(trySetAccessible()) }
+@@ -802,6 +835,8 @@
+         field.set(context, this)
+     }
+ 
++    // One live-call discriminator excludes setup, wrapping and later-rollback failures without moving any observation.
++    @Suppress("ComplexCondition")
+     override fun get(): PersistenceJdbcGuardCall? = delegate.get().also { call ->
+         if (Thread.currentThread() === caller && call != null) {
+             try {
+@@ -822,7 +857,9 @@
+                             ownedCutField(call, "driverPreparationFailure") == false &&
+                             ownedCutField(call, "outcome") === PersistenceJdbcCallOutcome.ORDINARY_FAILURE &&
+                             context.transaction.databaseOutcome() === PersistenceDatabaseOutcome.UNKNOWN
+-                        ) failedWhileArmed = true
++                        ) {
++                            failedWhileArmed = true
++                        }
+                     }
+                 }
+             } catch (failure: Throwable) {
+@@ -867,8 +904,11 @@
+ ) { proxy, method, args ->
+     when (method.name) {
+         "equals" -> proxy === args?.singleOrNull()
++
+         "hashCode" -> System.identityHashCode(proxy)
++
+         "toString" -> "FailedBeginFactory(redacted)"
++
+         "createEntityManager", "createNativeEntityManager" -> {
+             val entity = invokeFixture(factory, method, args) as EntityManager
+             Proxy.newProxyInstance(EntityManager::class.java.classLoader, arrayOf(EntityManager::class.java)) { _, operation, parameters ->
+@@ -887,6 +927,7 @@
+                 }
+             }
+         }
++
+         else -> invokeFixture(factory, method, args)
+     }
+ } as EntityManagerFactory
+@@ -909,8 +950,11 @@
+     ) { proxy, method, args ->
+         when (method.name) {
+             "equals" -> proxy === args?.singleOrNull()
++
+             "hashCode" -> System.identityHashCode(proxy)
++
+             "toString" -> "MaterializationFailureFactory(redacted)"
++
+             "createEntityManager", "createNativeEntityManager" -> {
+                 val entity = invokeFixture(original, method, args) as EntityManager
+                 Proxy.newProxyInstance(EntityManager::class.java.classLoader, arrayOf(EntityManager::class.java)) { _, call, input ->
+@@ -921,6 +965,7 @@
+                     }
+                 }
+             }
++
+             else -> invokeFixture(original, method, args)
+         }
+     } as EntityManagerFactory
+@@ -958,16 +1003,20 @@
+ }
+ 
+ /** Hold the authentic acquisition bookkeeping end after checkout consent, not a fake Future result. */
+-private class OrdinaryAcquisitionTailBarrier : ThreadLocal<PoolCallFrame?>(), AutoCloseable {
++private class OrdinaryAcquisitionTailBarrier :
++    ThreadLocal<PoolCallFrame?>(),
++    AutoCloseable {
+     private val caller = Thread.currentThread()
+     private val storage = requireNotNull(ownedCutField(PoolCallFrames, "storage"))
+     private val field = storage.javaClass.getDeclaredField("current").apply { check(trySetAccessible()) }
++
+     @Suppress("UNCHECKED_CAST")
+     private val delegate = field.get(storage) as ThreadLocal<PoolCallFrame?>
+     private val entered = CountDownLatch(1)
+     private val released = CountDownLatch(1)
+     private val once = AtomicBoolean()
+     val timedOut = AtomicBoolean()
++
+     @Volatile var phase: PersistencePhaseContext? = null
+         private set
+ 
+@@ -1003,21 +1052,23 @@
+  * Own-project TL interception after Hikari consent/return and dispatch end, before the genuine
+  * RETURN actor end. Original values/restoration are delegated; no receipt/count is fabricated.
+  */
+-private class OrdinaryReturnTailBarrier(
+-    private val fixture: OrdinarySourceGrantCleanupFixture,
+-    private val lease: PersistenceJdbcLease,
+-) : ThreadLocal<PoolCallFrame?>(), AutoCloseable {
++private class OrdinaryReturnTailBarrier(private val fixture: OrdinarySourceGrantCleanupFixture, private val lease: PersistenceJdbcLease) :
++    ThreadLocal<PoolCallFrame?>(),
++    AutoCloseable {
+     private val caller = Thread.currentThread()
+     private val storage = requireNotNull(ownedCutField(PoolCallFrames, "storage"))
+     private val field = storage.javaClass.getDeclaredField("current").apply { check(trySetAccessible()) }
++
+     @Suppress("UNCHECKED_CAST")
+     private val delegate = field.get(storage) as ThreadLocal<PoolCallFrame?>
+     private val entered = CountDownLatch(1)
+     private val released = CountDownLatch(1)
+     private val once = AtomicBoolean()
+     val timedOut = AtomicBoolean()
++
+     @Volatile var springUnbound = false
+         private set
++
+     @Volatile var connectionFreeRefused = false
+         private set
+ 
+@@ -1029,6 +1080,8 @@
+     override fun get(): PoolCallFrame? = delegate.get()
+     override fun set(value: PoolCallFrame?) = delegate.set(value)
+ 
++    // The one-shot barrier may arm only on this caller's already-consented RETURN, before delegating its actual end.
++    @Suppress("ComplexCondition")
+     override fun remove() {
+         val frame = delegate.get()
+         val transfer = ownedCutField(lease, "transfer") as? PersistenceJdbcPoolTransfer

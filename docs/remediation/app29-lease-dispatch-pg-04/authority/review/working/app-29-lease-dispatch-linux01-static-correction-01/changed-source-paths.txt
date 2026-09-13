@@ -1,0 +1,10 @@
+src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardCall.kt
+src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt
+src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLeaseInvocation.kt
+src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceLeaseCompletion.kt
+src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt
+src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt
+src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt
+src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbe.kt
+src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OwnedPoolLeaseCreatorPendingProbe.kt
+src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt

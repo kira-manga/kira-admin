@@ -1,0 +1,56 @@
+{
+  "schema": "app29-actor-frame-storage-delta-1",
+  "date_utc": "2026-09-11",
+  "author": "/root/backend_02_actor_author",
+  "repository": "/root/projects/Kira/kira-backend",
+  "head": "49da0919d9ec3091cb7bb041009dc9bd5f3e090f",
+  "private_local_only": true,
+  "status": "AUTHORED_NOT_RUN_NOT_INDEPENDENTLY_APPROVED",
+  "scope": "One actor-owned frame-storage prerequisite only; no aggregate freeze",
+  "source_path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt",
+  "prior_packet": "../app-29-real-pool-actors-resumed-01",
+  "prior_manifest_sha256": "6776e02a52c52535ba05c92d08adac218c204866f360019bd3ec053a7ef362e1",
+  "before": {
+    "path": "before/PoolLifecycleFrames.kt",
+    "bytes": 4407,
+    "sha256": "a463529fce5a770165f6f9d0673ae640ece4734942baf68b8bca4c039dd512d8"
+  },
+  "after": {
+    "path": "after/PoolLifecycleFrames.kt",
+    "bytes": 4530,
+    "sha256": "2cbd7a055d12000953c37301a7d08839df739d391b4fafa453e8acb62944963e"
+  },
+  "patch": {
+    "path": "frame-storage.patch",
+    "bytes": 1741,
+    "sha256": "e20ae01f5b838439fdd7d340c850d6c54d58426f01b446596afd947ed84e50ea",
+    "construction": "diff -u with exact repository a/ and b/ path labels, before to after"
+  },
+  "report": {
+    "path": "AUTHOR_REPORT.md",
+    "bytes": 2773,
+    "sha256": "deafe9ee21c07edef0f8292513b3002217d4c3347a4277c8289b9d09088bfc9c"
+  },
+  "unchanged_actor_files": [
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt",
+      "sha256": "def7c6ef36145b6d1dcf71342a5e6c1956f6f40055464e231e946eff05ade9f2"
+    },
+    {
+      "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt",
+      "sha256": "0e45d75ee8a2421b6db238ced31298b7a5012db4ad3232e8675ae0f889e8c857"
+    },
+    {
+      "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt",
+      "sha256": "f5f194f46eddb89b32ba1142fcbedd5617255abae5b3ffe0bd507b26449c0665"
+    },
+    {
+      "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt",
+      "sha256": "7ddc9fac7597febfb42de44c041e4c2ccfdc01bc864e973346738a5ffd0209fa"
+    }
+  ],
+  "test_source_edits": 0,
+  "tests_executed": 0,
+  "execution": "No build/test/static/formatter/JVM/service/CI/commit/push",
+  "remaining_gate": "Independent backend04 delta review and core-owned genuine throwing RETURN entry proof"
+}

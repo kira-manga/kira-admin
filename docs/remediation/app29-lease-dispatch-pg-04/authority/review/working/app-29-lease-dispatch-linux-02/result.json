@@ -1,0 +1,619 @@
+{
+  "started_at": "2026-09-13T12:24:05.063070+00:00",
+  "source_manifest": "review/working/app-29-w03-integrated-driver-lease-dispatch-linux-02/manifest.json",
+  "source_manifest_sha256": "9888bdff82450069df09c003d48da5413c5ebe0dda6a4cfe45687f4898a1c8e7",
+  "scope": "DEVELOPMENT ONLY: integrated lifecycle corrections; full D1/W03/release acceptance remains incomplete",
+  "runtime_authority": "UNKNOWN",
+  "W03": "INCOMPLETE",
+  "platform": "Linux-6.1.72-x86_64-with-glibc2.39",
+  "java": {
+    "java_home": "/usr/lib/jvm/java-21-openjdk-amd64",
+    "java_version": "openjdk version \"21.0.12\" 2026-07-21\nOpenJDK Runtime Environment (build 21.0.12+8-1-24.04-Ubuntu)\nOpenJDK 64-Bit Server VM (build 21.0.12+8-1-24.04-Ubuntu, mixed mode, sharing)\n",
+    "java_binary_sha256": "377196a32c5e4442b604bbf36add1c49cfe8680cd27edd693b60872e58895e9e",
+    "java_modules_sha256": "9a8e9e8a7aab3a5e010e56c65f13449c17b08e5eede93cd7bb796b7df31c572b",
+    "read_only_dependency_cache": "/root/.gradle/caches"
+  },
+  "dependency_inputs": {
+    "manifest_sha256": "c67fcc5fe64a9a795373c4683c7c1edd6407146e3cd07609fa7018a8a98db79a",
+    "files_verified": 18,
+    "artifact_hashes": {
+      "me/manga/kira/source/source-contract/0.1.0/source-contract-0.1.0-kotlin-tooling-metadata.json": "c62d1b05a013e5f1b0e0b72f56b17bee28a4955b1111ab5a52e5e3e57e273817",
+      "me/manga/kira/source/source-contract/0.1.0/source-contract-0.1.0-sources.jar": "ff2332dbd8addbbc69b2c8c3e9c7e6d5e7d1f94e676d532be593a92cd9fafa5b",
+      "me/manga/kira/source/source-contract/0.1.0/source-contract-0.1.0.jar": "94d4c352233c4677b8e8ff9c691f63e89bcb272c690df7ab5af3904329154f2d",
+      "me/manga/kira/source/source-contract/0.1.0/source-contract-0.1.0.module": "7ef1411f69e4e10b5e3f824c6ca7f4fce075215d1a746c0c60c1c69df07090be",
+      "me/manga/kira/source/source-contract/0.1.0/source-contract-0.1.0.pom": "846fdfb2d251e513128a6bad62d70f21ac728d28eec699b1ec7bba6ca9604b70",
+      "me/manga/kira/source/source-contract-jvm/0.1.0/source-contract-jvm-0.1.0-sources.jar": "ff2332dbd8addbbc69b2c8c3e9c7e6d5e7d1f94e676d532be593a92cd9fafa5b",
+      "me/manga/kira/source/source-contract-jvm/0.1.0/source-contract-jvm-0.1.0.jar": "9eeb54df5d09f14ebe612b1255721fa536c2517502b05cbd815e8b98370e0b7d",
+      "me/manga/kira/source/source-contract-jvm/0.1.0/source-contract-jvm-0.1.0.module": "d9a8995bc42cd2aab74c7909baf0570ec948afa58365d96e785269a3c963c749",
+      "me/manga/kira/source/source-contract-jvm/0.1.0/source-contract-jvm-0.1.0.pom": "00ce4dabc53c33736b7527fd541fe7cdc1d80243bbf67244d28a114a84c58a1c",
+      "me/manga/kira/source/source-engine/0.1.0/source-engine-0.1.0-kotlin-tooling-metadata.json": "c62d1b05a013e5f1b0e0b72f56b17bee28a4955b1111ab5a52e5e3e57e273817",
+      "me/manga/kira/source/source-engine/0.1.0/source-engine-0.1.0-sources.jar": "84b4b25e9dd952a99c32618bd217571177feabe80801a6a5466e2afbe71e448d",
+      "me/manga/kira/source/source-engine/0.1.0/source-engine-0.1.0.jar": "3a2fd051891c305bdc01537fec623070b83426c39cfd8ffac872eb8026ca4a03",
+      "me/manga/kira/source/source-engine/0.1.0/source-engine-0.1.0.module": "4a11051300075778a2a6a95275c33a826886a50f111d0a6dbc046e5ab118e8ae",
+      "me/manga/kira/source/source-engine/0.1.0/source-engine-0.1.0.pom": "d8daeded7727ee0e349e9edf4a1f206e0a722f499610840e247d40eacda59e9d",
+      "me/manga/kira/source/source-engine-jvm/0.1.0/source-engine-jvm-0.1.0-sources.jar": "84b4b25e9dd952a99c32618bd217571177feabe80801a6a5466e2afbe71e448d",
+      "me/manga/kira/source/source-engine-jvm/0.1.0/source-engine-jvm-0.1.0.jar": "e2a20c63ab115dabfc75fc6a0ea33a36fd6c272c6ee22ed17ef2aa9cab840a2d",
+      "me/manga/kira/source/source-engine-jvm/0.1.0/source-engine-jvm-0.1.0.module": "322aebab1cd9bcd6dbae3d83dd3e6635f9e65cf6a23b428cad44e62b4e4036c7",
+      "me/manga/kira/source/source-engine-jvm/0.1.0/source-engine-jvm-0.1.0.pom": "97c9eba44ff26ae6a72441c6748a590bd9f3c85fc6ac1d6b4fbe44f3fc7c4dd9"
+    }
+  },
+  "dependency_mode": "offline",
+  "dependency_verification_limitation": "No project verification-metadata.xml: strict flag is NOT transitive artifact-byte proof; retained local inputs, dependency locks and wrapper checksum are narrower pins",
+  "gradle_user_home": "/root/projects/Kira/.kira-validation/backend-linux/gradle-home",
+  "commands": [
+    {
+      "name": "validation",
+      "command": [
+        "./gradlew",
+        "--no-daemon",
+        "--no-parallel",
+        "--max-workers=1",
+        "--no-build-cache",
+        "--no-configuration-cache",
+        "--dependency-verification=strict",
+        "--project-cache-dir",
+        "/root/projects/Kira/.kira-validation/backend-linux/backend-project-cache",
+        "--console=plain",
+        "-Dorg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=512m",
+        "-Dorg.gradle.vfs.watch=false",
+        "-PkiraUseMavenLocal=false",
+        "-Pkotlin.compiler.execution.strategy=in-process",
+        "-Pkotlin.project.persistent.dir=/root/projects/Kira/.kira-validation/backend-linux/backend-kotlin-cache",
+        "--init-script",
+        "/root/projects/Kira/review/working/app-29-w01-local-dependencies.init.gradle",
+        "--offline",
+        "testClasses",
+        "ktlintCheck",
+        "detekt",
+        "--continue"
+      ],
+      "started_at": "2026-09-13T12:24:06.285425+00:00",
+      "joined": true,
+      "pid": 11693,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 11693,
+          "ppid": 11589,
+          "pgid": 11693,
+          "session": 11693,
+          "start_ticks": 17180313,
+          "state": "R",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        }
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-09-13T12:26:10.263178+00:00"
+    },
+    {
+      "name": "stop-after-validation",
+      "command": [
+        "./gradlew",
+        "--stop"
+      ],
+      "started_at": "2026-09-13T12:26:10.265284+00:00",
+      "joined": true,
+      "pid": 12984,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 12984,
+          "ppid": 11589,
+          "pgid": 12984,
+          "session": 12984,
+          "start_ticks": 17192711,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        }
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-09-13T12:26:10.945187+00:00"
+    },
+    {
+      "name": "inspect-retained-bytecode",
+      "command": [
+        "/usr/lib/jvm/java-21-openjdk-amd64/bin/javap",
+        "-c",
+        "-p",
+        "-s",
+        "/root/projects/Kira/review/working/app-29-lease-dispatch-linux-02/bytecode/PersistenceJdbcLifecycleOwner.class",
+        "/root/projects/Kira/review/working/app-29-lease-dispatch-linux-02/bytecode/PersistenceJdbcDriverRoot.class",
+        "/root/projects/Kira/review/working/app-29-lease-dispatch-linux-02/bytecode/PersistenceJdbcParticipant.class",
+        "/root/projects/Kira/review/working/app-29-lease-dispatch-linux-02/bytecode/PersistenceTerminalWork.class",
+        "/root/projects/Kira/review/working/app-29-lease-dispatch-linux-02/bytecode/PersistenceTerminalRunner.class",
+        "/root/projects/Kira/review/working/app-29-lease-dispatch-linux-02/bytecode/PersistencePhysicalCompletion.class",
+        "/root/projects/Kira/review/working/app-29-lease-dispatch-linux-02/bytecode/PersistenceDriverTimer.class",
+        "/root/projects/Kira/review/working/app-29-lease-dispatch-linux-02/bytecode/PersistencePgTimerAccess$Boundary.class",
+        "/root/projects/Kira/review/working/app-29-lease-dispatch-linux-02/bytecode/PersistencePgTimerAccess$BoundaryCell.class",
+        "/root/projects/Kira/review/working/app-29-lease-dispatch-linux-02/bytecode/PersistencePgTimerAccess$BoundaryTask.class",
+        "/root/projects/Kira/review/working/app-29-lease-dispatch-linux-02/test-bytecode/PgRequireErrorHandlerTest.class"
+      ],
+      "started_at": "2026-09-13T12:26:11.081983+00:00",
+      "joined": true,
+      "pid": 13025,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 13025,
+          "ppid": 11589,
+          "pgid": 13025,
+          "session": 13025,
+          "start_ticks": 17192792,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        }
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-09-13T12:26:11.410925+00:00"
+    },
+    {
+      "name": "stop-after-clean",
+      "command": [
+        "./gradlew",
+        "--stop"
+      ],
+      "started_at": "2026-09-13T12:26:11.562180+00:00",
+      "joined": true,
+      "pid": 13058,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 13058,
+          "ppid": 11589,
+          "pgid": 13058,
+          "session": 13058,
+          "start_ticks": 17192840,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        }
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-09-13T12:26:12.192250+00:00"
+    },
+    {
+      "name": "git-diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "started_at": "2026-09-13T12:26:13.446493+00:00",
+      "joined": true,
+      "pid": 13158,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 13158,
+          "ppid": 11589,
+          "pgid": 13158,
+          "session": 13158,
+          "start_ticks": 17193029,
+          "state": "Z",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        }
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-09-13T12:26:13.462653+00:00"
+    },
+    {
+      "name": "jps-after",
+      "command": [
+        "/usr/lib/jvm/java-21-openjdk-amd64/bin/jps",
+        "-l"
+      ],
+      "started_at": "2026-09-13T12:26:13.463608+00:00",
+      "joined": true,
+      "pid": 13159,
+      "owned_descendants_at_acquisition": [
+        {
+          "pid": 13159,
+          "ppid": 11589,
+          "pgid": 13159,
+          "session": 13159,
+          "start_ticks": 17193030,
+          "state": "S",
+          "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+        }
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-09-13T12:26:13.642151+00:00"
+    }
+  ],
+  "failures": [],
+  "retained_reports": [
+    {
+      "path": "reports/reports/detekt/detekt.sarif",
+      "sha256": "b543155b2df5bf1c57b9a4529c964afdff2f5a0f5dfe597ade6570bfb42f403e"
+    },
+    {
+      "path": "reports/reports/detekt/detekt.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reports/reports/detekt/detekt.xml",
+      "sha256": "f491e274f0d208f81c3edbc7c1097c30db590a3822fcf579468ac814d9ccc62b"
+    },
+    {
+      "path": "reports/reports/ktlint/ktlintKotlinScriptCheck/ktlintKotlinScriptCheck.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reports/reports/ktlint/ktlintMainSourceSetCheck/ktlintMainSourceSetCheck.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "reports/reports/ktlint/ktlintTestSourceSetCheck/ktlintTestSourceSetCheck.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "retained_bytecode": [
+    {
+      "path": "bytecode/PersistenceJdbcLifecycleOwner.class",
+      "sha256": "fa594075e1523724a05bc66d9ed6b9f9e7f4a9cb2362f5b341a2f44fb7017175"
+    },
+    {
+      "path": "bytecode/PersistenceJdbcDriverRoot.class",
+      "sha256": "01c14417a8f1ddcaca7b5caefaef8f287110d4db38b394a0f33788fcfea9869b"
+    },
+    {
+      "path": "bytecode/PersistenceJdbcParticipant.class",
+      "sha256": "fde6f9b4194dac5ea324ce18243bb09a0937efbd170048e035970a6416e8b893"
+    },
+    {
+      "path": "bytecode/PersistenceTerminalWork.class",
+      "sha256": "62e823c309c5cb4a8491b4bfe54c6f4a10ecc021bbb7a953872234d22480c8a4"
+    },
+    {
+      "path": "bytecode/PersistenceTerminalRunner.class",
+      "sha256": "ae2d1bb3c0310d4623951b554ae030ff55e3c494d6a2ff6fe051e46bc3f48ba2"
+    },
+    {
+      "path": "bytecode/PersistencePhysicalCompletion.class",
+      "sha256": "452497d6d4fd62433de6c2f3f97018f3f21b28c4f374d83dbf7e21e559acaaea"
+    },
+    {
+      "path": "bytecode/PersistenceDriverTimer.class",
+      "sha256": "e1e97121fbbdfcbf1bbabbefc7ee2f37542d2d92e57fa036e9a78e207ed67af5"
+    },
+    {
+      "path": "bytecode/PersistencePgTimerAccess$Boundary.class",
+      "sha256": "614c598cca5d3a5dfae710d7d35aa38bf34f2b64204809381cba87c1969b26bc"
+    },
+    {
+      "path": "bytecode/PersistencePgTimerAccess$BoundaryCell.class",
+      "sha256": "375cc16bdcc40785ca24e8d0bf0d80a82b68bc1056eb7d6a17bb098169ad5787"
+    },
+    {
+      "path": "bytecode/PersistencePgTimerAccess$BoundaryTask.class",
+      "sha256": "fd2c3a2a6432d051a1df09ff61309cb3473a27922280d9dc316ec5e4d7e2f1b9"
+    }
+  ],
+  "retained_test_bytecode": [
+    {
+      "path": "test-bytecode/PgRequireErrorHandlerTest.class",
+      "sha256": "9de6bbba1172219a1b84a2acfaae78a3edb38bb72bdd69cb284549a5def5bb7b"
+    }
+  ],
+  "minimum_free_bytes": 8589934592,
+  "free_bytes_before": 12291334144,
+  "scoped_cleanup": [
+    ".kira-validation/backend-linux/backend-build"
+  ],
+  "owned_descendant_barriers": [
+    {
+      "stage": "before-capture",
+      "returned_normally": true,
+      "receipt": {
+        "absent": true,
+        "forced": false,
+        "barrier_generation": 1,
+        "signals": [],
+        "observed": [
+          {
+            "pid": 11693,
+            "ppid": 11589,
+            "pgid": 11693,
+            "session": 11693,
+            "start_ticks": 17180313,
+            "state": "R",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 12984,
+            "ppid": 11589,
+            "pgid": 12984,
+            "session": 12984,
+            "start_ticks": 17192711,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          }
+        ],
+        "reaped": [],
+        "errors": []
+      }
+    },
+    {
+      "stage": "before-output-deletion",
+      "returned_normally": true,
+      "receipt": {
+        "absent": true,
+        "forced": false,
+        "barrier_generation": 2,
+        "signals": [],
+        "observed": [
+          {
+            "pid": 11693,
+            "ppid": 11589,
+            "pgid": 11693,
+            "session": 11693,
+            "start_ticks": 17180313,
+            "state": "R",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 12984,
+            "ppid": 11589,
+            "pgid": 12984,
+            "session": 12984,
+            "start_ticks": 17192711,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 13025,
+            "ppid": 11589,
+            "pgid": 13025,
+            "session": 13025,
+            "start_ticks": 17192792,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          }
+        ],
+        "reaped": [],
+        "errors": []
+      }
+    },
+    {
+      "stage": "after-final-stop",
+      "returned_normally": true,
+      "receipt": {
+        "absent": true,
+        "forced": false,
+        "barrier_generation": 3,
+        "signals": [],
+        "observed": [
+          {
+            "pid": 11693,
+            "ppid": 11589,
+            "pgid": 11693,
+            "session": 11693,
+            "start_ticks": 17180313,
+            "state": "R",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 12984,
+            "ppid": 11589,
+            "pgid": 12984,
+            "session": 12984,
+            "start_ticks": 17192711,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 13025,
+            "ppid": 11589,
+            "pgid": 13025,
+            "session": 13025,
+            "start_ticks": 17192792,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 13058,
+            "ppid": 11589,
+            "pgid": 13058,
+            "session": 13058,
+            "start_ticks": 17192840,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          }
+        ],
+        "reaped": [],
+        "errors": []
+      }
+    },
+    {
+      "stage": "after-postflight-commands",
+      "returned_normally": true,
+      "receipt": {
+        "absent": true,
+        "forced": false,
+        "barrier_generation": 4,
+        "signals": [],
+        "observed": [
+          {
+            "pid": 11693,
+            "ppid": 11589,
+            "pgid": 11693,
+            "session": 11693,
+            "start_ticks": 17180313,
+            "state": "R",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 12984,
+            "ppid": 11589,
+            "pgid": 12984,
+            "session": 12984,
+            "start_ticks": 17192711,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 13025,
+            "ppid": 11589,
+            "pgid": 13025,
+            "session": 13025,
+            "start_ticks": 17192792,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 13058,
+            "ppid": 11589,
+            "pgid": 13058,
+            "session": 13058,
+            "start_ticks": 17192840,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 13158,
+            "ppid": 11589,
+            "pgid": 13158,
+            "session": 13158,
+            "start_ticks": 17193029,
+            "state": "Z",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 13159,
+            "ppid": 11589,
+            "pgid": 13159,
+            "session": 13159,
+            "start_ticks": 17193030,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          }
+        ],
+        "reaped": [],
+        "errors": []
+      }
+    },
+    {
+      "stage": "unconditional-final-barrier",
+      "returned_normally": true,
+      "receipt": {
+        "absent": true,
+        "forced": false,
+        "barrier_generation": 5,
+        "signals": [],
+        "observed": [
+          {
+            "pid": 11693,
+            "ppid": 11589,
+            "pgid": 11693,
+            "session": 11693,
+            "start_ticks": 17180313,
+            "state": "R",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 12984,
+            "ppid": 11589,
+            "pgid": 12984,
+            "session": 12984,
+            "start_ticks": 17192711,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 13025,
+            "ppid": 11589,
+            "pgid": 13025,
+            "session": 13025,
+            "start_ticks": 17192792,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 13058,
+            "ppid": 11589,
+            "pgid": 13058,
+            "session": 13058,
+            "start_ticks": 17192840,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 13158,
+            "ppid": 11589,
+            "pgid": 13158,
+            "session": 13158,
+            "start_ticks": 17193029,
+            "state": "Z",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          },
+          {
+            "pid": 13159,
+            "ppid": 11589,
+            "pgid": 13159,
+            "session": 13159,
+            "start_ticks": 17193030,
+            "state": "S",
+            "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+          }
+        ],
+        "reaped": [],
+        "errors": []
+      }
+    }
+  ],
+  "child_scope_restored": true,
+  "capture_complete": true,
+  "outputs_absent": true,
+  "frozen_inputs_preserved": true,
+  "dependency_inputs_preserved": true,
+  "private_daemon_pids_after_stop": [],
+  "private_daemon_pids_after_clean": [],
+  "owned_command_pids_absent": true,
+  "owned_groups_final": {
+    "11693": [],
+    "12984": [],
+    "13025": [],
+    "13058": [],
+    "13158": [],
+    "13159": []
+  },
+  "test_evidence": {
+    "status": "NOT_REQUESTED",
+    "total": 0,
+    "identities": [],
+    "limitation": "No test execution requested"
+  },
+  "child_scope_acquisition": {
+    "parent": {
+      "pid": 11589,
+      "ppid": 32337,
+      "pgid": 11589,
+      "session": 11589,
+      "start_ticks": 17180039,
+      "state": "R",
+      "boot_id": "e1611048-73e0-4b6c-85cf-72a511344ee6"
+    },
+    "previous_setting": 0
+  },
+  "diff_sha256": "dd6d3f1c0c95c54b157a8e339115f908917dd9d598eff47d21924ad777436587",
+  "owned_groups_after_gradle_stop": {
+    "11693": [],
+    "12984": []
+  },
+  "owned_groups_after_clean": {
+    "11693": [],
+    "12984": [],
+    "13025": [],
+    "13058": []
+  },
+  "free_bytes_after": 12278816768,
+  "child_scope_restore": {
+    "active": false,
+    "restored_previous_setting": 0
+  },
+  "output_paths": [
+    ".kira-validation/backend-linux/backend-build",
+    "kira-backend/build",
+    "kira-backend/buildSrc/build"
+  ],
+  "finished_at": "2026-09-13T12:26:13.864637+00:00",
+  "static_report_coverage": {
+    "ktlint": true,
+    "detekt": true
+  },
+  "runner_status": "PASS"
+}

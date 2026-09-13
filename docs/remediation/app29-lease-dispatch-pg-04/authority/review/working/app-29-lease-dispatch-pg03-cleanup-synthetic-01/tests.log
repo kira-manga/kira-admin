@@ -1,0 +1,9 @@
+test_01_known_empty_disposal_still_fails (__main__.CleanupSyntheticGroups.test_01_known_empty_disposal_still_fails) ... ok
+test_02_available_capture_vs_required_success (__main__.CleanupSyntheticGroups.test_02_available_capture_vs_required_success) ... ok
+test_03_fail_closed_negative_boundaries (__main__.CleanupSyntheticGroups.test_03_fail_closed_negative_boundaries) ... ok
+test_04_complete_inventory_and_new_pass_flags (__main__.CleanupSyntheticGroups.test_04_complete_inventory_and_new_pass_flags) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.114s
+
+OK

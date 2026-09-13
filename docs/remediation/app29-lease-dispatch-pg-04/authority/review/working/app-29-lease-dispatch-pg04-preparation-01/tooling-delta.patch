@@ -1,0 +1,863 @@
+--- a/ci/app29-gate-b.py
++++ b/ci/app29-gate-b.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Inert private PG03 compile/cleanup successor; PG02 and PG18 failures remain history, not qualification."""
++"""Inert private PG04 MODEL-only successor; PG03 mixed PASS/stack-witness FAIL remain history, not qualification."""
+ import argparse
+ import hashlib
+ import json
+@@ -16,15 +16,15 @@
+ 
+ ADMIN = Path(__file__).resolve().parent.parent
+ BACKEND = ADMIN.parent / 'backend'
+-PAYLOAD = ADMIN / 'docs/remediation/app29-lease-dispatch-pg-03'
+-GATE = 'app-29-lease-dispatch-pg-03'
++PAYLOAD = ADMIN / 'docs/remediation/app29-lease-dispatch-pg-04'
++GATE = 'app-29-lease-dispatch-pg-04'
+ CHECKPOINT_SCHEMA = 'app29-lease-dispatch-clean-checkpoint-v1'
+-PROFILE_ID = 'app-29-lease-dispatch-pg-profile-03'
+-PROFILE_FILE = 'review/working/app-29-lease-dispatch-pg03-bound-01/profile/profile.json'
+-PROFILE_SHA = '5f73278a73b86786690d68d2c8f1e62023092e9c89ebc56bb8b4c4babd236e45'  # UNBOUND: primary supplies final reviewed profile bytes.
+-PROFILE_INIT = 'review/working/app-29-lease-dispatch-pg03-bound-01/profile/profile.init.gradle'
+-PROFILE_INIT_SHA = '7fb5a7a950aac011017eb99c69e96be595b4e737f8f765b8e6f5c198353584f6'  # UNBOUND: primary supplies final reviewed init bytes.
+-MANIFEST_FILE = 'review/working/app-29-w03-integrated-driver-lease-dispatch-pg-03/manifest.json'
++PROFILE_ID = 'app-29-lease-dispatch-pg-profile-04'
++PROFILE_FILE = 'review/working/app-29-lease-dispatch-pg04-preparation-01/profile/profile.json'
++PROFILE_SHA = '0000000000000000000000000000000000000000000000000000000000000000'  # UNBOUND: primary supplies final reviewed profile bytes.
++PROFILE_INIT = 'review/working/app-29-lease-dispatch-pg04-preparation-01/profile/profile.init.gradle'
++PROFILE_INIT_SHA = '0000000000000000000000000000000000000000000000000000000000000000'  # UNBOUND: primary supplies final reviewed init bytes.
++MANIFEST_FILE = 'review/working/app-29-w03-integrated-driver-lease-dispatch-pg-04/manifest.json'
+ CREATOR_CLASS = 'me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest'
+ OWNERSHIP_CLASS = 'me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT'
+ CREATOR_METHOD = 'actual creator publication restoration and outer adapter faults retain exact obligations through process only exit'
+@@ -66,14 +66,25 @@
+ ]
+ PG18_TEST_SELECTORS = [name + '.' + method for name, methods in PG18_METHODS.items() for method in methods]
+ PG18_TASKS = ['test'] + [arg for selector in PG18_TEST_SELECTORS for arg in ('--tests', selector)]
+-# Only the two historically failed no-argument methods are admitted to current TASKS/XML.
+-METHODS = {
++# Immutable PG02/PG03 two-case history; never use it as PG04 execution TASKS.
++PG03_METHODS = {
+     CREATOR_CLASS: (
+         'mixed pool creator nesting refuses wrong top fallback and unrelated lease use',
+         'MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement',
+     ),
+ }
+-TEST_COUNTS = {CREATOR_CLASS: 2}
++PG03_TEST_COUNTS = {CREATOR_CLASS: 2}
++PG03_EXPECTED_TESTS = [{'class': name, 'method': method, 'display_name': method + '()'}
++                      for name, methods in PG03_METHODS.items() for method in methods]
++PG03_TEST_SELECTORS = [name + '.' + method for name, methods in PG03_METHODS.items() for method in methods]
++PG03_TASKS = ['test'] + [arg for selector in PG03_TEST_SELECTORS for arg in ('--tests', selector)]
++# Only the formerly failing literal MODEL case is admitted; reuse the unchanged PG03 mixed-pool PASS.
++METHODS = {
++    CREATOR_CLASS: (
++        'MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement',
++    ),
++}
++TEST_COUNTS = {CREATOR_CLASS: 1}
+ EXPECTED_TESTS = [{'class': name, 'method': method, 'display_name': method + '()'}
+                   for name, methods in METHODS.items() for method in methods]
+ TEST_SELECTORS = [name + '.' + method for name, methods in METHODS.items() for method in methods]
+@@ -107,6 +118,9 @@
+ PG03_HEAD = 'f2e58eac0b139dca3a042c724d69c66a3d65278e'  # Exact private child; not runtime acceptance.
+ PG03_TREE = 'e192c9430c89e4549f1840bf7e333fed75bc290a'
+ PG03_SOURCE_PATHS = ('src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt',)
++PG04_HEAD = '0582abc737a89a663e770e78a5456961743330f6'  # Exact source-only child; not runtime acceptance.
++PG04_TREE = 'd20c606f9d0b34b37696806988c28c05b69453ed'
++PG04_SOURCE_PATHS = PG03_SOURCE_PATHS
+ LEASE_SOURCE_PATHS = tuple('src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/' + name for name in (
+     'GuardedDataSource.kt', 'LeaseJdbcFacade.kt', 'PersistenceJdbcGuardCall.kt', 'PersistenceJdbcGuardProtocol.kt',
+     'PersistenceJdbcLease.kt', 'PersistenceJdbcLeaseInvocation.kt', 'PersistenceJdbcPoolTransfer.kt',
+@@ -116,13 +130,13 @@
+     'PgLifecycleDatabaseProbe.kt', 'PgLifecycleDatabaseProbeProcess.kt', 'PgLifecycleDatabaseRecipe.kt',
+     'OwnedPoolLeaseCreatorPendingProbe.kt', 'PoolLeaseDispatchCreatorIntegrationTest.kt',
+ ))
+-SOURCE_BUNDLE = {'public_prerequisite_sha': PUBLIC_PREREQUISITE, 'private_parent_sha': PG02_HEAD,
++SOURCE_BUNDLE = {'public_prerequisite_sha': PUBLIC_PREREQUISITE, 'private_parent_sha': PG03_HEAD,
+                  'ref': 'refs/heads/' + BACKEND_BRANCH,
+-                 'source_path': 'review/working/app-29-lease-dispatch-pg03-transport-source-01/backend.bundle',
+-                 'path': 'docs/remediation/app29-lease-dispatch-pg-03/inputs/backend.bundle',
+-                 'sha256': 'b606cb5ed40814dc23c5c8c61a564de07d917d4a05b6fbca4c4b73841bea63fe', 'bytes': 287442}
++                 'source_path': 'review/working/app-29-lease-dispatch-pg04-transport-source-01/backend.bundle',
++                 'path': 'docs/remediation/app29-lease-dispatch-pg-04/inputs/backend.bundle',
++                 'sha256': '0000000000000000000000000000000000000000000000000000000000000000', 'bytes': 0}
+ BUNDLE_MAX_BYTES = 8 * 1024**2
+-DEPLOYMENTS = {f'review/working/app-29-lease-dispatch-pg03-bound-01/{p}': p for p in (
++DEPLOYMENTS = {f'review/working/app-29-lease-dispatch-pg04-preparation-01/{p}': p for p in (
+     'ci/app29-gate-b.py', '.github/workflows/app29-gate-b.yml')}
+ DEPLOYMENTS[PROFILE_FILE] = PROFILE_FILE
+ DEPLOYMENTS[PROFILE_INIT] = PROFILE_INIT
+@@ -140,7 +154,7 @@
+     'Evidence copy drift': 'CAPTURE_COPY_DRIFT',
+     'Required raw evidence inventory missing': 'CAPTURE_REQUIRED_INVENTORY',
+     'Wrong diagnostic XML inventory': 'XML_INVENTORY',
+-    'Require exactly the2 fixed PG03 failed-method identities': 'XML_EXPECTED_IDENTITIES',
++    'Require exactly the1 fixed PG04 MODEL-only identity': 'XML_EXPECTED_IDENTITIES',
+     'Unsafe XML': 'XML_SAFE',
+     'Missing, extra or duplicate diagnostic testcase': 'XML_ACTUAL_IDENTITIES',
+     'Contradictory diagnostic testcase outcome': 'XML_OUTCOME',
+@@ -165,7 +179,7 @@
+                 for sha in (PROFILE_SHA, PROFILE_INIT_SHA)),
+             'Inert lease-dispatch derivative: final profile/init hashes are UNBOUND')
+     require(all(isinstance(sha, str) and re.fullmatch('[0-9a-f]{40}', sha) and sha != '0' * 40
+-                for sha in (PG02_HEAD, PG02_TREE, PG03_HEAD, PG03_TREE)), 'New private source checkpoint/tree are UNBOUND')
++                for sha in (PG02_HEAD, PG02_TREE, PG03_HEAD, PG03_TREE, PG04_HEAD, PG04_TREE)), 'New private source checkpoint/tree are UNBOUND')
+ 
+ 
+ def safe(root, relative):
+@@ -217,9 +231,9 @@
+     require(type(value['bytes']) is int and 0 < value['bytes'] <= BUNDLE_MAX_BYTES
+             and isinstance(value['sha256'], str) and re.fullmatch('[0-9a-f]{64}', value['sha256'])
+             and value['sha256'] != '0' * 64 and isinstance(value['source_path'], str) and bool(value['source_path'])
+-            and binding['backend_sha'] == PG03_HEAD
++            and binding['backend_sha'] == PG04_HEAD
+             and binding['backend_sha'] not in (PUBLIC_PREREQUISITE, CORE_BASELINE, PRIVATE_PARENT, PREVIOUS_PRIVATE_PARENT,
+-                                               DIAGNOSTIC_PARENT, PRODUCT_LIFECYCLE_PARENT, ORDINARY_PARENT, ORDINARY_HEAD, LEASE_HEAD, PG02_HEAD),
++                                               DIAGNOSTIC_PARENT, PRODUCT_LIFECYCLE_PARENT, ORDINARY_PARENT, ORDINARY_HEAD, LEASE_HEAD, PG02_HEAD, PG03_HEAD),
+             'Unbound/oversized private checkpoint bundle')
+     return value
+ 
+@@ -301,7 +315,16 @@
+                     for key in ('before_sha256', 'after_sha256'))
+             and all(type(profile['pg03_source_target'][key]) is int and profile['pg03_source_target'][key] > 0
+                     for key in ('source_count', 'snapshot_count')),
+-            'New PG03 source stage is UNBOUND; no emit-target, helper or resource acquisition')
++            'Historical PG03 source stage changed; no emit-target, helper or resource acquisition')
++    require(profile['pg04_source_stage_status'] == 'BOUND_BY_PRIMARY'
++            and all(isinstance(profile[key]['path'], str) and bool(profile[key]['path'])
++                    and isinstance(profile[key]['sha256'], str) and re.fullmatch('[0-9a-f]{64}', profile[key]['sha256'])
++                    and profile[key]['sha256'] != '0' * 64
++                    for key in ('pg04_source_checkpoint', 'source_inventory'))
++            and set(profile['pg04_source_delta']) == set(PG04_SOURCE_PATHS)
++            and all(isinstance(row[key], str) and re.fullmatch('[0-9a-f]{64}', row[key]) and row[key] != '0' * 64
++                    for row in profile['pg04_source_delta'].values() for key in ('before_sha256', 'after_sha256')),
++            'New PG04 source stage is UNBOUND; no emit-target, helper or resource acquisition')
+     require(digest(ADMIN / 'ci/app29_owned_children.py') == OWNER_SHA, 'Shared ownership utility changed')
+     require(digest(PAYLOAD / 'checkpoint.json') == value['checkpoint_sha256'], 'Unbound checkpoint receipt')
+     checkpoint = read_json(PAYLOAD / 'checkpoint.json')
+@@ -600,7 +623,7 @@
+             and selected['shutdown_diagnostics'] == pg18_profile['shutdown_diagnostics']
+             and expected_sources['src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupOwnershipIT.kt']
+                 == selected['unchanged_previously_failed_method']['source_sha256'],
+-            'Historical PG18 remains11 declarations/18 invocations; never reinterpret it as current failed2')
++            'Historical PG18 remains11 declarations/18 invocations; never reinterpret it as the narrowed current selection')
+     pg18 = read_json(safe(authority, pg18_binding['path']))
+     pg18_snapshots = {str(PurePosixPath(pg18_binding['path']).parent / 'sources' / p): expected_sources[p]
+                       for p in lease_target['review_subject_paths']}
+@@ -623,8 +646,8 @@
+             and pg18_diagnostics['tests'] == 18 and pg18_diagnostics['classes'] == PG18_TEST_COUNTS
+             and pg18_diagnostics['counts'] == {'PASS': 16, 'FAIL': 2, 'ERROR': 0, 'SKIP': 0}
+             and sorted((row['class'], row['display_name']) for row in pg18_diagnostics['outcomes'] if row['status'] == 'FAIL')
+-                == sorted((row['class'], row['display_name']) for row in EXPECTED_TESTS),
+-            'Current failed2 must be the exact historical failures; no previous16 replay or relabelling')
++                == sorted((row['class'], row['display_name']) for row in PG03_EXPECTED_TESTS),
++            'Historical PG02/PG03 failed2 must remain the exact PG18 failures; no relabelling')
+ 
+     # Append exactly two test-file replacements AFTER the unchanged historical lease17/PG18 stage.
+     pg02_binding = profile['pg02_source_target']
+@@ -674,24 +697,24 @@
+             and pg02_selection['historical_pg18_result'] == {k: profile['historical_pg18_result'][k] for k in ('path', 'sha256')}
+             and pg02_selection['source_delta'] == pg02_delta
+             and pg02_selection['source_hashes'] == {p: row['after_sha256'] for p, row in pg02_delta.items()}
+-            and pg02_selection['test_classes'] == profile['test_classes'] == list(TEST_COUNTS)
+-            and pg02_selection['expected_test_counts'] == TEST_COUNTS
+-            and pg02_selection['expected_test_count'] == profile['expected_test_count'] == profile['historical_pg02_source_inventory']['expected_test_count'] == 2
+-            and pg02_selection['method_filter_count'] == len(TEST_SELECTORS) == 2
+-            and pg02_selection['test_selectors'] == profile['test_selectors'] == TEST_SELECTORS
+-            and pg02_selection['task_args'] == profile['task_args'] == TASKS
+-            and pg02_selection['task_argv_count'] == len(TASKS) == 5
+-            and pg02_selection['expected_tests'] == profile['expected_tests'] == EXPECTED_TESTS
++            and pg02_selection['test_classes'] == profile['test_classes'] == list(PG03_TEST_COUNTS)
++            and pg02_selection['expected_test_counts'] == PG03_TEST_COUNTS
++            and pg02_selection['expected_test_count'] == profile['historical_pg02_source_inventory']['expected_test_count'] == 2
++            and pg02_selection['method_filter_count'] == len(PG03_TEST_SELECTORS) == 2
++            and pg02_selection['test_selectors'] == PG03_TEST_SELECTORS
++            and pg02_selection['task_args'] == PG03_TASKS
++            and pg02_selection['task_argv_count'] == len(PG03_TASKS) == 5
++            and pg02_selection['expected_tests'] == PG03_EXPECTED_TESTS
+             and pg02_selection['expected_xml_files'] == profile['expected_xml_files'] == ['TEST-' + CREATOR_CLASS + '.xml']
+             and pg02_selection['shutdown_diagnostics'] == profile['shutdown_diagnostics']
+                 == {'status': 'NOT_APPLICABLE', 'expected_record_count': 0},
+-            'Require exactly two failed noarg methods/five argv/two XML identities, no enum or prior16 replay')
++            'Preserve exact historical two-method/five-argv/two-identity selection; never reuse it for PG04 execution')
+ 
+     pg02_run_binding = profile['historical_pg02_source']
+     pg02_run = read_json(safe(authority, pg02_run_binding['path']))
+     pg02_run_snapshots = {str(PurePosixPath(pg02_run_binding['path']).parent / 'sources' / p): expected_sources[p]
+                          for p in pg02_target['review_subject_paths']}
+-    require(pg02_run['schema_version'] == 3 and pg02_run['validation_task_args'] == TASKS
++    require(pg02_run['schema_version'] == 3 and pg02_run['validation_task_args'] == PG03_TASKS
+             and pg02_run['repositories']['kira-backend'] == {'head': PG02_HEAD, 'branch': BACKEND_BRANCH, 'status': ''}
+             and pg02_run_binding['backend_sha'] == PG02_HEAD and pg02_run['untracked_paths'] == []
+             and pg02_run['source_hashes'] == expected_sources and len(expected_sources) == pg02_run_binding['source_count'] == 481
+@@ -714,9 +737,9 @@
+     pg03_binding = profile['pg03_source_target']
+     pg03_checkpoint_binding = profile['pg03_source_checkpoint']
+     for item in (pg03_binding, pg03_checkpoint_binding, profile['pg03_transport_checkpoint'],
+-                 profile['pg03_checkpoint_paths'], profile['pg03_source_checkpoint_bundle'], profile['source_inventory']):
++                 profile['pg03_checkpoint_paths'], profile['pg03_source_checkpoint_bundle'], profile['historical_pg03_source_inventory']):
+         require(manifest['approved_inputs'].get(item['path']) == item['sha256']
+-                and digest(safe(authority, item['path'])) == item['sha256'], 'New PG03 source/transport/selection authority missing')
++                and digest(safe(authority, item['path'])) == item['sha256'], 'Historical PG03 source/transport/selection authority missing')
+     pg03_target = read_json(safe(authority, pg03_binding['path']))
+     pg03_checkpoint = read_json(safe(authority, pg03_checkpoint_binding['path']))
+     pg03_transport = read_json(safe(authority, profile['pg03_transport_checkpoint']['path']))
+@@ -734,7 +757,7 @@
+     require(pg03_paths == [{'path': p, **pg03_delta[p]} for p in sorted(pg03_delta)]
+             and pg03_target['schema_version'] == 3 and pg03_target['source_hashes'] == expected_sources
+             and pg03_target['repositories']['kira-backend'] == {'head': PG03_HEAD, 'branch': BACKEND_BRANCH, 'status': ''}
+-            and pg03_target['validation_task_args'] == TASKS and pg03_target['untracked_paths'] == []
++            and pg03_target['validation_task_args'] == PG03_TASKS and pg03_target['untracked_paths'] == []
+             and len(expected_sources) == pg03_binding['source_count'] == len(pg02_run['source_hashes'])
+             and pg03_target['removed_paths'] == pg02_run['removed_paths']
+             and pg03_target['review_subject_paths'] == pg02_run['review_subject_paths']
+@@ -746,7 +769,7 @@
+             and manifest['approved_inputs'].get(pg03_target['complete_diff_path']) == pg03_target['complete_diff_sha256'],
+             'Require the complete PG03 source map and unchanged481/214 inventory; not only selected sources')
+     require(pg03_checkpoint['status'] == 'PRIVATE_TRANSPORT_CHECKPOINT_NOT_FIX_ACCEPTANCE'
+-            and pg03_checkpoint['head'] == binding['backend_sha'] == PG03_HEAD
++            and pg03_checkpoint['head'] == PG03_HEAD
+             and pg03_checkpoint['parent'] == PG02_HEAD and pg03_checkpoint['tree'] == PG03_TREE
+             and pg03_checkpoint['branch'] == BACKEND_BRANCH and pg03_checkpoint['public_prerequisite'] == PUBLIC_PREREQUISITE
+             and pg03_checkpoint['source_manifest'] == pg03_binding['path']
+@@ -758,17 +781,25 @@
+             and pg03_checkpoint['tests_run'] is False
+             and pg03_checkpoint['bundle'] == profile['pg03_source_checkpoint_bundle'],
+             'Require genuine PG03 private child source checkpoint; preserve its original HEAD-bundle history')
++    pg03_source_bundle = profile['historical_pg03_source_bundle']
++    require(pg03_source_bundle['public_prerequisite_sha'] == PUBLIC_PREREQUISITE
++            and pg03_source_bundle['private_parent_sha'] == PG02_HEAD
++            and pg03_source_bundle['ref'] == 'refs/heads/' + BACKEND_BRANCH
++            and manifest['approved_inputs'].get(pg03_source_bundle['source_path']) == pg03_source_bundle['sha256']
++            and digest(safe(authority, pg03_source_bundle['source_path'])) == pg03_source_bundle['sha256']
++            and safe(authority, pg03_source_bundle['source_path']).stat().st_size == pg03_source_bundle['bytes'],
++            'Historical PG03 named-ref bundle changed')
+     require(pg03_transport['source_head'] == PG03_HEAD and pg03_transport['source_tree'] == PG03_TREE
+-            and pg03_transport['source_ref'] == source_bundle['ref']
++            and pg03_transport['source_ref'] == pg03_source_bundle['ref']
+             and pg03_transport['public_prerequisite'] == PUBLIC_PREREQUISITE
+-            and pg03_transport['bundle'] == source_bundle['source_path']
+-            and pg03_transport['bundle_sha256'] == source_bundle['sha256'] and pg03_transport['bundle_bytes'] == source_bundle['bytes']
++            and pg03_transport['bundle'] == pg03_source_bundle['source_path']
++            and pg03_transport['bundle_sha256'] == pg03_source_bundle['sha256'] and pg03_transport['bundle_bytes'] == pg03_source_bundle['bytes']
+             and pg03_transport['source_manifest'] == pg03_binding['path']
+             and pg03_transport['source_manifest_sha256'] == pg03_binding['sha256']
+-            and pg03_transport['list_heads'] == PG03_HEAD + ' ' + source_bundle['ref'] and pg03_transport['verify_exit'] == 0
++            and pg03_transport['list_heads'] == PG03_HEAD + ' ' + pg03_source_bundle['ref'] and pg03_transport['verify_exit'] == 0
+             and pg03_transport['prior_HEAD_advertised_bundle_preserved'] == profile['pg03_source_checkpoint_bundle']['path'],
+             'Require exact named-branch PG03 transport; no HEAD-ref fallback or invented source checkpoint')
+-    pg03_selection = read_json(safe(authority, profile['source_inventory']['path']))
++    pg03_selection = read_json(safe(authority, profile['historical_pg03_source_inventory']['path']))
+     require(pg03_selection['schema'] == 'app-29-lease-dispatch-pg03-failed-two-selection-v1'
+             and pg03_selection['historical_pg18_manifest'] == pg02_selection['historical_pg18_manifest']
+             and pg03_selection['historical_pg18_result'] == pg02_selection['historical_pg18_result']
+@@ -776,12 +807,82 @@
+             and pg03_selection['historical_pg02_result'] == {k: profile['historical_pg02_result'][k] for k in ('path', 'sha256')}
+             and pg03_selection['source_delta'] == pg03_delta
+             and pg03_selection['source_hashes'] == {p: row['after_sha256'] for p, row in pg03_delta.items()}
+-            and pg03_selection['expected_test_count'] == profile['source_inventory']['expected_test_count'] == 2
++            and pg03_selection['expected_test_count'] == profile['historical_pg03_source_inventory']['expected_test_count'] == 2
+             and all(pg03_selection[key] == pg02_selection[key] for key in (
+                 'test_classes', 'test_selectors', 'expected_test_counts', 'expected_test_count', 'expected_tests',
+                 'method_filter_count', 'task_args', 'task_argv_count', 'expected_xml_files', 'shutdown_diagnostics',
+                 'container_population', 'normal_compilation')),
+             'Require unchanged literal two-case selection and ordinary compilation after PG03 one-call repair')
++    # Preserve actual PG03 normal-compilation/two-case FAIL history before the sole PG04 guard replacement.
++    pg03_run_binding = profile['historical_pg03_source']
++    pg04_checkpoint_binding = profile['pg04_source_checkpoint']
++    for item in (pg03_run_binding, profile['historical_pg03_profile'], profile['historical_pg03_result'],
++                 pg04_checkpoint_binding, profile['source_inventory']):
++        require(manifest['approved_inputs'].get(item['path']) == item['sha256']
++                and digest(safe(authority, item['path'])) == item['sha256'], 'PG03 history or PG04 source authority missing')
++    pg03_run = read_json(safe(authority, pg03_run_binding['path']))
++    pg03_run_snapshots = {str(PurePosixPath(pg03_run_binding['path']).parent / 'sources' / p): expected_sources[p]
++                         for p in pg03_target['review_subject_paths']}
++    require(pg03_run['schema_version'] == 3 and pg03_run['validation_task_args'] == PG03_TASKS
++            and pg03_run['repositories']['kira-backend'] == {'head': PG03_HEAD, 'branch': BACKEND_BRANCH, 'status': ''}
++            and pg03_run_binding['backend_sha'] == PG03_HEAD and pg03_run['untracked_paths'] == []
++            and pg03_run['source_hashes'] == expected_sources and len(expected_sources) == pg03_run_binding['source_count'] == 481
++            and pg03_run['removed_paths'] == pg03_target['removed_paths']
++            and pg03_run['review_subject_paths'] == pg03_target['review_subject_paths']
++            and pg03_run['historical_input_hashes'] == pg03_target['historical_input_hashes']
++            and len(pg03_run['snapshots']) == pg03_run_binding['snapshot_count'] == 214
++            and pg03_run['snapshots'] == pg03_run_snapshots
++            and pg03_run['inventory_seed_manifest'] == SEED and pg03_run['inventory_seed_manifest_sha256'] == SEED_SHA
++            and pg03_run['inventory_seed_path_count'] == pg03_run['inventory_seed_preserved_count'] == 348
++            and manifest['approved_inputs'].get(pg03_run['complete_diff_path']) == pg03_run['complete_diff_sha256'],
++            'Require unchanged actual PG03 full source/selection/authority history before PG04')
++    pg03_result = read_json(safe(authority, profile['historical_pg03_result']['path']))
++    pg03_diagnostics = pg03_result['diagnostics']
++    require(pg03_result['status'] == 'FAIL' and pg03_result['backend_sha'] == PG03_HEAD
++            and pg03_result['carrier_sha'] == '69997b8bf003e89b7e976a3d0a305e526d2c04ef'
++            and pg03_diagnostics['tests'] == 2 and pg03_diagnostics['classes'] == PG03_TEST_COUNTS
++            and pg03_diagnostics['counts'] == {'PASS': 1, 'FAIL': 1, 'ERROR': 0, 'SKIP': 0}
++            and len(pg03_diagnostics['outcomes']) == 2
++            and sorted((row['class'], row['display_name']) for row in pg03_diagnostics['outcomes'] if row['status'] == 'FAIL')
++                == sorted((row['class'], row['display_name']) for row in EXPECTED_TESTS)
++            and [(row['class'], row['display_name']) for row in pg03_diagnostics['outcomes'] if row['status'] == 'PASS']
++                == [(CREATOR_CLASS, PG03_METHODS[CREATOR_CLASS][0] + '()')],
++            'Require only the actual PG03 MODEL failure; retain the mixed-pool PASS without replay')
++    pg04_delta = profile['pg04_source_delta']
++    pg04_checkpoint = read_json(safe(authority, pg04_checkpoint_binding['path']))
++    require(profile['pg04_source_stage_status'] == 'BOUND_BY_PRIMARY' and set(pg04_delta) == set(PG04_SOURCE_PATHS)
++            and all(expected_sources.get(p) == row['before_sha256'] and row['before_sha256'] is not None
++                    and row['after_sha256'] != row['before_sha256'] and isinstance(row['after_sha256'], str)
++                    and re.fullmatch('[0-9a-f]{64}', row['after_sha256']) and row['after_sha256'] != '0' * 64
++                    for p, row in pg04_delta.items())
++            and pg04_checkpoint['head'] == binding['backend_sha'] == PG04_HEAD
++            and pg04_checkpoint['parent'] == PG03_HEAD and pg04_checkpoint['tree'] == PG04_TREE
++            and pg04_checkpoint['branch'] == BACKEND_BRANCH and pg04_checkpoint['status'] == ''
++            and pg04_checkpoint['source_path'] == PG04_SOURCE_PATHS[0]
++            and pg04_checkpoint['source_sha256'] == pg04_delta[PG04_SOURCE_PATHS[0]]['after_sha256']
++            and profile['pg04_provenance'].get(pg04_checkpoint['independent_review']) == pg04_checkpoint['independent_review_sha256'],
++            'Require the actual source-only0582abc child and only its reviewed exact JVM stack-witness correction')
++    expected_sources.update({p: row['after_sha256'] for p, row in pg04_delta.items()})
++    pg04_selection = read_json(safe(authority, profile['source_inventory']['path']))
++    require(pg04_selection['schema'] == 'app-29-lease-dispatch-pg04-model-only-selection-v1'
++            and pg04_selection['historical_pg03_manifest'] == {k: pg03_run_binding[k] for k in ('path', 'sha256')}
++            and pg04_selection['historical_pg03_result'] == {k: profile['historical_pg03_result'][k] for k in ('path', 'sha256')}
++            and pg04_selection['source_delta'] == pg04_delta
++            and pg04_selection['source_hashes'] == {p: row['after_sha256'] for p, row in pg04_delta.items()}
++            and pg04_selection['test_classes'] == profile['test_classes'] == list(TEST_COUNTS)
++            and pg04_selection['expected_test_counts'] == TEST_COUNTS
++            and pg04_selection['expected_test_count'] == profile['expected_test_count'] == profile['source_inventory']['expected_test_count'] == 1
++            and pg04_selection['method_filter_count'] == len(TEST_SELECTORS) == 1
++            and pg04_selection['test_selectors'] == profile['test_selectors'] == TEST_SELECTORS
++            and pg04_selection['task_args'] == profile['task_args'] == TASKS
++            and pg04_selection['task_argv_count'] == len(TASKS) == 3
++            and pg04_selection['expected_tests'] == profile['expected_tests'] == EXPECTED_TESTS
++            and pg04_selection['expected_xml_files'] == profile['expected_xml_files'] == ['TEST-' + CREATOR_CLASS + '.xml']
++            and pg04_selection['shutdown_diagnostics'] == profile['shutdown_diagnostics']
++                == {'status': 'NOT_APPLICABLE', 'expected_record_count': 0}
++            and pg04_selection['container_population'] == profile['container_population']
++            and pg04_selection['normal_compilation'] == pg03_selection['normal_compilation'],
++            'Require one exact literal MODEL case/three argv/one XML identity with normal compilation; no mixed-PASS replay')
+     provenance = {}
+     for predecessor_manifest in (pg1, target):
+         for field in ('approved_inputs', 'validation_tooling'):
+@@ -790,19 +891,19 @@
+                 provenance[relative] = sha
+     require(len(provenance) == 188 and provenance.items() <= manifest['approved_inputs'].items(),
+             'Preserve all188 PG1/target approved/tooling provenance pairs')
+-    for predecessor_manifest in (pg01, lease_target, pg18, pg02_target, pg02_run, pg03_target):
++    for predecessor_manifest in (pg01, lease_target, pg18, pg02_target, pg02_run, pg03_target, pg03_run):
+         for field in ('approved_inputs', 'validation_tooling'):
+             for relative, sha in predecessor_manifest[field].items():
+                 require(relative not in provenance or provenance[relative] == sha, 'Contradictory PG01/lease17/PG18/PG02/PG03 provenance pin')
+                 provenance[relative] = sha
+     require(provenance.items() <= manifest['approved_inputs'].items(), 'PG01/lease17/PG18/PG02/PG03 approved/tooling provenance omitted')
+     expected_snapshots = {str(PurePosixPath(MANIFEST_FILE).parent / 'sources' / p): expected_sources[p]
+-                          for p in pg03_target['review_subject_paths']}
++                          for p in pg03_run['review_subject_paths']}
+     require(manifest['source_hashes'] == expected_sources
+-            and manifest['removed_paths'] == pg03_target['removed_paths']
+-            and manifest['review_subject_paths'] == pg03_target['review_subject_paths']
+-            and len(manifest['snapshots']) == pg03_binding['snapshot_count']
+-            and manifest['snapshots'] == expected_snapshots, 'Require complete PG03 source binding and all fresh snapshots')
++            and manifest['removed_paths'] == pg03_run['removed_paths']
++            and manifest['review_subject_paths'] == pg03_run['review_subject_paths']
++            and len(manifest['snapshots']) == pg03_run_binding['snapshot_count']
++            and manifest['snapshots'] == expected_snapshots, 'Require complete PG04 source binding and all fresh snapshots; only the one reviewed guard file may differ')
+     require(manifest['historical_input_hashes'] == current['historical_input_hashes']
+             and current['approved_inputs'].items() <= manifest['approved_inputs'].items(),
+             'Historical authority or original approved input omitted')
+@@ -811,7 +912,7 @@
+     require(len(expected_tooling) == 5 and all(expected_tooling == {
+                 p: sha for p, sha in predecessor_manifest['validation_tooling'].items()
+                 if p not in predecessor_manifest['additional_validation_tooling_paths']}
+-                for predecessor_manifest in (pg1, target, pg01, lease_target, pg18, pg02_target, pg02_run, pg03_target)), 'Historical and target base tooling must remain identical')
++                for predecessor_manifest in (pg1, target, pg01, lease_target, pg18, pg02_target, pg02_run, pg03_target, pg03_run)), 'Historical and target base tooling must remain identical')
+     expected_tooling.update({original: digest(safe(ADMIN, deployed)) for original, deployed in DEPLOYMENTS.items()})
+     require(manifest['validation_tooling'] == expected_tooling and len(expected_tooling) == 10
+             and len(manifest['additional_validation_tooling_paths']) == 5
+@@ -823,7 +924,7 @@
+             and all(manifest['approved_inputs'].get(p) == sha
+                     for field in ('native_candidate_evidence', 'diagnostic_authority', 'product_lifecycle_authority',
+                                   'post_structural_authority', 'selection_authority', 'ordinary_connected_authority',
+-                                  'lease_dispatch_provenance', 'pg02_provenance', 'pg03_provenance')
++                                  'lease_dispatch_provenance', 'pg02_provenance', 'pg03_provenance', 'pg04_provenance')
+                     for p, sha in profile[field].items()),
+             'Missing exact accepted proposals, source/history authority or retained Native05 inputs')
+     require(manifest['inventory_seed_manifest'] == SEED and manifest['inventory_seed_manifest_sha256'] == SEED_SHA
+@@ -898,10 +999,12 @@
+             'historical_lease_source_delta': {'changed': 14, 'added': 3, 'unchanged': len(pg01['source_hashes']) - 14, 'removed': 0},
+             'historical_pg02_manifest_sha256': pg02_run_binding['sha256'],
+             'historical_pg02_selection_source_delta_count': len(pg02_delta),
+-            'target_source_manifest_sha256': pg03_binding['sha256'], 'source_checkpoint_sha256': pg03_checkpoint_binding['sha256'],
+-            'transport_checkpoint_sha256': profile['pg03_transport_checkpoint']['sha256'],
+-            'selection_source_delta_count': len(pg03_delta),
+-            'source_delta': {'changed': 1, 'added': 0, 'unchanged': len(pg02_run['source_hashes']) - 1, 'removed': 0},
++            'historical_pg03_manifest_sha256': pg03_run_binding['sha256'],
++            'historical_pg03_source_checkpoint_sha256': pg03_checkpoint_binding['sha256'],
++            'historical_pg03_transport_checkpoint_sha256': profile['pg03_transport_checkpoint']['sha256'],
++            'target_source_manifest_sha256': checkpoint['manifest_sha256'], 'source_checkpoint_sha256': pg04_checkpoint_binding['sha256'],
++            'selection_source_delta_count': len(pg04_delta),
++            'source_delta': {'changed': 1, 'added': 0, 'unchanged': len(pg03_run['source_hashes']) - 1, 'removed': 0},
+             'historical_pg1_selection_source_delta_count': 0, 'historical_ordinary_selection_source_delta_count': 23,
+             'provenance_pairs': len(provenance),
+             'candidate_id': profile['final_jar']['candidate_id'], 'candidate_sha256': profile['final_jar']['sha256'],
+@@ -917,7 +1020,7 @@
+         self.end = self.start + binding['budgets']['controller_seconds']
+         self.phase_end = self.start + binding['budgets']['preflight_seconds']
+         self.cancelled, self.started, self.clean_daemon, self.events_since = False, False, False, None
+-        self.run = Path(os.environ['RUNNER_TEMP']) / ('app29-lease-dispatch-pg-03-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
++        self.run = Path(os.environ['RUNNER_TEMP']) / ('app29-lease-dispatch-pg-04-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
+         self.run.mkdir(mode=0o700, exist_ok=False)
+         for name in ('reports', 'gradle', 'w01', 'tmp', 'home', 'project-cache', 'kotlin-cache'):
+             (self.run / name).mkdir(mode=0o700)
+@@ -1035,6 +1138,10 @@
+         header, separator, _ = commit.partition(b'\n\n')
+         parents = [row[7:].decode('ascii') for row in header.split(b'\n') if row.startswith(b'parent ')]
+         trees = [row[5:].decode('ascii') for row in header.split(b'\n') if row.startswith(b'tree ')]
++        pg03 = self.command(label + '-pg03-parent-commit', ['git', '--no-replace-objects', 'cat-file', 'commit', PG03_HEAD], cleaning=cleaning)
++        pg03_header, pg03_separator, _ = pg03.partition(b'\n\n')
++        pg03_parents = [row[7:].decode('ascii') for row in pg03_header.split(b'\n') if row.startswith(b'parent ')]
++        pg03_trees = [row[5:].decode('ascii') for row in pg03_header.split(b'\n') if row.startswith(b'tree ')]
+         pg02 = self.command(label + '-pg02-parent-commit', ['git', '--no-replace-objects', 'cat-file', 'commit', PG02_HEAD], cleaning=cleaning)
+         pg02_header, pg02_separator, _ = pg02.partition(b'\n\n')
+         pg02_parents = [row[7:].decode('ascii') for row in pg02_header.split(b'\n') if row.startswith(b'parent ')]
+@@ -1067,6 +1174,7 @@
+         core_parents = [row[7:].decode('ascii') for row in core_header.split(b'\n') if row.startswith(b'parent ')]
+         self.result.setdefault('source_checkout_final', {})[label] = {
+             'head': sha, 'branch': branch, 'parents': parents, 'trees': trees,
++            'pg03_parent': {'head': PG03_HEAD, 'parents': pg03_parents, 'trees': pg03_trees},
+             'pg02_parent': {'head': PG02_HEAD, 'parents': pg02_parents, 'trees': pg02_trees},
+             'lease_parent': {'head': LEASE_HEAD, 'parents': lease_parents, 'trees': lease_trees},
+             'ordinary_parent': {'head': ORDINARY_HEAD, 'parents': ordinary_parents, 'trees': ordinary_trees},
+@@ -1076,8 +1184,9 @@
+             'private_parent': {'head': PRIVATE_PARENT, 'parents': ancestor_parents},
+             'previous_private_parent': {'head': PREVIOUS_PRIVATE_PARENT, 'parents': previous_parents},
+             'core_baseline': {'head': CORE_BASELINE, 'parents': core_parents}}
+-        require(sha == self.binding['backend_sha'] == PG03_HEAD and branch == BACKEND_BRANCH
+-                and separator and parents == [PG02_HEAD] and trees == [PG03_TREE]
++        require(sha == self.binding['backend_sha'] == PG04_HEAD and branch == BACKEND_BRANCH
++                and separator and parents == [PG03_HEAD] and trees == [PG04_TREE]
++                and pg03_separator and pg03_parents == [PG02_HEAD] and pg03_trees == [PG03_TREE]
+                 and pg02_separator and pg02_parents == [LEASE_HEAD] and pg02_trees == [PG02_TREE]
+                 and lease_separator and lease_parents == [ORDINARY_HEAD] and lease_trees == [LEASE_TREE]
+                 and ordinary_separator and ordinary_parents == [ORDINARY_PARENT] and ordinary_trees == [ORDINARY_TREE]
+@@ -1087,7 +1196,7 @@
+                 and ancestor_separator and ancestor_parents == [PREVIOUS_PRIVATE_PARENT]
+                 and previous_separator and previous_parents == [CORE_BASELINE]
+                 and core_separator and core_parents == [PUBLIC_PREREQUISITE],
+-                'Require exact PG03 tip/tree ->c67ddcd PG02 tip/tree ->8938526 lease tip/tree ->ccdbb28f ->6db944 ->1c91 ->eb8fed8 ->989a ->926927 ->49da ->public prerequisite, with no merges or extra descendants')
++                'Require exact PG04 tip/tree ->f2e58eac PG03 tip/tree ->c67ddcd PG02 tip/tree ->8938526 lease tip/tree ->ccdbb28f ->6db944 ->1c91 ->eb8fed8 ->989a ->926927 ->49da ->public prerequisite, with no merges or extra descendants')
+         require(not self.command(label + '-status', ['git', 'status', '--porcelain=v1', '--untracked-files=all'], cleaning=cleaning), 'Checkpoint is dirty')
+         names = self.command(label + '-tracked', ['git', 'ls-files', '-z'], cleaning=cleaning).decode().split('\0')[:-1]
+         hashes = {p: digest(safe(BACKEND, p)) for p in names}
+@@ -1232,9 +1341,9 @@
+     require(sorted(p.name for p in xmls) == sorted(expected_files) == sorted(profile['expected_xml_files']),
+             'Wrong diagnostic XML inventory')
+     expected = [(row['class'], row['display_name']) for row in EXPECTED_TESTS]
+-    require(profile['expected_test_count'] == 2 and profile['test_classes'] == list(TEST_COUNTS)
++    require(profile['expected_test_count'] == 1 and profile['test_classes'] == list(TEST_COUNTS)
+             and profile['expected_witnesses'] == [] and profile['expected_tests'] == EXPECTED_TESTS,
+-            'Require exactly the2 fixed PG03 failed-method identities')
++            'Require exactly the1 fixed PG04 MODEL-only identity')
+     identities, outcomes, suites, suite_results = [], [], [], []
+     for name, count in TEST_COUNTS.items():
+         path = safe(reports, 'test-results/test/TEST-' + name + '.xml')
+@@ -1261,7 +1370,7 @@
+         outcomes.extend(suite_outcomes)
+         suites.append(suite)
+         suite_results.append({'class': name, 'tests': count, 'counts': suite_counts})
+-    require(len(identities) == len(set(identities)) == 2 and sorted(identities) == sorted(expected),
++    require(len(identities) == len(set(identities)) == 1 and sorted(identities) == sorted(expected),
+             'Missing, extra or duplicate diagnostic testcase')
+     counts = {state: sum(row['status'] == state for row in outcomes) for state in ('PASS', 'FAIL', 'ERROR', 'SKIP')}
+     phases = ('BEFORE_SHUTDOWN', 'AFTER_SHUTDOWN', 'OBSERVATION_FAILED')
+@@ -1291,7 +1400,7 @@
+     folder = safe(reports, profile['report_directory'])
+     cp = read_json(folder / 'effective-classpath.txt')
+     require(cp['profile'] == PROFILE_ID and cp['java_home'] == str(java)
+-            and cp['source_inventory'] == profile['source_inventory'] and cp['expected_test_count'] == 2
++            and cp['source_inventory'] == profile['source_inventory'] and cp['expected_test_count'] == 1
+             and cp['expected_witnesses'] == [], 'Wrong actual diagnostic classpath/profile/JDK')
+     entries = cp['entries']
+     require(len({e['path'] for e in entries}) == len(entries)
+@@ -1301,8 +1410,8 @@
+         rows = [e for e in entries if e[flag] > 0]
+         require(len(rows) == 1 and rows[0]['path'] == str(safe(ADMIN, profile[key]['path']))
+                 and rows[0]['sha256'] == profile[key]['sha256'], 'Wrong explicit class supplier')
+-    return {'status': 'RECORDED', 'test_status': 'PASS' if counts == {'PASS': 2, 'FAIL': 0, 'ERROR': 0, 'SKIP': 0} else 'FAIL',
+-            'tests': 2, 'classes': TEST_COUNTS, 'identities': sorted(identities), 'outcomes': outcomes, 'counts': counts,
++    return {'status': 'RECORDED', 'test_status': 'PASS' if counts == {'PASS': 1, 'FAIL': 0, 'ERROR': 0, 'SKIP': 0} else 'FAIL',
++            'tests': 1, 'classes': TEST_COUNTS, 'identities': sorted(identities), 'outcomes': outcomes, 'counts': counts,
+             'suites': suite_results, 'profile': PROFILE_ID, 'fixed_scalar_capture': 'NOT_APPLICABLE',
+             'raw_shutdown_diagnostics': records, 'diagnostic_coverage': coverage,
+             'diagnostic_limit': profile['shutdown_diagnostics_note'], 'diagnostic_scope': profile['shutdown_diagnostics'],
+@@ -1311,6 +1420,7 @@
+             'historical_ordinary_result': profile['historical_ordinary_result'],
+             'historical_pg18_result': profile['historical_pg18_result'],
+             'historical_pg02_result': profile['historical_pg02_result'],
++            'historical_pg03_result': profile['historical_pg03_result'],
+             'historical_result': profile['historical_result'], 'historical_diagnostics_result': profile['historical_diagnostics_result'],
+             'candidate_qualification': 'UNQUALIFIED'}
+ 
+@@ -1332,12 +1442,12 @@
+         require(carrier == os.environ['GITHUB_SHA'], 'Carrier checkout differs from exact workflow SHA')
+         profile = read_json(safe(ADMIN, PROFILE_FILE))
+         require(profile['profile_id'] == PROFILE_ID and profile['task_args'] == TASKS
+-                and profile['expected_test_count'] == 2 and profile['expected_witnesses'] == []
++                and profile['expected_test_count'] == 1 and profile['expected_witnesses'] == []
+                 and profile['test_selectors'] == TEST_SELECTORS
+                 and profile['expected_tests'] == EXPECTED_TESTS and profile['test_classes'] == list(TEST_COUNTS)
+                 and profile['shutdown_diagnostics'] == {'status': 'NOT_APPLICABLE', 'expected_record_count': 0}
+                 and profile['final_jar']['qualification'] == 'UNQUALIFIED',
+-                'Wrong exact2 PG03 failed-method profile/task/candidate scope')
++                'Wrong exact1 PG04 MODEL-only profile/task/candidate scope')
+         gate.result['historical_result'] = profile['historical_result']
+         gate.result['historical_diagnostics_result'] = profile['historical_diagnostics_result']
+         gate.result['historical_pg14_result'] = profile['historical_pg14_result']
+@@ -1347,6 +1457,7 @@
+         gate.result['historical_ordinary_result'] = profile['historical_ordinary_result']
+         gate.result['historical_pg18_result'] = profile['historical_pg18_result']
+         gate.result['historical_pg02_result'] = profile['historical_pg02_result']
++        gate.result['historical_pg03_result'] = profile['historical_pg03_result']
+         gate.materialize_source()
+         baseline = gate.sources('before')
+         gate.result['source_binding_before'] = bind_freeze(binding, profile)
+@@ -1453,7 +1564,7 @@
+                   and gate.result['diagnostics'].get('fixed_scalar_capture') == 'NOT_APPLICABLE' and gate.result['containers'] == 'NORMAL_ABSENT'
+                   and all(r['outcome'] == 'NORMAL' for r in gate.result['commands']) and final_containers is True)
+         gate.result['status'] = 'PASS' if passed else 'FAIL'
+-        gate.result['limitation'] = 'Only the two failed PG18 noarg creator methods are selected:2 declaration filters/5 task argv/2 cases. No enum or previous16 replay; normal main/test compilation is unchanged. PG03 appends only the reviewed one-call Java assertThrows compile repair after c67ddcd; historical PG02 remains its original compileTestKotlin failure with no test XML/evaluated diagnostics, seven sticky failures and retained outputs. Verified available-evidence capture and known-empty absence can permit disposal but cannot satisfy required topology/XML or qualify PASS. Historical transport02 PG18 remains16 PASS/2 FAIL on8938526, with its raw failures and six sticky controller failures retained separately; a later two-case outcome cannot rewrite history or demonstrate its earlier cause. The MODEL attempt may still FAIL and grants no correctness credit for improved diagnostics alone. Prior PG01 remains20 PASS/1 FAIL, actor/queue mechanism unmeasured. Suppression-disabled primary Throwable and unobserved pre-callback EMF-init masking limits remain. PG14 diagnostics are NOT_APPLICABLE; the new MODEL factual line remains raw stdout, not a new parser or acceptance oracle. Original Linux03/PG1/PG14/PG10/lease17 records remain historical. Registered-tail and MODEL fatal/ClientInfo/declared-stream limitations remain; unselected negative-child exit23 is PROCESS_ONLY product_end=false, never product disposal. Preserve raw kill/die events: NORMAL_ABSENT is not graceful-shutdown or zero-kill proof. UNKNOWN grants no retry authority. Native05 UNQUALIFIED; full47/consumer/opaque/liveness/W03/full-P3/production/new-data and installation recovery remain open; W06 excluded. No integration or public private-ancestry push authority.'
++        gate.result['limitation'] = 'Only the actual PG03 MODEL failure is selected:1 literal filter/3 task argv/1 case. Reuse the unchanged mixed-pool PASS from run34786407104; never replay it, prior16 or enum cases. Normal main/test compilation and the accepted PG03 ownership/capture/cleanup lifecycle remain unchanged. Source0582abc adds only the exact declaring-class/internal-JVM-name stack witness after f2e58eac. PG03 remains1 PASS/1 FAIL at CLOCK_ENTERED with its original stack and six sticky failures; later tail/expiry/retirement/actor/recovery assertions were unproven there, not implicitly successful or separate measured failures. PG02 remains its original compileTestKotlin failure/no XML/seven sticky failures and retained-output limits. PG18 remains16 PASS/2 FAIL; a PG04 outcome cannot rewrite earlier results or infer prior causation. Known-empty absence and faithful available capture may permit disposal but cannot satisfy missing required topology/XML or qualify PASS. Preserve first-failure/restoration evidence and suppression-disabled/pre-callback EMF-init limits; PG14 rows remain NOT_APPLICABLE, MODEL factual lines raw rather than a new oracle. Prior PG01 remains20 PASS/1 FAIL and original Linux03/PG1/PG14/PG10/lease17 records remain historical. Registered-tail/MODEL fatal/ClientInfo/declared-stream limits remain; unselected negative-child exit23 is PROCESS_ONLY product_end=false. NORMAL_ABSENT is not graceful-shutdown or zero-kill proof; retain raw kill/die events. UNKNOWN grants no retry authority. Native05 UNQUALIFIED; full47/consumer/opaque/liveness/W03/full-P3/production/new-data and installation recovery remain open; W06 excluded. No integration or public private-ancestry push authority.'
+         save(gate.reports / 'result.json', gate.result)
+     return 0 if gate.result['status'] == 'PASS' else 1
+ 
+--- a/.github/workflows/app29-gate-b.yml
++++ b/.github/workflows/app29-gate-b.yml
+@@ -1,12 +1,12 @@
+-name: App29 Lease Dispatch PG03 failed2 (private, no qualification)
++name: App29 Lease Dispatch PG04 MODEL-only (private, no qualification)
+ on:
+   push:
+     branches: [remediation/app-29-backend-complaints]
+     paths:
+       - .github/workflows/app29-gate-b.yml
+       - ci/app29-gate-b.py
+-      - review/working/app-29-lease-dispatch-pg03-bound-01/profile/profile.json
+-      - review/working/app-29-lease-dispatch-pg03-bound-01/profile/profile.init.gradle
++      - review/working/app-29-lease-dispatch-pg04-preparation-01/profile/profile.json
++      - review/working/app-29-lease-dispatch-pg04-preparation-01/profile/profile.init.gradle
+       - ci/app29-gate-b.request.json
+ permissions:
+   contents: read
+@@ -43,17 +43,17 @@
+         with:
+           distribution: temurin
+           java-version: '21'
+-      - name: Run only the two previously failed noarg creator methods (normal compilation, no qualification)
++      - name: Run only the formerly failing literal MODEL method (normal compilation, no qualification)
+         id: validation
+         shell: bash
+         run: |
+           umask 077
+           python3 -B admin/ci/app29-gate-b.py
+-      - name: Retain raw2-case outcomes, explicit PG14 diagnostic nonapplicability, source and owned-cleanup receipts
++      - name: Retain raw1-case outcome, explicit PG14 diagnostic nonapplicability, source and owned-cleanup receipts
+         if: always() && steps.validation.outcome != 'skipped'
+         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+         with:
+-          name: app29-lease-dispatch-pg-03-${{ github.run_id }}-${{ github.run_attempt }}
+-          path: ${{ runner.temp }}/app29-lease-dispatch-pg-03-${{ github.run_id }}-${{ github.run_attempt }}/reports/
++          name: app29-lease-dispatch-pg-04-${{ github.run_id }}-${{ github.run_attempt }}
++          path: ${{ runner.temp }}/app29-lease-dispatch-pg-04-${{ github.run_id }}-${{ github.run_attempt }}/reports/
+           retention-days: 3
+           if-no-files-found: error
+--- a/profile/profile.json
++++ b/profile/profile.json
+@@ -1,35 +1,27 @@
+ {
+   "schema_version": 1,
+-  "profile_id": "app-29-lease-dispatch-pg-profile-03",
+-  "scope": "PRIMARY_BOUND_EXACT2_PG03_COMPILE_CLEANUP_NOT_RUNTIME_ACCEPTANCE: append only the reviewed one-call Java assertThrows replacement after immutable actual PG02; unchanged two literal noarg filters and ordinary compilation. Use independently approved failed-run cleanup without qualifying missing topology or XML. Prior16 remain historical; no enum/full47/consumer/Native05/W03 qualification.",
++  "profile_id": "app-29-lease-dispatch-pg-profile-04",
++  "scope": "INERT_UNBOUND_EXACT1_PG04_MODEL_ONLY_PREPARATION: one literal formerly failed MODEL case after the reviewed exact declaring-class/JVM-method witness correction on0582abc. Reuse immutable PG03 mixed-pool PASS; no prior16/enum/OwnershipIT replay. Existing normal compilation, source authority, transport and capture/cleanup lifecycle remain; no execution/admission/qualification.",
+   "test_classes": [
+     "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest"
+   ],
+   "task_args": [
+     "test",
+     "--tests",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.mixed pool creator nesting refuses wrong top fallback and unrelated lease use",
+-    "--tests",
+     "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement"
+   ],
+   "test_selectors": [
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.mixed pool creator nesting refuses wrong top fallback and unrelated lease use",
+     "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement"
+   ],
+-  "expected_test_count": 2,
++  "expected_test_count": 1,
+   "expected_tests": [
+-    {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+-      "method": "mixed pool creator nesting refuses wrong top fallback and unrelated lease use",
+-      "display_name": "mixed pool creator nesting refuses wrong top fallback and unrelated lease use()"
+-    },
+     {
+       "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+       "method": "MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement",
+       "display_name": "MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement()"
+     }
+   ],
+-  "report_directory": "reports/lease-dispatch-pg-03",
++  "report_directory": "reports/lease-dispatch-pg-04",
+   "witness_property_file": "worker-runtime.txt",
+   "expected_witnesses": [],
+   "original_provider_gate": "app-29-gate-b-hosted-01",
+@@ -65,10 +57,10 @@
+     "home": "Bound hosted JAVA_HOME; actual Gradle/Test context and JDK binary/modules hashes remain controller obligations, not positive consumer-loader proof."
+   },
+   "source_inventory": {
+-    "path": "review/working/app-29-lease-dispatch-pg03-binding-preparation-01/selection.json",
+-    "sha256": "04bcb997c228ddc4d2c3df79f52e787e31d8773864560f7266209961d0132916",
+-    "expected_test_count": 2,
+-    "kind": "Inert unchanged two-case identity proposal after one-call PG03 compile repair; no execution outcome or admission."
++    "path": "review/working/app-29-lease-dispatch-pg04-preparation-01/selection.json",
++    "sha256": "8278a06b06c397ad5b9d79b5355a7c31de8b0b2d89add34ec122cd6ff056f6a2",
++    "expected_test_count": 1,
++    "kind": "Inert literal MODEL-only identity proposal after the exact JVM witness correction; unchanged PG03 mixed-pool PASS is historical, never rerun here."
+   },
+   "core_source_manifest": {
+     "path": "review/working/app-29-real-pool-return-adaptation-c2-01/source-manifest.json",
+@@ -386,7 +378,7 @@
+       "postgres:17.6-alpine",
+       "testcontainers/ryuk:0.12.0"
+     ],
+-    "basis": "Both exact noarg methods are in one PER_CLASS/SAME_THREAD class with one lazy PgLifecycleDatabaseFixture started once and closed in AfterAll. Both mixed-test pools and the MODEL ordinary cleanup fixture reuse database.value; EMFs/pools do not create new containers. The unselected enum method cannot spawn its negative child JVMs. One Test worker/forkEvery=0 implies one required Testcontainers session and Ryuk. Counts are admission requirements, not observed outcomes."
++    "basis": "The sole literal MODEL method is in one PER_CLASS/SAME_THREAD class; its database.value starts the one lazy PgLifecycleDatabaseFixture, closed in AfterAll. The ordinary cleanup fixture and EMF reuse that database. No mixed-pool or enum method is selected and no negative child JVM is selected. One Test worker/forkEvery=0 still requires one PostgreSQL17.6-alpine and one Ryuk0.12.0 in one session. These are required topology, not observed PG04 outcomes."
+   },
+   "ordinary_source_predecessor": {
+     "path": "review/working/app-29-w03-integrated-driver-core-c2-sqlclientinfo-pg1-01/manifest.json",
+@@ -594,20 +586,18 @@
+     "review/working/app-29-w03-integrated-driver-development-13/sources/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseControlsTest.kt": "ae098432000c15bdd4e90c45ddbf7ebb02e819dde2ebdf0db535b6ff720c056e"
+   },
+   "limits": [
+-    "Exactly2 literal noarg declaration filters/5 task argv/2 XML cases in PoolLeaseDispatchCreatorIntegrationTest. No enum, prior16, OwnershipIT, wildcard, source-set narrowing, compile skip, extra task, timeout increase or retry.",
+-    "Normal main/test compilation remains enabled; the unchanged W01 init supplies one512MiB worker and the driver/checker overlay. maxParallelForks1, forkEvery0 and JUnit parallel=false remain. No negative enum child JVM is selected; the unchanged shared OwnedChildren helper still owns every launched process.",
+-    "Exactly one PostgreSQL17.6-alpine fixture and one Ryuk0.12.0 in one required session. Paired real pools reuse the class database. Exact create/destroy IDs, image pins, clean daemon, session/UUID checks, unknown-custody refusal and sticky forced/nonzero cleanup remain mandatory.",
+-    "Keep the historical lease17 source rows/checkpoint/bundle and PG18 profile/manifest/16PASS2FAIL raw result unchanged. Append only the reviewed two-test-file delta. A later failed2 PASS cannot relabel historical16 as fresh or establish either earlier failure mechanism.",
+-    "Preserve all348 development07 seed keys, complete481 source map,214 review subjects/snapshots and102 historical pins. Preserve every old approved/tooling pin without contradiction; no source subset, stale snapshot, permissive provenance or copied counts from a previous result.",
+-    "Primary supplies actual clean one-child PG02 tip/tree, preliminary source freeze and checkpoint/path pins, complete private singleton-ref bundle, final profile/init/controller pins, whole issue-baseline diff, fresh hosted v3 freeze and genuine local receipt. No author-fabricated receipt or self/receipt/request cycle.",
+-    "New source stage, tip/tree, bundle, final profile/init guard and request remain UNBOUND/unauthorized. Source hashes are reviewed input pins only, not source checkpoint/runtime acceptance. Distinct derivative review and separate one-attempt primary admission are still required.",
+-    "The MODEL attempt can still FAIL; improved diagnostics alone carry no correctness credit. Preserve first Throwable/suppressed restoration/reporting context and factual finite stages; suppression-disabled primary and unobserved pre-callback EMF-init masking remain limits. No new diagnostic acceptance parser.",
+-    "PG14 diagnostic rows are NOT_APPLICABLE/zero here; all original PG14 requirements/results stay historical. Native05 remains UNQUALIFIED, with original MODEL fatal/ClientInfo/declared-stream and unregistered-tail limits. No original-provider/consumer-witness selection.",
+-    "Preserve25min/1200s total/120s preflight/900s validation/180s cleanup,8GiB floor,8MiB bundle,2GiB Gradle/512MiB metaspace and all inherited drains/capture/owned-output absence gates. Forced/nonzero cleanup, cancellation, incomplete evidence and budget failure are stickyFAIL. NORMAL_ABSENT is not graceful or zero-kill proof; retain raw events.",
+-    "Full47/consumer/opaque/native/liveness/W03/full-P3/production/new-backend-data and installation recovery remain open; W06 excluded. No integration or public private-ancestry push authority. This author does not independently approve this preparation.",
+-    "Historical PG02 remains a zero-executed-test compile failure with its original incomplete capture/retained outputs. The one-call correction is source-reviewed, not compiled by this preparation.",
+-    "Use the separate named-branch PG03 transport bundle. Preserve the original HEAD-advertised source-checkpoint bundle only as immutable history; never relax the exact branch ref protocol.",
+-    "Available approved-scope evidence capture and known-empty absence may permit owned-path disposal while required topology/XML inventory stays FAIL. No swallowed capture errors, broader deletion or weakened PASS gate."
++    "Exactly1 literal MODEL method filter/3 task argv/1 XML case. The actual PG03 mixed-pool PASS is reused without replay. No prior16, enum, OwnershipIT, wildcard, source pruning, compile skip, extra task, timeout increase or retry.",
++    "Normal main/test compilation and the unchanged W01 init/driver-checker overlay remain; one512MiB Test worker, maxParallelForks1, forkEvery0, JUnit parallel=false. No negative enum child JVM is selected.",
++    "One PostgreSQL17.6-alpine fixture and one Ryuk0.12.0 in one session remain required even with only MODEL selected. Keep exact create/destroy/image/session/UUID checks, clean daemon, unknown-custody refusal and final absence.",
++    "Keep every PG03 source/checkpoint/transport/profile/freeze/result byte historical. Preserve PG03 normal compilation and1PASS/1FAIL evidence, six sticky failures and the actual mangled frame. Only the reviewed one-site test guard changes after f2e58eac; every production source and later assertion remains unchanged.",
++    "The current source-only0582abc checkpoint is not a full freeze or receipt. Primary must run the unchanged genuine v3 freezer and validator for the final full481-source map,214 snapshots/all348 development07 seed keys/102 historical pins and complete issue-baseline diff; never a selected-source inventory or fabricated receipt.",
++    "Preserve the nonconflicting inherited approved/tooling union including the actual PG03 final freeze. Keep five original base tools plus the same five deployed tools. Final authority counts/bytes are measured from real final inputs, not copied from PG03.",
++    "Current named-ref bundle size/hash, final profile/init/controller bindings, deployment checkpoint and false request remain unbound until primary acts. Keep singleton public prerequisite3d839130 and exact private branch ref; no public private-ancestry push or HEAD-ref fallback.",
++    "The exact guard and all later identity/budget/tail/MODEL-expiry/retirement/actor/recovery assertions remain unexecuted on0582abc. Preserve first Throwable, restoration and factual stages. Suppression-disabled/pre-callback EMF-init limits remain; no new diagnostic acceptance parser.",
++    "PG14 rows remain NOT_APPLICABLE/zero. Classpath/JDK/load records are context, not positive consumer or Native05 qualification. Native05 stays UNQUALIFIED; original registered-tail/MODEL fatal/ClientInfo/declared-stream limits remain.",
++    "Preserve25min/1200s total/120s preflight/900s validation/180s cleanup,8GiB floor,8MiB bundle,2GiB Gradle/512MiB metaspace and the same drains/capture/11 scoped output-absence obligations. Forced/nonzero cleanup, cancellation, incomplete evidence and budget failure remain stickyFAIL.",
++    "Available capture and positively known-empty absence may permit disposal but never satisfy missing required topology/XML. No swallowed copy/stat/hash errors, broader deletion, hidden failure deduplication or weakened PASS gate. NORMAL_ABSENT is not graceful or zero-kill proof; raw events stay retained.",
++    "PG02 compile failure and PG18/other historical results remain unchanged. W03/full47/consumer/opaque/native/liveness/full-P3/production/new-data and installation recovery remain open; W06 excluded. Source approval/preparation is not runtime PASS, admission, integration or closure."
+   ],
+   "historical_pg18_source_inventory": {
+     "path": "review/working/app-29-lease-dispatch-linux01-preparation/selection.json",
+@@ -816,5 +806,100 @@
+     "review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/started-utc.txt": "edb3d674edcf1e23e72e79c3704057444f1d85589601f015356cd81fc116258e",
+     "review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/test_cleanup_synthetic.py": "f0358214820ad2d03ba9e1d05825513961212a26e25ca00b3954cc46f1fdb367",
+     "review/working/app-29-lease-dispatch-pg03-cleanup-synthetic-01/tests.log": "63171750c3fa3ae816c6b45f6c7132d1bcfe8497c9c197c35f88e3978efc2dd6"
++  },
++  "historical_pg03_source_inventory": {
++    "path": "review/working/app-29-lease-dispatch-pg03-binding-preparation-01/selection.json",
++    "sha256": "04bcb997c228ddc4d2c3df79f52e787e31d8773864560f7266209961d0132916",
++    "expected_test_count": 2,
++    "kind": "Inert unchanged two-case identity proposal after one-call PG03 compile repair; no execution outcome or admission."
++  },
++  "historical_pg03_profile": {
++    "path": "review/working/app-29-lease-dispatch-pg03-bound-01/profile/profile.json",
++    "sha256": "5f73278a73b86786690d68d2c8f1e62023092e9c89ebc56bb8b4c4babd236e45"
++  },
++  "historical_pg03_limits": [
++    "Exactly2 literal noarg declaration filters/5 task argv/2 XML cases in PoolLeaseDispatchCreatorIntegrationTest. No enum, prior16, OwnershipIT, wildcard, source-set narrowing, compile skip, extra task, timeout increase or retry.",
++    "Normal main/test compilation remains enabled; the unchanged W01 init supplies one512MiB worker and the driver/checker overlay. maxParallelForks1, forkEvery0 and JUnit parallel=false remain. No negative enum child JVM is selected; the unchanged shared OwnedChildren helper still owns every launched process.",
++    "Exactly one PostgreSQL17.6-alpine fixture and one Ryuk0.12.0 in one required session. Paired real pools reuse the class database. Exact create/destroy IDs, image pins, clean daemon, session/UUID checks, unknown-custody refusal and sticky forced/nonzero cleanup remain mandatory.",
++    "Keep the historical lease17 source rows/checkpoint/bundle and PG18 profile/manifest/16PASS2FAIL raw result unchanged. Append only the reviewed two-test-file delta. A later failed2 PASS cannot relabel historical16 as fresh or establish either earlier failure mechanism.",
++    "Preserve all348 development07 seed keys, complete481 source map,214 review subjects/snapshots and102 historical pins. Preserve every old approved/tooling pin without contradiction; no source subset, stale snapshot, permissive provenance or copied counts from a previous result.",
++    "Primary supplies actual clean one-child PG02 tip/tree, preliminary source freeze and checkpoint/path pins, complete private singleton-ref bundle, final profile/init/controller pins, whole issue-baseline diff, fresh hosted v3 freeze and genuine local receipt. No author-fabricated receipt or self/receipt/request cycle.",
++    "New source stage, tip/tree, bundle, final profile/init guard and request remain UNBOUND/unauthorized. Source hashes are reviewed input pins only, not source checkpoint/runtime acceptance. Distinct derivative review and separate one-attempt primary admission are still required.",
++    "The MODEL attempt can still FAIL; improved diagnostics alone carry no correctness credit. Preserve first Throwable/suppressed restoration/reporting context and factual finite stages; suppression-disabled primary and unobserved pre-callback EMF-init masking remain limits. No new diagnostic acceptance parser.",
++    "PG14 diagnostic rows are NOT_APPLICABLE/zero here; all original PG14 requirements/results stay historical. Native05 remains UNQUALIFIED, with original MODEL fatal/ClientInfo/declared-stream and unregistered-tail limits. No original-provider/consumer-witness selection.",
++    "Preserve25min/1200s total/120s preflight/900s validation/180s cleanup,8GiB floor,8MiB bundle,2GiB Gradle/512MiB metaspace and all inherited drains/capture/owned-output absence gates. Forced/nonzero cleanup, cancellation, incomplete evidence and budget failure are stickyFAIL. NORMAL_ABSENT is not graceful or zero-kill proof; retain raw events.",
++    "Full47/consumer/opaque/native/liveness/W03/full-P3/production/new-backend-data and installation recovery remain open; W06 excluded. No integration or public private-ancestry push authority. This author does not independently approve this preparation.",
++    "Historical PG02 remains a zero-executed-test compile failure with its original incomplete capture/retained outputs. The one-call correction is source-reviewed, not compiled by this preparation.",
++    "Use the separate named-branch PG03 transport bundle. Preserve the original HEAD-advertised source-checkpoint bundle only as immutable history; never relax the exact branch ref protocol.",
++    "Available approved-scope evidence capture and known-empty absence may permit owned-path disposal while required topology/XML inventory stays FAIL. No swallowed capture errors, broader deletion or weakened PASS gate."
++  ],
++  "historical_pg03_source_bundle": {
++    "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
++    "private_parent_sha": "c67ddcd30fbae2438c7b2f803f720530b598e428",
++    "ref": "refs/heads/remediation/app-29-backend-complaints",
++    "source_path": "review/working/app-29-lease-dispatch-pg03-transport-source-01/backend.bundle",
++    "path": "docs/remediation/app29-lease-dispatch-pg-03/inputs/backend.bundle",
++    "sha256": "b606cb5ed40814dc23c5c8c61a564de07d917d4a05b6fbca4c4b73841bea63fe",
++    "bytes": 287442
++  },
++  "historical_pg03_source": {
++    "path": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-03/manifest.json",
++    "sha256": "0df6165f928d7a752d7a253d18078b099ca81eae9c7d5bc466bc828a74763f1f",
++    "backend_sha": "f2e58eac0b139dca3a042c724d69c66a3d65278e",
++    "source_count": 481,
++    "snapshot_count": 214,
++    "scope": "IMMUTABLE_ACTUAL_PG03_SOURCE_SELECTION_AND_AUTHORITY_BEFORE_PG04"
++  },
++  "historical_pg03_result": {
++    "path": "review/working/app-29-lease-dispatch-pg03-admission-01/launch-01/artifacts/result.json",
++    "sha256": "a7bf8ad299b8805009c367d226bdf90b2fcf1b7515b8d909ae29b4d4a2cba79a",
++    "run_id": "34786407104",
++    "attempt": 1,
++    "carrier_sha": "69997b8bf003e89b7e976a3d0a305e526d2c04ef",
++    "backend_sha": "f2e58eac0b139dca3a042c724d69c66a3d65278e",
++    "status": "FAIL",
++    "selected_cases": 2,
++    "passed": 1,
++    "failed": 1,
++    "scope": "Retain the actual MODEL stack-witness failure at CLOCK_ENTERED, unchanged mixed-pool PASS, all six sticky failures and bounded capture/disposal. No later actor/expiry/retirement or graceful/zero-kill inference."
++  },
++  "pg04_source_stage_status": "UNBOUND_PENDING_PRIMARY_ADOPTION",
++  "pg04_source_checkpoint": {
++    "path": "review/working/app-29-lease-dispatch-pg04-source-checkpoint-01/checkpoint.json",
++    "sha256": "a5367797cb6eca5bcf39e35a457e45b2aae0062eddc8033d6581a9ea803784eb"
++  },
++  "pg04_source_delta": {
++    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt": {
++      "before_sha256": "f8583ac5daef026d2e691e2c42d14be93573dfbe442bee8c5f5d3188482eca1a",
++      "after_sha256": "915785fe0ddefa5444ba088792345e9141c129529d518ff3e525658cf9e6132e"
++    }
++  },
++  "pg04_reviewed_source_diff": {
++    "path": "review/working/app-29-lease-dispatch-pg04-preparation-01/source-delta.patch",
++    "sha256": "71903d644d18e2aa7325e3805a804fa8f3b46c8be4db2ee96574c47304eb8964",
++    "base": "f2e58eac0b139dca3a042c724d69c66a3d65278e",
++    "scope": "Exactly one seven-added/one-deleted assertion site. This is not the mandatory genuine v3 whole issue-baseline diff."
++  },
++  "pg04_provenance": {
++    "review/working/app-29-lease-dispatch-pg04-source-checkpoint-01/checkpoint.json": "a5367797cb6eca5bcf39e35a457e45b2aae0062eddc8033d6581a9ea803784eb",
++    "review/remediation/app-29-lease-dispatch-pg03-stack-witness-correction-author-01.md": "dacf21f59d477438971a672dcfefbe174bb39113a9a6256b920d0807dfa5821b",
++    "review/remediation/app-29-lease-dispatch-pg03-stack-witness-correction-author-01.patch": "71903d644d18e2aa7325e3805a804fa8f3b46c8be4db2ee96574c47304eb8964",
++    "review/remediation/app-29-lease-dispatch-pg03-stack-witness-correction-independent-review-01.md": "a3349629a9e031923b08dc5b65035de0c7d3593419da8443cb256d1180e70e99",
++    "review/remediation/app-29-lease-dispatch-pg03-independent-result-review-01.md": "12823d278830ee5e52c22e935d0949aa62bf59a25f1e6830cf39876d4b60e0ac",
++    "review/remediation/app-29-lease-dispatch-pg03-actual-binding-independent-review-01.md": "d16debdb74b19651f21d48266ea3a9a040531c8d9a5ea03174455244a688d740",
++    "review/remediation/app-29-lease-dispatch-pg03-collector-binding-independent-review-01.md": "bcfd3ee6bb4c444261beb586fdf86eddf2015a733422ad47724bbce126f1861f",
++    "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-03/manifest.json": "0df6165f928d7a752d7a253d18078b099ca81eae9c7d5bc466bc828a74763f1f",
++    "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-03/issue-baseline.patch": "075443cf4c24f1a7e95e30915ce6043d238a65095712aa2b045d09ef2ab91a61",
++    "review/working/app-29-lease-dispatch-pg03-bound-01/profile/profile.json": "5f73278a73b86786690d68d2c8f1e62023092e9c89ebc56bb8b4c4babd236e45",
++    "review/working/app-29-lease-dispatch-pg03-bound-01/ci/app29-gate-b.request.json": "bfa7771fb1567a046d7551eacd21f065271f6186f5f17f29fc5967b3e6e9cf53",
++    "review/working/app-29-lease-dispatch-pg03-admission-01/launch-and-collect-01.py": "66072f539accc877392f90c29a5adc5c0175500143f36fa9e2bfb969ba56b086",
++    "review/working/app-29-lease-dispatch-pg03-admission-01/launch-01/artifacts/result.json": "a7bf8ad299b8805009c367d226bdf90b2fcf1b7515b8d909ae29b4d4a2cba79a",
++    "review/working/app-29-lease-dispatch-pg03-admission-01/launch-01/artifacts/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": "7b9e31356522d9c22dac2e79839c65f5f5e80d456fa52e855eafdab74e41a943",
++    "review/working/app-29-lease-dispatch-pg03-admission-01/launch-01/artifacts/gradle-test.log": "e03efc80fee2874fcf80a932fd3ba908cf07d194367dd6e217a356527ba80816",
++    "review/working/app-29-lease-dispatch-pg03-admission-01/launch-01/artifacts/container-events.log": "37b8168275b843434c6c20b613f4c027d50caf12e2ef72af3954b6ccdbd5cd64",
++    "review/working/app-29-lease-dispatch-pg03-admission-01/launch-01/collection.json": "ebdd6aaa17cff574eac67638923e8af0c88f8b2282a07c5a77899a9d111c6487",
++    "review/working/app-29-lease-dispatch-pg03-admission-01/launch-01/run-final.json": "17e28998aa1382c523422fb002e8a3c7300c3cbe673422af2db5635161608abe",
++    "review/working/app-29-lease-dispatch-pg04-preparation-01/selection.json": "8278a06b06c397ad5b9d79b5355a7c31de8b0b2d89add34ec122cd6ff056f6a2",
++    "review/working/app-29-lease-dispatch-pg04-preparation-01/source-delta.patch": "71903d644d18e2aa7325e3805a804fa8f3b46c8be4db2ee96574c47304eb8964"
+   }
+ }
+--- a/profile/profile.init.gradle
++++ b/profile/profile.init.gradle
+@@ -8,9 +8,9 @@
+ import org.gradle.api.tasks.testing.Test
+ import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
+ 
+-// Private exact2 PG03 failed-method derivative; retained PG18/lease17 history stays unchanged.
++// Private exact1 PG04 MODEL-only derivative; retained PG18/lease17 history stays unchanged.
+ // Reuses the existing owned hosted context; no controller, process, fixture or dependency replacement.
+-def profileSha256 = '5f73278a73b86786690d68d2c8f1e62023092e9c89ebc56bb8b4c4babd236e45' // UNBOUND: primary supplies final reviewed profile bytes.
++def profileSha256 = '0000000000000000000000000000000000000000000000000000000000000000' // UNBOUND: primary supplies final reviewed profile bytes.
+ if (!(profileSha256 instanceof String) || !(profileSha256 ==~ /[0-9a-f]{64}/) || profileSha256 == '0' * 64) {
+     throw new GradleException('Inert lease-dispatch derivative: final profile hash is UNBOUND')
+ }
+@@ -30,19 +30,19 @@
+     }
+     digest.digest().encodeHex().toString()
+ }
+-def profileFile = new File(root, 'review/working/app-29-lease-dispatch-pg03-bound-01/profile/profile.json')
++def profileFile = new File(root, 'review/working/app-29-lease-dispatch-pg04-preparation-01/profile/profile.json')
+ if (sha256(profileFile) != profileSha256) {
+-    throw new GradleException('Changed exact2 PG03 failed-method profile')
++    throw new GradleException('Changed exact1 PG04 MODEL-only profile')
+ }
+ def profile = new JsonSlurper().parse(profileFile)
+ def exactMethods = profile.test_selectors
+-if (profile.profile_id != 'app-29-lease-dispatch-pg-profile-03' || profile.expected_test_count != 2 ||
+-        exactMethods.size() != 2 || exactMethods.toSet().size() != 2 || profile.expected_witnesses != [] ||
+-        profile.expected_tests.size() != 2 ||
+-        profile.expected_tests.collect { it['class'] + '.' + it.display_name }.toSet().size() != 2 ||
++if (profile.profile_id != 'app-29-lease-dispatch-pg-profile-04' || profile.expected_test_count != 1 ||
++        exactMethods.size() != 1 || exactMethods.toSet().size() != 1 || profile.expected_witnesses != [] ||
++        profile.expected_tests.size() != 1 ||
++        profile.expected_tests.collect { it['class'] + '.' + it.display_name }.toSet().size() != 1 ||
+         profile.expected_tests.collect { it['class'] + '.' + it.method }.unique() != exactMethods ||
+         profile.task_args != (['test'] + exactMethods.collectMany { ['--tests', it] })) {
+-    throw new GradleException('Require exactly2 declaration filters/5 argv and2 noarg invocations, without enum/prior16/consumer-witness selection')
++    throw new GradleException('Require exactly1 literal MODEL filter/3 argv and1 invocation, without mixed-PASS/enum/prior16/consumer-witness replay')
+ }
+ def originalInit = new File(run, 'original.init.gradle')
+ if (sha256(originalInit) != profile.original_init.sha256) throw new GradleException('Changed historical source init')
+@@ -172,7 +172,7 @@
+             new File(report, 'effective-classpath.txt').text = JsonOutput.prettyPrint(JsonOutput.toJson([
+                     profile: profile.profile_id, source_inventory: profile.source_inventory,
+                     expected_test_count: profile.expected_test_count, expected_witnesses: profile.expected_witnesses,
+-                    scope: 'Exact2 PG03 failed-method validation only; classpath context, not consumer/JAR/W03 qualification',
++                    scope: 'Exact1 PG04 MODEL-only validation only; classpath context, not consumer/JAR/W03 qualification',
+                     removed_stock: [component: stock[0].id.componentIdentifier.displayName,
+                                     path: stock[0].file.canonicalPath, sha256: sha256(stock[0].file)],
+                     deduplicated_checker: checkers.collect { [path: it.file.canonicalPath, sha256: sha256(it.file)] },
+--- a/ci/app29-gate-b.request.json
++++ b/ci/app29-gate-b.request.json
+@@ -1,17 +1,17 @@
+ {
+-  "schema": "app-29-lease-dispatch-pg-03",
++  "schema": "app-29-lease-dispatch-pg-04",
+   "authorized": false,
+   "attempts": 1,
+-  "backend_sha": "f2e58eac0b139dca3a042c724d69c66a3d65278e",
+-  "checkpoint_sha256": "acb405c5acd7dc826e1a17ac27e6daa7c48f12242c1eea1eec28f3a3e90a0eb9",
++  "backend_sha": "0582abc737a89a663e770e78a5456961743330f6",
++  "checkpoint_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+   "source_bundle": {
+     "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+-    "private_parent_sha": "c67ddcd30fbae2438c7b2f803f720530b598e428",
++    "private_parent_sha": "f2e58eac0b139dca3a042c724d69c66a3d65278e",
+     "ref": "refs/heads/remediation/app-29-backend-complaints",
+-    "source_path": "review/working/app-29-lease-dispatch-pg03-transport-source-01/backend.bundle",
+-    "path": "docs/remediation/app29-lease-dispatch-pg-03/inputs/backend.bundle",
+-    "sha256": "b606cb5ed40814dc23c5c8c61a564de07d917d4a05b6fbca4c4b73841bea63fe",
+-    "bytes": 287442
++    "source_path": "review/working/app-29-lease-dispatch-pg04-transport-source-01/backend.bundle",
++    "path": "docs/remediation/app29-lease-dispatch-pg-04/inputs/backend.bundle",
++    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
++    "bytes": 0
+   },
+   "budgets": {
+     "job_minutes": 25,
+@@ -21,10 +21,10 @@
+     "cleanup_seconds": 180
+   },
+   "tool_sha256": {
+-    "ci/app29-gate-b.py": "406b9fd6af8913de5ec5aa9eb1426cd9bc8eb95a0a1717deb818a9d42ec4b382",
+-    ".github/workflows/app29-gate-b.yml": "3f9973b12ce69b07431f7714c8a9e0f9b3cb15051e76ca3570c085d22e149146",
+-    "review/working/app-29-lease-dispatch-pg03-bound-01/profile/profile.json": "5f73278a73b86786690d68d2c8f1e62023092e9c89ebc56bb8b4c4babd236e45",
+-    "review/working/app-29-lease-dispatch-pg03-bound-01/profile/profile.init.gradle": "7fb5a7a950aac011017eb99c69e96be595b4e737f8f765b8e6f5c198353584f6",
++    "ci/app29-gate-b.py": "0000000000000000000000000000000000000000000000000000000000000000",
++    ".github/workflows/app29-gate-b.yml": "0000000000000000000000000000000000000000000000000000000000000000",
++    "review/working/app-29-lease-dispatch-pg04-preparation-01/profile/profile.json": "0000000000000000000000000000000000000000000000000000000000000000",
++    "review/working/app-29-lease-dispatch-pg04-preparation-01/profile/profile.init.gradle": "0000000000000000000000000000000000000000000000000000000000000000",
+     "ci/app29_owned_children.py": "56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385"
+   }
+ }

@@ -1,0 +1,90 @@
+{
+  "schema": "app-29-lease-dispatch-pg04-model-only-selection-v1",
+  "status": "INERT_SOURCE_SCOPE_ONLY_NO_EXECUTION_AUTHORITY",
+  "historical_pg18_manifest": {
+    "path": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-01-transport-02/manifest.json",
+    "sha256": "1387f68bccac8797a5fc413d58495d748c3b28715f60b6074f7dca7e19ef94ba"
+  },
+  "historical_pg18_result": {
+    "path": "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/result.json",
+    "sha256": "e64b94410e240f7585ac6d4a2d70c90b3b8952d75e61cfa5e055f15fb1e69bc9"
+  },
+  "source_delta": {
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt": {
+      "before_sha256": "f8583ac5daef026d2e691e2c42d14be93573dfbe442bee8c5f5d3188482eca1a",
+      "after_sha256": "915785fe0ddefa5444ba088792345e9141c129529d518ff3e525658cf9e6132e"
+    }
+  },
+  "source_hashes": {
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt": "915785fe0ddefa5444ba088792345e9141c129529d518ff3e525658cf9e6132e"
+  },
+  "test_classes": [
+    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest"
+  ],
+  "test_selectors": [
+    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement"
+  ],
+  "expected_test_counts": {
+    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest": 1
+  },
+  "expected_test_count": 1,
+  "expected_tests": [
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+      "method": "MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement",
+      "display_name": "MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement()"
+    }
+  ],
+  "method_filter_count": 1,
+  "task_args": [
+    "test",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement"
+  ],
+  "task_argv_count": 3,
+  "expected_xml_files": [
+    "TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml"
+  ],
+  "shutdown_diagnostics": {
+    "status": "NOT_APPLICABLE",
+    "expected_record_count": 0
+  },
+  "container_population": {
+    "total": 2,
+    "postgres": 1,
+    "ryuk": 1,
+    "images": [
+      "postgres:17.6-alpine",
+      "testcontainers/ryuk:0.12.0"
+    ],
+    "basis": "The sole literal MODEL method is in one PER_CLASS/SAME_THREAD class; its database.value starts the one lazy PgLifecycleDatabaseFixture, closed in AfterAll. The ordinary cleanup fixture and EMF reuse that database. No mixed-pool or enum method is selected and no negative child JVM is selected. One Test worker/forkEvery=0 still requires one PostgreSQL17.6-alpine and one Ryuk0.12.0 in one session. These are required topology, not observed PG04 outcomes."
+  },
+  "normal_compilation": "All ordinary main/test compilation and required task dependencies remain enabled; filters narrow test execution only.",
+  "scope": "Only the actual PG03 MODEL failure after the exact declaring-class/internal-JVM-name assertion correction on0582abc. Reuse the unchanged PG03 mixed-pool PASS as historical evidence; do not replay it, prior16, any enum or OwnershipIT case. PG03 remains1PASS/1FAIL at CLOCK_ENTERED with six sticky failures and unproven later MODEL assertions. Normal compilation and every original capture/topology/cleanup gate remain. Native05 UNQUALIFIED; no full47/consumer/W03/production/recovery acceptance or execution authority.",
+  "historical_pg02_manifest": {
+    "path": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-02/manifest.json",
+    "sha256": "5c395d687ea6cd6afc67f2b21282583546e09b16c9ce89f35bf35bd3af633da8"
+  },
+  "historical_pg02_result": {
+    "path": "review/working/app-29-lease-dispatch-pg02-admission-01/launch-01/artifacts/result.json",
+    "sha256": "dbd0e7635561d9d733f644d40520581b25efcfb8afb20a60d4330399d738c0df"
+  },
+  "historical_pg03_manifest": {
+    "path": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-03/manifest.json",
+    "sha256": "0df6165f928d7a752d7a253d18078b099ca81eae9c7d5bc466bc828a74763f1f"
+  },
+  "historical_pg03_result": {
+    "path": "review/working/app-29-lease-dispatch-pg03-admission-01/launch-01/artifacts/result.json",
+    "sha256": "a7bf8ad299b8805009c367d226bdf90b2fcf1b7515b8d909ae29b4d4a2cba79a"
+  },
+  "historical_pass_reused": {
+    "run_id": "34786407104",
+    "attempt": 1,
+    "backend_sha": "f2e58eac0b139dca3a042c724d69c66a3d65278e",
+    "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+    "method": "mixed pool creator nesting refuses wrong top fallback and unrelated lease use",
+    "display_name": "mixed pool creator nesting refuses wrong top fallback and unrelated lease use()",
+    "status": "PASS",
+    "scope": "Historical unchanged-case reuse only; not a new PG04 execution result."
+  }
+}

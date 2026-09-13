@@ -1,0 +1,269 @@
+{
+  "at_utc": "2026-09-13T22:23:26.733860+00:00",
+  "run_url": "https://github.com/kira-manga/kira-admin/actions/runs/34786407104",
+  "carrier_sha": "69997b8bf003e89b7e976a3d0a305e526d2c04ef",
+  "attempt": 1,
+  "conclusion": "failure",
+  "files": {
+    "after-backend-branch.log": {
+      "sha256": "7b48f4083ede426131b1eff936e7c0d0297d2281a7221979a6ae135706be019b",
+      "bytes": 38
+    },
+    "after-backend-commit.log": {
+      "sha256": "8b4ddf60c3c31039c26700df27675b8f3998337c6609da6b34ef3b6dcff47b57",
+      "bytes": 353
+    },
+    "after-backend-sha.log": {
+      "sha256": "238a711982c37e721f630a85ef1415933371b9021a37b57e8fac1dc133df66f3",
+      "bytes": 41
+    },
+    "after-core-baseline-commit.log": {
+      "sha256": "98cdf85b08d699721c6350fa51e484a662d4ab3dd0ffc7112d8c3b9a56e2b516",
+      "bytes": 639
+    },
+    "after-diagnostic-parent-commit.log": {
+      "sha256": "cf767d2023a74d90e99c620b5495ce90d60c83cb103786fa6e149816f4f2abc2",
+      "bytes": 352
+    },
+    "after-lease-parent-commit.log": {
+      "sha256": "442cb8c7fc00925710a2ae1575745f5b7af278971d2cf468852fd481dcc3b228",
+      "bytes": 379
+    },
+    "after-ordinary-parent-commit.log": {
+      "sha256": "9ceb2818497ac397b00665bf8b63ea4ac161aeab36bf4062001aa220211123f0",
+      "bytes": 520
+    },
+    "after-pg02-parent-commit.log": {
+      "sha256": "9f07b8944680894c1c7f03011629162f22eb429e0fa41abc3701860a618f3755",
+      "bytes": 362
+    },
+    "after-post-structural-parent-commit.log": {
+      "sha256": "cbe394112a049b6a605d8b0196ba48f94f9fdb4629bf434d15ac38e140ccca34",
+      "bytes": 344
+    },
+    "after-previous-private-parent-commit.log": {
+      "sha256": "0116d0a9fa46cb8dc2a1125ec38db5c1d9d75b85e9bff64e4ddc53e054ace7ab",
+      "bytes": 361
+    },
+    "after-private-parent-commit.log": {
+      "sha256": "78f53743490218d3e856c68dffaae952360f89a7585c7679e87ca1cc1ffeb2e2",
+      "bytes": 373
+    },
+    "after-product-lifecycle-parent-commit.log": {
+      "sha256": "90b0ed3b9c7a6b61c61998c320086226d64ee593a6c69abb9a97394f24abab00",
+      "bytes": 368
+    },
+    "after-source-hashes.json": {
+      "sha256": "27faee0fc277bab7113b95cc0f8479e57aa533cd5e1fed36d1803306076238e2",
+      "bytes": 136393
+    },
+    "after-status.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "after-tracked.log": {
+      "sha256": "9102056caf1667ee94c14fb11023387f4adbee0d3e3caf6f069dc5b8794dfda3",
+      "bytes": 73172
+    },
+    "before-backend-branch.log": {
+      "sha256": "7b48f4083ede426131b1eff936e7c0d0297d2281a7221979a6ae135706be019b",
+      "bytes": 38
+    },
+    "before-backend-commit.log": {
+      "sha256": "8b4ddf60c3c31039c26700df27675b8f3998337c6609da6b34ef3b6dcff47b57",
+      "bytes": 353
+    },
+    "before-backend-sha.log": {
+      "sha256": "238a711982c37e721f630a85ef1415933371b9021a37b57e8fac1dc133df66f3",
+      "bytes": 41
+    },
+    "before-core-baseline-commit.log": {
+      "sha256": "98cdf85b08d699721c6350fa51e484a662d4ab3dd0ffc7112d8c3b9a56e2b516",
+      "bytes": 639
+    },
+    "before-diagnostic-parent-commit.log": {
+      "sha256": "cf767d2023a74d90e99c620b5495ce90d60c83cb103786fa6e149816f4f2abc2",
+      "bytes": 352
+    },
+    "before-lease-parent-commit.log": {
+      "sha256": "442cb8c7fc00925710a2ae1575745f5b7af278971d2cf468852fd481dcc3b228",
+      "bytes": 379
+    },
+    "before-ordinary-parent-commit.log": {
+      "sha256": "9ceb2818497ac397b00665bf8b63ea4ac161aeab36bf4062001aa220211123f0",
+      "bytes": 520
+    },
+    "before-pg02-parent-commit.log": {
+      "sha256": "9f07b8944680894c1c7f03011629162f22eb429e0fa41abc3701860a618f3755",
+      "bytes": 362
+    },
+    "before-post-structural-parent-commit.log": {
+      "sha256": "cbe394112a049b6a605d8b0196ba48f94f9fdb4629bf434d15ac38e140ccca34",
+      "bytes": 344
+    },
+    "before-previous-private-parent-commit.log": {
+      "sha256": "0116d0a9fa46cb8dc2a1125ec38db5c1d9d75b85e9bff64e4ddc53e054ace7ab",
+      "bytes": 361
+    },
+    "before-private-parent-commit.log": {
+      "sha256": "78f53743490218d3e856c68dffaae952360f89a7585c7679e87ca1cc1ffeb2e2",
+      "bytes": 373
+    },
+    "before-product-lifecycle-parent-commit.log": {
+      "sha256": "90b0ed3b9c7a6b61c61998c320086226d64ee593a6c69abb9a97394f24abab00",
+      "bytes": 368
+    },
+    "before-source-hashes.json": {
+      "sha256": "27faee0fc277bab7113b95cc0f8479e57aa533cd5e1fed36d1803306076238e2",
+      "bytes": 136393
+    },
+    "before-status.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "before-tracked.log": {
+      "sha256": "9102056caf1667ee94c14fb11023387f4adbee0d3e3caf6f069dc5b8794dfda3",
+      "bytes": 73172
+    },
+    "carrier-sha.log": {
+      "sha256": "ca509e9c9cc1c2bdb19569e0b23d3730eb178566f251072d3cde43ddac8878bb",
+      "bytes": 41
+    },
+    "container-events.log": {
+      "sha256": "37b8168275b843434c6c20b613f4c027d50caf12e2ef72af3954b6ccdbd5cd64",
+      "bytes": 5051
+    },
+    "containers-after-cleanup.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "containers-before.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "containers-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "containers-normal-0.log": {
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "bytes": 65
+    },
+    "containers-normal-1.log": {
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "bytes": 65
+    },
+    "containers-normal-2.log": {
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "bytes": 65
+    },
+    "containers-normal-3.log": {
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "bytes": 65
+    },
+    "containers-normal-4.log": {
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "bytes": 65
+    },
+    "containers-normal-5.log": {
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "bytes": 65
+    },
+    "containers-normal-6.log": {
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "bytes": 65
+    },
+    "containers-normal-7.log": {
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "bytes": 65
+    },
+    "containers-normal-8.log": {
+      "sha256": "64f7222d84ae83a8f92794f400de370f6fa9a333aa551b6ceec8cc6df02dcfdb",
+      "bytes": 65
+    },
+    "containers-normal-9.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "docker-version.log": {
+      "sha256": "a634037cf6df509bb12f1496d80dd258857175c09727b4a4cfe8167cf1951716",
+      "bytes": 792
+    },
+    "gradle-stop-final.log": {
+      "sha256": "9bb9c19238f3fdde3213f2be84912b0c7e87b3e2295ec372ec245deab200d46d",
+      "bytes": 31
+    },
+    "gradle-stop-immediate.log": {
+      "sha256": "9bb9c19238f3fdde3213f2be84912b0c7e87b3e2295ec372ec245deab200d46d",
+      "bytes": 31
+    },
+    "gradle-test.log": {
+      "sha256": "e03efc80fee2874fcf80a932fd3ba908cf07d194367dd6e217a356527ba80816",
+      "bytes": 4161
+    },
+    "image-0.log": {
+      "sha256": "42f9580f26e131dd7eaaea13e73f7b73e182f2eb870be56499f9cf697d911a42",
+      "bytes": 208
+    },
+    "image-1.log": {
+      "sha256": "2fcef07881f4f4e9564c412f22f516b80bbaaf19b5735c750d25961945316f40",
+      "bytes": 225
+    },
+    "initial-backend-branch.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "initial-backend-sha.log": {
+      "sha256": "f8f42cc7bc7d592bf99e042b3aa9953662f86136ed64204a86e469f1804c3fdb",
+      "bytes": 41
+    },
+    "initial-backend-status.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "jdk-version.log": {
+      "sha256": "518f792493e383498960228f2d45f05936986623538bbd69bc5cc4d7ee35c457",
+      "bytes": 2170
+    },
+    "jdk.json": {
+      "sha256": "f95c67557fd2ae701f15f089ab0b7a6bdffef78c432a699e6411a45b24c30589",
+      "bytes": 2023
+    },
+    "owned-containers.json": {
+      "sha256": "6e2acb1a987fe5d5690aab1c9eca0d5c17a6ff6c34e505fc1422fc307b27593c",
+      "bytes": 923
+    },
+    "reports/lease-dispatch-pg-03/class-load-2421.txt": {
+      "sha256": "84a642eb1ebf872e6da2e71999d0d79763c6588ee26b9b7c1d2f89e16274de39",
+      "bytes": 3257866
+    },
+    "reports/lease-dispatch-pg-03/effective-classpath.txt": {
+      "sha256": "5956dd8fa2c2fdea6cf57b5a9680d8ee8453d078a29bf9ee489d72472d9352e2",
+      "bytes": 85617
+    },
+    "result.json": {
+      "sha256": "a7bf8ad299b8805009c367d226bdf90b2fcf1b7515b8d909ae29b4d4a2cba79a",
+      "bytes": 79553
+    },
+    "source-bundle-checkout.log": {
+      "sha256": "0cb3d81d86240f35738133180b56b184a7f5af12cd850cd9cfd2096230b17326",
+      "bytes": 171
+    },
+    "source-bundle-fetch.log": {
+      "sha256": "b194bbfaa017325358b10dc93d625f9363783acf1e9a63c3311d08240d28fa1e",
+      "bytes": 217
+    },
+    "source-bundle-verify.log": {
+      "sha256": "1740f49daace4367a97372bf0f7e7e66b385551bdc3bb333d60d89a481286b7e",
+      "bytes": 354
+    },
+    "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": {
+      "sha256": "7b9e31356522d9c22dac2e79839c65f5f5e80d456fa52e855eafdab74e41a943",
+      "bytes": 22800
+    }
+  },
+  "artifact": "app29-lease-dispatch-pg-03-34786407104-1",
+  "disposition": "RAW_RESULT_REVIEW_REQUIRED",
+  "local_builds": 0,
+  "disk_free_bytes": 10777178112
+}

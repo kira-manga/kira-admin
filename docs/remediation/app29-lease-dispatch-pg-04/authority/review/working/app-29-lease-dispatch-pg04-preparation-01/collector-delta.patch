@@ -1,0 +1,73 @@
+--- a/launch-and-collect-01.py
++++ b/launch-and-collect-01.py
+@@ -1,8 +1,10 @@
++# Inert preparation only. Primary must bind a separate admitted copy; this stops before imports/writes/locks/network.
++raise SystemExit('INERT_PG04_PREPARATION_NO_BINDING_OR_ADMISSION')
+ from pathlib import Path
+ from datetime import datetime, timezone
+ import fcntl, hashlib, json, os, shutil, subprocess, time
+ W=Path('/root/projects/Kira'); A=W/'kira-admin'
+-E=W/'review/working/app-29-lease-dispatch-pg03-admission-01/launch-01'
++E=W/'review/working/app-29-lease-dispatch-pg04-admission-01/launch-01'
+ E.mkdir(mode=0o700)
+ os.umask(0o077)
+ def now(): return datetime.now(timezone.utc).isoformat()
+@@ -19,13 +21,13 @@
+ lock=(W/'.kira-validation/hosted-validation.lock').open('a')
+ fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+ run=None; complete=False; collected=False
+-record('owner.json',{'at_utc':now(),'pid':os.getpid(),'lock':str(Path(lock.name).relative_to(W)),'scope':'one exact private lease-dispatch-failed2 push/run/collection; no local heavy batch'})
++record('owner.json',{'at_utc':now(),'pid':os.getpid(),'lock':str(Path(lock.name).relative_to(W)),'scope':'one exact private lease-dispatch-model-only push/run/collection; no local heavy batch'})
+ try:
+  assert shutil.disk_usage(W).free>=8*1024**3,'8GiB disk floor'
+  privacy=json.loads(gh('api','repos/kira-manga/kira-admin'))
+  assert privacy['private'] and privacy['permissions']['push']
+  assert git('branch','--show-current').decode().strip()=='remediation/app-29-backend-complaints'
+- before='bc17ad0e1dd1db509aa6d4e67a54975deef626bd'
++ before='0000000000000000000000000000000000000000'  # UNBOUND: primary measures actual private Admin parent.
+  assert git('rev-parse','HEAD').decode().strip()==before
+  assert git('ls-remote','--heads','origin','remediation/app-29-backend-complaints').decode().split()[0]==before
+  assert not git('diff','--cached','--name-only'), 'Fresh launch requires an empty index; preserve existing staged work'
+@@ -36,13 +38,13 @@
+  check(A/'ci/app29-gate-b.request.json',admission['authorized_request_sha256'])
+  check(A/transport['checkpoint_path'],admission['deployed_checkpoint_sha256'])
+  for relative,h in transport['deployed_tooling'].items(): check(A/relative,h)
+- base=A/'docs/remediation/app29-lease-dispatch-pg-03'
++ base=A/'docs/remediation/app29-lease-dispatch-pg-04'
+  for p,h in transport['authority_pins'].items(): check(base/'authority'/p,h)
+  check(A/transport['source_bundle']['path'],transport['source_bundle']['sha256'])
+  old_requests=json.loads((E.parent/'other-requests-before.json').read_text())
+  for p,h in old_requests.items():
+   if p!='ci/app29-gate-b.request.json': check(A/p,h)
+- scopes=['.github/workflows/app29-gate-b.yml','ci/app29-gate-b.py','ci/app29-gate-b.request.json','review/working/app-29-lease-dispatch-pg03-bound-01/profile','docs/remediation/app29-lease-dispatch-pg-03']
++ scopes=['.github/workflows/app29-gate-b.yml','ci/app29-gate-b.py','ci/app29-gate-b.request.json','review/working/app-29-lease-dispatch-pg04-bound-01/profile','docs/remediation/app29-lease-dispatch-pg-04']
+  raw=git('status','--porcelain=v1','-z','-uall')
+  entries=[e for e in raw.split(b'\0') if e]
+  assert all(e[:2] in (b' M',b'??') and e[2:3]==b' ' for e in entries),'unexpected staged/index/rename state'
+@@ -55,7 +57,7 @@
+  staged=[x.decode() for x in git('diff','--cached','--name-only','-z').split(b'\0') if x]
+  assert set(staged)==set(paths)
+  git('diff','--cached','--check','--',*scopes[:4])
+- commit=git('commit','-m','Validate two lease dispatch cases after compile repair [skip both]')
++ commit=git('commit','-m','Validate exact MODEL creator tail after JVM witness repair [skip both]')
+  (E/'commit.log').write_bytes(commit)
+  sha=git('rev-parse','HEAD').decode().strip()
+  record('commit.json',{'at_utc':now(),'head':sha,'parent':before,'tree':git('rev-parse','HEAD^{tree}').decode().strip(),'paths':staged,'product_integration':False})
+@@ -67,7 +69,7 @@
+  deadline=time.monotonic()+180
+  while run is None:
+   rows=json.loads(gh('run','list','--repo','kira-manga/kira-admin','--workflow','app29-gate-b.yml','--commit',sha,'--limit','5','--json','databaseId,status,conclusion,headSha,url,workflowName,event'))
+-  assert len(rows)<=1,'multiple lease-dispatch-failed2 runs'
++  assert len(rows)<=1,'multiple lease-dispatch-model-only runs'
+   if rows: run=rows[0]; break
+   assert time.monotonic()<deadline,'push run not observed; do not dispatch duplicate'
+   time.sleep(10)
+@@ -86,7 +88,7 @@
+  rawart=gh('api',f'repos/kira-manga/kira-admin/actions/runs/{run["databaseId"]}/artifacts')
+  (E/'artifacts-metadata.json').write_bytes(rawart)
+  artifacts=json.loads(rawart)['artifacts']
+- expected=f'app29-lease-dispatch-pg-03-{run["databaseId"]}-1'
++ expected=f'app29-lease-dispatch-pg-04-{run["databaseId"]}-1'
+  owned=[x for x in artifacts if x['name']==expected]
+  assert len(owned)==1 and not owned[0]['expired'],'raw expected artifact missing'
+  assert owned[0]['size_in_bytes']<512*1024**2 and shutil.disk_usage(W).free>8*1024**3+owned[0]['size_in_bytes']*3

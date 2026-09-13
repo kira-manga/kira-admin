@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-13T14:18:22.119Z" hostname="runnervmlun5p" time="14.905">
+  <properties/>
+  <testcase name="native commit failure stays unknown after Spring cleanup while authentic local quiescence permits only refund()" classname="me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT" time="14.905"/>
+  <system-out><![CDATA[14:18:22.285 [Test worker] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+14:18:22.300 [Test worker] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+14:18:22.317 [Test worker] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 1.21.4
+14:18:22.889 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with Environment variables, system properties and defaults. Resolved dockerHost=unix:///var/run/docker.sock
+14:18:22.891 [Test worker] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+14:18:22.909 [Test worker] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 28.0.4
+  API Version: 1.48
+  Operating System: Ubuntu 24.04.5 LTS
+  Total Memory: 7937 MB
+14:18:22.944 [Test worker] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling docker image: testcontainers/ryuk:0.12.0. Please be patient; this may take some time but only needs to be done once.
+14:18:22.950 [Test worker] INFO org.testcontainers.utility.RegistryAuthLocator -- Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: testcontainers/ryuk:latest, configFile: /home/runner/work/_temp/app29-lease-dispatch-pg-01-34762007741-1/home/.docker/config.json, configEnv: DOCKER_AUTH_CONFIG). Falling back to docker-java default behaviour. Exception message: Status 404: No config supplied. Checked in order: /home/runner/work/_temp/app29-lease-dispatch-pg-01-34762007741-1/home/.docker/config.json (file not found), DOCKER_AUTH_CONFIG (not set)
+14:18:23.624 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Starting to pull image
+14:18:23.648 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  0 pending,  0 downloaded,  0 extracted, (0 bytes/0 bytes)
+14:18:24.143 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  2 pending,  1 downloaded,  0 extracted, (906 KB/? MB)
+14:18:24.211 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  1 pending,  2 downloaded,  0 extracted, (3 MB/? MB)
+14:18:24.244 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  0 pending,  3 downloaded,  0 extracted, (3 MB/11 MB)
+14:18:24.318 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  0 pending,  3 downloaded,  1 extracted, (5 MB/11 MB)
+14:18:24.458 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  0 pending,  3 downloaded,  2 extracted, (5 MB/11 MB)
+14:18:24.496 [docker-java-stream--1931961954] INFO tc.testcontainers/ryuk:0.12.0 -- Pulling image layers:  0 pending,  3 downloaded,  3 extracted, (11 MB/11 MB)
+14:18:24.503 [Test worker] INFO tc.testcontainers/ryuk:0.12.0 -- Image testcontainers/ryuk:0.12.0 pull took PT1.558842323S
+14:18:24.546 [Test worker] INFO tc.testcontainers/ryuk:0.12.0 -- Creating container for image: testcontainers/ryuk:0.12.0
+14:18:24.645 [Test worker] INFO tc.testcontainers/ryuk:0.12.0 -- Container testcontainers/ryuk:0.12.0 is starting: b02baa7e02edbf3189f672033aa0801f52aa24e1aaab3db50095768171c349a3
+14:18:25.004 [Test worker] INFO tc.testcontainers/ryuk:0.12.0 -- Container testcontainers/ryuk:0.12.0 started in PT0.457699057S
+14:18:25.008 [Test worker] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+14:18:25.008 [Test worker] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+14:18:25.009 [Test worker] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+14:18:25.011 [Test worker] INFO tc.postgres:17.6-alpine -- Pulling docker image: postgres:17.6-alpine. Please be patient; this may take some time but only needs to be done once.
+14:18:25.682 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Starting to pull image
+14:18:25.683 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending,  0 downloaded,  0 extracted, (0 bytes/0 bytes)
+14:18:26.105 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  9 pending,  1 downloaded,  0 extracted, (968 bytes/? MB)
+14:18:26.209 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  8 pending,  2 downloaded,  0 extracted, (63 KB/? MB)
+14:18:26.270 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  7 pending,  3 downloaded,  0 extracted, (1 MB/? MB)
+14:18:26.300 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  6 pending,  4 downloaded,  0 extracted, (1 MB/? MB)
+14:18:26.385 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  6 pending,  4 downloaded,  1 extracted, (3 MB/? MB)
+14:18:26.406 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  6 pending,  4 downloaded,  2 extracted, (3 MB/? MB)
+14:18:26.441 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  6 pending,  4 downloaded,  3 extracted, (4 MB/? MB)
+14:18:26.454 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  6 pending,  4 downloaded,  4 extracted, (4 MB/? MB)
+14:18:26.462 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  5 pending,  5 downloaded,  4 extracted, (4 MB/? MB)
+14:18:26.514 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  4 pending,  6 downloaded,  4 extracted, (4 MB/? MB)
+14:18:26.663 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  3 pending,  7 downloaded,  4 extracted, (9 MB/? MB)
+14:18:26.711 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  2 pending,  8 downloaded,  4 extracted, (9 MB/? MB)
+14:18:26.859 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  1 pending,  9 downloaded,  4 extracted, (73 MB/? MB)
+14:18:26.910 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  4 extracted, (73 MB/105 MB)
+14:18:29.952 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  5 extracted, (105 MB/105 MB)
+14:18:29.971 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  6 extracted, (105 MB/105 MB)
+14:18:29.986 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  7 extracted, (105 MB/105 MB)
+14:18:29.999 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  8 extracted, (105 MB/105 MB)
+14:18:30.011 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded,  9 extracted, (105 MB/105 MB)
+14:18:30.025 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pulling image layers:  0 pending, 10 downloaded, 10 extracted, (105 MB/105 MB)
+14:18:30.030 [Test worker] INFO tc.postgres:17.6-alpine -- Image postgres:17.6-alpine pull took PT5.018826561S
+14:18:30.030 [docker-java-stream-630802000] INFO tc.postgres:17.6-alpine -- Pull complete. 10 layers, pulled in 4s (downloaded 105 MB at 26 MB/s)
+14:18:30.033 [Test worker] INFO tc.postgres:17.6-alpine -- Creating container for image: postgres:17.6-alpine
+14:18:30.045 [Test worker] INFO tc.postgres:17.6-alpine -- Container postgres:17.6-alpine is starting: 20ad39227a7cacddb3aa4a90836ee8cde2472a3f1249c68c99f7f5a5dd97a93c
+14:18:31.304 [Test worker] INFO tc.postgres:17.6-alpine -- Container postgres:17.6-alpine started in PT1.270794709S
+14:18:31.305 [Test worker] INFO tc.postgres:17.6-alpine -- Container is started (JDBC URL: jdbc:postgresql://localhost:32769/w03_lifecycle?loggerLevel=OFF)
+14:18:31.912 [Test worker] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:32769/w03_lifecycle (PostgreSQL 17.6)
+14:18:31.979 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+14:18:31.983 [Test worker] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 14 migrations (execution time 00:00.037s)
+14:18:32.000 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+14:18:32.075 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": << Empty Schema >>
+14:18:32.101 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "1 - users"
+14:18:32.161 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "2 - source config"
+14:18:32.240 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "3 - published documents"
+14:18:32.273 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "4 - audit log"
+14:18:32.297 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "5 - completions"
+14:18:32.322 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "6 - completion retention"
+14:18:32.335 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "7 - signed published documents"
+14:18:32.347 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "8 - enforce completion result xor"
+14:18:32.378 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "9 - tutorials"
+14:18:32.447 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "10 - source catalog v2"
+14:18:32.479 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "11 - source editor drafts"
+14:18:32.500 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "12 - admin step up grants"
+14:18:32.518 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "13 - source changesets"
+14:18:32.609 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "14 - backend owned complaints"
+14:18:32.872 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 14 migrations to schema "public", now at version v14 (execution time 00:00.465s)
+14:18:33.328 [Test worker] INFO org.hibernate.jpa.internal.util.LogHelper -- HHH000204: Processing PersistenceUnitInfo [name: default]
+14:18:33.382 [Test worker] INFO org.hibernate.Version -- HHH000412: Hibernate ORM core version 6.6.53.Final
+14:18:33.421 [Test worker] INFO org.hibernate.cache.internal.RegionFactoryInitiator -- HHH000026: Second-level cache disabled
+14:18:34.441 [Test worker] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+14:18:34.476 [Test worker] WARN org.hibernate.orm.deprecation -- HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+14:18:34.494 [Test worker] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [undefined/unknown]
+	Database driver: undefined/unknown
+	Database version: 12.0
+	Autocommit mode: undefined/unknown
+	Isolation level: <unknown>
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+14:18:34.855 [Test worker] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.3.Final
+14:18:35.715 [Test worker] INFO org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+14:18:35.741 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-1 - Starting...
+14:18:35.752 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-1 - Start completed.
+14:18:36.589 [Test worker] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+14:18:37.004 [Test worker] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+14:18:37.008 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-1 - Shutdown initiated...
+14:18:37.010 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-1 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

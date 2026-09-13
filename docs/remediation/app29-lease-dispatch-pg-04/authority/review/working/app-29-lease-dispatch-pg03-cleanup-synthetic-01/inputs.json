@@ -1,0 +1,185 @@
+{
+  "candidate": {
+    "path": "review/working/app-29-lease-dispatch-pg03-failure-cleanup-preparation-01/ci/app29-gate-b.py",
+    "sha256": "30b9ab8a43b6b9277ac401569ddfa62ef44282929d6bb21badbf2f7abe5c1024"
+  },
+  "independent_review": {
+    "path": "review/remediation/app-29-lease-dispatch-pg03-failure-cleanup-independent-review-01.md",
+    "sha256": "1907703d923d440311b720137016d420702ecfa861f87009cd53b9f2283bcbb1"
+  },
+  "existing_harness_basis": {
+    "path": "review/working/app-29-gate-b-hosted-draft-06/tests/test_failed_capture_cleanup.py",
+    "sha256": "0437ff7cf1327b890509b7934d76b7b3e05e532cfd1f70624020c5355de41689"
+  },
+  "test_source_sha256": "f0358214820ad2d03ba9e1d05825513961212a26e25ca00b3954cc46f1fdb367",
+  "exercised_candidate_segments": {
+    "fail": {
+      "start_line": 825,
+      "end_line": 834,
+      "source_segment_sha256": "2a91d39ceb509e27b5b4525db05dabb973e6debc2976db349e93739debe28f39"
+    },
+    "attempt": {
+      "start_line": 836,
+      "end_line": 841,
+      "source_segment_sha256": "1257ea30f98851fbae4bff7d4bbf03903ed62552c49f470446cf46c836eabc5f"
+    },
+    "cleanup_outputs": {
+      "start_line": 843,
+      "end_line": 849,
+      "source_segment_sha256": "48d723bee1b356053360f618d018e27ee87fb6cc99ba8cd624a6b8a3678a2498"
+    },
+    "output_absence": {
+      "start_line": 851,
+      "end_line": 856,
+      "source_segment_sha256": "6020d50fdc57bf28873836739e56b6ed3527c3e2dd64c18c6b35158bf931810a"
+    },
+    "census": {
+      "start_line": 983,
+      "end_line": 986,
+      "source_segment_sha256": "ed04b00d3cfdfb0daf4014341d49a94299935e56aead8c0bb1b7da03f40269bd"
+    },
+    "containers": {
+      "start_line": 988,
+      "end_line": 1052,
+      "source_segment_sha256": "dea3bfb924378e4478e978beca16f9874e26215e815d90f6105ee216cd9c2c40"
+    },
+    "require": {
+      "start_line": 155,
+      "end_line": 157,
+      "source_segment_sha256": "570ace48effbcffbb325b4bdc4424b575500114187d28c59c86b8870081e9f76"
+    },
+    "safe": {
+      "start_line": 168,
+      "end_line": 177,
+      "source_segment_sha256": "fa1103f1c3b5176e003534e2a58604c63b77bb498314bc7b0acc96e59a235ec2"
+    },
+    "digest": {
+      "start_line": 180,
+      "end_line": 183,
+      "source_segment_sha256": "c124a6bde9cdf47b75f8a87c0e09160d98403155b383c2c275e6d6bc2391836e"
+    },
+    "unique": {
+      "start_line": 186,
+      "end_line": 191,
+      "source_segment_sha256": "868b2970d51fef4176e27028f79359fab9f089fdbfa39cc62f283792ac379058"
+    },
+    "save": {
+      "start_line": 199,
+      "end_line": 200,
+      "source_segment_sha256": "85e3acda9d19e681bfacef3e6b6e02398f74d0cd5c1c8612e8aa8e1d498041ad"
+    },
+    "remove_owned": {
+      "start_line": 203,
+      "end_line": 207,
+      "source_segment_sha256": "465ec6a9324478d1ad52d0c0b81962374a8ae35cef20f38fd929bb1747f1ba27"
+    },
+    "capture_reports": {
+      "start_line": 1055,
+      "end_line": 1091,
+      "source_segment_sha256": "de794aa387602703202510e2ff2e9582533ed1ec4d62597c1842be8845002627"
+    },
+    "required_capture_inventory": {
+      "start_line": 1094,
+      "end_line": 1104,
+      "source_segment_sha256": "0458ef861e97533b97102f8cda7fd648d9072cf789f4eefa86bd3e38fbb73638"
+    },
+    "constants": [
+      "CACHE_PATHS",
+      "CREATOR_CLASS",
+      "EXPECTED_TESTS",
+      "GUARD_IDS",
+      "IMAGES",
+      "METHODS",
+      "TEST_COUNTS"
+    ],
+    "statement_slices": {
+      "capture": [
+        [
+          1261,
+          1261
+        ],
+        [
+          1262,
+          1265
+        ]
+      ],
+      "files": [
+        [
+          1273,
+          1273
+        ],
+        [
+          1274,
+          1274
+        ],
+        [
+          1275,
+          1278
+        ],
+        [
+          1279,
+          1279
+        ],
+        [
+          1280,
+          1280
+        ]
+      ],
+      "ending": [
+        [
+          1283,
+          1283
+        ],
+        [
+          1284,
+          1284
+        ],
+        [
+          1285,
+          1285
+        ],
+        [
+          1286,
+          1286
+        ],
+        [
+          1287,
+          1288
+        ],
+        [
+          1289,
+          1289
+        ],
+        [
+          1290,
+          1290
+        ],
+        [
+          1291,
+          1294
+        ],
+        [
+          1295,
+          1295
+        ],
+        [
+          1296,
+          1296
+        ]
+      ],
+      "status": [
+        [
+          1324,
+          1330
+        ],
+        [
+          1331,
+          1331
+        ]
+      ]
+    }
+  },
+  "diagnostics": "explicit synthetic success boundary; real parser/classpath/JDK/PG tests excluded",
+  "custody": "stub command bytes and always-true synthetic drains; no ownership proof",
+  "destructive_scope": "only exact TemporaryDirectory fixtures created under this packet"
+}

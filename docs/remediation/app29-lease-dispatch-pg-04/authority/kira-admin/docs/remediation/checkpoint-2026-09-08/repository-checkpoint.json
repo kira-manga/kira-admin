@@ -1,0 +1,109 @@
+{
+  "created_at": "2026-09-08T09:40:37.651516+03:00",
+  "purpose": "Owner-requested resumable WIP; NOT an accepted fix, integration merge, deployment or release",
+  "repositories": [
+    {
+      "directory": "Kira manga",
+      "github_repository": "kira-manga/kira-app",
+      "branch": "remediation/app-29-backend-complaints",
+      "integration_branch": "remediation/production-readiness-2026-09-04",
+      "integration_head": "c0db2f63c916932dbed1a3314c9a06d30c1696b5",
+      "checkpoint_head": "a584efecb3dfb342d9a3b873bc09c132e8771cd3",
+      "remote_sha_verified": true
+    },
+    {
+      "directory": "kira-backend",
+      "github_repository": "kira-manga/Kira-backend",
+      "branch": "remediation/app-29-backend-complaints",
+      "integration_branch": "remediation/production-readiness-2026-09-04",
+      "integration_head": "c8bdff9a8acebb7c8e8ce40c65b8c7315ef9c014",
+      "checkpoint_head": "98ad9ac57de3a33b80fc31079c7278c83f64e675",
+      "remote_sha_verified": true
+    },
+    {
+      "directory": "kira-admin",
+      "github_repository": "kira-manga/kira-admin",
+      "branch": "remediation/app-29-backend-complaints",
+      "integration_branch": "remediation/production-readiness-2026-09-04",
+      "integration_head": "d4b8e6b33a1fc1f209dc8faf8eb4bdd7615459e2",
+      "product_source_baseline": "d4b8e6b33a1fc1f209dc8faf8eb4bdd7615459e2",
+      "checkpoint_head": "CONTAINING_COMMIT: resolve git rev-parse HEAD for this immutable archive commit; do not invent a self-referential SHA",
+      "product_changes": false,
+      "precommit_verification": "npm ci and npm run verify PASS; 5tests/2files,lint,typecheck,build; created artifacts/processes cleaned"
+    },
+    {
+      "directory": "kira-source-engine",
+      "github_repository": "kira-manga/kira-source-engine",
+      "branch": "remediation/campaign-handoff-2026-09-08",
+      "integration_branch": "remediation/production-readiness-2026-09-04",
+      "integration_head": "fc55c149398068d1f47c2fb08597dbc08f0bf28a",
+      "checkpoint_head": "aba63720edae9643aa3dbe61b75bf9ddbb80b368",
+      "remote_sha_verified": true
+    },
+    {
+      "directory": "kira-web",
+      "github_repository": "kira-manga/kira-web",
+      "branch": "remediation/app-29-backend-complaints",
+      "integration_branch": "remediation/production-readiness-2026-09-04",
+      "integration_head": "b8a632c1a19c3370b66728d1e31dbade9687782e",
+      "checkpoint_head": "5595f2d82d702cc4dd558c87ec0f9f1027ecd647",
+      "remote_sha_verified": true
+    }
+  ],
+  "backend_frozen_product_files": 348,
+  "backend_product_source_manifest": "review/working/app-29-w03-integrated-driver-development-07/manifest.json",
+  "backend_product_source_manifest_sha256": "3effe74b4b9daa5198a7ce24347e195da495bf26aeed3aa9519820dd917e4a6a",
+  "source_pins_match_after_commit": true,
+  "source_push_receipts": {
+    "pushes": [
+      {
+        "repository": "Kira manga",
+        "timestamp": "2026-09-08T09:30:21.755385+03:00",
+        "exit_code": 0,
+        "refs": {
+          "refs/heads/remediation/app-29-backend-complaints": "a584efecb3dfb342d9a3b873bc09c132e8771cd3",
+          "refs/heads/remediation/production-readiness-2026-09-04": "c0db2f63c916932dbed1a3314c9a06d30c1696b5"
+        },
+        "remote_verified": true
+      },
+      {
+        "repository": "kira-backend",
+        "timestamp": "2026-09-08T09:30:41.638469+03:00",
+        "exit_code": 0,
+        "refs": {
+          "refs/heads/remediation/app-29-backend-complaints": "98ad9ac57de3a33b80fc31079c7278c83f64e675",
+          "refs/heads/remediation/production-readiness-2026-09-04": "c8bdff9a8acebb7c8e8ce40c65b8c7315ef9c014"
+        },
+        "remote_verified": true
+      },
+      {
+        "repository": "kira-source-engine",
+        "timestamp": "2026-09-08T09:30:45.965932+03:00",
+        "exit_code": 0,
+        "refs": {
+          "refs/heads/remediation/campaign-handoff-2026-09-08": "aba63720edae9643aa3dbe61b75bf9ddbb80b368",
+          "refs/heads/remediation/production-readiness-2026-09-04": "fc55c149398068d1f47c2fb08597dbc08f0bf28a"
+        },
+        "remote_verified": true
+      },
+      {
+        "repository": "kira-web",
+        "timestamp": "2026-09-08T09:30:53.916065+03:00",
+        "exit_code": 0,
+        "refs": {
+          "refs/heads/remediation/app-29-backend-complaints": "5595f2d82d702cc4dd558c87ec0f9f1027ecd647",
+          "refs/heads/remediation/production-readiness-2026-09-04": "b8a632c1a19c3370b66728d1e31dbade9687782e"
+        },
+        "remote_verified": true
+      }
+    ]
+  },
+  "secret_scope": "Complete cross-repository evidence kept PRIVATE. Root signing material and real credential files never read/copied. See archive exclusions and transfer scan triage.",
+  "current_issue": "kira-manga/kira-app#29",
+  "delivered_issues": 0,
+  "selected_issues": 152,
+  "accepted_packages": 2,
+  "selected_packages": 9,
+  "W06": "SKIPPED OWNER EXCLUDED",
+  "runtime_authority": "UNKNOWN"
+}

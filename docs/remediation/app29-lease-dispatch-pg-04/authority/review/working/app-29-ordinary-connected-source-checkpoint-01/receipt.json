@@ -1,0 +1,26 @@
+{
+  "observed_at": "2026-09-13T06:37:01.031246+00:00",
+  "status": "PRIVATE_TRANSPORT_CHECKPOINT_NOT_FIX_ACCEPTANCE",
+  "branch": "remediation/app-29-backend-complaints",
+  "parent": "6db944871c1584bd6a1f28263e8010cadd766fab",
+  "head": "ccdbb28f6362117882501b4da040257be6fc1990",
+  "tree": "d172ecf246a9606194f43023a0703d778b877566",
+  "public_prerequisite": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+  "source_manifest": "review/working/app-29-w03-integrated-driver-ordinary-connected-03/manifest.json",
+  "source_manifest_sha256": "171dc5c76663c7552bd064c343437bc6545394315769214354afec2295929913",
+  "source_count": 478,
+  "development07_seed_keys_preserved": 348,
+  "modified_paths": 11,
+  "newly_tracked_paths": 12,
+  "source_bytes_unchanged": true,
+  "clean_worktree": true,
+  "tracked_path_count": 863,
+  "bundle": {
+    "path": "review/working/app-29-ordinary-connected-source-checkpoint-01/ordinary-connected-source.bundle",
+    "sha256": "63d9469a1ac0145f807129e8b6c7ee865a309676ee3e188eacf413d8de40b3a3",
+    "bytes": 257140
+  },
+  "tests_run": false,
+  "integration_changed": false,
+  "public_push_forbidden": true
+}

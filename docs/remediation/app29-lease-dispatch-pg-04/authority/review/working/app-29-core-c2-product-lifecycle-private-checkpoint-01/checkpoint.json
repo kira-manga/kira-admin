@@ -1,0 +1,54 @@
+{
+  "created_utc": "2026-09-12T11:05:34.871503+00:00",
+  "status": "PRIVATE_CHECKPOINT_ONLY_NOT_VALIDATED",
+  "branch": "remediation/app-29-backend-complaints",
+  "head": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+  "parent": "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc",
+  "tree": "e7e33ada29c167a831af40f1d4039ae29b5deed3",
+  "required_chain": [
+    "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+    "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc",
+    "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+    "926927ab805a2a3b78957862f3b744d0fe399ac5",
+    "49da0919d9ec3091cb7bb041009dc9bd5f3e090f",
+    "3d839130c807f6a0a9b1c896c1c6cca4b41c4538"
+  ],
+  "source_root": "kira-backend",
+  "sources": {
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt": "9d9a6be8888aa67f5f908c1d53db998f17e528c52a1d3d8b5bcd05362635ca3c",
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt": "ff13d4a7ad481762c7d6d222c023cb60e3cb94e22fa50841767c5c6641cb89df",
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt": "2dd3236000c8f88f2ca00435036a54a5b1ba027aeb4f3e7d4ab66ca2106533f2",
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt": "545d05d67fb0550c4fd4ea889144f7f0a49e2ac57b2d41676b04ea0d22a43d8b",
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt": "5105399988af7abbfac336f27cc4436c95a348e8032e39a0ba409f58c6a3400f",
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt": "c65198c118b4102615100464c52774f9dbd1bec70fe8655337fadcda4895c350",
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt": "4bf8c36b1ec8f01ea8a7b775ea7c769ca2fa8f837fc8d1d351d1172c860ce24e",
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt": "cf46316c372696c3aa91ca6e5455c582e40d436c82c791e586c3adce29173db1"
+  },
+  "bundle_path": "review/working/app-29-core-c2-product-lifecycle-private-checkpoint-01/backend.bundle",
+  "bundle_sha256": "26315048e8463395c7a8ea1a351a83c1b0c6c55fdab52fc57fb62565e32d1b93",
+  "bundle_bytes": 208275,
+  "bundle_header": [
+    "# v2 git bundle",
+    "-3d839130c807f6a0a9b1c896c1c6cca4b41c4538 Checkpoint reviewed App29 development21 diagnostics and ownership foundation",
+    "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1 refs/heads/remediation/app-29-backend-complaints"
+  ],
+  "bundle_refs": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1 refs/heads/remediation/app-29-backend-complaints",
+  "bundle_create_argv": [
+    "git",
+    "-C",
+    "/root/projects/Kira/kira-backend",
+    "bundle",
+    "create",
+    "--version=2",
+    "/root/projects/Kira/review/working/app-29-core-c2-product-lifecycle-private-checkpoint-01/backend.bundle",
+    "refs/heads/remediation/app-29-backend-complaints",
+    "^3d839130c807f6a0a9b1c896c1c6cca4b41c4538"
+  ],
+  "bundle_verify_sha256": "dff90694f46de9216b379cc41a81b45cb73101373897ac51da38914cd5a5909d",
+  "public_push_authorized": false,
+  "private_vendor_ancestry": true,
+  "disposition_path": "review/working/app-29-core-c2-product-lifecycle-pg10-admission-01/primary-local-result-disposition.json",
+  "disposition_sha256": "f4f999c83d7053bd0ee52dcab09fe706babb8b8aebc660139ae04d01edba7559",
+  "scope": "Reviewed product5/test3, runtime38 PASS/staticFAIL. Private durability only; realPG10 pending.",
+  "preparatory_error": "Previous bundle command rejected option after path; no bundle output created. Source commit preserved, option ordering corrected without another commit."
+}

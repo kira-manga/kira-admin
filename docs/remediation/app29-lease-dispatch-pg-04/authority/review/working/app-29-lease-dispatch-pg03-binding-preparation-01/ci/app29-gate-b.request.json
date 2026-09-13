@@ -1,0 +1,30 @@
+{
+  "schema": "app-29-lease-dispatch-pg-03",
+  "authorized": false,
+  "attempts": 1,
+  "backend_sha": "f2e58eac0b139dca3a042c724d69c66a3d65278e",
+  "checkpoint_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "source_bundle": {
+    "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+    "private_parent_sha": "c67ddcd30fbae2438c7b2f803f720530b598e428",
+    "ref": "refs/heads/remediation/app-29-backend-complaints",
+    "source_path": "review/working/app-29-lease-dispatch-pg03-transport-source-01/backend.bundle",
+    "path": "docs/remediation/app29-lease-dispatch-pg-03/inputs/backend.bundle",
+    "sha256": "b606cb5ed40814dc23c5c8c61a564de07d917d4a05b6fbca4c4b73841bea63fe",
+    "bytes": 287442
+  },
+  "budgets": {
+    "job_minutes": 25,
+    "controller_seconds": 1200,
+    "preflight_seconds": 120,
+    "validation_seconds": 900,
+    "cleanup_seconds": 180
+  },
+  "tool_sha256": {
+    "ci/app29-gate-b.py": "0000000000000000000000000000000000000000000000000000000000000000",
+    ".github/workflows/app29-gate-b.yml": "0000000000000000000000000000000000000000000000000000000000000000",
+    "review/working/app-29-lease-dispatch-pg03-binding-preparation-01/profile/profile.json": "0000000000000000000000000000000000000000000000000000000000000000",
+    "review/working/app-29-lease-dispatch-pg03-binding-preparation-01/profile/profile.init.gradle": "0000000000000000000000000000000000000000000000000000000000000000",
+    "ci/app29_owned_children.py": "56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385"
+  }
+}

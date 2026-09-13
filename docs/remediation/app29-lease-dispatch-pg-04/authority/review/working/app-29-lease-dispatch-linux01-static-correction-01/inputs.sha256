@@ -1,0 +1,16 @@
+e65987b4aacc4b090d2cc3e3bcba040d56fefae4c0357afef3588b323f59f7b9  AGENTS.md
+e7c246378f9941ee29775950148564e33aedd3b0f5edd27163527370036a6fa5  README.md
+2d22357fd867d9edfccbffc1cbe1e6b9fbee9638967ffdaffd7e00d3e83050ea  docs/PLAN.md
+22afed6a43734018058a8aa625e959637cae3a90c7bcedb8ff65461852c46e38  docs/COMPLAINT_DRIVER_LIFECYCLE.md
+8b6116173f5a5fd76de7c9654685754631e2df1a480a692082995b3122fb7aa0  build.gradle.kts
+ecc589d2ee57adaacd3e951b625a6f4ad31f6ebc41f354e332cf0b9b39f2c6cd  .editorconfig
+509eb13c3915934d49a3de84dcb5332ff372deee0326c6aaceeed4c2a0b38760  config/detekt/detekt.yml
+dde01186ffb596c48207bb2ecd5564b68ce21511cf042007e15dab0bac624e2a  ../review/working/app-29-w03-integrated-driver-lease-dispatch-linux-01/manifest.json
+1a1202fefb4034bf4133de572c295fd1d1d3efbbfab807e5ef9c45b5c4565d28  ../review/working/app-29-lease-dispatch-linux-01/result.json
+f2bd2ce0f894a70d15754cbf564cbaf4d05522128d5f48bd59e22b0efa8222c4  ../review/working/app-29-lease-dispatch-linux-01/validation.log
+2e446007caa7bb60cffebb4c33cba3e1816ca75a5c5415c692af29edfc9c732d  ../review/working/app-29-lease-dispatch-linux-01/reports/reports/ktlint/ktlintMainSourceSetCheck/ktlintMainSourceSetCheck.txt
+f6a542ec59f19ab32aafde33f230ad26fcf4a5202c03509362a489f12cc73437  ../review/working/app-29-lease-dispatch-linux-01/reports/reports/ktlint/ktlintTestSourceSetCheck/ktlintTestSourceSetCheck.txt
+6ecda7a9c41690cd6726cbb548e968c908b6edebded0c3255d4db179b485baf1  ../review/working/app-29-lease-dispatch-linux-01/reports/reports/detekt/detekt.txt
+c7d2a70c91a23e802401b3d4cce97e5074e79ee81413395856b45227f488d3e9  ../review/working/app-29-lease-dispatch-linux-01/reports/reports/detekt/detekt.xml
+1b09db7c518717bb8ab3d82c763052af7e2978dfdd95bd9b9d168a6371fd811f  ../review/working/app-29-lease-dispatch-linux-01/reports/reports/detekt/detekt.sarif
+0fb51c0338e95e97e509b4f50a018b9cc1bddf3692901a6e6dc69ae8e4fae686  ../review/working/app-29-lease-dispatch-pg01-preparation/SHA256SUMS

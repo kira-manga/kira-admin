@@ -1,0 +1,32 @@
+diff --git a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupFixture.kt b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupFixture.kt
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupFixture.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupFixture.kt
+@@ -122,7 +122,7 @@
+                 attempts.incrementAndGet()
+                 return reader.connection
+             }
+-            override fun getConnection(username: String?, password: String?): Connection {
++            override fun getConnection(username: String, password: String): Connection {
+                 attempts.incrementAndGet()
+                 return reader.getConnection(username, password)
+             }
+diff --git a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupOwnershipIT.kt b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupOwnershipIT.kt
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupOwnershipIT.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupOwnershipIT.kt
+@@ -379,10 +379,12 @@
+                 barrier.set(tail)
+                 ready.countDown()
+                 try {
+-                    f.newExecutor(cleanupPort {
+-                        body.set(true)
+-                        0
+-                    }).cleanupSourceGrants()
++                    f.newExecutor(
++                        cleanupPort {
++                            body.set(true)
++                            0
++                        },
++                    ).cleanupSourceGrants()
+                 } catch (failure: Throwable) {
+                     outcome.set(failure)
+                 }

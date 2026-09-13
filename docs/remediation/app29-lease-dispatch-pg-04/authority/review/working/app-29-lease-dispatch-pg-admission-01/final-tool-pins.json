@@ -1,0 +1,30 @@
+{
+  "status": "BOUND_VALUES_NOT_EXECUTION_ADMISSION",
+  "author_preparation_seal": "0fb51c0338e95e97e509b4f50a018b9cc1bddf3692901a6e6dc69ae8e4fae686",
+  "independent_preparation_review_sha256": "a783cad38f4d6430777d24a7329eb7d5a05e7acdc137f7a6d0cb43bc0da56064",
+  "source_checkpoint": "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3",
+  "source_tree": "fc480e82630091138da145ade1812cedcd75e58e",
+  "source_checkpoint_receipt": {
+    "path": "review/working/app-29-lease-dispatch-source-checkpoint-01/checkpoint.json",
+    "sha256": "2d291cf217291106d35343c6f74f4d892299e766b72615620bec122ee0f79e37"
+  },
+  "manifest": "9888bdff82450069df09c003d48da5413c5ebe0dda6a4cfe45687f4898a1c8e7",
+  "bundle": {
+    "path": "review/working/app-29-lease-dispatch-source-checkpoint-01/backend.bundle",
+    "sha256": "235fca34c51710930fd9ced4444d0931e5273137bd4178169c3b8c9c4010ec50",
+    "bytes": 280735
+  },
+  "changed_paths": 17,
+  "source_count": 481,
+  "snapshots": 214,
+  "files": {
+    "review/working/app-29-lease-dispatch-pg-carrier-01/ci/app29-gate-b.py": "5e06fc9ac3370de34889e45d64ede7a0639959836f6f84ce3ae86a870f141327",
+    "review/working/app-29-lease-dispatch-pg-carrier-01/profile/profile.json": "315509d24f0fd4c84fd8172231e7eb79639bad1a0ae589db6e18ce0268b4ed79",
+    "review/working/app-29-lease-dispatch-pg-carrier-01/profile/profile.init.gradle": "e4217243d2bccf6da3ce2c089b15a5e99785d1703258c9fa59fc896afd79d9f0",
+    "review/working/app-29-lease-dispatch-pg-carrier-01/.github/workflows/app29-gate-b.yml": "ddfd0fb402348eb0403fe4010eb7db38f1cdfd1d4a6c9d1ef03d2f5d2941d8db"
+  },
+  "literal_diff_sha256": "4eea5bac029ed75d9ff9e1836167f4c3d004e75da0d7a14a10fcd867d42405f1",
+  "behavior_change": false,
+  "namespace": "app-29-lease-dispatch-pg-01",
+  "remaining": "Primary literal readback, fresh full-v3 freeze/preflight, private transport/request/collector binding and separate admission; no runtime executed"
+}

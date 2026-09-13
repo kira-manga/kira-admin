@@ -1,0 +1,186 @@
+{
+  "status": "MANUAL_SOURCE_DECLARATIONS_NOT_TEST_DISCOVERY_OR_EXECUTION",
+  "expected_executed_classes": [
+    "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest",
+    "me.manga.kira.backend.common.infrastructure.persistence.PoolActorCustodyTest"
+  ],
+  "expected_total_invocations": 38,
+  "expected_total_methods": 27,
+  "classes": {
+    "me.manga.kira.backend.common.infrastructure.persistence.PoolLifecycleTest": {
+      "source": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt",
+      "sha256": "cf46316c372696c3aa91ca6e5455c582e40d436c82c791e586c3adce29173db1",
+      "methods": 14,
+      "ordinary_test_methods": 10,
+      "parameterized_methods": 4,
+      "declared_invocations": 19,
+      "cases": [
+        {
+          "method": "original acquisition budget is never restarted and a sealed zero still needs genuine shutdown conjunctions",
+          "declared_invocations": 1
+        },
+        {
+          "method": "nested caller-owned acquisitions have no pool-capacity cap and no cross-pool shutdown wait cycle",
+          "declared_invocations": 1
+        },
+        {
+          "method": "many ambiguous callers coalesce one receipt and one authentic held acquisition tail keeps it pending",
+          "declared_invocations": 1
+        },
+        {
+          "method": "future return entitlement prevents a closed-population claim until consumed and the actual outer tail ends",
+          "declared_invocations": 1
+        },
+        {
+          "method": "unused entitlement revocation and original operation budget exclude later eviction without a replacement budget",
+          "declared_invocations": 1
+        },
+        {
+          "method": "foreign and fabricated return entitlements never enter or consume the authentic future right",
+          "declared_invocations": 1
+        },
+        {
+          "method": "MODEL exact RETURN incident retains custody and seals only the empty UNKNOWN cut",
+          "declared_invocations": 1
+        },
+        {
+          "method": "the first shutdown budget is retained across duplicate requests and cannot be replenished by observation",
+          "declared_invocations": 2,
+          "value_source_strings": [
+            "request",
+            "handoff"
+          ],
+          "display_name_template": "{displayName} [{index}] {argumentsWithNames}"
+        },
+        {
+          "method": "MODEL entry bookkeeping failure remains sticky and restores the authentic enclosing caller frame",
+          "declared_invocations": 1
+        },
+        {
+          "method": "MODEL close caller bookkeeping failure restores its pool frame but never upgrades the first close outcome",
+          "declared_invocations": 2,
+          "value_source_strings": [
+            "sample",
+            "restore"
+          ],
+          "display_name_template": "{displayName} [{index}] {argumentsWithNames}"
+        },
+        {
+          "method": "wrong pool foreign caller and fabricated tickets cannot hand off or forget a privately captured handle",
+          "declared_invocations": 1
+        },
+        {
+          "method": "MODEL held first close frame cannot observe its own completion and duplicate close never replaces its outcome",
+          "declared_invocations": 1
+        },
+        {
+          "method": "MODEL first failed or interrupted close stays unknown without a successful retry",
+          "declared_invocations": 3,
+          "value_source_strings": [
+            "THREW",
+            "THREW_INTERRUPT",
+            "CAUGHT_INTERRUPT"
+          ],
+          "display_name_template": "{displayName} [{index}] {argumentsWithNames}"
+        },
+        {
+          "method": "native close and possibly waiting observation are refused beneath actual ownership locks",
+          "declared_invocations": 2,
+          "value_source_strings": [
+            "F",
+            "G"
+          ],
+          "display_name_template": "{displayName} [{index}] {argumentsWithNames}"
+        }
+      ]
+    },
+    "me.manga.kira.backend.common.infrastructure.persistence.PoolActorCustodyTest": {
+      "source": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt",
+      "sha256": "4bf8c36b1ec8f01ea8a7b775ea7c769ca2fa8f837fc8d1d351d1172c860ce24e",
+      "methods": 13,
+      "ordinary_test_methods": 10,
+      "parameterized_methods": 3,
+      "declared_invocations": 19,
+      "cases": [
+        {
+          "method": "installed inert pool has a closed population only after the one actual close and native owner end",
+          "declared_invocations": 1
+        },
+        {
+          "method": "unsupported actor profile refuses before replacing any extension or starting a pool",
+          "declared_invocations": 4,
+          "value_source_strings": [
+            "factory",
+            "failFast",
+            "jmx",
+            "suspension"
+          ],
+          "display_name_template": "{displayName} [{index}] {argumentsWithNames}"
+        },
+        {
+          "method": "unauthenticated or null factory invocation refuses with sticky owner fault rather than an untracked Thread",
+          "declared_invocations": 1
+        },
+        {
+          "method": "MODEL RETURN incident preserves authentic creation and generic or factory hard faults stay dominant",
+          "declared_invocations": 3,
+          "value_source_strings": [
+            "incident-first",
+            "hard-first",
+            "operation-hard"
+          ],
+          "display_name_template": "{displayName} [{index}] {argumentsWithNames}"
+        },
+        {
+          "method": "ordinary unstarted platform Thread has no inherited app context and foreign or reentrant run cannot execute its delegate twice",
+          "declared_invocations": 1
+        },
+        {
+          "method": "capacity64 reserves every published NEW identity and refuses65 before publication without declaring any NEW inert",
+          "declared_invocations": 1
+        },
+        {
+          "method": "finite cells can retire more than64 completed generations only after authentic TERMINATED and not alive",
+          "declared_invocations": 1
+        },
+        {
+          "method": "a late authentic creator may still publish after shutdown admission seal and cannot observe its own actor closure",
+          "declared_invocations": 1
+        },
+        {
+          "method": "published before seal and started after creator end stays unproved until the exact emitted Thread actually terminates",
+          "declared_invocations": 1
+        },
+        {
+          "method": "stock executor replacement from complete Worker finally retains its authentic creator even after the task throws",
+          "declared_invocations": 1
+        },
+        {
+          "method": "stock caller-runs work stays in its actual acquisition extent even though no factory callback occurs",
+          "declared_invocations": 1
+        },
+        {
+          "method": "real stock lazy initialization must finish before the first close and failure cannot retry a fresh constructor",
+          "declared_invocations": 1
+        },
+        {
+          "method": "factory never publishes under a held ownership lock and its seal recheck needs no lock or profile callback",
+          "declared_invocations": 2,
+          "value_source_strings": [
+            "F",
+            "G"
+          ],
+          "display_name_template": "{displayName} [{index}] {argumentsWithNames}"
+        }
+      ]
+    }
+  },
+  "protected_prior_invocations": 34,
+  "new_declared_invocations": 4,
+  "later_result_requirements": [
+    "Exactly these two JUnit XML classes,19 cases each,38 total; zero failures/errors/skips and no extra class.",
+    "Match retained case identities/parameters to the source declarations, not totals alone.",
+    "Normal testClasses compilation includes the remaining sources but does not execute PG or unrelated tests.",
+    "Existing runner discovery check is narrower; primary/independent actual-result review must perform the full protected identity comparison."
+  ]
+}
