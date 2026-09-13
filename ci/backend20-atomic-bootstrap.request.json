@@ -2,10 +2,8 @@
   "authorization": "BACKEND20_ONE_TARGETED_BATCH_AUTHORIZED",
   "authorized": true,
   "runAllowed": true,
-  "backend_sha": "5c60975e81c581615533fa6b70295a4fa2f56d5a",
+  "backend_sha": "1b5803aa08a3a50c005eae6c904349c7e7bb6ada",
   "classes": {
-    "me.manga.kira.backend.common.web.RequestBodySizeLimitFilterTest": 10,
-    "me.manga.kira.backend.sourceconfig.FlywayIncrementalOrderIT": 13,
     "me.manga.kira.backend.sourceconfig.FlywayMigrationIT": 3,
     "me.manga.kira.backend.sourceconfig.StartupConsistencyIT": 12,
     "me.manga.kira.backend.sourceconfig.admin.AuditLogIT": 1,
@@ -39,8 +37,6 @@
     "me.manga.kira.backend.sourceconfig.admin.SourceOperationalModeIT": 4,
     "me.manga.kira.backend.sourceconfig.admin.SourcePublishFlowIT": 1,
     "me.manga.kira.backend.sourceconfig.admin.StrictAdminParserIT": 2,
-    "me.manga.kira.backend.sourceconfig.api.GenericV2CutoverControllerTest": 9,
-    "me.manga.kira.backend.sourceconfig.domain.InitialSourceCatalogPolicyTest": 83,
     "me.manga.kira.backend.sourceconfig.infrastructure.AdminHistoryRepositoryIT": 3,
     "me.manga.kira.backend.sourceconfig.public.ETagIT": 2,
     "me.manga.kira.backend.sourceconfig.public.IfNoneMatchVariantsIT": 1,
@@ -52,26 +48,6 @@
     "me.manga.kira.backend.user.SecurityMatrixIT": 2
   },
   "methods": {
-    "me.manga.kira.backend.common.web.RequestBodySizeLimitFilterTest": [
-      "atomic bootstrap accepts exactly 5 MiB and replays the original bytes",
-      "atomic bootstrap rejects declared oversize before opening the stream",
-      "bootstrap allowance uses the application path inside a servlet context",
-      "import endpoint accepts more than 256 KiB",
-      "import endpoint rejects a body over 5 MiB",
-      "normal endpoint rejects a body over 256 KiB before the chain",
-      "normal endpoint replays an accepted body unchanged",
-      "only the exact new POST route receives the bootstrap allowance",
-      "streamed body with unknown content length cannot bypass the normal cap",
-      "unknown and understated bootstrap lengths cannot bypass the streamed 5 MiB cap"
-    ],
-    "me.manga.kira.backend.sourceconfig.FlywayIncrementalOrderIT": [
-      "V13_2 refuses a missing singleton without inventing state or changing prior history",
-      "V3 baseline then upgrade to latest applies the remaining migrations in order",
-      "V4 baseline then upgrade to latest applies the remaining migrations in order",
-      "populated V13 upgrades to V13_1 without rewriting existing users or migration history",
-      "source history in V13_1 requires reconciliation without adoption or rewriting",
-      "source-pristine V13_1 with unrelated users and auth history becomes pending"
-    ],
     "me.manga.kira.backend.sourceconfig.FlywayMigrationIT": [
       "bootstrap constraints reject incomplete completion partial receipts and invalid phases",
       "flyway history is exactly V1 through V13 then V13_1 and V13_2 in version order",
@@ -234,39 +210,6 @@
       "the compatibility import parser accepts an unknown field and surfaces a warning",
       "the compatibility import parser rejects genuinely malformed json"
     ],
-    "me.manga.kira.backend.sourceconfig.api.GenericV2CutoverControllerTest": [
-      "JSON charset does not transcode the body and response preserves all origin fields",
-      "body exactly at the controller limit is passed unchanged",
-      "declared oversize is rejected before the controller opens the body stream",
-      "invalid confirmation is rejected before the controller opens the body stream",
-      "malformed UTF8 reaches the service unchanged rather than replacement decoding at MVC",
-      "missing padded wrong and repeated confirmations are value-free conflicts",
-      "non JSON media types never reach the core",
-      "old POST is a nonmutating conflict even for its former body or malformed JSON",
-      "unknown and understated lengths cannot bypass the controller byte bound"
-    ],
-    "me.manga.kira.backend.sourceconfig.domain.InitialSourceCatalogPolicyTest": [
-      "changed relative generic order is rejected for input and coherently positioned heads",
-      "construction is lazy and successful evaluation reads reference only once",
-      "effective assembly has exactly twelve members bound to their lifecycle heads",
-      "effective head inventory includes retained extras and drafts excluded from assembly",
-      "effective order comes from position then api not repository return order or raw priority",
-      "every reviewed head needs the correct engine and a published pointer",
-      "every source field is compared for Azora and non Azora input and stored bytes",
-      "explicit defaults and reversed object keys preserve full typed equality",
-      "generic heads must be active even if their published content matches",
-      "input revision and generated time are preserved provenance not reference gates",
-      "legacy content and legacy order are not an invented second reference gate",
-      "main reference has the independently approved bytes identity and raw ordered models",
-      "malformed stored content is a bounded effective state rejection not a request parsing error",
-      "nested filter semantics and array declaration order are not projected away",
-      "new payload uses strict parsing rather than compatibility import",
-      "payload requires exactly all reviewed unique APIs",
-      "staging permits active or withheld legacy but initial publication requires all withheld",
-      "unavailable reference fails closed only when admission is evaluated",
-      "unsupported legacy head states cannot be silently adopted",
-      "unsupported payload schema is rejected"
-    ],
     "me.manga.kira.backend.sourceconfig.infrastructure.AdminHistoryRepositoryIT": [
       "gapped older traversal survives a newer insert and ends without duplicate or lost rows",
       "growing TOAST histories keep query columns row consumption and deep seek bounded",
@@ -314,5 +257,5 @@
       "anonymous gets 200 on the public document and sources once one is published"
     ]
   },
-  "status": "BOUND CANDIDATE ONLY; primary authorized exact source/auth binding, not live admission or launch; existing local batch.lock must span hosted launch, collection and normal cleanup."
+  "status": "BOUND PREPARATION ONLY; no live admission/launch. Exactly124 corrected-source JPA cases; retain115 prior-source passes separately. Normal main/test compilation plus unchanged main ktlint/detekt; reuse unchanged test statics. Primary batch.lock spans hosted launch/collection/cleanup."
 }
