@@ -1,0 +1,1822 @@
+{
+  "status": "FAIL",
+  "gate": "app-29-core-c2-hosted-02",
+  "backend_sha": "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+  "carrier_sha": "b25f6adcdb37b25b44b4efb783889f06c02c85d9",
+  "commands": [
+    {
+      "name": "carrier-sha",
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/admin",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2370
+    },
+    {
+      "name": "initial-backend-sha",
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2371
+    },
+    {
+      "name": "initial-backend-branch",
+      "argv": [
+        "git",
+        "branch",
+        "--show-current"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2372
+    },
+    {
+      "name": "initial-backend-status",
+      "argv": [
+        "git",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2373
+    },
+    {
+      "name": "source-bundle-verify",
+      "argv": [
+        "git",
+        "bundle",
+        "verify",
+        "/home/runner/work/kira-admin/kira-admin/admin/docs/remediation/app29-core-c2-02/inputs/backend.bundle"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2374
+    },
+    {
+      "name": "source-bundle-fetch",
+      "argv": [
+        "git",
+        "-c",
+        "protocol.allow=never",
+        "-c",
+        "protocol.file.allow=always",
+        "fetch",
+        "--no-tags",
+        "--no-recurse-submodules",
+        "--no-write-fetch-head",
+        "--no-auto-maintenance",
+        "--",
+        "/home/runner/work/kira-admin/kira-admin/admin/docs/remediation/app29-core-c2-02/inputs/backend.bundle",
+        "refs/heads/remediation/app-29-backend-complaints:refs/heads/remediation/app-29-backend-complaints"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2376
+    },
+    {
+      "name": "source-bundle-checkout",
+      "argv": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "checkout",
+        "--no-guess",
+        "--no-recurse-submodules",
+        "remediation/app-29-backend-complaints"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2382
+    },
+    {
+      "name": "before-backend-sha",
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2383
+    },
+    {
+      "name": "before-backend-branch",
+      "argv": [
+        "git",
+        "branch",
+        "--show-current"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2384
+    },
+    {
+      "name": "before-backend-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "HEAD"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2385
+    },
+    {
+      "name": "before-private-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "926927ab805a2a3b78957862f3b744d0fe399ac5"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2386
+    },
+    {
+      "name": "before-core-baseline-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "49da0919d9ec3091cb7bb041009dc9bd5f3e090f"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2387
+    },
+    {
+      "name": "before-status",
+      "argv": [
+        "git",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2388
+    },
+    {
+      "name": "before-tracked",
+      "argv": [
+        "git",
+        "ls-files",
+        "-z"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2389
+    },
+    {
+      "name": "jdk-version",
+      "argv": [
+        "/usr/lib/jvm/temurin-21-jdk-amd64/bin/java",
+        "-Djava.io.tmpdir=/home/runner/work/_temp/app29-core-c2-02-34672394928-1/tmp",
+        "-Duser.home=/home/runner/work/_temp/app29-core-c2-02-34672394928-1/home",
+        "-XshowSettings:properties",
+        "-version"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2391
+    },
+    {
+      "name": "docker-version",
+      "argv": [
+        "docker",
+        "version"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2408
+    },
+    {
+      "name": "containers-before",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 2423
+    },
+    {
+      "name": "gradle-test",
+      "argv": [
+        "./gradlew",
+        "--no-daemon",
+        "--no-parallel",
+        "--no-build-cache",
+        "--no-configuration-cache",
+        "--dependency-verification=strict",
+        "--max-workers=1",
+        "--console=plain",
+        "--project-cache-dir",
+        "/home/runner/work/_temp/app29-core-c2-02-34672394928-1/project-cache",
+        "-Djava.io.tmpdir=/home/runner/work/_temp/app29-core-c2-02-34672394928-1/tmp",
+        "-Duser.home=/home/runner/work/_temp/app29-core-c2-02-34672394928-1/home",
+        "-Dorg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=512m -Djava.io.tmpdir=/home/runner/work/_temp/app29-core-c2-02-34672394928-1/tmp -Duser.home=/home/runner/work/_temp/app29-core-c2-02-34672394928-1/home",
+        "-Dorg.gradle.vfs.watch=false",
+        "-PkiraUseMavenLocal=false",
+        "-Pkotlin.compiler.execution.strategy=in-process",
+        "-Pkotlin.project.persistent.dir=/home/runner/work/_temp/app29-core-c2-02-34672394928-1/kotlin-cache",
+        "-Porg.gradle.java.installations.auto-download=false",
+        "-Porg.gradle.java.installations.auto-detect=false",
+        "-Porg.gradle.java.installations.paths=/usr/lib/jvm/temurin-21-jdk-amd64",
+        "--init-script",
+        "/home/runner/work/kira-admin/kira-admin/admin/review/working/app-29-gate-b-hosted-draft-06/profile/profile.init.gradle",
+        "test",
+        "--tests",
+        "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+        "--tests",
+        "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 1,
+      "outcome": "UNKNOWN",
+      "pid": 2431
+    },
+    {
+      "name": "gradle-stop-immediate",
+      "argv": [
+        "./gradlew",
+        "--stop"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3631
+    },
+    {
+      "name": "containers-normal-0",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3662
+    },
+    {
+      "name": "containers-normal-1",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3669
+    },
+    {
+      "name": "containers-normal-2",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3676
+    },
+    {
+      "name": "containers-normal-3",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3684
+    },
+    {
+      "name": "containers-normal-4",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3692
+    },
+    {
+      "name": "containers-normal-5",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3699
+    },
+    {
+      "name": "containers-normal-6",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3706
+    },
+    {
+      "name": "containers-normal-7",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3714
+    },
+    {
+      "name": "containers-normal-8",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3722
+    },
+    {
+      "name": "containers-normal-9",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3769
+    },
+    {
+      "name": "container-events",
+      "argv": [
+        "docker",
+        "events",
+        "--since",
+        "1789186377",
+        "--until",
+        "1789186729",
+        "--filter",
+        "type=container",
+        "--format",
+        "{{json .}}"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3776
+    },
+    {
+      "name": "image-0",
+      "argv": [
+        "docker",
+        "image",
+        "inspect",
+        "--format",
+        "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+        "postgres:17.6-alpine"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3783
+    },
+    {
+      "name": "image-1",
+      "argv": [
+        "docker",
+        "image",
+        "inspect",
+        "--format",
+        "{\"id\":{{json .Id}},\"tags\":{{json .RepoTags}},\"digests\":{{json .RepoDigests}}}",
+        "testcontainers/ryuk:0.12.0"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3790
+    },
+    {
+      "name": "containers-after-cleanup",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3797
+    },
+    {
+      "name": "after-backend-sha",
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3804
+    },
+    {
+      "name": "after-backend-branch",
+      "argv": [
+        "git",
+        "branch",
+        "--show-current"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3805
+    },
+    {
+      "name": "after-backend-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "HEAD"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3806
+    },
+    {
+      "name": "after-private-parent-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "926927ab805a2a3b78957862f3b744d0fe399ac5"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3807
+    },
+    {
+      "name": "after-core-baseline-commit",
+      "argv": [
+        "git",
+        "--no-replace-objects",
+        "cat-file",
+        "commit",
+        "49da0919d9ec3091cb7bb041009dc9bd5f3e090f"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3808
+    },
+    {
+      "name": "after-status",
+      "argv": [
+        "git",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3809
+    },
+    {
+      "name": "after-tracked",
+      "argv": [
+        "git",
+        "ls-files",
+        "-z"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3810
+    },
+    {
+      "name": "gradle-stop-final",
+      "argv": [
+        "./gradlew",
+        "--stop"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3811
+    },
+    {
+      "name": "containers-final",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--no-trunc"
+      ],
+      "cwd": "/home/runner/work/kira-admin/kira-admin/backend",
+      "actual_exit": 0,
+      "outcome": "NORMAL",
+      "pid": 3842
+    }
+  ],
+  "failures": [
+    {
+      "stage": "interrupted-gradle-test-nonzero-child",
+      "type": "RuntimeError"
+    },
+    {
+      "stage": "validation",
+      "type": "ValueError"
+    },
+    {
+      "stage": "after-immediate-stop-nonzero-child",
+      "type": "RuntimeError"
+    },
+    {
+      "stage": "consumer",
+      "type": "ValueError",
+      "guard": "XML_SUITE_PASS"
+    },
+    {
+      "stage": "before-file-cleanup-nonzero-child",
+      "type": "RuntimeError"
+    },
+    {
+      "stage": "after-final-stop-nonzero-child",
+      "type": "RuntimeError"
+    },
+    {
+      "stage": "before-home-cleanup-nonzero-child",
+      "type": "RuntimeError"
+    }
+  ],
+  "processes": [
+    {
+      "stage": "interrupted-gradle-test",
+      "outcome": "NORMAL_ABSENT",
+      "receipt": {
+        "ok": true,
+        "empty": true,
+        "remaining": [],
+        "active_popen": [],
+        "leaders": [
+          {
+            "pid": 2370,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2371,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2372,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2373,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2374,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2376,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2382,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2383,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2384,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2385,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2386,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2387,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2388,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2389,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2391,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2408,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2423,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2431,
+            "actual_exit": 1
+          }
+        ],
+        "adopted": [],
+        "term": [],
+        "kill": [],
+        "errors": {},
+        "elapsed_seconds": 0.0001566020000041135
+      }
+    },
+    {
+      "stage": "after-immediate-stop",
+      "outcome": "NORMAL_ABSENT",
+      "receipt": {
+        "ok": true,
+        "empty": true,
+        "remaining": [],
+        "active_popen": [],
+        "leaders": [
+          {
+            "pid": 2370,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2371,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2372,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2373,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2374,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2376,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2382,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2383,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2384,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2385,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2386,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2387,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2388,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2389,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2391,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2408,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2423,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2431,
+            "actual_exit": 1
+          },
+          {
+            "pid": 3631,
+            "actual_exit": 0
+          }
+        ],
+        "adopted": [],
+        "term": [],
+        "kill": [],
+        "errors": {},
+        "elapsed_seconds": 8.15170000123544e-05
+      }
+    },
+    {
+      "stage": "before-file-cleanup",
+      "outcome": "NORMAL_ABSENT",
+      "receipt": {
+        "ok": true,
+        "empty": true,
+        "remaining": [],
+        "active_popen": [],
+        "leaders": [
+          {
+            "pid": 2370,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2371,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2372,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2373,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2374,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2376,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2382,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2383,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2384,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2385,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2386,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2387,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2388,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2389,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2391,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2408,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2423,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2431,
+            "actual_exit": 1
+          },
+          {
+            "pid": 3631,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3662,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3669,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3676,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3684,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3692,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3699,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3706,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3714,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3722,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3769,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3776,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3783,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3790,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3797,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3804,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3805,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3806,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3807,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3808,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3809,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3810,
+            "actual_exit": 0
+          }
+        ],
+        "adopted": [],
+        "term": [],
+        "kill": [],
+        "errors": {},
+        "elapsed_seconds": 8.601499996530038e-05
+      }
+    },
+    {
+      "stage": "after-final-stop",
+      "outcome": "NORMAL_ABSENT",
+      "receipt": {
+        "ok": true,
+        "empty": true,
+        "remaining": [],
+        "active_popen": [],
+        "leaders": [
+          {
+            "pid": 2370,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2371,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2372,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2373,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2374,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2376,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2382,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2383,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2384,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2385,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2386,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2387,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2388,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2389,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2391,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2408,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2423,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2431,
+            "actual_exit": 1
+          },
+          {
+            "pid": 3631,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3662,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3669,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3676,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3684,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3692,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3699,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3706,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3714,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3722,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3769,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3776,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3783,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3790,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3797,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3804,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3805,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3806,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3807,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3808,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3809,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3810,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3811,
+            "actual_exit": 0
+          }
+        ],
+        "adopted": [],
+        "term": [],
+        "kill": [],
+        "errors": {},
+        "elapsed_seconds": 7.943899998963388e-05
+      }
+    },
+    {
+      "stage": "before-home-cleanup",
+      "outcome": "NORMAL_ABSENT",
+      "receipt": {
+        "ok": true,
+        "empty": true,
+        "remaining": [],
+        "active_popen": [],
+        "leaders": [
+          {
+            "pid": 2370,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2371,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2372,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2373,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2374,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2376,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2382,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2383,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2384,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2385,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2386,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2387,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2388,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2389,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2391,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2408,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2423,
+            "actual_exit": 0
+          },
+          {
+            "pid": 2431,
+            "actual_exit": 1
+          },
+          {
+            "pid": 3631,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3662,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3669,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3676,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3684,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3692,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3699,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3706,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3714,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3722,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3769,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3776,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3783,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3790,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3797,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3804,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3805,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3806,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3807,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3808,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3809,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3810,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3811,
+            "actual_exit": 0
+          },
+          {
+            "pid": 3842,
+            "actual_exit": 0
+          }
+        ],
+        "adopted": [],
+        "term": [],
+        "kill": [],
+        "errors": {},
+        "elapsed_seconds": 6.612399999994523e-05
+      }
+    }
+  ],
+  "containers": "NORMAL_ABSENT",
+  "outputs_absent": true,
+  "capture_complete": true,
+  "captured_file_hashes": {
+    "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.xml": {
+      "bytes": 35893,
+      "sha256": "465024fa05e267de6ec2eae2a8189363e397422baf7e2004f7286992f28b816f"
+    },
+    "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest.xml": {
+      "bytes": 6174,
+      "sha256": "ee2bfcbb25e2386967c0215e587873b730ec585d2532413d50db22c66f7ecf8c"
+    },
+    "reports/final-jar-profile-04/class-load-2611.txt": {
+      "bytes": 1419078,
+      "sha256": "149351a025e40f8fd704a3a71586e43de8a3131a603ce41c9546a199cbc2fca7"
+    },
+    "reports/final-jar-profile-04/effective-classpath.txt": {
+      "bytes": 85986,
+      "sha256": "febc6af689a032df63d55c2fc7a44378ed1eeb2409bec5685f0675f72e10dded"
+    },
+    "reports/final-jar-profile-04/worker-runtime-original.txt": {
+      "bytes": 8132,
+      "sha256": "97c20460143e80a7f43b0024bf70ab4475769f25508cfdef27430189178a437d"
+    },
+    "reports/final-jar-profile-04/worker-runtime-required.txt": {
+      "bytes": 7843,
+      "sha256": "2a9db841c98811bcd224605eb28e5d170636d1fef49b707b2ca1dd01fd3caa0a"
+    }
+  },
+  "owned_output_cleanup": {
+    "/home/runner/work/kira-admin/kira-admin/backend/.gradle": {
+      "cleanup_stage": "backend-output-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/kira-admin/kira-admin/backend/.kotlin": {
+      "cleanup_stage": "backend-output-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/kira-admin/kira-admin/backend/build": {
+      "cleanup_stage": "backend-output-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/kira-admin/kira-admin/backend/buildSrc/build": {
+      "cleanup_stage": "backend-output-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/kira-admin/kira-admin/backend/out": {
+      "cleanup_stage": "backend-output-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/_temp/app29-core-c2-02-34672394928-1/w01": {
+      "cleanup_stage": "private-output-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/_temp/app29-core-c2-02-34672394928-1/project-cache": {
+      "cleanup_stage": "private-output-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/_temp/app29-core-c2-02-34672394928-1/kotlin-cache": {
+      "cleanup_stage": "private-output-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/_temp/app29-core-c2-02-34672394928-1/gradle": {
+      "cleanup_stage": "private-home-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/_temp/app29-core-c2-02-34672394928-1/tmp": {
+      "cleanup_stage": "private-home-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    },
+    "/home/runner/work/_temp/app29-core-c2-02-34672394928-1/home": {
+      "cleanup_stage": "private-home-cleanup",
+      "cleanup_attempted": true,
+      "cleanup_complete": true,
+      "cleanup_skipped_reason": null,
+      "absent": true
+    }
+  },
+  "consumer": {
+    "status": "FAIL"
+  },
+  "source_checkout_initial": {
+    "head": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+    "branch": "",
+    "status": ""
+  },
+  "source_bundle_before": {
+    "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+    "private_parent_sha": "926927ab805a2a3b78957862f3b744d0fe399ac5",
+    "ref": "refs/heads/remediation/app-29-backend-complaints",
+    "source_path": "review/working/app-29-core-c2-private-checkpoint-02/backend.bundle",
+    "path": "docs/remediation/app29-core-c2-02/inputs/backend.bundle",
+    "sha256": "d3000767393f723ab10b9a66e142fd6a0eb470738972e398df8ce6ba53589e8c",
+    "bytes": 198761,
+    "format": "git-bundle-v2-sha1-complete",
+    "tip": "989a8c07b90d956a5f2484f223be41b5d99a8a3c"
+  },
+  "source_checkout_final": {
+    "before": {
+      "head": "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+      "branch": "remediation/app-29-backend-complaints",
+      "parents": [
+        "926927ab805a2a3b78957862f3b744d0fe399ac5"
+      ],
+      "private_parent": {
+        "head": "926927ab805a2a3b78957862f3b744d0fe399ac5",
+        "parents": [
+          "49da0919d9ec3091cb7bb041009dc9bd5f3e090f"
+        ]
+      },
+      "core_baseline": {
+        "head": "49da0919d9ec3091cb7bb041009dc9bd5f3e090f",
+        "parents": [
+          "3d839130c807f6a0a9b1c896c1c6cca4b41c4538"
+        ]
+      }
+    },
+    "after": {
+      "head": "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+      "branch": "remediation/app-29-backend-complaints",
+      "parents": [
+        "926927ab805a2a3b78957862f3b744d0fe399ac5"
+      ],
+      "private_parent": {
+        "head": "926927ab805a2a3b78957862f3b744d0fe399ac5",
+        "parents": [
+          "49da0919d9ec3091cb7bb041009dc9bd5f3e090f"
+        ]
+      },
+      "core_baseline": {
+        "head": "49da0919d9ec3091cb7bb041009dc9bd5f3e090f",
+        "parents": [
+          "3d839130c807f6a0a9b1c896c1c6cca4b41c4538"
+        ]
+      }
+    }
+  },
+  "source_binding_before": {
+    "manifest_sha256": "40000ce7fc95efec6ba4ce966deedb41df4e7d99731cf1e92947909d3781a6d5",
+    "sources": 466,
+    "seed_paths": 348,
+    "local_v3": "PRIMARY_BOUND_LOCAL_RECEIPT_NOT_HOSTED_REEXECUTION",
+    "authority_files": 357,
+    "core_sources": 21,
+    "snapshots": 199,
+    "profile": "app-29-final-jar-consumer-profile-04",
+    "candidate_id": "app-29-driver-cut-native-build-05-isolation-getter-source-01",
+    "candidate_sha256": "50f7dc4a6314cc5105f4990be26ba8be65ae242e1f7e62652cc60d6a2c0e03df",
+    "candidate_qualification": "UNQUALIFIED"
+  },
+  "source_bundle_after": {
+    "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+    "private_parent_sha": "926927ab805a2a3b78957862f3b744d0fe399ac5",
+    "ref": "refs/heads/remediation/app-29-backend-complaints",
+    "source_path": "review/working/app-29-core-c2-private-checkpoint-02/backend.bundle",
+    "path": "docs/remediation/app29-core-c2-02/inputs/backend.bundle",
+    "sha256": "d3000767393f723ab10b9a66e142fd6a0eb470738972e398df8ce6ba53589e8c",
+    "bytes": 198761,
+    "format": "git-bundle-v2-sha1-complete",
+    "tip": "989a8c07b90d956a5f2484f223be41b5d99a8a3c"
+  },
+  "source_binding_after": {
+    "manifest_sha256": "40000ce7fc95efec6ba4ce966deedb41df4e7d99731cf1e92947909d3781a6d5",
+    "sources": 466,
+    "seed_paths": 348,
+    "local_v3": "PRIMARY_BOUND_LOCAL_RECEIPT_NOT_HOSTED_REEXECUTION",
+    "authority_files": 357,
+    "core_sources": 21,
+    "snapshots": 199,
+    "profile": "app-29-final-jar-consumer-profile-04",
+    "candidate_id": "app-29-driver-cut-native-build-05-isolation-getter-source-01",
+    "candidate_sha256": "50f7dc4a6314cc5105f4990be26ba8be65ae242e1f7e62652cc60d6a2c0e03df",
+    "candidate_qualification": "UNQUALIFIED"
+  },
+  "inputs_preserved": true,
+  "final_children_absent": true,
+  "final_containers_absent": true,
+  "cancelled": false,
+  "retained_file_hashes": {
+    "containers-normal-3.log": {
+      "bytes": 65,
+      "sha256": "8e2a95e8c181e923fc046db3158d45fc8dfc812700ff482f21fe809d2df0cccb",
+      "error": null
+    },
+    "containers-normal-9.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "error": null
+    },
+    "before-private-parent-commit.log": {
+      "bytes": 361,
+      "sha256": "0116d0a9fa46cb8dc2a1125ec38db5c1d9d75b85e9bff64e4ddc53e054ace7ab",
+      "error": null
+    },
+    "containers-final.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "error": null
+    },
+    "containers-normal-5.log": {
+      "bytes": 65,
+      "sha256": "8e2a95e8c181e923fc046db3158d45fc8dfc812700ff482f21fe809d2df0cccb",
+      "error": null
+    },
+    "before-core-baseline-commit.log": {
+      "bytes": 639,
+      "sha256": "98cdf85b08d699721c6350fa51e484a662d4ab3dd0ffc7112d8c3b9a56e2b516",
+      "error": null
+    },
+    "before-source-hashes.json": {
+      "bytes": 133767,
+      "sha256": "f57de1528f606822a2d2bc8601f1d4c82f4d0b3ffbad127d2851123454aa395e",
+      "error": null
+    },
+    "after-core-baseline-commit.log": {
+      "bytes": 639,
+      "sha256": "98cdf85b08d699721c6350fa51e484a662d4ab3dd0ffc7112d8c3b9a56e2b516",
+      "error": null
+    },
+    "owned-containers.json": {
+      "bytes": 1348,
+      "sha256": "212d29f7ad4d3ffc4461a6158906f32dc6c8281ec12555c996024fe5f8314711",
+      "error": null
+    },
+    "gradle-test.log": {
+      "bytes": 4409,
+      "sha256": "b7ca0f263b47e5f528682bf507d4004b449c6b9ffa63cdc47e6be55cd6e5a5e3",
+      "error": null
+    },
+    "source-bundle-verify.log": {
+      "bytes": 344,
+      "sha256": "4a8764779e0b6aa780778cf4445b0436d5e1cb751b10424c4f671020bd359f55",
+      "error": null
+    },
+    "image-1.log": {
+      "bytes": 225,
+      "sha256": "2fcef07881f4f4e9564c412f22f516b80bbaaf19b5735c750d25961945316f40",
+      "error": null
+    },
+    "containers-normal-2.log": {
+      "bytes": 65,
+      "sha256": "8e2a95e8c181e923fc046db3158d45fc8dfc812700ff482f21fe809d2df0cccb",
+      "error": null
+    },
+    "after-status.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "error": null
+    },
+    "containers-normal-7.log": {
+      "bytes": 65,
+      "sha256": "8e2a95e8c181e923fc046db3158d45fc8dfc812700ff482f21fe809d2df0cccb",
+      "error": null
+    },
+    "source-bundle-checkout.log": {
+      "bytes": 171,
+      "sha256": "0cb3d81d86240f35738133180b56b184a7f5af12cd850cd9cfd2096230b17326",
+      "error": null
+    },
+    "containers-normal-4.log": {
+      "bytes": 65,
+      "sha256": "8e2a95e8c181e923fc046db3158d45fc8dfc812700ff482f21fe809d2df0cccb",
+      "error": null
+    },
+    "container-events.log": {
+      "bytes": 7821,
+      "sha256": "8f2da6648ea132883cb4adf5f3feab7ba26e96d7a0b1bc793544bdf073a4fdf3",
+      "error": null
+    },
+    "after-backend-branch.log": {
+      "bytes": 38,
+      "sha256": "7b48f4083ede426131b1eff936e7c0d0297d2281a7221979a6ae135706be019b",
+      "error": null
+    },
+    "containers-after-cleanup.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "error": null
+    },
+    "containers-normal-8.log": {
+      "bytes": 65,
+      "sha256": "8e2a95e8c181e923fc046db3158d45fc8dfc812700ff482f21fe809d2df0cccb",
+      "error": null
+    },
+    "containers-before.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "error": null
+    },
+    "containers-normal-1.log": {
+      "bytes": 65,
+      "sha256": "8e2a95e8c181e923fc046db3158d45fc8dfc812700ff482f21fe809d2df0cccb",
+      "error": null
+    },
+    "after-private-parent-commit.log": {
+      "bytes": 361,
+      "sha256": "0116d0a9fa46cb8dc2a1125ec38db5c1d9d75b85e9bff64e4ddc53e054ace7ab",
+      "error": null
+    },
+    "before-status.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "error": null
+    },
+    "after-backend-sha.log": {
+      "bytes": 41,
+      "sha256": "7a6b8f46782eca3ab189ac52a6040aa6c65719a2f98159ad18aabacbe3eb1ec1",
+      "error": null
+    },
+    "image-0.log": {
+      "bytes": 208,
+      "sha256": "42f9580f26e131dd7eaaea13e73f7b73e182f2eb870be56499f9cf697d911a42",
+      "error": null
+    },
+    "before-backend-commit.log": {
+      "bytes": 373,
+      "sha256": "78f53743490218d3e856c68dffaae952360f89a7585c7679e87ca1cc1ffeb2e2",
+      "error": null
+    },
+    "before-backend-sha.log": {
+      "bytes": 41,
+      "sha256": "7a6b8f46782eca3ab189ac52a6040aa6c65719a2f98159ad18aabacbe3eb1ec1",
+      "error": null
+    },
+    "after-source-hashes.json": {
+      "bytes": 133767,
+      "sha256": "f57de1528f606822a2d2bc8601f1d4c82f4d0b3ffbad127d2851123454aa395e",
+      "error": null
+    },
+    "initial-backend-sha.log": {
+      "bytes": 41,
+      "sha256": "f8f42cc7bc7d592bf99e042b3aa9953662f86136ed64204a86e469f1804c3fdb",
+      "error": null
+    },
+    "initial-backend-branch.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "error": null
+    },
+    "jdk-version.log": {
+      "bytes": 2150,
+      "sha256": "85ca7ba9859e436755f083d73c23497d45a41d8cc2fd0bb4f551fc6052511c3a",
+      "error": null
+    },
+    "gradle-stop-immediate.log": {
+      "bytes": 31,
+      "sha256": "9bb9c19238f3fdde3213f2be84912b0c7e87b3e2295ec372ec245deab200d46d",
+      "error": null
+    },
+    "source-bundle-fetch.log": {
+      "bytes": 207,
+      "sha256": "e1506302bb3b44e4d588c8dbd1d3d80a23f4fb2075e0733387805342a6c27684",
+      "error": null
+    },
+    "docker-version.log": {
+      "bytes": 792,
+      "sha256": "a634037cf6df509bb12f1496d80dd258857175c09727b4a4cfe8167cf1951716",
+      "error": null
+    },
+    "after-backend-commit.log": {
+      "bytes": 373,
+      "sha256": "78f53743490218d3e856c68dffaae952360f89a7585c7679e87ca1cc1ffeb2e2",
+      "error": null
+    },
+    "initial-backend-status.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "error": null
+    },
+    "containers-normal-6.log": {
+      "bytes": 65,
+      "sha256": "8e2a95e8c181e923fc046db3158d45fc8dfc812700ff482f21fe809d2df0cccb",
+      "error": null
+    },
+    "after-tracked.log": {
+      "bytes": 71641,
+      "sha256": "39a0c2f85d8622f12a83d5df9d8c5f57b681b2b132beea2e9d69a53532e6bfc1",
+      "error": null
+    },
+    "before-tracked.log": {
+      "bytes": 71641,
+      "sha256": "39a0c2f85d8622f12a83d5df9d8c5f57b681b2b132beea2e9d69a53532e6bfc1",
+      "error": null
+    },
+    "containers-normal-0.log": {
+      "bytes": 65,
+      "sha256": "8e2a95e8c181e923fc046db3158d45fc8dfc812700ff482f21fe809d2df0cccb",
+      "error": null
+    },
+    "before-backend-branch.log": {
+      "bytes": 38,
+      "sha256": "7b48f4083ede426131b1eff936e7c0d0297d2281a7221979a6ae135706be019b",
+      "error": null
+    },
+    "jdk.json": {
+      "bytes": 2023,
+      "sha256": "f95c67557fd2ae701f15f089ab0b7a6bdffef78c432a699e6411a45b24c30589",
+      "error": null
+    },
+    "gradle-stop-final.log": {
+      "bytes": 31,
+      "sha256": "9bb9c19238f3fdde3213f2be84912b0c7e87b3e2295ec372ec245deab200d46d",
+      "error": null
+    },
+    "carrier-sha.log": {
+      "bytes": 41,
+      "sha256": "e0a0023010884131c708c79ae8799803139f9f44583387b9d1deea5c56817409",
+      "error": null
+    },
+    "reports/final-jar-profile-04/class-load-2611.txt": {
+      "bytes": 1419078,
+      "sha256": "149351a025e40f8fd704a3a71586e43de8a3131a603ce41c9546a199cbc2fca7",
+      "error": null
+    },
+    "reports/final-jar-profile-04/worker-runtime-required.txt": {
+      "bytes": 7843,
+      "sha256": "2a9db841c98811bcd224605eb28e5d170636d1fef49b707b2ca1dd01fd3caa0a",
+      "error": null
+    },
+    "reports/final-jar-profile-04/effective-classpath.txt": {
+      "bytes": 85986,
+      "sha256": "febc6af689a032df63d55c2fc7a44378ed1eeb2409bec5685f0675f72e10dded",
+      "error": null
+    },
+    "reports/final-jar-profile-04/worker-runtime-original.txt": {
+      "bytes": 8132,
+      "sha256": "97c20460143e80a7f43b0024bf70ab4475769f25508cfdef27430189178a437d",
+      "error": null
+    },
+    "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.xml": {
+      "bytes": 35893,
+      "sha256": "465024fa05e267de6ec2eae2a8189363e397422baf7e2004f7286992f28b816f",
+      "error": null
+    },
+    "test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest.xml": {
+      "bytes": 6174,
+      "sha256": "ee2bfcbb25e2386967c0215e587873b730ec585d2532413d50db22c66f7ecf8c",
+      "error": null
+    }
+  },
+  "retained_inventory_complete": true,
+  "elapsed_seconds": 366.608559264,
+  "limitation": "Development Core C2/probes47 only; two negative exits are PROCESS_ONLY, not product end. Native05 candidate50f7 remains UNQUALIFIED; D05 PARTIAL / D06 unreviewed and W03/native/full qualification remain open."
+}

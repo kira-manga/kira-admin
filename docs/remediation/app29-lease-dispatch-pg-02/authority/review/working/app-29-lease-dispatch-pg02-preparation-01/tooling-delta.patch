@@ -1,0 +1,1014 @@
+--- a/kira-admin/ci/app29-gate-b.py
++++ b/review/working/app-29-lease-dispatch-pg02-preparation-01/ci/app29-gate-b.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Inert private lease-dispatch PG successor: exact17 plus one former failed method, not qualification."""
++"""Inert private PG02 failed-two successor; historical PG18 stays16 PASS/2 FAIL, not qualification."""
+ import argparse
+ import hashlib
+ import json
+@@ -15,15 +15,15 @@
+ 
+ ADMIN = Path(__file__).resolve().parent.parent
+ BACKEND = ADMIN.parent / 'backend'
+-PAYLOAD = ADMIN / 'docs/remediation/app29-lease-dispatch-pg-01-transport-02'
+-GATE = 'app-29-lease-dispatch-pg-01'
++PAYLOAD = ADMIN / 'docs/remediation/app29-lease-dispatch-pg-02'
++GATE = 'app-29-lease-dispatch-pg-02'
+ CHECKPOINT_SCHEMA = 'app29-lease-dispatch-clean-checkpoint-v1'
+-PROFILE_ID = 'app-29-lease-dispatch-pg-profile-01'
+-PROFILE_FILE = 'review/working/app-29-lease-dispatch-pg-carrier-02/profile/profile.json'
+-PROFILE_SHA = '315509d24f0fd4c84fd8172231e7eb79639bad1a0ae589db6e18ce0268b4ed79'  # Primary actual-value binding; no product acceptance.
+-PROFILE_INIT = 'review/working/app-29-lease-dispatch-pg-carrier-02/profile/profile.init.gradle'
+-PROFILE_INIT_SHA = 'd7315be66f9bf654e2ae62b164e9252c7ee3deeeccc66a5b6e826104707e7a2d'  # Primary actual-value binding; no product acceptance.
+-MANIFEST_FILE = 'review/working/app-29-w03-integrated-driver-lease-dispatch-pg-01-transport-02/manifest.json'
++PROFILE_ID = 'app-29-lease-dispatch-pg-profile-02'
++PROFILE_FILE = 'review/working/app-29-lease-dispatch-pg02-preparation-01/profile/profile.json'
++PROFILE_SHA = '0000000000000000000000000000000000000000000000000000000000000000'  # UNBOUND: primary supplies final reviewed profile bytes.
++PROFILE_INIT = 'review/working/app-29-lease-dispatch-pg02-preparation-01/profile/profile.init.gradle'
++PROFILE_INIT_SHA = '0000000000000000000000000000000000000000000000000000000000000000'  # UNBOUND: primary supplies final reviewed init bytes.
++MANIFEST_FILE = 'review/working/app-29-w03-integrated-driver-lease-dispatch-pg-02/manifest.json'
+ CREATOR_CLASS = 'me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest'
+ OWNERSHIP_CLASS = 'me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT'
+ CREATOR_METHOD = 'actual creator publication restoration and outer adapter faults retain exact obligations through process only exit'
+@@ -33,7 +33,8 @@
+     'POOL_LEASE_CREATOR_CORE_BEFORE_TL', 'POOL_LEASE_CREATOR_CORE_AFTER_TL',
+     'POOL_LEASE_CREATOR_CLIENT_INFO_TAIL', 'POOL_LEASE_CREATOR_DECLARED_TAIL',
+ )
+-METHODS = {
++# Immutable historical PG18 selectors only; never used for current execution.
++PG18_METHODS = {
+     CREATOR_CLASS: (
+         'MODEL fatal connection commit creates the first real Hikari close Worker and drains its task',
+         'MODEL fatal Hikari statement execution creates the first real close Worker and drains its task',
+@@ -52,16 +53,28 @@
+ }
+ # Historical syntax guard only: this separate profile rejects every emitted PG14 row.
+ DIAGNOSTIC_CASES = ('RETURN_SAMPLE', 'FAILED_POST_CONSENT_TAIL')
+-TEST_COUNTS = {CREATOR_CLASS: 17, OWNERSHIP_CLASS: 1}
++PG18_TEST_COUNTS = {CREATOR_CLASS: 17, OWNERSHIP_CLASS: 1}
+ # Default @ParameterizedTest naming is evidenced by development-cycle13's real enum XML.
+ # Unlike the explicit {displayName} templates in other tests, these names have no method prefix.
+ # This is the expected identity set, NOT fabricated execution outcomes; any naming drift fails closed.
+-EXPECTED_TESTS = [
++PG18_EXPECTED_TESTS = [
+     {'class': name, 'method': method, 'display_name': display}
+-    for name, methods in METHODS.items() for method in methods
++    for name, methods in PG18_METHODS.items() for method in methods
+     for display in ([f'[{index}] mode={mode}' for index, mode in enumerate(CREATOR_MODES, 1)]
+                     if name == CREATOR_CLASS and method == CREATOR_METHOD else [method + '()'])
+ ]
++PG18_TEST_SELECTORS = [name + '.' + method for name, methods in PG18_METHODS.items() for method in methods]
++PG18_TASKS = ['test'] + [arg for selector in PG18_TEST_SELECTORS for arg in ('--tests', selector)]
++# Only the two historically failed no-argument methods are admitted to current TASKS/XML.
++METHODS = {
++    CREATOR_CLASS: (
++        'mixed pool creator nesting refuses wrong top fallback and unrelated lease use',
++        'MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement',
++    ),
++}
++TEST_COUNTS = {CREATOR_CLASS: 2}
++EXPECTED_TESTS = [{'class': name, 'method': method, 'display_name': method + '()'}
++                  for name, methods in METHODS.items() for method in methods]
+ TEST_SELECTORS = [name + '.' + method for name, methods in METHODS.items() for method in methods]
+ TASKS = ['test'] + [arg for selector in TEST_SELECTORS for arg in ('--tests', selector)]
+ LOCAL_PREFLIGHT_FILE = str(PurePosixPath(MANIFEST_FILE).parent / 'hosted-local-preflight.json')
+@@ -85,6 +98,11 @@
+ ORDINARY_TREE = 'd172ecf246a9606194f43023a0703d778b877566'
+ LEASE_HEAD = '8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3'  # Primary actual-value binding; no product acceptance.
+ LEASE_TREE = 'fc480e82630091138da145ade1812cedcd75e58e'  # Primary actual-value binding; no product acceptance.
++PG02_HEAD = '0000000000000000000000000000000000000000'  # UNBOUND: exact one-child successor of LEASE_HEAD.
++PG02_TREE = '0000000000000000000000000000000000000000'  # UNBOUND: primary's clean checkpoint tree.
++PG02_SOURCE_PATHS = tuple('src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/' + name for name in (
++    'PersistencePgOwnedCutIntegrationTest.kt', 'PoolLeaseDispatchCreatorIntegrationTest.kt',
++))
+ LEASE_SOURCE_PATHS = tuple('src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/' + name for name in (
+     'GuardedDataSource.kt', 'LeaseJdbcFacade.kt', 'PersistenceJdbcGuardCall.kt', 'PersistenceJdbcGuardProtocol.kt',
+     'PersistenceJdbcLease.kt', 'PersistenceJdbcLeaseInvocation.kt', 'PersistenceJdbcPoolTransfer.kt',
+@@ -94,13 +112,13 @@
+     'PgLifecycleDatabaseProbe.kt', 'PgLifecycleDatabaseProbeProcess.kt', 'PgLifecycleDatabaseRecipe.kt',
+     'OwnedPoolLeaseCreatorPendingProbe.kt', 'PoolLeaseDispatchCreatorIntegrationTest.kt',
+ ))
+-SOURCE_BUNDLE = {'public_prerequisite_sha': PUBLIC_PREREQUISITE, 'private_parent_sha': ORDINARY_HEAD,
++SOURCE_BUNDLE = {'public_prerequisite_sha': PUBLIC_PREREQUISITE, 'private_parent_sha': LEASE_HEAD,
+                  'ref': 'refs/heads/' + BACKEND_BRANCH,
+-                 'source_path': 'review/working/app-29-lease-dispatch-source-checkpoint-01/backend.bundle',
+-                 'path': 'docs/remediation/app29-lease-dispatch-pg-01-transport-02/inputs/backend.bundle',
+-                 'sha256': '235fca34c51710930fd9ced4444d0931e5273137bd4178169c3b8c9c4010ec50', 'bytes': 280735}
++                 'source_path': 'review/working/app-29-lease-dispatch-pg02-source-checkpoint-01/backend.bundle',
++                 'path': 'docs/remediation/app29-lease-dispatch-pg-02/inputs/backend.bundle',
++                 'sha256': '0000000000000000000000000000000000000000000000000000000000000000', 'bytes': 0}
+ BUNDLE_MAX_BYTES = 8 * 1024**2
+-DEPLOYMENTS = {f'review/working/app-29-lease-dispatch-pg-carrier-02/{p}': p for p in (
++DEPLOYMENTS = {f'review/working/app-29-lease-dispatch-pg02-preparation-01/{p}': p for p in (
+     'ci/app29-gate-b.py', '.github/workflows/app29-gate-b.yml')}
+ DEPLOYMENTS[PROFILE_FILE] = PROFILE_FILE
+ DEPLOYMENTS[PROFILE_INIT] = PROFILE_INIT
+@@ -116,7 +134,7 @@
+     'Evidence copy drift': 'CAPTURE_COPY_DRIFT',
+     'Required raw evidence inventory missing': 'CAPTURE_REQUIRED_INVENTORY',
+     'Wrong diagnostic XML inventory': 'XML_INVENTORY',
+-    'Require exactly the18 fixed lease-dispatch source identities': 'XML_EXPECTED_IDENTITIES',
++    'Require exactly the2 fixed PG02 failed-method identities': 'XML_EXPECTED_IDENTITIES',
+     'Unsafe XML': 'XML_SAFE',
+     'Missing, extra or duplicate diagnostic testcase': 'XML_ACTUAL_IDENTITIES',
+     'Contradictory diagnostic testcase outcome': 'XML_OUTCOME',
+@@ -141,7 +159,7 @@
+                 for sha in (PROFILE_SHA, PROFILE_INIT_SHA)),
+             'Inert lease-dispatch derivative: final profile/init hashes are UNBOUND')
+     require(all(isinstance(sha, str) and re.fullmatch('[0-9a-f]{40}', sha) and sha != '0' * 40
+-                for sha in (LEASE_HEAD, LEASE_TREE)), 'New private source checkpoint/tree are UNBOUND')
++                for sha in (PG02_HEAD, PG02_TREE)), 'New private source checkpoint/tree are UNBOUND')
+ 
+ 
+ def safe(root, relative):
+@@ -193,9 +211,9 @@
+     require(type(value['bytes']) is int and 0 < value['bytes'] <= BUNDLE_MAX_BYTES
+             and isinstance(value['sha256'], str) and re.fullmatch('[0-9a-f]{64}', value['sha256'])
+             and value['sha256'] != '0' * 64 and isinstance(value['source_path'], str) and bool(value['source_path'])
+-            and binding['backend_sha'] == LEASE_HEAD
++            and binding['backend_sha'] == PG02_HEAD
+             and binding['backend_sha'] not in (PUBLIC_PREREQUISITE, CORE_BASELINE, PRIVATE_PARENT, PREVIOUS_PRIVATE_PARENT,
+-                                               DIAGNOSTIC_PARENT, PRODUCT_LIFECYCLE_PARENT, ORDINARY_PARENT, ORDINARY_HEAD),
++                                               DIAGNOSTIC_PARENT, PRODUCT_LIFECYCLE_PARENT, ORDINARY_PARENT, ORDINARY_HEAD, LEASE_HEAD),
+             'Unbound/oversized private checkpoint bundle')
+     return value
+ 
+@@ -251,7 +269,20 @@
+                     and row['after_sha256'] != '0' * 64 for row in profile['lease_dispatch_source_delta'].values())
+             and all(type(profile['lease_source_target'][key]) is int and profile['lease_source_target'][key] > 0
+                     for key in ('source_count', 'snapshot_count')),
+-            'New lease source stage is UNBOUND; no emit-target, helper or resource acquisition')
++            'Historical lease source stage changed; no emit-target, helper or resource acquisition')
++    require(profile['pg02_source_stage_status'] == 'BOUND_BY_PRIMARY'
++            and all(isinstance(profile[key]['path'], str) and bool(profile[key]['path'])
++                    and isinstance(profile[key]['sha256'], str)
++                    and re.fullmatch('[0-9a-f]{64}', profile[key]['sha256'])
++                    and profile[key]['sha256'] != '0' * 64
++                    for key in ('pg02_source_target', 'pg02_source_checkpoint', 'pg02_checkpoint_paths'))
++            and set(profile['pg02_source_delta']) == set(PG02_SOURCE_PATHS)
++            and all(isinstance(row[key], str) and re.fullmatch('[0-9a-f]{64}', row[key])
++                    and row[key] != '0' * 64 for row in profile['pg02_source_delta'].values()
++                    for key in ('before_sha256', 'after_sha256'))
++            and all(type(profile['pg02_source_target'][key]) is int and profile['pg02_source_target'][key] > 0
++                    for key in ('source_count', 'snapshot_count')),
++            'New PG02 source stage is UNBOUND; no emit-target, helper or resource acquisition')
+     require(digest(ADMIN / 'ci/app29_owned_children.py') == OWNER_SHA, 'Shared ownership utility changed')
+     require(digest(PAYLOAD / 'checkpoint.json') == value['checkpoint_sha256'], 'Unbound checkpoint receipt')
+     checkpoint = read_json(PAYLOAD / 'checkpoint.json')
+@@ -390,7 +421,7 @@
+     for item in (pg1_binding, pg1_selection, target_binding, transition_binding,
+                  source_checkpoint_binding, checkpoint_paths_binding, profile['ordinary_selection'],
+                  profile['historical_ordinary_source'], profile['historical_ordinary_source_bundle'],
+-                 profile['historical_ordinary_result'], profile['source_inventory']):
++                 profile['historical_ordinary_result'], profile['historical_pg18_source_inventory']):
+         require(manifest['approved_inputs'].get(item['path']) == item['sha256']
+                 and digest(safe(authority, item['path'])) == item['sha256'],
+                 'Ordinary source/selection/checkpoint authority missing or changed')
+@@ -474,12 +505,16 @@
+             and pg01['historical_input_hashes'] == target['historical_input_hashes'],
+             'Preserve exact immutable PG01 source/selection; its result remains20 PASS/1 FAIL')
+ 
+-    # One bounded new source stage; all pins remain null until primary binds actual compiled/reviewed bytes.
++    # Immutable lease17 stage. Its old source hashes, checkpoint and bundle are never rebound to PG02.
+     lease_binding = profile['lease_source_target']
+     lease_checkpoint_binding = profile['lease_source_checkpoint']
+-    for item in (lease_binding, lease_checkpoint_binding, profile['lease_checkpoint_paths']):
++    lease_bundle = profile['historical_lease_source_bundle']
++    pg18_binding = profile['historical_pg18_source']
++    pg18_selection_binding = profile['historical_pg18_profile']
++    for item in (lease_binding, lease_checkpoint_binding, profile['lease_checkpoint_paths'],
++                 lease_bundle, pg18_binding, pg18_selection_binding, profile['historical_pg18_result']):
+         require(manifest['approved_inputs'].get(item['path']) == item['sha256']
+-                and digest(safe(authority, item['path'])) == item['sha256'], 'New lease source/checkpoint authority missing')
++                and digest(safe(authority, item['path'])) == item['sha256'], 'Historical lease17/PG18 authority missing')
+     lease_target = read_json(safe(authority, lease_binding['path']))
+     lease_checkpoint = read_json(safe(authority, lease_checkpoint_binding['path']))
+     lease_paths = read_json(safe(authority, profile['lease_checkpoint_paths']['path']))
+@@ -506,7 +541,7 @@
+             and {p for p, row in lease_delta.items() if row['before_sha256'] is None} <= set(lease_target['review_subject_paths']),
+             'Require the complete actual lease source map and additive inventory; do not invent source/snapshot counts')
+     require(lease_checkpoint['status'] == 'PRIVATE_TRANSPORT_CHECKPOINT_NOT_FIX_ACCEPTANCE'
+-            and lease_checkpoint['head'] == binding['backend_sha'] == LEASE_HEAD
++            and lease_checkpoint['head'] == LEASE_HEAD
+             and lease_checkpoint['parent'] == ORDINARY_HEAD and lease_checkpoint['tree'] == LEASE_TREE
+             and lease_checkpoint['branch'] == BACKEND_BRANCH and lease_checkpoint['public_prerequisite'] == PUBLIC_PREREQUISITE
+             and lease_checkpoint['source_manifest'] == lease_binding['path']
+@@ -516,28 +551,121 @@
+             and lease_checkpoint['source_bytes_unchanged'] is True and lease_checkpoint['clean_worktree'] is True
+             and lease_checkpoint['public_push_forbidden'] is True and lease_checkpoint['integration_changed'] is False
+             and lease_checkpoint['tests_run'] is False
+-            and lease_checkpoint['bundle'] == {'path': source_bundle['source_path'], 'sha256': source_bundle['sha256'],
+-                                              'bytes': source_bundle['bytes']},
+-            'Require genuine new private source checkpoint/bundle; not historical PG01 or invented preflight data')
+-    selection = read_json(safe(authority, profile['source_inventory']['path']))
++            and lease_checkpoint['bundle'] == lease_bundle and lease_bundle['bytes'] == 280735
++            and safe(authority, lease_bundle['path']).stat().st_size == lease_bundle['bytes'],
++            'Require immutable historical lease17 checkpoint/bundle, not the PG02 transport')
++    pg18_profile = read_json(safe(authority, pg18_selection_binding['path']))
++    require(pg18_profile['profile_id'] == 'app-29-lease-dispatch-pg-profile-01'
++            and pg18_profile['source_inventory'] == profile['historical_pg18_source_inventory']
++            and all(pg18_profile[key] == profile[key] for key in (
++                'lease_source_stage_status', 'lease_source_target', 'lease_source_checkpoint',
++                'lease_checkpoint_paths', 'lease_dispatch_source_delta')),
++            'Historical PG18 profile/lease17 stage must remain immutable')
++    selection = read_json(safe(authority, profile['historical_pg18_source_inventory']['path']))
+     selected = selection['hosted']
+     require(selection['schema'] == 'app-29-lease-dispatch-inert-selection-proposal-v1'
+-            and selected['focused_class'] == CREATOR_CLASS and selected['focused_noarg_methods'] == list(METHODS[CREATOR_CLASS][:-1])
++            and selected['focused_class'] == CREATOR_CLASS and selected['focused_noarg_methods'] == list(PG18_METHODS[CREATOR_CLASS][:-1])
+             and selected['focused_parameterized_method']['method'] == CREATOR_METHOD
+             and selected['focused_parameterized_method']['enum_values'] == list(CREATOR_MODES)
+             and selected['unchanged_previously_failed_method']['class'] == OWNERSHIP_CLASS
+-            and selected['unchanged_previously_failed_method']['method'] == METHODS[OWNERSHIP_CLASS][0]
+-            and selected['expected_test_counts'] == TEST_COUNTS and profile['test_classes'] == list(TEST_COUNTS)
+-            and selected['expected_test_invocations'] == profile['expected_test_count'] == profile['source_inventory']['expected_test_count'] == 18
+-            and selected['method_filter_count'] == len(TEST_SELECTORS) == 11 and profile['test_selectors'] == TEST_SELECTORS
+-            and selected['task_args'] == TASKS and selected['task_argv_count'] == len(TASKS) == 23
+-            and profile['expected_tests'] == EXPECTED_TESTS
+-            and sorted(selected['expected_xml_files']) == sorted(profile['expected_xml_files'])
+-                == sorted('TEST-' + name + '.xml' for name in TEST_COUNTS)
+-            and selected['shutdown_diagnostics'] == profile['shutdown_diagnostics']
++            and selected['unchanged_previously_failed_method']['method'] == PG18_METHODS[OWNERSHIP_CLASS][0]
++            and selected['expected_test_counts'] == PG18_TEST_COUNTS and pg18_profile['test_classes'] == list(PG18_TEST_COUNTS)
++            and selected['expected_test_invocations'] == pg18_profile['expected_test_count']
++                == profile['historical_pg18_source_inventory']['expected_test_count'] == 18
++            and selected['method_filter_count'] == len(PG18_TEST_SELECTORS) == 11 and pg18_profile['test_selectors'] == PG18_TEST_SELECTORS
++            and selected['task_args'] == pg18_profile['task_args'] == PG18_TASKS
++            and selected['task_argv_count'] == len(PG18_TASKS) == 23
++            and pg18_profile['expected_tests'] == PG18_EXPECTED_TESTS
++            and sorted(selected['expected_xml_files']) == sorted(pg18_profile['expected_xml_files'])
++                == sorted('TEST-' + name + '.xml' for name in PG18_TEST_COUNTS)
++            and selected['shutdown_diagnostics'] == pg18_profile['shutdown_diagnostics']
+             and expected_sources['src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupOwnershipIT.kt']
+                 == selected['unchanged_previously_failed_method']['source_sha256'],
+-            'Require exact11 declarations and18 source-bound invocations; preserve the unchanged failed method')
++            'Historical PG18 remains11 declarations/18 invocations; never reinterpret it as current failed2')
++    pg18 = read_json(safe(authority, pg18_binding['path']))
++    pg18_snapshots = {str(PurePosixPath(pg18_binding['path']).parent / 'sources' / p): expected_sources[p]
++                      for p in lease_target['review_subject_paths']}
++    require(pg18['schema_version'] == 3 and pg18['validation_task_args'] == PG18_TASKS
++            and pg18['repositories']['kira-backend'] == {'head': LEASE_HEAD, 'branch': BACKEND_BRANCH, 'status': ''}
++            and pg18_binding['backend_sha'] == LEASE_HEAD and pg18['untracked_paths'] == []
++            and pg18['source_hashes'] == expected_sources and len(expected_sources) == pg18_binding['source_count'] == 481
++            and pg18['removed_paths'] == lease_target['removed_paths']
++            and pg18['review_subject_paths'] == lease_target['review_subject_paths']
++            and pg18['historical_input_hashes'] == lease_target['historical_input_hashes']
++            and len(pg18['snapshots']) == pg18_binding['snapshot_count'] == 214 and pg18['snapshots'] == pg18_snapshots
++            and pg18['inventory_seed_manifest'] == SEED and pg18['inventory_seed_manifest_sha256'] == SEED_SHA
++            and pg18['inventory_seed_path_count'] == pg18['inventory_seed_preserved_count'] == 348
++            and manifest['approved_inputs'].get(pg18['complete_diff_path']) == pg18['complete_diff_sha256'],
++            'Require unchanged complete transport02 PG18 source, inventory and full-diff history before PG02')
++    pg18_result = read_json(safe(authority, profile['historical_pg18_result']['path']))
++    pg18_diagnostics = pg18_result['diagnostics']
++    require(pg18_result['status'] == 'FAIL' and pg18_result['backend_sha'] == LEASE_HEAD
++            and pg18_result['carrier_sha'] == '6794795c9d40b6a99a4af9b4c46cf6e7a0f68d27'
++            and pg18_diagnostics['tests'] == 18 and pg18_diagnostics['classes'] == PG18_TEST_COUNTS
++            and pg18_diagnostics['counts'] == {'PASS': 16, 'FAIL': 2, 'ERROR': 0, 'SKIP': 0}
++            and sorted((row['class'], row['display_name']) for row in pg18_diagnostics['outcomes'] if row['status'] == 'FAIL')
++                == sorted((row['class'], row['display_name']) for row in EXPECTED_TESTS),
++            'Current failed2 must be the exact historical failures; no previous16 replay or relabelling')
++
++    # Append exactly two test-file replacements AFTER the unchanged historical lease17/PG18 stage.
++    pg02_binding = profile['pg02_source_target']
++    pg02_checkpoint_binding = profile['pg02_source_checkpoint']
++    for item in (pg02_binding, pg02_checkpoint_binding, profile['pg02_checkpoint_paths'], profile['source_inventory']):
++        require(manifest['approved_inputs'].get(item['path']) == item['sha256']
++                and digest(safe(authority, item['path'])) == item['sha256'], 'New PG02 source/checkpoint/selection authority missing')
++    pg02_target = read_json(safe(authority, pg02_binding['path']))
++    pg02_checkpoint = read_json(safe(authority, pg02_checkpoint_binding['path']))
++    pg02_paths = read_json(safe(authority, profile['pg02_checkpoint_paths']['path']))
++    pg02_delta = profile['pg02_source_delta']
++    require(profile['pg02_source_stage_status'] == 'BOUND_BY_PRIMARY' and set(pg02_delta) == set(PG02_SOURCE_PATHS)
++            and all(expected_sources.get(p) == row['before_sha256'] and row['before_sha256'] is not None
++                    and row['after_sha256'] != row['before_sha256'] and isinstance(row['after_sha256'], str)
++                    and re.fullmatch('[0-9a-f]{64}', row['after_sha256']) and row['after_sha256'] != '0' * 64
++                    for p, row in pg02_delta.items()),
++            'Require exactly the reviewed PG02 two-test-file replacements, no additions or removals')
++    expected_sources.update({p: row['after_sha256'] for p, row in pg02_delta.items()})
++    require(pg02_paths == [{'path': p, **pg02_delta[p]} for p in sorted(pg02_delta)]
++            and pg02_target['schema_version'] == 3 and pg02_target['source_hashes'] == expected_sources
++            and len(expected_sources) == pg02_binding['source_count'] == len(pg18['source_hashes'])
++            and pg02_target['removed_paths'] == pg18['removed_paths']
++            and pg02_target['review_subject_paths'] == pg18['review_subject_paths']
++            and pg02_target['historical_input_hashes'] == pg18['historical_input_hashes']
++            and pg02_target['inventory_seed_manifest'] == SEED and pg02_target['inventory_seed_manifest_sha256'] == SEED_SHA
++            and pg02_target['inventory_seed_path_count'] == pg02_target['inventory_seed_preserved_count'] == 348
++            and len(pg02_target['snapshots']) == pg02_binding['snapshot_count'] == len(pg18['snapshots']),
++            'Require the complete PG02 source map and unchanged481/214 inventory; not only selected sources')
++    require(pg02_checkpoint['status'] == 'PRIVATE_TRANSPORT_CHECKPOINT_NOT_FIX_ACCEPTANCE'
++            and pg02_checkpoint['head'] == binding['backend_sha'] == PG02_HEAD
++            and pg02_checkpoint['parent'] == LEASE_HEAD and pg02_checkpoint['tree'] == PG02_TREE
++            and pg02_checkpoint['branch'] == BACKEND_BRANCH and pg02_checkpoint['public_prerequisite'] == PUBLIC_PREREQUISITE
++            and pg02_checkpoint['source_manifest'] == pg02_binding['path']
++            and pg02_checkpoint['source_manifest_sha256'] == pg02_binding['sha256']
++            and pg02_checkpoint['source_count'] == len(expected_sources) and pg02_checkpoint['development07_seed_keys_preserved'] == 348
++            and pg02_checkpoint['modified_paths'] == 2 and pg02_checkpoint['newly_tracked_paths'] == 0
++            and pg02_checkpoint['source_bytes_unchanged'] is True and pg02_checkpoint['clean_worktree'] is True
++            and pg02_checkpoint['public_push_forbidden'] is True and pg02_checkpoint['integration_changed'] is False
++            and pg02_checkpoint['tests_run'] is False
++            and pg02_checkpoint['bundle'] == {'path': source_bundle['source_path'], 'sha256': source_bundle['sha256'],
++                                             'bytes': source_bundle['bytes']},
++            'Require genuine PG02 private child checkpoint/bundle; no historical rebinding or invented preflight')
++    pg02_selection = read_json(safe(authority, profile['source_inventory']['path']))
++    require(pg02_selection['schema'] == 'app-29-lease-dispatch-pg02-failed-two-selection-v1'
++            and pg02_selection['historical_pg18_manifest'] == {k: pg18_binding[k] for k in ('path', 'sha256')}
++            and pg02_selection['historical_pg18_result'] == {k: profile['historical_pg18_result'][k] for k in ('path', 'sha256')}
++            and pg02_selection['source_delta'] == pg02_delta
++            and pg02_selection['source_hashes'] == {p: row['after_sha256'] for p, row in pg02_delta.items()}
++            and pg02_selection['test_classes'] == profile['test_classes'] == list(TEST_COUNTS)
++            and pg02_selection['expected_test_counts'] == TEST_COUNTS
++            and pg02_selection['expected_test_count'] == profile['expected_test_count'] == profile['source_inventory']['expected_test_count'] == 2
++            and pg02_selection['method_filter_count'] == len(TEST_SELECTORS) == 2
++            and pg02_selection['test_selectors'] == profile['test_selectors'] == TEST_SELECTORS
++            and pg02_selection['task_args'] == profile['task_args'] == TASKS
++            and pg02_selection['task_argv_count'] == len(TASKS) == 5
++            and pg02_selection['expected_tests'] == profile['expected_tests'] == EXPECTED_TESTS
++            and pg02_selection['expected_xml_files'] == profile['expected_xml_files'] == ['TEST-' + CREATOR_CLASS + '.xml']
++            and pg02_selection['shutdown_diagnostics'] == profile['shutdown_diagnostics']
++                == {'status': 'NOT_APPLICABLE', 'expected_record_count': 0},
++            'Require exactly two failed noarg methods/five argv/two XML identities, no enum or prior16 replay')
+     provenance = {}
+     for predecessor_manifest in (pg1, target):
+         for field in ('approved_inputs', 'validation_tooling'):
+@@ -546,19 +674,19 @@
+                 provenance[relative] = sha
+     require(len(provenance) == 188 and provenance.items() <= manifest['approved_inputs'].items(),
+             'Preserve all188 PG1/target approved/tooling provenance pairs')
+-    for predecessor_manifest in (pg01, lease_target):
++    for predecessor_manifest in (pg01, lease_target, pg18, pg02_target):
+         for field in ('approved_inputs', 'validation_tooling'):
+             for relative, sha in predecessor_manifest[field].items():
+-                require(relative not in provenance or provenance[relative] == sha, 'Contradictory PG01/lease provenance pin')
++                require(relative not in provenance or provenance[relative] == sha, 'Contradictory PG01/lease17/PG18/PG02 provenance pin')
+                 provenance[relative] = sha
+-    require(provenance.items() <= manifest['approved_inputs'].items(), 'PG01/lease approved/tooling provenance omitted')
++    require(provenance.items() <= manifest['approved_inputs'].items(), 'PG01/lease17/PG18/PG02 approved/tooling provenance omitted')
+     expected_snapshots = {str(PurePosixPath(MANIFEST_FILE).parent / 'sources' / p): expected_sources[p]
+-                          for p in lease_target['review_subject_paths']}
++                          for p in pg02_target['review_subject_paths']}
+     require(manifest['source_hashes'] == expected_sources
+-            and manifest['removed_paths'] == lease_target['removed_paths']
+-            and manifest['review_subject_paths'] == lease_target['review_subject_paths']
+-            and len(manifest['snapshots']) == lease_binding['snapshot_count']
+-            and manifest['snapshots'] == expected_snapshots, 'Require complete new lease source binding and all fresh snapshots')
++            and manifest['removed_paths'] == pg02_target['removed_paths']
++            and manifest['review_subject_paths'] == pg02_target['review_subject_paths']
++            and len(manifest['snapshots']) == pg02_binding['snapshot_count']
++            and manifest['snapshots'] == expected_snapshots, 'Require complete PG02 source binding and all fresh snapshots')
+     require(manifest['historical_input_hashes'] == current['historical_input_hashes']
+             and current['approved_inputs'].items() <= manifest['approved_inputs'].items(),
+             'Historical authority or original approved input omitted')
+@@ -567,7 +695,7 @@
+     require(len(expected_tooling) == 5 and all(expected_tooling == {
+                 p: sha for p, sha in predecessor_manifest['validation_tooling'].items()
+                 if p not in predecessor_manifest['additional_validation_tooling_paths']}
+-                for predecessor_manifest in (pg1, target, pg01, lease_target)), 'Historical and target base tooling must remain identical')
++                for predecessor_manifest in (pg1, target, pg01, lease_target, pg18, pg02_target)), 'Historical and target base tooling must remain identical')
+     expected_tooling.update({original: digest(safe(ADMIN, deployed)) for original, deployed in DEPLOYMENTS.items()})
+     require(manifest['validation_tooling'] == expected_tooling and len(expected_tooling) == 10
+             and len(manifest['additional_validation_tooling_paths']) == 5
+@@ -578,7 +706,8 @@
+             and all(manifest['approved_inputs'].get(row['proposal_path']) == row['after_sha256'] for row in source_delta.values())
+             and all(manifest['approved_inputs'].get(p) == sha
+                     for field in ('native_candidate_evidence', 'diagnostic_authority', 'product_lifecycle_authority',
+-                                  'post_structural_authority', 'selection_authority', 'ordinary_connected_authority', 'lease_dispatch_provenance')
++                                  'post_structural_authority', 'selection_authority', 'ordinary_connected_authority',
++                                  'lease_dispatch_provenance', 'pg02_provenance')
+                     for p, sha in profile[field].items()),
+             'Missing exact accepted proposals, source/history authority or retained Native05 inputs')
+     require(manifest['inventory_seed_manifest'] == SEED and manifest['inventory_seed_manifest_sha256'] == SEED_SHA
+@@ -646,9 +775,14 @@
+             'core_sources': 21, 'snapshots': len(manifest['snapshots']), 'profile': PROFILE_ID,
+             'validation_predecessor_sha256': pg1_binding['sha256'], 'historical_pg14_manifest_sha256': validation_predecessor['sha256'],
+             'historical_ordinary_target_sha256': target_binding['sha256'], 'historical_ordinary_transition_sha256': transition_binding['sha256'],
+-            'target_source_manifest_sha256': lease_binding['sha256'], 'source_checkpoint_sha256': lease_checkpoint_binding['sha256'],
+-            'selection_source_delta_count': len(lease_delta),
+-            'source_delta': {'changed': 14, 'added': 3, 'unchanged': len(pg01['source_hashes']) - 14, 'removed': 0},
++            'historical_pg18_manifest_sha256': pg18_binding['sha256'],
++            'historical_lease_source_manifest_sha256': lease_binding['sha256'],
++            'historical_lease_source_checkpoint_sha256': lease_checkpoint_binding['sha256'],
++            'historical_lease_selection_source_delta_count': len(lease_delta),
++            'historical_lease_source_delta': {'changed': 14, 'added': 3, 'unchanged': len(pg01['source_hashes']) - 14, 'removed': 0},
++            'target_source_manifest_sha256': pg02_binding['sha256'], 'source_checkpoint_sha256': pg02_checkpoint_binding['sha256'],
++            'selection_source_delta_count': len(pg02_delta),
++            'source_delta': {'changed': 2, 'added': 0, 'unchanged': len(pg18['source_hashes']) - 2, 'removed': 0},
+             'historical_pg1_selection_source_delta_count': 0, 'historical_ordinary_selection_source_delta_count': 23,
+             'provenance_pairs': len(provenance),
+             'candidate_id': profile['final_jar']['candidate_id'], 'candidate_sha256': profile['final_jar']['sha256'],
+@@ -664,7 +798,7 @@
+         self.end = self.start + binding['budgets']['controller_seconds']
+         self.phase_end = self.start + binding['budgets']['preflight_seconds']
+         self.cancelled, self.started, self.clean_daemon, self.events_since = False, False, False, None
+-        self.run = Path(os.environ['RUNNER_TEMP']) / ('app29-lease-dispatch-pg-01-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
++        self.run = Path(os.environ['RUNNER_TEMP']) / ('app29-lease-dispatch-pg-02-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
+         self.run.mkdir(mode=0o700, exist_ok=False)
+         for name in ('reports', 'gradle', 'w01', 'tmp', 'home', 'project-cache', 'kotlin-cache'):
+             (self.run / name).mkdir(mode=0o700)
+@@ -781,6 +915,10 @@
+         header, separator, _ = commit.partition(b'\n\n')
+         parents = [row[7:].decode('ascii') for row in header.split(b'\n') if row.startswith(b'parent ')]
+         trees = [row[5:].decode('ascii') for row in header.split(b'\n') if row.startswith(b'tree ')]
++        lease = self.command(label + '-lease-parent-commit', ['git', '--no-replace-objects', 'cat-file', 'commit', LEASE_HEAD], cleaning=cleaning)
++        lease_header, lease_separator, _ = lease.partition(b'\n\n')
++        lease_parents = [row[7:].decode('ascii') for row in lease_header.split(b'\n') if row.startswith(b'parent ')]
++        lease_trees = [row[5:].decode('ascii') for row in lease_header.split(b'\n') if row.startswith(b'tree ')]
+         ordinary = self.command(label + '-ordinary-parent-commit', ['git', '--no-replace-objects', 'cat-file', 'commit', ORDINARY_HEAD], cleaning=cleaning)
+         ordinary_header, ordinary_separator, _ = ordinary.partition(b'\n\n')
+         ordinary_parents = [row[7:].decode('ascii') for row in ordinary_header.split(b'\n') if row.startswith(b'parent ')]
+@@ -805,6 +943,7 @@
+         core_parents = [row[7:].decode('ascii') for row in core_header.split(b'\n') if row.startswith(b'parent ')]
+         self.result.setdefault('source_checkout_final', {})[label] = {
+             'head': sha, 'branch': branch, 'parents': parents, 'trees': trees,
++            'lease_parent': {'head': LEASE_HEAD, 'parents': lease_parents, 'trees': lease_trees},
+             'ordinary_parent': {'head': ORDINARY_HEAD, 'parents': ordinary_parents, 'trees': ordinary_trees},
+             'post_structural_parent': {'head': ORDINARY_PARENT, 'parents': structural_parents},
+             'product_lifecycle_parent': {'head': PRODUCT_LIFECYCLE_PARENT, 'parents': product_parents},
+@@ -812,8 +951,9 @@
+             'private_parent': {'head': PRIVATE_PARENT, 'parents': ancestor_parents},
+             'previous_private_parent': {'head': PREVIOUS_PRIVATE_PARENT, 'parents': previous_parents},
+             'core_baseline': {'head': CORE_BASELINE, 'parents': core_parents}}
+-        require(sha == self.binding['backend_sha'] == LEASE_HEAD and branch == BACKEND_BRANCH
+-                and separator and parents == [ORDINARY_HEAD] and trees == [LEASE_TREE]
++        require(sha == self.binding['backend_sha'] == PG02_HEAD and branch == BACKEND_BRANCH
++                and separator and parents == [LEASE_HEAD] and trees == [PG02_TREE]
++                and lease_separator and lease_parents == [ORDINARY_HEAD] and lease_trees == [LEASE_TREE]
+                 and ordinary_separator and ordinary_parents == [ORDINARY_PARENT] and ordinary_trees == [ORDINARY_TREE]
+                 and structural_separator and structural_parents == [PRODUCT_LIFECYCLE_PARENT]
+                 and product_separator and product_parents == [DIAGNOSTIC_PARENT]
+@@ -821,7 +961,7 @@
+                 and ancestor_separator and ancestor_parents == [PREVIOUS_PRIVATE_PARENT]
+                 and previous_separator and previous_parents == [CORE_BASELINE]
+                 and core_separator and core_parents == [PUBLIC_PREREQUISITE],
+-                'Require exact lease tip/tree ->ccdbb28f ->6db944 ->1c91 ->eb8fed8 ->989a ->926927 ->49da ->public prerequisite, with no merges or extra descendants')
++                'Require exact PG02 tip/tree ->8938526 lease tip/tree ->ccdbb28f ->6db944 ->1c91 ->eb8fed8 ->989a ->926927 ->49da ->public prerequisite, with no merges or extra descendants')
+         require(not self.command(label + '-status', ['git', 'status', '--porcelain=v1', '--untracked-files=all'], cleaning=cleaning), 'Checkpoint is dirty')
+         names = self.command(label + '-tracked', ['git', 'ls-files', '-z'], cleaning=cleaning).decode().split('\0')[:-1]
+         hashes = {p: digest(safe(BACKEND, p)) for p in names}
+@@ -867,13 +1007,14 @@
+                 created[cid] = labels
+             else:
+                 destroyed.add(cid)
+-        require(len(created) == 3 and sum(r['image'] == 'postgres:17.6-alpine' for r in created.values()) == 2
++        # Both selected methods reuse the one PER_CLASS fixture; paired pools do not create PostgreSQL containers.
++        require(len(created) == 2 and sum(r['image'] == 'postgres:17.6-alpine' for r in created.values()) == 1
+                 and sum(r['image'] == 'testcontainers/ryuk:0.12.0' for r in created.values()) == 1
+                 and destroyed <= created.keys() and remaining <= created.keys(), 'Incomplete/unexpected container journal')
+         pg = [r for r in created.values() if r['image'] == 'postgres:17.6-alpine']
+         ryuk = next(r for r in created.values() if r['image'] != 'postgres:17.6-alpine')
+         sessions = {row.get('org.testcontainers.sessionId', '') for row in pg}
+-        require(len(sessions) == 1, 'Both selected class fixtures must belong to the one Test worker session')
++        require(len(sessions) == 1, 'The selected class fixture must belong to the one Test worker session')
+         session = sessions.pop()
+         require(re.fullmatch('[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}', session)
+                 and ryuk.get('name') == 'testcontainers-ryuk-' + session, 'Unknown fixture/Ryuk session')
+@@ -938,9 +1079,9 @@
+     require(sorted(p.name for p in xmls) == sorted(expected_files) == sorted(profile['expected_xml_files']),
+             'Wrong diagnostic XML inventory')
+     expected = [(row['class'], row['display_name']) for row in EXPECTED_TESTS]
+-    require(profile['expected_test_count'] == 18 and profile['test_classes'] == list(TEST_COUNTS)
++    require(profile['expected_test_count'] == 2 and profile['test_classes'] == list(TEST_COUNTS)
+             and profile['expected_witnesses'] == [] and profile['expected_tests'] == EXPECTED_TESTS,
+-            'Require exactly the18 fixed lease-dispatch source identities')
++            'Require exactly the2 fixed PG02 failed-method identities')
+     identities, outcomes, suites, suite_results = [], [], [], []
+     for name, count in TEST_COUNTS.items():
+         path = safe(reports, 'test-results/test/TEST-' + name + '.xml')
+@@ -967,7 +1108,7 @@
+         outcomes.extend(suite_outcomes)
+         suites.append(suite)
+         suite_results.append({'class': name, 'tests': count, 'counts': suite_counts})
+-    require(len(identities) == len(set(identities)) == 18 and sorted(identities) == sorted(expected),
++    require(len(identities) == len(set(identities)) == 2 and sorted(identities) == sorted(expected),
+             'Missing, extra or duplicate diagnostic testcase')
+     counts = {state: sum(row['status'] == state for row in outcomes) for state in ('PASS', 'FAIL', 'ERROR', 'SKIP')}
+     phases = ('BEFORE_SHUTDOWN', 'AFTER_SHUTDOWN', 'OBSERVATION_FAILED')
+@@ -993,11 +1134,11 @@
+                 records.append({'raw': line, 'fields': fields})
+     require(profile['shutdown_diagnostics'] == {'status': 'NOT_APPLICABLE', 'expected_record_count': 0}
+             and not records, 'PG14 fixed diagnostic rows are nonapplicable to this selection')
+-    coverage = {}  # No required PG14 case/phase slots in either selected suite.
++    coverage = {}  # No required PG14 case/phase slots in the selected suite.
+     folder = safe(reports, profile['report_directory'])
+     cp = read_json(folder / 'effective-classpath.txt')
+     require(cp['profile'] == PROFILE_ID and cp['java_home'] == str(java)
+-            and cp['source_inventory'] == profile['source_inventory'] and cp['expected_test_count'] == 18
++            and cp['source_inventory'] == profile['source_inventory'] and cp['expected_test_count'] == 2
+             and cp['expected_witnesses'] == [], 'Wrong actual diagnostic classpath/profile/JDK')
+     entries = cp['entries']
+     require(len({e['path'] for e in entries}) == len(entries)
+@@ -1007,14 +1148,15 @@
+         rows = [e for e in entries if e[flag] > 0]
+         require(len(rows) == 1 and rows[0]['path'] == str(safe(ADMIN, profile[key]['path']))
+                 and rows[0]['sha256'] == profile[key]['sha256'], 'Wrong explicit class supplier')
+-    return {'status': 'RECORDED', 'test_status': 'PASS' if counts == {'PASS': 18, 'FAIL': 0, 'ERROR': 0, 'SKIP': 0} else 'FAIL',
+-            'tests': 18, 'classes': TEST_COUNTS, 'identities': sorted(identities), 'outcomes': outcomes, 'counts': counts,
++    return {'status': 'RECORDED', 'test_status': 'PASS' if counts == {'PASS': 2, 'FAIL': 0, 'ERROR': 0, 'SKIP': 0} else 'FAIL',
++            'tests': 2, 'classes': TEST_COUNTS, 'identities': sorted(identities), 'outcomes': outcomes, 'counts': counts,
+             'suites': suite_results, 'profile': PROFILE_ID, 'fixed_scalar_capture': 'NOT_APPLICABLE',
+             'raw_shutdown_diagnostics': records, 'diagnostic_coverage': coverage,
+             'diagnostic_limit': profile['shutdown_diagnostics_note'], 'diagnostic_scope': profile['shutdown_diagnostics'],
+             'historical_pg14_result': profile['historical_pg14_result'], 'historical_pg10_result': profile['historical_pg10_result'],
+             'historical_pg1_result': profile['historical_pg1_result'], 'accepted_linux03_result': profile['accepted_linux03_result'],
+             'historical_ordinary_result': profile['historical_ordinary_result'],
++            'historical_pg18_result': profile['historical_pg18_result'],
+             'historical_result': profile['historical_result'], 'historical_diagnostics_result': profile['historical_diagnostics_result'],
+             'candidate_qualification': 'UNQUALIFIED'}
+ 
+@@ -1036,12 +1178,12 @@
+         require(carrier == os.environ['GITHUB_SHA'], 'Carrier checkout differs from exact workflow SHA')
+         profile = read_json(safe(ADMIN, PROFILE_FILE))
+         require(profile['profile_id'] == PROFILE_ID and profile['task_args'] == TASKS
+-                and profile['expected_test_count'] == 18 and profile['expected_witnesses'] == []
++                and profile['expected_test_count'] == 2 and profile['expected_witnesses'] == []
+                 and profile['test_selectors'] == TEST_SELECTORS
+                 and profile['expected_tests'] == EXPECTED_TESTS and profile['test_classes'] == list(TEST_COUNTS)
+                 and profile['shutdown_diagnostics'] == {'status': 'NOT_APPLICABLE', 'expected_record_count': 0}
+                 and profile['final_jar']['qualification'] == 'UNQUALIFIED',
+-                'Wrong exact18 lease-dispatch profile/task/candidate scope')
++                'Wrong exact2 PG02 failed-method profile/task/candidate scope')
+         gate.result['historical_result'] = profile['historical_result']
+         gate.result['historical_diagnostics_result'] = profile['historical_diagnostics_result']
+         gate.result['historical_pg14_result'] = profile['historical_pg14_result']
+@@ -1049,6 +1191,7 @@
+         gate.result['historical_pg1_result'] = profile['historical_pg1_result']
+         gate.result['accepted_linux03_result'] = profile['accepted_linux03_result']
+         gate.result['historical_ordinary_result'] = profile['historical_ordinary_result']
++        gate.result['historical_pg18_result'] = profile['historical_pg18_result']
+         gate.materialize_source()
+         baseline = gate.sources('before')
+         gate.result['source_binding_before'] = bind_freeze(binding, profile)
+@@ -1151,7 +1294,7 @@
+                   and gate.result['diagnostics'].get('fixed_scalar_capture') == 'NOT_APPLICABLE' and gate.result['containers'] == 'NORMAL_ABSENT'
+                   and all(r['outcome'] == 'NORMAL' for r in gate.result['commands']) and final_containers is True)
+         gate.result['status'] = 'PASS' if passed else 'FAIL'
+-        gate.result['limitation'] = 'Only focused17 lease-dispatch invocations plus the unchanged former failed OwnershipIT method are selected:11 declaration filters/18 cases. Intended identities are not observed passes. Historical PG01 remains20 PASS/1 FAIL and its actor/queue mechanism is unmeasured; a later PASS does not establish that historical cause. Registered-tail faults do not cover an absent unregistered tail; MODEL fatal/ClientInfo and declared-stream limits remain. Negative child exit23 is PROCESS_ONLY product_end=false, never product disposal. PG14 diagnostics are NOT_APPLICABLE here; original records remain separate. Historical Linux03 carries only56 nonDB/compile/Ktlint, with bounded prior Detekt reuse, and PG1/PG14/PG10 results remain unchanged. Preserve raw kill/die events: NORMAL_ABSENT is not graceful-shutdown or zero-kill proof. UNKNOWN grants no retry authority. Native05 UNQUALIFIED; full47/consumer/opaque/liveness/W03/full-P3/production/new-data and installation recovery remain open; W06 excluded. No integration or public private-ancestry push authority.'
++        gate.result['limitation'] = 'Only the two failed PG18 noarg creator methods are selected:2 declaration filters/5 task argv/2 cases. No enum or previous16 replay; normal main/test compilation is unchanged. Historical transport02 PG18 remains16 PASS/2 FAIL on8938526, with its raw failures and six sticky controller failures retained separately; a later two-case outcome cannot rewrite history or demonstrate its earlier cause. The MODEL attempt may still FAIL and grants no correctness credit for improved diagnostics alone. Prior PG01 remains20 PASS/1 FAIL, actor/queue mechanism unmeasured. Suppression-disabled primary Throwable and unobserved pre-callback EMF-init masking limits remain. PG14 diagnostics are NOT_APPLICABLE; the new MODEL factual line remains raw stdout, not a new parser or acceptance oracle. Original Linux03/PG1/PG14/PG10/lease17 records remain historical. Registered-tail and MODEL fatal/ClientInfo/declared-stream limitations remain; unselected negative-child exit23 is PROCESS_ONLY product_end=false, never product disposal. Preserve raw kill/die events: NORMAL_ABSENT is not graceful-shutdown or zero-kill proof. UNKNOWN grants no retry authority. Native05 UNQUALIFIED; full47/consumer/opaque/liveness/W03/full-P3/production/new-data and installation recovery remain open; W06 excluded. No integration or public private-ancestry push authority.'
+         save(gate.reports / 'result.json', gate.result)
+     return 0 if gate.result['status'] == 'PASS' else 1
+ 
+--- a/kira-admin/.github/workflows/app29-gate-b.yml
++++ b/review/working/app-29-lease-dispatch-pg02-preparation-01/.github/workflows/app29-gate-b.yml
+@@ -1,12 +1,12 @@
+-name: App29 Lease Dispatch PG18 (private, no qualification)
++name: App29 Lease Dispatch PG02 failed2 (private, no qualification)
+ on:
+   push:
+     branches: [remediation/app-29-backend-complaints]
+     paths:
+       - .github/workflows/app29-gate-b.yml
+       - ci/app29-gate-b.py
+-      - review/working/app-29-lease-dispatch-pg-carrier-02/profile/profile.json
+-      - review/working/app-29-lease-dispatch-pg-carrier-02/profile/profile.init.gradle
++      - review/working/app-29-lease-dispatch-pg02-preparation-01/profile/profile.json
++      - review/working/app-29-lease-dispatch-pg02-preparation-01/profile/profile.init.gradle
+       - ci/app29-gate-b.request.json
+ permissions:
+   contents: read
+@@ -43,17 +43,17 @@
+         with:
+           distribution: temurin
+           java-version: '21'
+-      - name: Run focused17 plus the unchanged former failed method (no qualification)
++      - name: Run only the two previously failed noarg creator methods (normal compilation, no qualification)
+         id: validation
+         shell: bash
+         run: |
+           umask 077
+           python3 -B admin/ci/app29-gate-b.py
+-      - name: Retain raw18-case outcomes, explicit PG14 diagnostic nonapplicability, source and owned-cleanup receipts
++      - name: Retain raw2-case outcomes, explicit PG14 diagnostic nonapplicability, source and owned-cleanup receipts
+         if: always() && steps.validation.outcome != 'skipped'
+         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+         with:
+-          name: app29-lease-dispatch-pg-01-${{ github.run_id }}-${{ github.run_attempt }}
+-          path: ${{ runner.temp }}/app29-lease-dispatch-pg-01-${{ github.run_id }}-${{ github.run_attempt }}/reports/
++          name: app29-lease-dispatch-pg-02-${{ github.run_id }}-${{ github.run_attempt }}
++          path: ${{ runner.temp }}/app29-lease-dispatch-pg-02-${{ github.run_id }}-${{ github.run_attempt }}/reports/
+           retention-days: 3
+           if-no-files-found: error
+--- a/kira-admin/review/working/app-29-lease-dispatch-pg-carrier-02/profile/profile.json
++++ b/review/working/app-29-lease-dispatch-pg02-preparation-01/profile/profile.json
+@@ -1,71 +1,23 @@
+ {
+   "schema_version": 1,
+-  "profile_id": "app-29-lease-dispatch-pg-profile-01",
+-  "scope": "INERT_UNBOUND_EXACT18_LEASE_DISPATCH_POSTGRESQL: focused17 plus unchanged former failed method;11 declaration filters. Historical PG01 remains20 PASS/1 FAIL, mechanism unmeasured. Not W03/native/full47/consumer qualification.",
++  "profile_id": "app-29-lease-dispatch-pg-profile-02",
++  "scope": "INERT_UNBOUND_EXACT2_PG02_FAILED_METHODS: append the reviewed two-test-file stage after immutable lease17/transport02 PG18; two noarg declaration filters, normal compilation. Prior16 remain historical. No enum, full47, consumer, Native05 or W03 qualification.",
+   "test_classes": [
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+-    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT"
++    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest"
+   ],
+   "task_args": [
+     "test",
+     "--tests",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL fatal connection commit creates the first real Hikari close Worker and drains its task",
+-    "--tests",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL fatal Hikari statement execution creates the first real close Worker and drains its task",
+-    "--tests",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.repeated nested admitted dispatches retain one future RETURN and no lower native fallback",
+-    "--tests",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.only exact admitted guard dispatch lease epoch and issuer can enter a creator",
+-    "--tests",
+     "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.mixed pool creator nesting refuses wrong top fallback and unrelated lease use",
+     "--tests",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.present returned dispatch cannot upgrade through pool authority and a revoked lease cannot enter a prepared creator",
+-    "--tests",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.foreign actual statement cancellation keeps only its own outer tail while original RETURN waits for it",
+-    "--tests",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.real post core outer tail refuses reentrant self wait and remains in exact terminal and loan proofs",
+-    "--tests",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement",
+-    "--tests",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.actual creator publication restoration and outer adapter faults retain exact obligations through process only exit",
+-    "--tests",
+-    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.native commit failure stays unknown after Spring cleanup while authentic local quiescence permits only refund"
++    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement"
+   ],
+   "test_selectors": [
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL fatal connection commit creates the first real Hikari close Worker and drains its task",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL fatal Hikari statement execution creates the first real close Worker and drains its task",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.repeated nested admitted dispatches retain one future RETURN and no lower native fallback",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.only exact admitted guard dispatch lease epoch and issuer can enter a creator",
+     "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.mixed pool creator nesting refuses wrong top fallback and unrelated lease use",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.present returned dispatch cannot upgrade through pool authority and a revoked lease cannot enter a prepared creator",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.foreign actual statement cancellation keeps only its own outer tail while original RETURN waits for it",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.real post core outer tail refuses reentrant self wait and remains in exact terminal and loan proofs",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.actual creator publication restoration and outer adapter faults retain exact obligations through process only exit",
+-    "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.native commit failure stays unknown after Spring cleanup while authentic local quiescence permits only refund"
++    "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement"
+   ],
+-  "expected_test_count": 18,
++  "expected_test_count": 2,
+   "expected_tests": [
+-    {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+-      "method": "MODEL fatal connection commit creates the first real Hikari close Worker and drains its task",
+-      "display_name": "MODEL fatal connection commit creates the first real Hikari close Worker and drains its task()"
+-    },
+-    {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+-      "method": "MODEL fatal Hikari statement execution creates the first real close Worker and drains its task",
+-      "display_name": "MODEL fatal Hikari statement execution creates the first real close Worker and drains its task()"
+-    },
+-    {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+-      "method": "repeated nested admitted dispatches retain one future RETURN and no lower native fallback",
+-      "display_name": "repeated nested admitted dispatches retain one future RETURN and no lower native fallback()"
+-    },
+-    {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+-      "method": "only exact admitted guard dispatch lease epoch and issuer can enter a creator",
+-      "display_name": "only exact admitted guard dispatch lease epoch and issuer can enter a creator()"
+-    },
+     {
+       "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+       "method": "mixed pool creator nesting refuses wrong top fallback and unrelated lease use",
+@@ -73,71 +25,11 @@
+     },
+     {
+       "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+-      "method": "present returned dispatch cannot upgrade through pool authority and a revoked lease cannot enter a prepared creator",
+-      "display_name": "present returned dispatch cannot upgrade through pool authority and a revoked lease cannot enter a prepared creator()"
+-    },
+-    {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+-      "method": "foreign actual statement cancellation keeps only its own outer tail while original RETURN waits for it",
+-      "display_name": "foreign actual statement cancellation keeps only its own outer tail while original RETURN waits for it()"
+-    },
+-    {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+-      "method": "real post core outer tail refuses reentrant self wait and remains in exact terminal and loan proofs",
+-      "display_name": "real post core outer tail refuses reentrant self wait and remains in exact terminal and loan proofs()"
+-    },
+-    {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+       "method": "MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement",
+       "display_name": "MODEL work expiry inside actual afterJdbcCall cannot erase its admitted creator after epoch retirement()"
+-    },
+-    {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+-      "method": "actual creator publication restoration and outer adapter faults retain exact obligations through process only exit",
+-      "display_name": "[1] mode=POOL_LEASE_CREATOR_ENTRY_BEFORE_TL"
+-    },
+-    {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+-      "method": "actual creator publication restoration and outer adapter faults retain exact obligations through process only exit",
+-      "display_name": "[2] mode=POOL_LEASE_CREATOR_ENTRY_AFTER_TL"
+-    },
+-    {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+-      "method": "actual creator publication restoration and outer adapter faults retain exact obligations through process only exit",
+-      "display_name": "[3] mode=POOL_LEASE_CREATOR_END_BEFORE_TL"
+-    },
+-    {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+-      "method": "actual creator publication restoration and outer adapter faults retain exact obligations through process only exit",
+-      "display_name": "[4] mode=POOL_LEASE_CREATOR_END_AFTER_TL"
+-    },
+-    {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+-      "method": "actual creator publication restoration and outer adapter faults retain exact obligations through process only exit",
+-      "display_name": "[5] mode=POOL_LEASE_CREATOR_CORE_BEFORE_TL"
+-    },
+-    {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+-      "method": "actual creator publication restoration and outer adapter faults retain exact obligations through process only exit",
+-      "display_name": "[6] mode=POOL_LEASE_CREATOR_CORE_AFTER_TL"
+-    },
+-    {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+-      "method": "actual creator publication restoration and outer adapter faults retain exact obligations through process only exit",
+-      "display_name": "[7] mode=POOL_LEASE_CREATOR_CLIENT_INFO_TAIL"
+-    },
+-    {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest",
+-      "method": "actual creator publication restoration and outer adapter faults retain exact obligations through process only exit",
+-      "display_name": "[8] mode=POOL_LEASE_CREATOR_DECLARED_TAIL"
+-    },
+-    {
+-      "class": "me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT",
+-      "method": "native commit failure stays unknown after Spring cleanup while authentic local quiescence permits only refund",
+-      "display_name": "native commit failure stays unknown after Spring cleanup while authentic local quiescence permits only refund()"
+     }
+   ],
+-  "report_directory": "reports/lease-dispatch-pg-01",
++  "report_directory": "reports/lease-dispatch-pg-02",
+   "witness_property_file": "worker-runtime.txt",
+   "expected_witnesses": [],
+   "original_provider_gate": "app-29-gate-b-hosted-01",
+@@ -173,10 +65,10 @@
+     "home": "Bound hosted JAVA_HOME; actual Gradle/Test context and JDK binary/modules hashes remain controller obligations, not positive consumer-loader proof."
+   },
+   "source_inventory": {
+-    "path": "review/working/app-29-lease-dispatch-linux01-preparation/selection.json",
+-    "sha256": "075948a19f2be69a8c726c12f4772f9dd82aa7060dbd04f4051babc15e595ab6",
+-    "expected_test_count": 18,
+-    "kind": "Inert source identity proposal:9 no-arg plus8 enum invocations plus1 unchanged failed method. XML spelling is fixed here from retained default-name evidence, not observed new outcomes."
++    "path": "review/working/app-29-lease-dispatch-pg02-preparation-01/selection.json",
++    "sha256": "dc3ac19fb92460bf9ba8e253b7b419b6d11de0fbb76ff30fbb1818a6d05dca72",
++    "expected_test_count": 2,
++    "kind": "Inert failed-two noarg selection. Exact XML names come from the retained actual transport02 failures; no alternate naming, count-only acceptance, enum replay or claimed future result."
+   },
+   "core_source_manifest": {
+     "path": "review/working/app-29-real-pool-return-adaptation-c2-01/source-manifest.json",
+@@ -200,7 +92,7 @@
+     "snapshot_count": 199,
+     "approved_input_count": 63,
+     "historical_input_count": 102,
+-    "proposed_delta": "Historical stage only: diagnostics466 plus eight accepted product-lifecycle changes equals PG10; plus nineteen structural changes equals PG14; PG1 is its zero-source-delta selector-only successor. The distinct ordinary_source_transition then applies exactly23 changes to produce target478; its historical clean-checkpoint43-argv PG01 freeze stays immutable; the new lease source stage is separately UNBOUND."
++    "proposed_delta": "Historical diagnostics466 -> eight product changes -> PG10 -> nineteen structural changes -> PG14 -> zero-source PG1 -> ordinary23 (11 modified/12 added) ->478 sources/211 subjects -> lease17 (14 modified/3 added) ->481/214 -> unchanged transport02 PG18. Only then append PG02 two-test-file replacements, no added/removed sources. New source checkpoint/freeze/bundle/profile guards remain UNBOUND until primary binding."
+   },
+   "predecessor_profile": {
+     "path": "review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.json",
+@@ -440,7 +332,7 @@
+     "status": "NOT_APPLICABLE",
+     "expected_record_count": 0
+   },
+-  "shutdown_diagnostics_note": "Both selected classes use real PG fixtures/owned pools without assigning shutdownDiagnosticCase, so require NOT_APPLICABLE and zero PG14 rows across both suites. Actual pool/EMF/database closes and all teardown assertions remain. Never infer CAPTURED from empty records; original PG14 four-row obligations and results remain separate and unchanged.",
++  "shutdown_diagnostics_note": "The single selected class uses actual PG fixtures/owned pools without assigning shutdownDiagnosticCase. Require NOT_APPLICABLE and zero PG14 rows across its one suite. Both pool/EMF/database teardown and all existing assertions remain. The new MODEL factual line and any original stack stay raw stdout/XML evidence; no new parser or empty-set CAPTURED inference. Historical PG14 four-row obligations stay separate.",
+   "historical_pg14_shutdown_diagnostics": {
+     "scope": "REQUIRED_IN_ORIGINAL_PG14_ONLY_NOT_APPLICABLE_TO_THIS_SELECTION",
+     "required_record_count": 4,
+@@ -478,7 +370,6 @@
+     "primary_disposition": "ACCEPT_FOCUSED_PG14_ONLY"
+   },
+   "expected_xml_files": [
+-    "TEST-me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.xml",
+     "TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml"
+   ],
+   "historical_source_inventory": {
+@@ -486,16 +377,16 @@
+     "sha256": "823f49b359b8dec60d1b024c2bfd4e3d2d6822a42fed1a8c8d0e905b5ba87650",
+     "kind": "Historical47 textual declarations only, NOT this run's executed selection. That old one-method PhysicalJdbcDescendantsTest selection is not the new expected_tests. Prior PG14 on6db944, PG10 on1c91,45 passes and diagnostics01 0/2 are preserved, not rerun or relabelled."
+   },
+-  "selection_source_delta_scope": "The inherited empty selection_source_delta applies only to historical PG14 -> PG1. ordinary_source_transition is the historical sealed23-row PG1 -> PG01 authority; lease_dispatch_source_delta is the current17-row successor and remains UNBOUND.",
++  "selection_source_delta_scope": "The inherited empty selection_source_delta applies only to historical PG14 -> PG1. ordinary_source_transition remains the sealed23-row historical successor. lease_dispatch_source_delta remains the ORIGINAL17-row lease successor with its original source hashes. PG02 appends exactly the two pg02_source_delta replacements only after the immutable transport02 PG18 stage.",
+   "container_population": {
+-    "total": 3,
+-    "postgres": 2,
++    "total": 2,
++    "postgres": 1,
+     "ryuk": 1,
+     "images": [
+       "postgres:17.6-alpine",
+       "testcontainers/ryuk:0.12.0"
+     ],
+-    "basis": "Each PER_CLASS/SAME_THREAD selected class independently creates/starts one lazy PgLifecycleDatabaseFixture and closes it in AfterAll. Per-method EMFs/owned pools reuse the passed database; eight sanitized negative child JVMs reuse the focused class fixture port without creating more containers. One Test worker with forkEvery=0 uses one Testcontainers session/Ryuk. These are required future event counts, not observed containers."
++    "basis": "Both exact noarg methods are in one PER_CLASS/SAME_THREAD class with one lazy PgLifecycleDatabaseFixture started once and closed in AfterAll. Both mixed-test pools and the MODEL ordinary cleanup fixture reuse database.value; EMFs/pools do not create new containers. The unselected enum method cannot spawn its negative child JVMs. One Test worker/forkEvery=0 implies one required Testcontainers session and Ryuk. Counts are admission requirements, not observed outcomes."
+   },
+   "ordinary_source_predecessor": {
+     "path": "review/working/app-29-w03-integrated-driver-core-c2-sqlclientinfo-pg1-01/manifest.json",
+@@ -703,13 +594,106 @@
+     "review/working/app-29-w03-integrated-driver-development-13/sources/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseControlsTest.kt": "ae098432000c15bdd4e90c45ddbf7ebb02e819dde2ebdf0db535b6ff720c056e"
+   },
+   "limits": [
+-    "Exactly11 declaration filters/23 task args/18 invocations:9 creator no-arg tests,8 enum rows,1 unchanged failed OwnershipIT method. All require PG. Normal main/test compilation, no source/fixture/budget/assertion changes.",
+-    "Default enum XML must match the exact eight bare [index] mode=POOL_LEASE_CREATOR_* labels derived from retained Linux enum evidence; no alternate-name fallback or count-only acceptance. New runtime naming remains unexecuted.",
+-    "Inherited one512MiB worker, forkEvery0, JUnit parallel=false,2PG17.6+1Ryuk, pinned driver/checker and owned lifecycle stay unchanged. Eight sanitized negative child JVMs reuse the focused class fixture; exit23 is PROCESS_ONLY product_end=false, rejected by the positive oracle.",
+-    "New source/head/tree/bundle/profile/init pins remain UNBOUND. Primary must finish actual-source compilation/statics and independent tooling review, then supply real source checkpoint, fresh full-v3 inventory/preflight and separate one-attempt admission. No copied or fabricated receipt.",
+-    "Keep all348 historical seed keys and every retained/current/new member. Retain PG01 and local-source provenance additively; do not turn historical478/211 or56/PG1 successes into new-source acceptance.",
+-    "No retained-creator/absent-tail runtime injection was authorized; registered-tail cases do not cover it. MODEL ClientInfo/private-field and declared-stream tail limitations remain.",
+-    "Preserve inherited25min/1200s/120s/900s/180s budgets,8GiB floor,8MiB bundle, four drains and11 absence gates. No retry/timeout increase, unknown-custody removal or forced-cleanup PASS.",
+-    "Native05/full47/consumer/W03/full-P3/production and new-backend-data/installation recovery remain open; W06 excluded. This tooling author does not approve this derivative."
+-  ]
++    "Exactly2 literal noarg declaration filters/5 task argv/2 XML cases in PoolLeaseDispatchCreatorIntegrationTest. No enum, prior16, OwnershipIT, wildcard, source-set narrowing, compile skip, extra task, timeout increase or retry.",
++    "Normal main/test compilation remains enabled; the unchanged W01 init supplies one512MiB worker and the driver/checker overlay. maxParallelForks1, forkEvery0 and JUnit parallel=false remain. No negative enum child JVM is selected; the unchanged shared OwnedChildren helper still owns every launched process.",
++    "Exactly one PostgreSQL17.6-alpine fixture and one Ryuk0.12.0 in one required session. Paired real pools reuse the class database. Exact create/destroy IDs, image pins, clean daemon, session/UUID checks, unknown-custody refusal and sticky forced/nonzero cleanup remain mandatory.",
++    "Keep the historical lease17 source rows/checkpoint/bundle and PG18 profile/manifest/16PASS2FAIL raw result unchanged. Append only the reviewed two-test-file delta. A later failed2 PASS cannot relabel historical16 as fresh or establish either earlier failure mechanism.",
++    "Preserve all348 development07 seed keys, complete481 source map,214 review subjects/snapshots and102 historical pins. Preserve every old approved/tooling pin without contradiction; no source subset, stale snapshot, permissive provenance or copied counts from a previous result.",
++    "Primary supplies actual clean one-child PG02 tip/tree, preliminary source freeze and checkpoint/path pins, complete private singleton-ref bundle, final profile/init/controller pins, whole issue-baseline diff, fresh hosted v3 freeze and genuine local receipt. No author-fabricated receipt or self/receipt/request cycle.",
++    "New source stage, tip/tree, bundle, final profile/init guard and request remain UNBOUND/unauthorized. Source hashes are reviewed input pins only, not source checkpoint/runtime acceptance. Distinct derivative review and separate one-attempt primary admission are still required.",
++    "The MODEL attempt can still FAIL; improved diagnostics alone carry no correctness credit. Preserve first Throwable/suppressed restoration/reporting context and factual finite stages; suppression-disabled primary and unobserved pre-callback EMF-init masking remain limits. No new diagnostic acceptance parser.",
++    "PG14 diagnostic rows are NOT_APPLICABLE/zero here; all original PG14 requirements/results stay historical. Native05 remains UNQUALIFIED, with original MODEL fatal/ClientInfo/declared-stream and unregistered-tail limits. No original-provider/consumer-witness selection.",
++    "Preserve25min/1200s total/120s preflight/900s validation/180s cleanup,8GiB floor,8MiB bundle,2GiB Gradle/512MiB metaspace and all inherited drains/capture/owned-output absence gates. Forced/nonzero cleanup, cancellation, incomplete evidence and budget failure are stickyFAIL. NORMAL_ABSENT is not graceful or zero-kill proof; retain raw events.",
++    "Full47/consumer/opaque/native/liveness/W03/full-P3/production/new-backend-data and installation recovery remain open; W06 excluded. No integration or public private-ancestry push authority. This author does not independently approve this preparation."
++  ],
++  "historical_pg18_source_inventory": {
++    "path": "review/working/app-29-lease-dispatch-linux01-preparation/selection.json",
++    "sha256": "075948a19f2be69a8c726c12f4772f9dd82aa7060dbd04f4051babc15e595ab6",
++    "expected_test_count": 18,
++    "kind": "Inert source identity proposal:9 no-arg plus8 enum invocations plus1 unchanged failed method. XML spelling is fixed here from retained default-name evidence, not observed new outcomes."
++  },
++  "historical_pg18_profile": {
++    "path": "review/working/app-29-lease-dispatch-pg-carrier-02/profile/profile.json",
++    "sha256": "315509d24f0fd4c84fd8172231e7eb79639bad1a0ae589db6e18ce0268b4ed79"
++  },
++  "historical_pg18_source": {
++    "path": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-01-transport-02/manifest.json",
++    "sha256": "1387f68bccac8797a5fc413d58495d748c3b28715f60b6074f7dca7e19ef94ba",
++    "backend_sha": "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3",
++    "source_count": 481,
++    "snapshot_count": 214,
++    "scope": "IMMUTABLE_TRANSPORT02_PG18_SOURCE_SELECTION_AND_AUTHORITY_BEFORE_PG02"
++  },
++  "historical_lease_source_bundle": {
++    "path": "review/working/app-29-lease-dispatch-source-checkpoint-01/backend.bundle",
++    "sha256": "235fca34c51710930fd9ced4444d0931e5273137bd4178169c3b8c9c4010ec50",
++    "bytes": 280735
++  },
++  "historical_pg18_result": {
++    "path": "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/result.json",
++    "sha256": "e64b94410e240f7585ac6d4a2d70c90b3b8952d75e61cfa5e055f15fb1e69bc9",
++    "run_id": "34762007741",
++    "attempt": 1,
++    "carrier_sha": "6794795c9d40b6a99a4af9b4c46cf6e7a0f68d27",
++    "backend_sha": "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3",
++    "passed": 16,
++    "failed": 2,
++    "errors": 0,
++    "skipped": 0,
++    "scope": "HISTORICAL_TRANSPORT02_FAIL_16_PASS_2_FAIL_NOT_REWRITTEN_OR_REPLAYED. Only those two failures are current candidates; no credit for an anticipated diagnostic improvement.",
++    "cleanup_limit": "All six sticky controller failures remain in the raw result. NORMAL_ABSENT means bounded final absence, not successful test execution or graceful/zero-kill shutdown. Both PG kill9/die137 and Ryuk die0 remain historical raw events."
++  },
++  "pg02_source_stage_status": "UNBOUND",
++  "pg02_source_target": {
++    "path": "review/working/app-29-w03-integrated-driver-lease-dispatch-pg02-static-02/manifest.json",
++    "sha256": null,
++    "source_count": null,
++    "snapshot_count": null
++  },
++  "pg02_source_checkpoint": {
++    "path": "review/working/app-29-lease-dispatch-pg02-source-checkpoint-01/checkpoint.json",
++    "sha256": null
++  },
++  "pg02_checkpoint_paths": {
++    "path": "review/working/app-29-lease-dispatch-pg02-source-checkpoint-01/paths.json",
++    "sha256": null
++  },
++  "pg02_source_delta": {
++    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt": {
++      "before_sha256": "b87e92bb9d78fb8f37afed414bd07899c59606536b972c6a444dda1cbc677322",
++      "after_sha256": "1660f8dbb5d71033d7fb0606f1a5d20248dd4c6204a7773aca75a6a0663e77cb"
++    },
++    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt": {
++      "before_sha256": "db140c4c0e93a349608b6e05e80033fd07e298aee4c272932e78b6d69564ce4a",
++      "after_sha256": "3c0010170b07b1edef3f87894dac6833f2ae2f02e841609cd5e3e15d9ce489d5"
++    }
++  },
++  "pg02_reviewed_source_diff": {
++    "path": "review/working/app-29-lease-dispatch-pg02-preparation-01/source-delta.patch",
++    "sha256": "6a966a7589070d249c309d10ed824838c778ca42a4ff378eec3e3b515e220df4",
++    "base": "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3",
++    "scope": "Full-index complete TWO-FILE delta only; not a replacement for the primary fresh whole issue-baseline diff in the v3 freeze."
++  },
++  "historical_text_note": "Inherited fields named historical_* (including historical_ordinary_limits) preserve the preceding profile documentary context. References there to current18/previous selections are quotations of that historical stage, not PG02 selectors, admission or results.",
++  "pg02_provenance": {
++    "review/working/app-29-w03-integrated-driver-lease-dispatch-pg-01-transport-02/issue-baseline.patch": "212c7f80101fa9a772ef4d9d88d7b78b570b5134d46c9229aeb0bd7243e44853",
++    "review/remediation/app-29-lease-dispatch-pg01-transport02-independent-actual-result-review-01.md": "0cd81ef933388b61e3f512bcd915962e9eced17ede60f32a6ce0698b76a1f8d4",
++    "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/result.json": "e64b94410e240f7585ac6d4a2d70c90b3b8952d75e61cfa5e055f15fb1e69bc9",
++    "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/collection.json": "dded7894078740b37f22ec22b2c5ca6cd09982169240bb4759bf6cef4374cc93",
++    "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/run-final.json": "3793e3a58f73cd93cae2222db537582a7130d145d000e2be17c0cb785c3d8b05",
++    "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest.xml": "1e40141e4e41cd40b9f8ba7544da766d3e6bb1e10c16e47e72bb772b0ec2acdd",
++    "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT.xml": "d4aebf27f8ed9ed58e43889be5e2613d33b0728712bc827aee222db19f1d257d",
++    "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/gradle-test.log": "3d13c1dd5a353540b1165990724d5c896915946881949516607b89b7f05a6e6c",
++    "review/working/app-29-lease-dispatch-pg-admission-02/launch-01/artifacts/container-events.log": "969782bcad4c82a6bcc9814aa7eacc8e9ffeee9f1739c2d3edbed7b6ca3f8d61",
++    "review/remediation/app-29-lease-dispatch-pg02-primary-correction-plan-01.md": "b67977472e0e31c1c4c30d23de3c61338c13f8d0ca515786dbe7d048cbc7f335",
++    "review/remediation/app-29-lease-dispatch-pg02-test-authoring-report-01.md": "384fadaf7c93b3f8a661cb917f9661d3204c494ea6bd2932ce4b8a1e0b8f4155",
++    "review/remediation/app-29-lease-dispatch-pg02-independent-actual-diff-review-01.md": "20aa2d84cb1733042c5524e99c322b43558875a333ecde52150d3fff66f13a1c",
++    "review/remediation/app-29-lease-dispatch-pg02-independent-r1r2-recheck-01.md": "21006a592a75ea7008188934f1f8566496671d6a3acb2f3bced88e9aa9b2387d",
++    "review/remediation/app-29-lease-dispatch-pg02-braces-independent-review-01.md": "704b4d894bf32788552d7cf5c621b43ccc8b1be40cc02cd9254c93f1d213b89d",
++    "review/working/app-29-lease-dispatch-pg02-static-01/result.json": "044f039be04e2d4de855e4af53a001737f6daa4b5a9060c27e90a31485d84238",
++    "review/working/app-29-lease-dispatch-pg02-static-01/validation.log": "3111270b2049977076d6a0707f7a4f71e85c0a35c7c2f533ae85ebf969e501a7",
++    "review/working/app-29-lease-dispatch-pg02-static-02/result.json": "005f0c70d7bccafa68a956ec354368ded8da1f4bdfc42dcfb1baf52f72b23be6",
++    "review/working/app-29-lease-dispatch-pg02-static-02/validation.log": "50d265201838fbd5a3faca4d9cf8f40ef065ea354bb3d5ecc879b97eda98082f",
++    "review/working/app-29-lease-dispatch-pg02-preparation-01/source-delta.patch": "6a966a7589070d249c309d10ed824838c778ca42a4ff378eec3e3b515e220df4"
++  }
+ }
+--- a/kira-admin/review/working/app-29-lease-dispatch-pg-carrier-02/profile/profile.init.gradle
++++ b/review/working/app-29-lease-dispatch-pg02-preparation-01/profile/profile.init.gradle
+@@ -8,9 +8,9 @@
+ import org.gradle.api.tasks.testing.Test
+ import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
+ 
+-// Private exact18 lease-dispatch derivative of retained PG01; all historical files stay unchanged.
++// Private exact2 PG02 failed-method derivative; retained PG18/lease17 history stays unchanged.
+ // Reuses the existing owned hosted context; no controller, process, fixture or dependency replacement.
+-def profileSha256 = '315509d24f0fd4c84fd8172231e7eb79639bad1a0ae589db6e18ce0268b4ed79' // Primary bound to the accepted source checkpoint.
++def profileSha256 = '0000000000000000000000000000000000000000000000000000000000000000' // UNBOUND: primary supplies final reviewed profile bytes.
+ if (!(profileSha256 instanceof String) || !(profileSha256 ==~ /[0-9a-f]{64}/) || profileSha256 == '0' * 64) {
+     throw new GradleException('Inert lease-dispatch derivative: final profile hash is UNBOUND')
+ }
+@@ -30,19 +30,19 @@
+     }
+     digest.digest().encodeHex().toString()
+ }
+-def profileFile = new File(root, 'review/working/app-29-lease-dispatch-pg-carrier-02/profile/profile.json')
++def profileFile = new File(root, 'review/working/app-29-lease-dispatch-pg02-preparation-01/profile/profile.json')
+ if (sha256(profileFile) != profileSha256) {
+-    throw new GradleException('Changed exact18 lease-dispatch profile')
++    throw new GradleException('Changed exact2 PG02 failed-method profile')
+ }
+ def profile = new JsonSlurper().parse(profileFile)
+ def exactMethods = profile.test_selectors
+-if (profile.profile_id != 'app-29-lease-dispatch-pg-profile-01' || profile.expected_test_count != 18 ||
+-        exactMethods.size() != 11 || exactMethods.toSet().size() != 11 || profile.expected_witnesses != [] ||
+-        profile.expected_tests.size() != 18 ||
+-        profile.expected_tests.collect { it['class'] + '.' + it.display_name }.toSet().size() != 18 ||
++if (profile.profile_id != 'app-29-lease-dispatch-pg-profile-02' || profile.expected_test_count != 2 ||
++        exactMethods.size() != 2 || exactMethods.toSet().size() != 2 || profile.expected_witnesses != [] ||
++        profile.expected_tests.size() != 2 ||
++        profile.expected_tests.collect { it['class'] + '.' + it.display_name }.toSet().size() != 2 ||
+         profile.expected_tests.collect { it['class'] + '.' + it.method }.unique() != exactMethods ||
+         profile.task_args != (['test'] + exactMethods.collectMany { ['--tests', it] })) {
+-    throw new GradleException('Require exactly11 declaration filters/23 argv and18 invocations, without consumer-witness selection')
++    throw new GradleException('Require exactly2 declaration filters/5 argv and2 noarg invocations, without enum/prior16/consumer-witness selection')
+ }
+ def originalInit = new File(run, 'original.init.gradle')
+ if (sha256(originalInit) != profile.original_init.sha256) throw new GradleException('Changed historical source init')
+@@ -172,7 +172,7 @@
+             new File(report, 'effective-classpath.txt').text = JsonOutput.prettyPrint(JsonOutput.toJson([
+                     profile: profile.profile_id, source_inventory: profile.source_inventory,
+                     expected_test_count: profile.expected_test_count, expected_witnesses: profile.expected_witnesses,
+-                    scope: 'Exact18 lease-dispatch PG validation only; classpath context, not consumer/JAR/W03 qualification',
++                    scope: 'Exact2 PG02 failed-method validation only; classpath context, not consumer/JAR/W03 qualification',
+                     removed_stock: [component: stock[0].id.componentIdentifier.displayName,
+                                     path: stock[0].file.canonicalPath, sha256: sha256(stock[0].file)],
+                     deduplicated_checker: checkers.collect { [path: it.file.canonicalPath, sha256: sha256(it.file)] },
+--- a/kira-admin/ci/app29-gate-b.request.json
++++ b/review/working/app-29-lease-dispatch-pg02-preparation-01/ci/app29-gate-b.request.json
+@@ -1,17 +1,17 @@
+ {
+-  "schema": "app-29-lease-dispatch-pg-01",
+-  "authorized": true,
++  "schema": "app-29-lease-dispatch-pg-02",
++  "authorized": false,
+   "attempts": 1,
+-  "backend_sha": "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3",
+-  "checkpoint_sha256": "4cbabbb82d54a87c47dbfa73df417664b2ab548811635d374379258c6606cd60",
++  "backend_sha": "0000000000000000000000000000000000000000",
++  "checkpoint_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+   "source_bundle": {
+     "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+-    "private_parent_sha": "ccdbb28f6362117882501b4da040257be6fc1990",
++    "private_parent_sha": "8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3",
+     "ref": "refs/heads/remediation/app-29-backend-complaints",
+-    "source_path": "review/working/app-29-lease-dispatch-source-checkpoint-01/backend.bundle",
+-    "path": "docs/remediation/app29-lease-dispatch-pg-01-transport-02/inputs/backend.bundle",
+-    "sha256": "235fca34c51710930fd9ced4444d0931e5273137bd4178169c3b8c9c4010ec50",
+-    "bytes": 280735
++    "source_path": "review/working/app-29-lease-dispatch-pg02-source-checkpoint-01/backend.bundle",
++    "path": "docs/remediation/app29-lease-dispatch-pg-02/inputs/backend.bundle",
++    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
++    "bytes": 0
+   },
+   "budgets": {
+     "job_minutes": 25,
+@@ -21,10 +21,10 @@
+     "cleanup_seconds": 180
+   },
+   "tool_sha256": {
+-    "ci/app29-gate-b.py": "384cca997993d9892c2b0ef8669c414bc17e2053ecfad5c32cd4bb41f716d83f",
+-    ".github/workflows/app29-gate-b.yml": "05158eb71361ccf813c7cbb18a91489ea13c85a64d82a12a86ad4d2f94e5974e",
+-    "review/working/app-29-lease-dispatch-pg-carrier-02/profile/profile.json": "315509d24f0fd4c84fd8172231e7eb79639bad1a0ae589db6e18ce0268b4ed79",
+-    "review/working/app-29-lease-dispatch-pg-carrier-02/profile/profile.init.gradle": "d7315be66f9bf654e2ae62b164e9252c7ee3deeeccc66a5b6e826104707e7a2d",
++    "ci/app29-gate-b.py": "0000000000000000000000000000000000000000000000000000000000000000",
++    ".github/workflows/app29-gate-b.yml": "0000000000000000000000000000000000000000000000000000000000000000",
++    "review/working/app-29-lease-dispatch-pg02-preparation-01/profile/profile.json": "0000000000000000000000000000000000000000000000000000000000000000",
++    "review/working/app-29-lease-dispatch-pg02-preparation-01/profile/profile.init.gradle": "0000000000000000000000000000000000000000000000000000000000000000",
+     "ci/app29_owned_children.py": "56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385"
+   }
+ }

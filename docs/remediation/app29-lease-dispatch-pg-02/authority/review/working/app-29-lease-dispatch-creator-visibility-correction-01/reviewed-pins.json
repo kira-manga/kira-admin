@@ -1,0 +1,19 @@
+{
+  "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt": "7395aa04bfbb6702043dddf1a6393cf94b2abd67128bf669ee81ff39df2ca448",
+  "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt": "28e63d187150a4768661ee7fb257cf4d5e29d99b7a0e642619abfb2661705afd",
+  "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardCall.kt": "bcc7385e7ba6f2fcb08a21804357cc00901297fba14c603f10e8588fdd309a70",
+  "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt": "f0209738f66ed56298799a1b58d1f8e67e518d8a5d3f5bc591f944224cd43063",
+  "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt": "52adf32aef2bb2651cfedabd076785a585a6ac3549d1d0fcf160c11022affc1f",
+  "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLeaseInvocation.kt": "d4a41dc996bc34604b380a073606e4ddf699bb27d9c30036f414c2c0f6e67c28",
+  "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcPoolTransfer.kt": "d77f0b6c32d970e6bc121dd3c87d5b81fbf2cc43632fe02bc8160833155ca8bf",
+  "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceLeaseCompletion.kt": "72b28bb29e2eb3e173aa129691f7217ce7fd431bbed4bfdce66ebe506e6d7955",
+  "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt": "ceba65cea2616a82f0e6614bfda229ecf7221e77c5209ff6bbaf33ea1c270cba",
+  "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt": "70aa9d92b96ad0595b321ed30dcc05cd73cc370c921fd05dfc87f370a1868220",
+  "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt": "1a4f606b75dea09e2f3d6897fe9170007ed9bae5449c609e12961ea6e28a2564",
+  "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt": "8dff17640c0c242c8243364d0bd6490dadc61c0eda46c637405e8431eda90367",
+  "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbe.kt": "de5190a19261b63a009b830912896297ea291c1fa6d155e723fc3c59760b0859",
+  "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbeProcess.kt": "f8dd59a17d0334a5d8cc9c9b577b26e5ecead537a7f30180c975d0a25b88264a",
+  "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseRecipe.kt": "e405d48f71463bd8512a9433311509e92b387807f1b4c6682843dc9708ac128e",
+  "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OwnedPoolLeaseCreatorPendingProbe.kt": "e2e62c2fd4fd36d54f9c6a900c277a2c961e3238384bfd1220d83daa38fd333f",
+  "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt": "da4ead51ebdded37bc6b97e88b2c1d9f43ec6b28d36da25775ca74db601d7e9b"
+}

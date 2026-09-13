@@ -1,0 +1,263 @@
+{
+  "schema_version": 1,
+  "profile_id": "app-29-core-c2-product-lifecycle-pg10-profile-01",
+  "scope": "TEN_CASE_CHANGED_PRODUCT_VALIDATION_ONLY; retains original two-case shutdown diagnostics; no consumer, Native05, full47 or W03 qualification",
+  "test_classes": [
+    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest"
+  ],
+  "task_args": [
+    "test",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.throwing original RETURN override leaves F G T free and retires its exact source without a second return",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.blocked overriding final RETURN sample spends the same real allowance and cannot commit after expiry",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.actual RETURN interruption defeats a false override while outer actor custody survives held restoration",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.throwing RETURN interrupt restoration cannot undo retirement or erase its actor failure",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.RETURN override InterruptedException publishes source failure before an overriding self interrupt can block",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.RETURN InterruptedException adaptation throwing another InterruptedException never retries restoration after actor end",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.RETURN InterruptedException adaptation throwing Error preserves that error without a late restoration callback",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.failed post consent real Hikari tail seals actor admission but cannot retire the successor epoch",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.consented real Hikari recycle tail retains no successor eviction or abort authority",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.exact retirement sample result preserves its Throwable and does not absorb adjacent budget failure"
+  ],
+  "expected_test_count": 10,
+  "expected_tests": [
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "throwing original RETURN override leaves F G T free and retires its exact source without a second return",
+      "display_name": "throwing original RETURN override leaves F G T free and retires its exact source without a second return()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "blocked overriding final RETURN sample spends the same real allowance and cannot commit after expiry",
+      "display_name": "blocked overriding final RETURN sample spends the same real allowance and cannot commit after expiry()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "actual RETURN interruption defeats a false override while outer actor custody survives held restoration",
+      "display_name": "actual RETURN interruption defeats a false override while outer actor custody survives held restoration()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "throwing RETURN interrupt restoration cannot undo retirement or erase its actor failure",
+      "display_name": "throwing RETURN interrupt restoration cannot undo retirement or erase its actor failure()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "RETURN override InterruptedException publishes source failure before an overriding self interrupt can block",
+      "display_name": "RETURN override InterruptedException publishes source failure before an overriding self interrupt can block()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "RETURN InterruptedException adaptation throwing another InterruptedException never retries restoration after actor end",
+      "display_name": "RETURN InterruptedException adaptation throwing another InterruptedException never retries restoration after actor end()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "RETURN InterruptedException adaptation throwing Error preserves that error without a late restoration callback",
+      "display_name": "RETURN InterruptedException adaptation throwing Error preserves that error without a late restoration callback()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "failed post consent real Hikari tail seals actor admission but cannot retire the successor epoch",
+      "display_name": "failed post consent real Hikari tail seals actor admission but cannot retire the successor epoch()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "consented real Hikari recycle tail retains no successor eviction or abort authority",
+      "display_name": "consented real Hikari recycle tail retains no successor eviction or abort authority()"
+    },
+    {
+      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+      "method": "exact retirement sample result preserves its Throwable and does not absorb adjacent budget failure",
+      "display_name": "exact retirement sample result preserves its Throwable and does not absorb adjacent budget failure()"
+    }
+  ],
+  "report_directory": "reports/core-c2-product-lifecycle-pg10-01",
+  "witness_property_file": "worker-runtime.txt",
+  "expected_witnesses": [],
+  "original_provider_gate": "app-29-gate-b-hosted-01",
+  "original_provider_gate_note": "Retained compatibility property only. Its original-provider method and both positive-witness methods are unselected; no worker witness or consumer acceptance is expected.",
+  "final_jar": {
+    "path": "review/working/app-29-driver-cut-native-build-05/artifacts/postgresql-42.7.12-kira.1-osgi.jar",
+    "sha256": "50f7dc4a6314cc5105f4990be26ba8be65ae242e1f7e62652cc60d6a2c0e03df",
+    "bytes": 1200036,
+    "source_path": "review/working/app-29-driver-cut-native-build-05/artifacts/postgresql-42.7.12-kira.1-osgi.jar",
+    "qualification": "UNQUALIFIED",
+    "candidate_id": "app-29-driver-cut-native-build-05-isolation-getter-source-01"
+  },
+  "checker": {
+    "path": "review/working/app-29-final-jar-consumer-profile-01/inputs/checker-qual-3.55.1.jar",
+    "sha256": "857658c8bdcbff794949a8d9922f88d63ee3751c203c7cd7d21ea97f9e745288",
+    "bytes": 241885,
+    "source_path": "review/working/app-29-final-jar-consumer-profile-01/inputs/checker-qual-3.55.1.jar"
+  },
+  "removed_stock": {
+    "group": "org.postgresql",
+    "module": "postgresql",
+    "version": "42.7.12",
+    "sha256": "31fbf6f06b2217fb51d5100cee51b22625cc81640da0679b47914e54c1e6377c"
+  },
+  "original_init": {
+    "path": "review/working/app-29-w01-local-dependencies.init.gradle",
+    "sha256": "429961b98254b89f7ce1d7ba1efa61b8cba28a3bae35353bf3a8ba85f4a1c839"
+  },
+  "jdk": {
+    "feature": 21,
+    "distribution": "temurin",
+    "implementor": "Eclipse Adoptium",
+    "home": "Bound hosted JAVA_HOME; actual Gradle/Test context and JDK binary/modules hashes remain controller obligations, not positive consumer-loader proof."
+  },
+  "source_inventory": {
+    "path": "review/working/app-29-real-pool-return-adaptation-c2-01/test-source-inventory.json",
+    "sha256": "823f49b359b8dec60d1b024c2bfd4e3d2d6822a42fed1a8c8d0e905b5ba87650",
+    "kind": "Historical47 textual declarations only, NOT this run's executed selection. Exact PG10 identities are expected_tests: original RETURN7, failed post-consent tail, ordinary consented-tail control and new exact retirement-sample discriminator. Historical45 passes and diagnostics01 0/2 are not relabelled."
+  },
+  "core_source_manifest": {
+    "path": "review/working/app-29-real-pool-return-adaptation-c2-01/source-manifest.json",
+    "sha256": "e8f783786c058b39094483488a0a49045a74f81de99733a0bad00051a54d897a"
+  },
+  "binding_test": {
+    "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt",
+    "before_sha256": "2be392d5768db39dce43832be3eb12d3b6d724b60d7a569f51c8be9b704aba7a",
+    "after_sha256": "09ff840b9b3c4532c33ce24c09a60a2b0479084b480ed29f6d21478751e78f99",
+    "checkpoint_before_sha256": "a92f7a1bc152576c0bc2cd55d3dea49614ca073aea3868c2929e5bf1fea48017",
+    "proposal_path": "review/working/app-29-core-c2-diagnostics-preparation-01/proposed-source/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt",
+    "patch_path": "review/remediation/app-29-core-c2-two-case-shutdown-diagnostics-admin01.diff",
+    "patch_sha256": "9b3f80e5c18d3c82d31671d033713b71c00a16625c52bacd10e93e59b9d10338"
+  },
+  "current_source_freeze": {
+    "path": "review/working/app-29-w03-integrated-driver-core-c2-diagnostics-01/manifest.json",
+    "sha256": "2e6ba4a28bdc628d42937c3ed0f7f435c835b61d4e6f73702b50e6a2edd85511",
+    "backend_sha": "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc",
+    "source_count": 466,
+    "historical_seed_path_count": 348,
+    "snapshot_count": 199,
+    "approved_input_count": 63,
+    "historical_input_count": 102,
+    "proposed_delta": "Only the eight product_lifecycle_source_delta paths change from before_sha256 to after_sha256; every other source hash, path and removal remains exact. Fresh clean-checkpoint genuine v3 freeze/local preflight is required."
+  },
+  "predecessor_profile": {
+    "path": "review/working/app-29-core-c2-diagnostics-preparation-01/profile/profile.json",
+    "sha256": "a5e6cf435dd0457cfd24f8cefa2cbe4fa90445bf884d028fe67bca07ec6664b7"
+  },
+  "historical_result": {
+    "run_id": "34672394928",
+    "carrier_sha": "b25f6adcdb37b25b44b4efb783889f06c02c85d9",
+    "backend_sha": "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+    "passed": 45,
+    "failed": 2,
+    "scope": "HISTORICAL_HOSTED02_ONLY_NOT_RERUN_NOT_CURRENT47_PASS"
+  },
+  "diagnostic_authority": {
+    "review/remediation/app-29-core-c2-two-case-shutdown-diagnostics-admin01.md": "8e2ba4024e71968f33c2d4fba1ca6ad7e796554f78d383cba53393ea04a58282",
+    "review/remediation/app-29-core-c2-two-case-shutdown-diagnostics-independent-review.md": "bdcc3fdb02daa8250346b1b846db8c87324816e029ed35ebe34f54a4ceb0ee90",
+    "review/working/app-29-core-c2-diagnostics-private-checkpoint-01/checkpoint.json": "ecd9e8ffcfeac7cc5fe51dd7b8e6a68c0840a2a7b7834e92b686a99042521a9f",
+    "review/remediation/app-29-core-c2-hosted02-independent-actual-result-review.md": "9a04d2b6d23a491f1b9d6f9f24d8a90a37b653ec4d0cdaea4e2cd4cae3b24f52",
+    "review/working/app-29-core-c2-hosted-launch-02/artifact/result.json": "103b93f13e89a298653319497468b544d15a47970e1c2b9fcc1230decfca36eb",
+    "review/working/app-29-core-c2-hosted-launch-02/artifact/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.xml": "465024fa05e267de6ec2eae2a8189363e397422baf7e2004f7286992f28b816f",
+    "review/working/app-29-core-c2-hosted-launch-02/artifact/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest.xml": "ee2bfcbb25e2386967c0215e587873b730ec585d2532413d50db22c66f7ecf8c",
+    "review/remediation/app-29-core-c2-diagnostics01-independent-actual-result-review.md": "c71ebd37b3aaff6f70c77319907e61d55ee2a332d58d3b4f3331055fb4155209",
+    "review/working/app-29-core-c2-diagnostics-launch-01/artifact/result.json": "14d1f192614853639b1990f17323863683bd0fab32a4a62e9cd3f2c6810d8559",
+    "review/working/app-29-core-c2-diagnostics-launch-01/artifact/test-results/test/TEST-me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.xml": "3d049dab1afbd0a4246a2b5c8ba1d4a1253a5e6544a9c2d133e5bebbd922169f"
+  },
+  "native_candidate_evidence": {
+    "review/remediation/app-29-native05-primary-admission.json": "f52566b9899c49999326e43d8d68346abd7f35bd5bd7f584e939b4c1e7e39d00",
+    "review/remediation/app-29-native05-independent-result-review.md": "7fc76ba1751a3db51f268449457be8ae1140711e31f1e92874facef637d5cb1c",
+    "review/remediation/app-29-core-c2-isolation-getter-primary-agreement.md": "322ac807f43a3c69011f0ae0978136853cc4fccc9dffbbc43ce2ab03da36833d",
+    "review/remediation/app-29-core-c2-isolation-getter-independent-review.md": "4f6b03f4167b12894eac04a41f67609c292803cb7c68a5c3e0ddbd260af34b9a",
+    "review/working/app-29-driver-cut-native-build-05/result.json": "93663b4ab678b90d8e4680ec9e1a10313cbdd9d6d596f2c289accd0b35296c06",
+    "review/working/app-29-driver-cut-native-build-05/primary-result-collection.json": "61e733c0236d1f01ed7676bd63cd8fc5acccae90bc2987d6fd764ed03412070c",
+    "review/working/app-29-driver-cut-native-build-05/sources-after.json": "e3ae4b1579c4e46a7571f7d0c80fd15f9ff946d4056e0089c204a70cbac0d57e",
+    "review/working/app-29-driver-cut-native-build-05/vendor-inputs.json": "45893288a3ca0d820b134e54c670b9a85175ea43930c9e9d8544ed3fd7a7bcbe",
+    "review/working/app-29-core-c2-isolation-getter-source-01/SEAL.sha256": "529c90aea9e37bbf54ed9a51cab698c877b8297c4f18b7a8427fae1ad5d5755a",
+    "review/working/app-29-core-c2-isolation-getter-source-01/source-delta.patch": "5be5cd1adb568dc796a01f7756b070cc7fead7c64d99ee925c12530ab8e772ae"
+  },
+  "limits": [
+    "One Test task, one worker, exactly ten ordinary @Test methods in the existing one-class PER_CLASS/SAME_THREAD lazy PostgreSQL fixture; no wildcard, backtick or parentheses in argv selectors. Normal compilation remains unrestricted.",
+    "All original 1s/operation budgets, actual native/Entry/epoch/UNKNOWN/retirement and teardown assertions are retained. No prewarm, process-only substitute, timeout extension or extra hard fault.",
+    "Fixed-case raw scalar requirements remain only RETURN_SAMPLE and FAILED_POST_CONSENT_TAIL, with one CAPTURED BEFORE_SHUTDOWN/AFTER_SHUTDOWN record for each. The other eight methods do not invent diagnostic labels or positive witnesses.",
+    "Raw fixed-case scalars are best-effort and non-atomic, not causal or lifecycle-completion evidence. Missing/UNAVAILABLE/duplicate required-phase output cannot pass. Actual FAIL/ERROR/SKIP outcomes and owned-command nonzero exits remain sticky.",
+    "Same one lazy PostgreSQL17.6-alpine plus Ryuk0.12.0; accepted cleanup guard requires exactly 2 containers/1 PostgreSQL/1 Ryuk, with all existing session, event, image, ownership, capture-before-delete and absence gates retained.",
+    "No positive worker-witness expectations. Effective classpath and class-load logs are context only; Native05 remains UNQUALIFIED.",
+    "Historical hosted02 45/47 and diagnostics01 0/2 plus failed cleanup remain separate, unchanged evidence. This attempt cannot become a new full47/consumer/native qualification.",
+    "Preserve all466 current source keys with exactly8 accepted hash changes, all348 historical seed paths, all199 snapshot subjects, all63 predecessor approved inputs and all102 historical pins; no inventory-helper modification.",
+    "Hard dominance is MODEL plus unchanged generic-catch source review plus exact sample/adjacent-budget discrimination, not an executed opaque real-eviction fault or a queue/liveness guarantee.",
+    "D05 PARTIAL / D06 unreviewed; W03/App29/native/full qualification remain open. Source/preparation acceptance is not execution authority. Primary alone freezes/checkpoints/adopts/launches."
+  ],
+  "historical_diagnostics_result": {
+    "run_id": "34678157417",
+    "passed": 0,
+    "failed": 2,
+    "cleanup": "FAIL",
+    "containers": "UNKNOWN",
+    "outputs_absent": false,
+    "private_directories_retained": 6,
+    "scope": "HISTORICAL_DIAGNOSTICS01_ONLY_NOT_REEVALUATED_OR_REPAIRED_BY_THIS_PREPARATION"
+  },
+  "product_lifecycle_source_delta": {
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt": {
+      "before_sha256": "a6730fbc65d378713dd89bd0794b5514a764320f1186c681c4b44efabd1d09c7",
+      "after_sha256": "9d9a6be8888aa67f5f908c1d53db998f17e528c52a1d3d8b5bcd05362635ca3c",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-product-01/after/GuardedDataSource.kt"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt": {
+      "before_sha256": "dd73ba8b486e285ac76c16e56d98bdac475027c86fed9eb5ffe3f7c1a5a820fd",
+      "after_sha256": "ff13d4a7ad481762c7d6d222c023cb60e3cb94e22fa50841767c5c6641cb89df",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-product-01/after/PersistenceJdbcLease.kt"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt": {
+      "before_sha256": "5bee8dc7f22219542a6ff28df8230e401268884c4711289afebf397c39d2d334",
+      "after_sha256": "2dd3236000c8f88f2ca00435036a54a5b1ba027aeb4f3e7d4ab66ca2106533f2",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-product-01/after/PersistenceOwnership.kt"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt": {
+      "before_sha256": "0e45d75ee8a2421b6db238ced31298b7a5012db4ad3232e8675ae0f889e8c857",
+      "after_sha256": "545d05d67fb0550c4fd4ea889144f7f0a49e2ac57b2d41676b04ea0d22a43d8b",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-product-01/after/PoolActorCustody.kt"
+    },
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt": {
+      "before_sha256": "def7c6ef36145b6d1dcf71342a5e6c1956f6f40055464e231e946eff05ade9f2",
+      "after_sha256": "5105399988af7abbfac336f27cc4436c95a348e8032e39a0ba409f58c6a3400f",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-product-01/after/PoolLifecycle.kt"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt": {
+      "before_sha256": "09ff840b9b3c4532c33ce24c09a60a2b0479084b480ed29f6d21478751e78f99",
+      "after_sha256": "c65198c118b4102615100464c52774f9dbd1bec70fe8655337fadcda4895c350",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-tests-01/after/PersistencePgOwnedCutIntegrationTest.kt"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt": {
+      "before_sha256": "7ddc9fac7597febfb42de44c041e4c2ccfdc01bc864e973346738a5ffd0209fa",
+      "after_sha256": "4bf8c36b1ec8f01ea8a7b775ea7c769ca2fa8f837fc8d1d351d1172c860ce24e",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-tests-01/after/PoolActorCustodyTest.kt"
+    },
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt": {
+      "before_sha256": "f5f194f46eddb89b32ba1142fcbedd5617255abae5b3ffe0bd507b26449c0665",
+      "after_sha256": "cf46316c372696c3aa91ca6e5455c582e40d436c82c791e586c3adce29173db1",
+      "proposal_path": "review/working/app-29-core-c2-product-lifecycle-tests-01/after/PoolLifecycleTest.kt"
+    }
+  },
+  "product_lifecycle_authority": {
+    "review/remediation/app-29-core-c2-product-lifecycle-validation-selection.md": "0582e4ac646996f9595e9d2d062a9a07f3a1c216aad83b1ffaa822a8a29c6372",
+    "review/remediation/app-29-core-c2-product-lifecycle-primary-agreement.md": "0dfc179ee33f5349283aeb2876e850d0c13f5cbbcc3edebbb15c570e736403dc",
+    "review/remediation/app-29-core-c2-diagnostics01-backend03-product-lifecycle-plan.md": "d42458d346727c947313db631f4f2ad710a45fad6fa31b2a8599e65309b791dc",
+    "review/remediation/app-29-core-c2-product-lifecycle-plan-01-independent-review.md": "70ba9317eeef7491056b4598f63c1ff2337f3a69e7fc83d155f24be3c1050555",
+    "review/remediation/app-29-core-c2-product-lifecycle-01-independent-actual-diff-review.md": "79842f030ba4b70991e805fe969c1d0d1c250e2720f69bc91725c0d2d8b5ed7e",
+    "review/remediation/app-29-core-c2-cleanup-guard-01-independent-review.md": "24c51bc306ac8bb995a6b4401af0a5749b06f468f607750f60c8a0560c167a95",
+    "review/working/app-29-core-c2-cleanup-guard-preparation-01/cleanup-guard.patch": "205bed154e68fd77d1e0d44e33929c07979cbbe620ea69fbfb2eb3c0249615c4",
+    "review/working/app-29-core-c2-product-lifecycle-product-01/product.patch": "072ebf2eaa07f9fd109d9056d2000add7cba5b25dd451cab0c86c14a876fbfda",
+    "review/working/app-29-core-c2-product-lifecycle-product-01/after.sha256": "daa73d5b0bd6275feac48edb94216a99fc388f6f08f64477b14ff5122326390e",
+    "review/working/app-29-core-c2-product-lifecycle-tests-01/tests.patch": "c5ec7b34ee75390c9e0f4c1443e7a5e69112a124023ee20c2cbf2ffb434f7d6b",
+    "review/working/app-29-core-c2-product-lifecycle-tests-01/source-pins-after.sha256": "b5eed778684969fbf3e8e3afd41a316be62f4dd5cbeb1b595de00aadfe578754",
+    "review/working/app-29-core-c2-product-lifecycle-tests-01/SHA256SUMS": "58f45260e7d130f91a56cd6e54f8ca18602ce96d8715c29a52a154e37e079fe0",
+    "review/working/app-29-core-c2-product-lifecycle-tests-01/SELECTORS.md": "050f342603128ffa6a9e1be5592d5c864c1b945bc6f8ee472a586dd24b7acb22"
+  }
+}

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest" tests="16" skipped="0" failures="0" errors="0" timestamp="2026-09-12T04:18:35.192Z" hostname="runnervmlun5p" time="2.279">
+  <properties/>
+  <testcase name="unknown length stream conversion is eager while a failed setter retains its actual partial binding()" classname="me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest" time="1.836"/>
+  <testcase name="new freed or cross-physical array is refused before either input or consumer native calls()" classname="me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest" time="0.032"/>
+  <testcase name="deferred current and queued inputs have different lifetimes and rejected preflight is not drain()" classname="me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest" time="0.075"/>
+  <testcase name="real private pool rotates fresh borrower roots on one physical session and denies stale graphs before native use()" classname="me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest" time="0.056"/>
+  <testcase name="row aliases use base column identity and new stale input precedes even label resolution()" classname="me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest" time="0.094"/>
+  <testcase name="ordinary children and same-thread reentry have no small universal cap()" classname="me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest" time="0.015"/>
+  <testcase name="descendant actual completion does not need G and foreign business stays refused()" classname="me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest" time="0.007"/>
+  <testcase name="successful batch drain releases queued references but never erases still current parameters()" classname="me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest" time="0.054"/>
+  <testcase name="array result metadata generated-key and callable return graphs never expose a native parent()" classname="me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest" time="0.007"/>
+  <testcase name="first stream close failure uses IOException declaration without retry or hostile diagnostics()" classname="me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest" time="0.016"/>
+  <testcase name="first close failure is sticky and cleanup remains admitted after business stop but not terminal seal()" classname="me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest" time="0.003"/>
+  <testcase name="resource containers struct and ref attributes preserve guards and scalar array types()" classname="me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest" time="0.003"/>
+  <testcase name="resource output is escrowed before wrapping failure and actual extent includes wrapping()" classname="me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest" time="0.003"/>
+  <testcase name="same owner array adaptation is private and eager across independent root call identities()" classname="me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest" time="0.004"/>
+  <testcase name="savepoint uses private exact owner structural adaptation()" classname="me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest" time="0.003"/>
+  <testcase name="real lease preserves Properties client info defaults and declared stale and foreign failure shapes()" classname="me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest" time="0.058"/>
+  <system-out><![CDATA[04:18:35.194 [Test worker] INFO tc.postgres:17.6-alpine -- Creating container for image: postgres:17.6-alpine
+04:18:35.232 [Test worker] INFO tc.postgres:17.6-alpine -- Container postgres:17.6-alpine is starting: 3f7e26f7ccbccf991a51325b1de27892ab2cb389d1c276b1fa99633f4c5fcda2
+04:18:36.925 [Test worker] INFO tc.postgres:17.6-alpine -- Container postgres:17.6-alpine started in PT1.731240569S
+04:18:36.925 [Test worker] INFO tc.postgres:17.6-alpine -- Container is started (JDBC URL: jdbc:postgresql://localhost:32770/w03_lifecycle?loggerLevel=OFF)
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=11 all_terminated=true proof=REAL_COMPOSITION
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=11 all_terminated=true proof=REAL_COMPOSITION
+04:18:37.150 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-24 - Starting...
+04:18:37.151 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-24 - Start completed.
+FACTORY_SCOPE_EXIT factory_threads=[] caller_threads=[512] all_terminated=true
+04:18:37.189 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-24 - Shutdown initiated...
+04:18:37.196 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-24 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=11 all_terminated=true proof=REAL_COMPOSITION
+FACTORY_SCOPE_EXIT factory_threads=[] caller_threads=[526,527] all_terminated=true
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=11 all_terminated=true proof=REAL_COMPOSITION
+04:18:37.426 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-25 - Starting...
+04:18:37.427 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-25 - Start completed.
+FACTORY_SCOPE_EXIT factory_threads=[] caller_threads=[555] all_terminated=true
+04:18:37.444 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-25 - Shutdown initiated...
+04:18:37.471 [Test worker] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-25 - Shutdown completed.
+PG_LIFECYCLE_ROOT_CLEANUP result=TRACKED_LOCAL_ENDED actors=12 all_terminated=true proof=REAL_COMPOSITION
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,707 @@
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt
+index 23d8512..65b42dc 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt
+@@ -50,13 +50,14 @@ internal class GuardedDataSource(
+         val budget = PersistenceTimeBudget.start(endpoint.loginPolicy.durationMillis)
+         if (!businessReady()) PersistenceJdbcGuardContext.refuse()
+         val acquisition = lifecycle.prepareAcquisition(budget)
+-        if (!acquisition.enter()) PersistenceJdbcGuardContext.refuse()
++        val completion = PersistencePhaseOwnership.prepareAcquisition(this, acquisition)
+         var entitlement: PoolLifecycle.LeaseEntitlement? = null
+         var facade: LeaseJdbcFacade? = null
+         var obtained = false
+         var endAttempted = false
+         var delivered = false
+         try {
++            if (!acquisition.enter()) PersistenceJdbcGuardContext.refuse()
+             val handle = pool.connection
+             obtained = true
+             // Capture before any unwrap, association, allocation or facade construction can fail.
+@@ -66,11 +67,13 @@ internal class GuardedDataSource(
+             }
+             entitlement = acquisition.prepareLeaseEntitlement() ?: PersistenceJdbcGuardContext.refuse()
+             val physical = handle.unwrap(PhysicalJdbcFacade::class.java)
+-            val prepared = physical.prepareLease(this, handle, entitlement, budget)
++            val prepared = physical.prepareLease(this, handle, entitlement, budget, completion)
+             facade = prepared
+             endAttempted = true
+             if (!acquisition.end() || !acquisition.actualFrameEnded()) PersistenceJdbcGuardContext.refuse()
+             // No borrower exposure until the actual acquisition TL/bookkeeping tail has ended.
++            if (persistenceFactoryRemainingMillis(budget) == 0L) PersistenceJdbcGuardContext.refuse()
++            completion.phase?.requireAcceptedLease()
+             delivered = true
+             return prepared
+         } finally {
+@@ -81,7 +84,11 @@ internal class GuardedDataSource(
+                 }
+             } finally {
+                 // An ENDING failure is retained, not retried as though it were an untouched frame.
+-                if (!endAttempted && !acquisition.end()) lifecycle.requestShutdown(budget)
++                try {
++                    if (!endAttempted && acquisition.entered() && !acquisition.end()) lifecycle.requestShutdown(budget)
++                } finally {
++                    completion.ingressEnded()
++                }
+             }
+         }
+     }
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt
+index 17b8768..aaf5e5d 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt
+@@ -14,6 +14,8 @@ import java.util.concurrent.Executor
+ internal class LeaseJdbcFacade private constructor(private val calls: LeaseConnectionCalls) : Connection by calls.proxy {
+     internal fun deliveryFailed() = calls.deliveryFailed()
+ 
++    internal fun matches(lease: PersistenceJdbcLease): Boolean = calls.matches(lease)
++
+     override fun toString(): String = "LeaseJdbcFacade(redacted)"
+ 
+     companion object {
+@@ -36,6 +38,8 @@ private class LeaseConnectionCalls(private val lease: PersistenceJdbcLease, priv
+ 
+     fun deliveryFailed() = lease.deliveryFailed()
+ 
++    fun matches(candidate: PersistenceJdbcLease): Boolean = lease === candidate
++
+     override fun invoke(proxy: Any, method: Method, args: Array<out Any?>?): Any? = try {
+         invokeConnection(proxy, method, args)
+     } catch (failure: SQLClientInfoException) {
+@@ -47,6 +51,8 @@ private class LeaseConnectionCalls(private val lease: PersistenceJdbcLease, priv
+         throw failure
+     }
+ 
++    // The checked-failure adapter and dispatch finally must enclose the same single connection invocation.
++    @Suppress("CyclomaticComplexMethod")
+     private fun invokeConnection(proxy: Any, method: Method, args: Array<out Any?>?): Any? {
+         if (method.declaringClass === Any::class.java) {
+             return when (method.name) {
+@@ -66,10 +72,13 @@ private class LeaseConnectionCalls(private val lease: PersistenceJdbcLease, priv
+             return null
+         }
+         if (method.name == "isClosed" && lease.closed()) return true
+-        val dispatch = lease.enterDispatch()
++        val phase = lease.completion.phase
++        val kind = phase?.connectionKind(method, args) ?: PersistenceJdbcGuardCallKind.BUSINESS
++        phase?.beforeJdbcCall(kind)
++        val dispatch = lease.enterDispatch(kind)
+         val context = lease.state.context
+         val call = runCatching {
+-            context.enter(lease.identity, PersistenceJdbcGuardCallKind.BUSINESS)
++            context.enter(lease.identity, kind)
+         }.getOrElse { failure ->
+             dispatch.end()
+             throw failure
+@@ -103,6 +112,7 @@ private class LeaseConnectionCalls(private val lease: PersistenceJdbcLease, priv
+                     if (!completed) call.failedBeforeBoxing(wrapping)
+                 }
+             }.getOrElse { failure ->
++                context.phaseJdbcFailure()
+                 val actual = if (failure.javaClass === InvocationTargetException::class.java) {
+                     (failure as InvocationTargetException).targetException
+                 } else {
+@@ -114,6 +124,7 @@ private class LeaseConnectionCalls(private val lease: PersistenceJdbcLease, priv
+             }
+         } finally {
+             call.finishAfterDispatch(dispatch)
++            if (completed) phase?.afterJdbcCall(kind)
+         }
+     }
+ }
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt
+index f7a9b87..14af1af 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt
+@@ -52,7 +52,11 @@ internal class PersistenceJdbcGuardIdentity private constructor(
+     }
+ }
+ 
+-/** One entry's lower graph, fixed summaries only. The admitted caller owns all dynamic descendant storage. */
++/**
++ * One entry's lower graph, fixed summaries only. The admitted caller owns all dynamic descendant storage.
++ * Entry, child, native-driver and phase seams deliberately share this exact graph and its private authorities.
++ */
++@Suppress("TooManyFunctions")
+ internal class PersistenceJdbcGuardContext private constructor(
+     private val ownership: PersistenceOwnership,
+     private val pool: PersistenceJdbcPoolIdentity,
+@@ -77,15 +81,32 @@ internal class PersistenceJdbcGuardContext private constructor(
+     private val exposedNative = IdentityHashMap<Any, PersistencePgOwnedCutAccess.Life>()
+     internal val transaction = PersistenceJdbcTransaction()
+ 
++    @Volatile private var phase: PersistencePhaseContext? = null
++
++    internal fun attachPhase(owner: PersistencePhaseContext) {
++        check(phase == null && !ownership.ownershipLockHeld())
++        phase = owner
++    }
++
++    internal fun hasPhase(): Boolean = phase != null
++
++    internal fun phaseJdbcFailure() {
++        if (phase != null) {
++            phase?.jdbcFailure()
++            ownership.requestRetirement(epoch)
++        }
++    }
++
+     fun enter(identity: PersistenceJdbcGuardIdentity, kind: PersistenceJdbcGuardCallKind): PersistenceJdbcGuardCall {
+         if (!identity.matches(this) || identity.epoch !== epoch) refuse()
+         if (kind !== PersistenceJdbcGuardCallKind.CANCELLATION && !identity.originalCaller()) refuse()
+         reconcileAncestors(this, frames) // Observe genuine ancestor failure before granting a nested business token.
+         if (!ownership.permitsCleanup(identity.epoch)) refuse()
++        val budget = phase?.callBudget(kind)
+         val token = when (kind) {
+-            PersistenceJdbcGuardCallKind.BUSINESS -> identity.epoch.enterForeground()
+-            PersistenceJdbcGuardCallKind.CLEANUP -> identity.epoch.enterCleanup(identity.cleanup)
+-            PersistenceJdbcGuardCallKind.CANCELLATION -> identity.epoch.enterCancellation()
++            PersistenceJdbcGuardCallKind.BUSINESS -> identity.epoch.enterForeground(budget)
++            PersistenceJdbcGuardCallKind.CLEANUP -> identity.epoch.enterCleanup(identity.cleanup, budget)
++            PersistenceJdbcGuardCallKind.CANCELLATION -> identity.epoch.enterCancellation(budget)
+         } ?: refuse()
+         return wrapToken(identity, token, kind)
+     }
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt
+index bd6fbdd..052a7cd 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt
+@@ -14,6 +14,7 @@ internal class PersistenceJdbcLease private constructor(
+     internal val state: PersistenceJdbcPoolEpoch,
+     private val handle: Connection,
+     private val entitlement: PoolLifecycle.LeaseEntitlement,
++    internal val completion: PersistenceLeaseCompletion,
+ ) {
+     private val original = Thread.currentThread()
+     internal val cleanup = state.epoch.preparedCleanup()
+@@ -37,28 +38,50 @@ internal class PersistenceJdbcLease private constructor(
+     }
+ 
+     internal fun requireBusiness(cancellation: Boolean = false) {
++        if (completion.phase !== PersistencePhaseOwnership.current() && !cancellation) PersistenceJdbcGuardContext.refuse()
++        if (completion.logicallyReleased()) PersistenceJdbcGuardContext.refuse()
+         if (phase.get() !== Phase.OPEN || !ownership.currentPoolState(state) || !ownership.permits(state.epoch)) PersistenceJdbcGuardContext.refuse()
+         if (!cancellation && Thread.currentThread() !== original) PersistenceJdbcGuardContext.refuse()
+         if (!owner.businessReady()) PersistenceJdbcGuardContext.refuse()
+     }
+ 
+-    internal fun select(expected: PhysicalJdbcFacade, expectedOwner: PersistenceOwnership, returning: Boolean): PersistenceJdbcPoolEpoch {
++    internal fun select(
++        expected: PhysicalJdbcFacade,
++        expectedOwner: PersistenceOwnership,
++        returning: Boolean,
++        kind: PersistenceJdbcGuardCallKind,
++    ): PersistenceJdbcPoolEpoch {
+         if (lower !== expected || ownership !== expectedOwner || !ownership.currentPoolState(state)) PersistenceJdbcGuardContext.refuse()
+         if (Thread.currentThread() !== original) PersistenceJdbcGuardContext.refuse()
+         if (returning) {
+             if (phase.get() !== Phase.RETURNING || transfer?.consented() == true) PersistenceJdbcGuardContext.refuse()
+         } else {
+-            requireBusiness()
++            requireDispatch(kind)
+         }
+         return state
+     }
+ 
+-    internal fun enterDispatch(cancellation: Boolean = false): PersistenceJdbcDispatch.Frame {
+-        requireBusiness(cancellation)
+-        return PersistenceJdbcDispatch.enter(this, returning = false)
++    internal fun enterDispatch(kind: PersistenceJdbcGuardCallKind = PersistenceJdbcGuardCallKind.BUSINESS): PersistenceJdbcDispatch.Frame {
++        requireDispatch(kind)
++        return PersistenceJdbcDispatch.enter(this, returning = false, kind = kind)
+     }
+ 
+-    internal fun closed(): Boolean = phase.get() !== Phase.OPEN || ownership.retirementRequested()
++    private fun requireDispatch(kind: PersistenceJdbcGuardCallKind) {
++        if (kind === PersistenceJdbcGuardCallKind.BUSINESS || completion.phase == null) {
++            requireBusiness(kind === PersistenceJdbcGuardCallKind.CANCELLATION)
++        } else {
++            if (phase.get() !== Phase.OPEN || !ownership.currentPoolState(state) || !ownership.permitsCleanup(state.epoch)) {
++                PersistenceJdbcGuardContext.refuse()
++            }
++            if (kind !== PersistenceJdbcGuardCallKind.CANCELLATION &&
++                (Thread.currentThread() !== original || completion.phase !== PersistencePhaseOwnership.current())
++            ) {
++                PersistenceJdbcGuardContext.refuse()
++            }
++        }
++    }
++
++    internal fun closed(): Boolean = phase.get() !== Phase.OPEN || completion.logicallyReleased() || ownership.retirementRequested()
+ 
+     internal fun abort(executor: Executor) {
+         if (closed()) return
+@@ -74,10 +97,40 @@ internal class PersistenceJdbcLease private constructor(
+     /** One real close; duplicate close is always facade-only, even on the post-consent tail. */
+     @Suppress("TooGenericExceptionCaught")
+     internal fun close() {
++        if (phase.get() !== Phase.OPEN) return
++        if (Thread.currentThread() !== original) PersistenceJdbcGuardContext.refuse()
++        if (completion.phase != null) {
++            completion.logicalRelease() // Spring release is not Hikari/native return or permit proof.
++            return
++        }
++        closeActual(PersistenceTimeBudget.start(1_000))
++    }
++
++    internal fun finishScoped(scope: PersistencePhaseContext, budget: PersistenceTimeBudget) {
++        if (completion.phase !== scope) PersistenceJdbcGuardContext.refuse()
++        scope.requireFinalizer(this)
++        if (!completion.logicallyReleased()) PersistenceJdbcGuardContext.refuse()
++        closeActual(budget)
++    }
++
++    internal fun retireScoped(scope: PersistencePhaseContext) {
++        if (completion.phase !== scope || Thread.currentThread() !== original) PersistenceJdbcGuardContext.refuse()
++        // In particular, a consented old return tail has no authority over its successor.
++        if (phase.get() !== Phase.OPEN || transfer?.consented() == true) return
++        try {
++            closeActual(scope.cleanupBudget(), retire = true)
++        } catch (_: Throwable) {
++            scope.jdbcFailure()
++            // The original operation/entitlement and terminal receipt, not this catch, decide completion.
++        }
++    }
++
++    // Every reuse veto stays inside the original return attempt, before Hikari close and its retained finally tail.
++    @Suppress("TooGenericExceptionCaught", "ComplexCondition")
++    private fun closeActual(budget: PersistenceTimeBudget, retire: Boolean = false) {
+         if (phase.get() !== Phase.OPEN) return
+         if (Thread.currentThread() !== original) PersistenceJdbcGuardContext.refuse()
+         if (ownership.ownershipLockHeld()) PersistenceJdbcGuardContext.refuse()
+-        val budget = PersistenceTimeBudget.start(1_000)
+         val operation = enterReturn(budget)
+         var dispatch: PersistenceJdbcDispatch.Frame? = null
+         var failure: Throwable? = null
+@@ -86,13 +139,16 @@ internal class PersistenceJdbcLease private constructor(
+             check(phase.compareAndSet(Phase.OPEN, Phase.RETURNING))
+             val attempt = PersistenceJdbcPoolTransfer.prepare(ownership, state, PersistenceJdbcPoolTransfer.Kind.RETURN, budget, requireNotNull(returnCaller))
+             transfer = attempt
++            completion.retainTransfer(attempt)
+             if (!attempt.claim()) PersistenceJdbcGuardContext.refuse()
+             if (!state.epoch.stopBusiness(cleanup)) PersistenceJdbcGuardContext.refuse()
+-            if (state.epoch.poisoned() || state.context.graphFailed() || state.context.transaction.uncertain()) {
++            if (retire || state.epoch.poisoned() || state.context.graphFailed() || state.context.transaction.uncertain()) {
+                 attempt.reject()
+                 PersistenceJdbcGuardContext.refuse()
+             }
+-            dispatch = PersistenceJdbcDispatch.enter(this, returning = true)
++            val frame = PersistenceJdbcDispatch.enter(this, returning = true)
++            dispatch = frame
++            completion.retainDispatch(frame)
+             handle.close() // No epoch foreground ancestor around this complete Hikari/return extent.
+             if (!attempt.consented()) PersistenceJdbcGuardContext.refuse()
+         } catch (problem: Throwable) {
+@@ -128,6 +184,7 @@ internal class PersistenceJdbcLease private constructor(
+                     failure = bookkeepingFailure ?: problem
+                 } finally {
+                     failure = endReturnTail(operation, dispatch, failure, bookkeepingFailure)
++                    PersistencePhaseOwnership.reconcileLoans()
+                 }
+             }
+         }
+@@ -139,6 +196,7 @@ internal class PersistenceJdbcLease private constructor(
+         return try {
+             returnCaller = PersistenceOwnedFactoryCaller.capture() // Metadata only, outside F/G/T.
+             val prepared = entitlement.prepareReturn(budget) ?: PersistenceJdbcGuardContext.refuse()
++            completion.retainReturn(prepared)
+             if (!prepared.enter()) PersistenceJdbcGuardContext.refuse()
+             entered = true
+             prepared
+@@ -285,7 +343,8 @@ internal class PersistenceJdbcLease private constructor(
+             state: PersistenceJdbcPoolEpoch,
+             handle: Connection,
+             entitlement: PoolLifecycle.LeaseEntitlement,
+-        ): PersistenceJdbcLease = PersistenceJdbcLease(owner, lower, ownership, state, handle, entitlement)
++            completion: PersistenceLeaseCompletion,
++        ): PersistenceJdbcLease = PersistenceJdbcLease(owner, lower, ownership, state, handle, entitlement, completion)
+     }
+ }
+ 
+@@ -295,18 +354,29 @@ internal object PersistenceJdbcDispatch {
+ 
+     internal fun current(): Frame? = frames.get()
+ 
+-    internal fun enter(lease: PersistenceJdbcLease, returning: Boolean): Frame = Frame(lease, returning, frames.get()).also { frames.set(it) }
++    internal fun enter(
++        lease: PersistenceJdbcLease,
++        returning: Boolean,
++        kind: PersistenceJdbcGuardCallKind = if (returning) PersistenceJdbcGuardCallKind.CLEANUP else PersistenceJdbcGuardCallKind.BUSINESS,
++    ): Frame = Frame(lease, returning, kind, frames.get()).also { frames.set(it) }
+ 
+-    internal class Frame internal constructor(internal val lease: PersistenceJdbcLease, private val returning: Boolean, private val parent: Frame?) {
++    internal class Frame internal constructor(
++        internal val lease: PersistenceJdbcLease,
++        private val returning: Boolean,
++        internal val kind: PersistenceJdbcGuardCallKind,
++        private val parent: Frame?,
++    ) {
+         private val caller = Thread.currentThread()
+         private var ended = false
+         internal val identity: PersistenceJdbcGuardIdentity get() = lease.identity
+ 
+         internal fun returning(): Boolean = !ended && returning
+ 
++        internal fun actualEnded(): Boolean = ended
++
+         internal fun select(lower: PhysicalJdbcFacade, ownership: PersistenceOwnership): PersistenceJdbcPoolEpoch {
+             if (ended || caller !== Thread.currentThread() || frames.get() !== this) PersistenceJdbcGuardContext.refuse()
+-            return lease.select(lower, ownership, returning)
++            return lease.select(lower, ownership, returning, kind)
+         }
+ 
+         internal fun end() {
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcTransaction.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcTransaction.kt
+index 0613360..c3c023f 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcTransaction.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcTransaction.kt
+@@ -7,6 +7,7 @@ internal class PersistenceJdbcTransaction {
+     private var autoCommit: Boolean? = null
+     private var pending = false
+     private var unknown = false
++    private var outcome = PersistenceDatabaseOutcome.NONE
+ 
+     fun beforeConnection(method: Method, arguments: Array<Any?>, returning: Boolean) {
+         if (method.name == "setAutoCommit" && arguments.singleOrNull() == true) {
+@@ -27,14 +28,25 @@ internal class PersistenceJdbcTransaction {
+                 if (autoCommit == true) pending = false
+             }
+ 
+-            "commit" -> pending = false
++            "commit" -> {
++                pending = false
++                if (outcome !== PersistenceDatabaseOutcome.UNKNOWN) outcome = PersistenceDatabaseOutcome.COMMITTED
++            }
+ 
+-            "rollback" -> if (arguments.isEmpty()) pending = false
++            "rollback" -> if (arguments.isEmpty()) {
++                pending = false
++                // A later rollback cannot undo an acknowledged commit or resolve a lost commit reply.
++                if (outcome === PersistenceDatabaseOutcome.NONE) outcome = PersistenceDatabaseOutcome.ROLLED_BACK
++            }
+         }
+     }
+ 
+     fun connectionFailed(method: Method) {
+-        if (method.name in OUTCOME_METHODS) unknown = true
++        if (method.name in OUTCOME_METHODS) {
++            unknown = true
++            // Reset/cleanup failure is a reuse failure, not evidence that a known DB result changed.
++            if (outcome === PersistenceDatabaseOutcome.NONE) outcome = PersistenceDatabaseOutcome.UNKNOWN
++        }
+     }
+ 
+     fun beforeChild(method: Method, kind: PhysicalJdbcKind) {
+@@ -51,13 +63,15 @@ internal class PersistenceJdbcTransaction {
+ 
+     fun uncertain(): Boolean = unknown
+     fun clean(): Boolean = !unknown && autoCommit != null && !pending
++    fun databaseOutcome(): PersistenceDatabaseOutcome = outcome
+ 
+     /** Only prebuilt successor state receives the proven current state; old state is never reset. */
+     fun inherit(previous: PersistenceJdbcTransaction) {
+-        check(autoCommit == null && !pending && !unknown)
++        check(autoCommit == null && !pending && !unknown && outcome === PersistenceDatabaseOutcome.NONE)
+         autoCommit = previous.autoCommit
+         pending = previous.pending
+         unknown = previous.unknown
++        // The physical connection's local settings transfer; the departing transaction's result does not.
+     }
+ 
+     companion object {
+@@ -71,3 +85,6 @@ internal class PersistenceJdbcTransaction {
+         )
+     }
+ }
++
++/** Lower native facts only. Spring completion, attempted rollback and lease disposal are not DB results. */
++internal enum class PersistenceDatabaseOutcome { NONE, COMMITTED, ROLLED_BACK, UNKNOWN }
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt
+index 41e62b6..2a3cdc0 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt
+@@ -12,8 +12,25 @@ internal class PersistenceOwnership(private val entry: PersistencePhysicalEntry,
+     private val poolState = AtomicReference<PersistenceJdbcPoolEpoch?>()
+     private val poolTransfer = AtomicReference<PersistenceJdbcPoolTransfer?>()
+     private val composed = AtomicBoolean()
++    private val terminalCompletion = PersistenceTerminalReclamation.prepare(this)
+     private var delivery = Delivery.UNEXPOSED // Only the exact entry's F/G owner changes delivery.
+ 
++    internal fun terminalCompletion(): PersistenceTerminalReclamation = terminalCompletion
++
++    internal fun phaseEpoch(): PersistenceProducerEpoch? = current.get()
++
++    internal fun retireExpiredPhaseLocked(expected: PersistenceProducerEpoch) {
++        val physical = requireNotNull(binding)
++        check(physical.ledger.lock.isHeldByCurrentThread)
++        if (physical.ledger.current(entry.record) === entry && current.get() === expected) entry.retirementRequested.set(true)
++    }
++
++    /** Only the already-proved terminal conjunction in PersistencePhysicalCompletion calls this. */
++    internal fun reclaimedLocked() {
++        requireCurrentLocks()
++        terminalCompletion.publish(this)
++    }
++
+     /** Prepare on the future original caller, outside ownership locks and before any final delivery commit. */
+     fun prepareEpoch(): PersistenceProducerEpoch {
+         check(!ownershipLockHeld())
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePhysicalCompletion.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePhysicalCompletion.kt
+index b2f2d4d..347ac7e 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePhysicalCompletion.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePhysicalCompletion.kt
+@@ -10,9 +10,14 @@ internal class PersistencePhysicalCompletion(private val binding: PersistencePhy
+     val cleanupFailure = AtomicBoolean()
+ 
+     fun retirementAt(slot: Int): PersistenceTerminalWork? {
++        // Sample the injected monotonic clock outside F/G/T, then recheck the exact old epoch
++        // in the existing G cut. A stale sample cannot request retirement of a returned successor.
++        val phaseEpoch = phaseEpochAt(slot)
++        val phaseExpired = phaseEpoch?.phaseDeadlineExpired() == true
+         if (!ledger.lock.tryLock()) return null
+         return try {
+             val entry = ledger.entries[slot] ?: return null
++            if (phaseExpired) entry.jdbc.retireExpiredPhaseLocked(requireNotNull(phaseEpoch))
+             val control = entry.control ?: return null
+             if (control.state() === PersistenceOwnedCallerDisposition.ATTACHED && persistenceFactoryRemainingMillis(control.budget) == 0L) {
+                 entry.retirementRequested.set(true)
+@@ -30,6 +35,15 @@ internal class PersistencePhysicalCompletion(private val binding: PersistencePhy
+         }
+     }
+ 
++    private fun phaseEpochAt(slot: Int): PersistenceProducerEpoch? {
++        if (!ledger.lock.tryLock()) return null
++        return try {
++            ledger.entries[slot]?.jdbc?.phaseEpoch()
++        } finally {
++            ledger.lock.unlock()
++        }
++    }
++
+     fun rawDecision(work: PersistenceTerminalWork): PersistencePhysicalRawDecision {
+         check(work.isRunnerThread())
+         val factoryEnded = binding.actualFactoryThreadEnded()
+@@ -98,6 +112,7 @@ internal class PersistencePhysicalCompletion(private val binding: PersistencePhy
+                 } else {
+                     if (canReclaimLocked(entry, work, factoryEnded) && transport === PersistenceTerminalTransportState.DISPOSED) {
+                         recordEvidence(entry, work)
++                        entry.jdbc.reclaimedLocked()
+                         ledger.entries[slot] = null
+                     }
+                     true
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt
+index 1c7b9b4..b778696 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt
+@@ -11,6 +11,19 @@ internal class PersistenceProducerEpoch private constructor(private val ownershi
+     private val issuance = Any()
+     private val cleanup = PersistenceJdbcCleanup.prepare(this, issuance)
+ 
++    @Volatile private var phase: PersistencePhaseContext? = null
++
++    internal fun attachPhase(owner: PersistencePhaseContext) {
++        check(preparedFor(ownership) && phase == null && !ownership.ownershipLockHeld())
++        phase = owner
++    }
++
++    /** Existing scanner association only. Clock sampling is forbidden under F/G/T. */
++    internal fun phaseDeadlineExpired(): Boolean {
++        check(!ownership.ownershipLockHeld())
++        return phase?.deadlineExpired() == true
++    }
++
+     fun enterForeground(budget: PersistenceTimeBudget? = null): Call? = enter(Kind.FOREGROUND, budget)
+ 
+     /** Only this closed cancellation authority crosses threads; foreground/transaction lineage never does. */
+@@ -38,7 +51,8 @@ internal class PersistenceProducerEpoch private constructor(private val ownershi
+         }
+     }
+ 
+-    fun enterCleanup(authority: PersistenceJdbcCleanup): Call? = if (authority.matches(this, issuance)) enter(Kind.CLEANUP, null) else null
++    fun enterCleanup(authority: PersistenceJdbcCleanup, budget: PersistenceTimeBudget? = null): Call? =
++        if (authority.matches(this, issuance)) enter(Kind.CLEANUP, budget) else null
+ 
+     internal fun cancellationCleanup(): PersistenceJdbcCleanup? = cleanup.takeIf { ownership.permitsCleanup(this) && !state.get().sealed }
+ 
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt
+index d6e49da..6a57d48 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt
+@@ -102,6 +102,7 @@ internal class PhysicalJdbcDescendants(
+             } else if (value is Collection<*>) {
+                 value.forEach(::validate)
+             } else if (isCallerOwnedCallback(value)) {
++                if (context.hasPhase()) PersistenceJdbcGuardContext.refuse()
+                 // Ordinary caller-owned callbacks retain their normal dispatch, never strict credit.
+                 context.ordinaryCompatibilityOnly()
+             }
+@@ -460,17 +461,20 @@ internal class PhysicalJdbcNode(
+         throw declaredFailure(method, failure)
+     }
+ 
+-    @Suppress("TooGenericExceptionCaught")
++    // One child invocation retains logical close, driver/output custody and final dispatch accounting in the same extent.
++    @Suppress("TooGenericExceptionCaught", "LongMethod")
+     private fun invokeGuarded(method: Method, arguments: Array<Any?>): Any? {
+         if (method.declaringClass === Any::class.java) return invokeObject(method, arguments)
+         if (!surface.accepts(method)) PersistenceJdbcGuardContext.refuse()
+         val cleanup = isCleanup(method)
+         if (cleanup && closed.get()) return null // Never a second native close or a repaired receipt.
+         val cancellation = isCancellation(method)
++        val kind = callKind(cleanup, cancellation)
++        graph.lease?.completion?.phase?.beforeJdbcCall(kind)
+         var dispatch: PersistenceJdbcDispatch.Frame? = null
+         val call = try {
+-            dispatch = graph.lease?.enterDispatch(cancellation)
+-            graph.context.enter(identity, callKind(cleanup, cancellation))
++            dispatch = graph.lease?.enterDispatch(kind)
++            graph.context.enter(identity, kind)
+         } catch (failure: Throwable) {
+             dispatch?.end()
+             throw declaredFailure(method, failure)
+@@ -541,6 +545,7 @@ internal class PhysicalJdbcNode(
+                     guarded
+                 } finally {
+                     if (!completed) {
++                        graph.context.phaseJdbcFailure()
+                         call.reconcileDriver()
+                         if (closing) {
+                             child?.closeFailed()
+@@ -561,6 +566,7 @@ internal class PhysicalJdbcNode(
+             }
+         } finally {
+             call.finishAfterDispatch(dispatch)
++            if (completed) graph.lease?.completion?.phase?.afterJdbcCall(kind)
+         }
+     }
+ 
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcFacade.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcFacade.kt
+index 852dad8..e7b6a8d 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcFacade.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcFacade.kt
+@@ -21,7 +21,8 @@ internal class PhysicalJdbcFacade private constructor(private val calls: Physica
+         handle: Connection,
+         entitlement: PoolLifecycle.LeaseEntitlement,
+         budget: PersistenceTimeBudget,
+-    ): LeaseJdbcFacade = calls.prepareLease(owner, handle, entitlement, budget)
++        completion: PersistenceLeaseCompletion,
++    ): LeaseJdbcFacade = calls.prepareLease(owner, handle, entitlement, budget, completion)
+ 
+     internal fun finishReturn(lease: PersistenceJdbcLease, call: PersistenceJdbcGuardCall) = calls.finishReturn(lease, call)
+ 
+@@ -96,20 +97,25 @@ private class PhysicalConnectionCalls(
+         handle: Connection,
+         entitlement: PoolLifecycle.LeaseEntitlement,
+         budget: PersistenceTimeBudget,
++        completion: PersistenceLeaseCompletion,
+     ): LeaseJdbcFacade {
+         if (!owner.ownsPool(pool) || !pool.authenticPoolCaller() || !pool.businessReady()) PersistenceJdbcGuardContext.refuse()
+         val source = entry.jdbc.composedPoolState(pool)?.takeUnless { it.leased } ?: PersistenceJdbcGuardContext.refuse()
+         val cleanup = source.epoch.prepareCleanup() ?: PersistenceJdbcGuardContext.refuse()
+         val transfer = PersistenceJdbcPoolTransfer.prepare(entry.jdbc, source, PersistenceJdbcPoolTransfer.Kind.CHECKOUT, budget)
++        completion.bindCheckout(entry.jdbc, transfer)
+         var interruptedException = false
+         try {
+             if (!transfer.claim()) PersistenceJdbcGuardContext.refuse()
+             if (!transfer.sealAndDrain(cleanup)) PersistenceJdbcGuardContext.refuse()
+             val facts = source.context.collectTransferFacts(transfer) ?: PersistenceJdbcGuardContext.refuse()
+             val next = successor(transfer, leased = true)
+-            val lease = PersistenceJdbcLease.prepare(owner, self, entry.jdbc, next, handle, entitlement)
++            val lease = PersistenceJdbcLease.prepare(owner, self, entry.jdbc, next, handle, entitlement, completion)
++            completion.bindLease(lease)
+             val facade = LeaseJdbcFacade.prepare(lease, handle)
++            completion.phase?.bindFacade(lease, facade)
+             if (!pool.businessReady() || !transfer.commit(next, facts)) PersistenceJdbcGuardContext.refuse()
++            completion.accepted(lease)
+             return facade
+         } catch (failure: InterruptedException) {
+             interruptedException = true
+@@ -174,6 +180,7 @@ private class PhysicalConnectionCalls(
+             throw declaredFailure(context, method, failure)
+         }
+         var invoked = false
++        var nativeReturned = false
+         try {
+             var wrapping = false
+             var completed = false
+@@ -205,9 +212,11 @@ private class PhysicalConnectionCalls(
+                             call.armDriver()
+                             invoked = true
+                             val returned = method.invoke(raw, *adapted)
++                            nativeReturned = true
++                            // Record the actual native result before capture/wrapping/finalizers can fail.
++                            context.transaction.connectionReturned(method, adapted, returned)
+                             call.captureOutput(returned)
+                             wrapping = true
+-                            context.transaction.connectionReturned(method, adapted, returned)
+                             call.reconcileDriver()
+                             state.graph.connectionResult(call, method, returned)
+                         }
+@@ -217,7 +226,8 @@ private class PhysicalConnectionCalls(
+                     result
+                 } finally {
+                     if (!completed) {
+-                        if (invoked) context.transaction.connectionFailed(method)
++                        if (invoked && !nativeReturned) context.transaction.connectionFailed(method)
++                        context.phaseJdbcFailure()
+                         if (context.transaction.uncertain()) context.requestTerminal(call)
+                         call.reconcileDriver()
+                         call.failedBeforeBoxing(wrapping)
+@@ -255,7 +265,7 @@ private class PhysicalConnectionCalls(
+     ): PersistenceJdbcGuardCall = when {
+         dispatch != null -> context.enter(
+             dispatch.identity,
+-            if (returning || terminal) PersistenceJdbcGuardCallKind.CLEANUP else PersistenceJdbcGuardCallKind.BUSINESS,
++            if (returning || terminal) PersistenceJdbcGuardCallKind.CLEANUP else dispatch.kind,
+         )
+ 
+         terminal -> context.enterTerminal()
+diff --git a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt
+index 7e70ddb..4556937 100644
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt
+@@ -492,9 +492,17 @@ internal class PoolLifecycle(private val pool: HikariDataSource, private val own
+     internal class Acquisition private constructor(private val pool: PoolLifecycle, internal val frame: PoolCallFrame) {
+         private var handle: Connection? = null
+         private var shared: ShutdownReceipt? = null
++        private var refusedBeforeEntry = false
+         internal var entitlement: LeaseEntitlement? = null
+ 
+-        fun enter(): Boolean = pool.enterAcquisition(this)
++        fun enter(): Boolean = pool.enterAcquisition(this).also { admitted ->
++            // Only a returned refusal proves the unadmitted TL/restoration path actually ended.
++            refusedBeforeEntry = !admitted && !frame.hasEntered()
++        }
++
++        internal fun entered(): Boolean = frame.hasEntered()
++
++        internal fun completionProven(): Boolean = frame.ended() || refusedBeforeEntry
+ 
+         fun capture(returned: Connection): Boolean {
+             if (!frame.actualCaller() || !frame.active() || PoolCallFrames.current() !== frame) return false
+@@ -547,6 +555,10 @@ internal class PoolLifecycle(private val pool: HikariDataSource, private val own
+         /** Outside F/G/T. Consuming a real operation already revokes future ingress; its current outer tail remains counted. */
+         fun revoke(): Boolean = pool.revoke(this)
+ 
++        internal fun completionProven(): Boolean = synchronized(pool.gate) {
++            phase === EntitlementPhase.REVOKED || (phase === EntitlementPhase.CONSUMED && prepared?.completionProven() == true)
++        }
++
+         internal fun authentic(owner: PoolLifecycle, authority: Any): Boolean = pool === owner && issuance === authority && caller === Thread.currentThread()
+ 
+         internal fun prepareLocked(authority: Any, operation: Operation): Boolean {
+@@ -588,7 +600,13 @@ internal class PoolLifecycle(private val pool: HikariDataSource, private val own
+         internal val frame: PoolCallFrame,
+         internal val entitlement: LeaseEntitlement,
+     ) {
+-        fun enter(): Boolean = pool.enterOperation(this)
++        private var refusedBeforeEntry = false
++
++        fun enter(): Boolean = pool.enterOperation(this).also { admitted ->
++            refusedBeforeEntry = !admitted && !frame.hasEntered()
++        }
++
++        internal fun completionProven(): Boolean = frame.ended() || refusedBeforeEntry
+ 
+         fun failBeforeEnd(): Boolean = pool.failBeforeEnd(frame)
+ 

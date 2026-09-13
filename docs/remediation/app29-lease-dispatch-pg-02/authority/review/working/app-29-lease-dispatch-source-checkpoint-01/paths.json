@@ -1,0 +1,87 @@
+[
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt",
+    "before_sha256": "aa6ac2b7abee81370eb5a78d67d5e6af11b5e2a71aedd4bf380bc32426fdf81a",
+    "after_sha256": "7395aa04bfbb6702043dddf1a6393cf94b2abd67128bf669ee81ff39df2ca448"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt",
+    "before_sha256": "9a7ce9fcb0022420975b8144eb6c55328ffe0f9ba270da84b1f0d83c62634697",
+    "after_sha256": "28e63d187150a4768661ee7fb257cf4d5e29d99b7a0e642619abfb2661705afd"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardCall.kt",
+    "before_sha256": "44d1945e376ecba2c20355aad2905c241ce5edcd78eaca6bac09abab81c901bf",
+    "after_sha256": "8f01ed4e07207701fe9a7ed999e8cbe854633902fe1153e5e0fe376918f44457"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt",
+    "before_sha256": "03abd003fa21d8aa62ccc6b1faf9e5a12b6b0a16965a8ca9abb69b7b73351e7c",
+    "after_sha256": "f0209738f66ed56298799a1b58d1f8e67e518d8a5d3f5bc591f944224cd43063"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt",
+    "before_sha256": "22cb07b46e0d3a3093cd1753598027dc30c972c5f5aec53a22a5fdc6b9a0e0d5",
+    "after_sha256": "e22262871a9ad7e35f12b99d8c17615827e8e31294b7d2f7bb272b6bcc524693"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLeaseInvocation.kt",
+    "before_sha256": null,
+    "after_sha256": "467ce125c4732f785ef0924a3474c64909f267a3922de446326bb0c43b05a1e6"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcPoolTransfer.kt",
+    "before_sha256": "ba49d0d62fff6cc35118a4b3dbd4e7dc553432bd3a20cb7de368c9036c513c76",
+    "after_sha256": "d77f0b6c32d970e6bc121dd3c87d5b81fbf2cc43632fe02bc8160833155ca8bf"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceLeaseCompletion.kt",
+    "before_sha256": "1feea05f30d7ce3badbb3fdbf7d0d3f44877c526732122ed5d5cfcb89ef9f33d",
+    "after_sha256": "87ed0ed516ec98b8c9e86ceef1b264997cf127c4d084c4386ad1851019f1fb66"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt",
+    "before_sha256": "0bd9bec8de141db1b930dad8dea250eeda0ee5fec526c066b3fa61783e9f2c30",
+    "after_sha256": "db0cea829ce45998d824eab1acbd67154217acac5bee532f8aa3261cbee73959"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt",
+    "before_sha256": "a919897ed97ffe30c0969faaace1ab878d7e4229d068945d544eaea2776ff286",
+    "after_sha256": "70aa9d92b96ad0595b321ed30dcc05cd73cc370c921fd05dfc87f370a1868220"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt",
+    "before_sha256": "ff6be1f140c9a103fa4d1211df0ef9ce753b778bb4795be1cc97ec7635743d8a",
+    "after_sha256": "ca8ea5d15b8935d62564c9257abb6cd32340f995c535d5f40e4c4fea85c07ecf"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt",
+    "before_sha256": "9d89acd83ef5c55784ff548969080636163e28c92a0d8373e511dd68024440bf",
+    "after_sha256": "9230a12733c13823366adb833b28e4783f19d8426da774fffaea7b53646bc12f"
+  },
+  {
+    "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OwnedPoolLeaseCreatorPendingProbe.kt",
+    "before_sha256": null,
+    "after_sha256": "8b27c8c4a33da10b9675eb07b3634ca8a6e0ada8a7bef599c9024bef2b227764"
+  },
+  {
+    "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbe.kt",
+    "before_sha256": "b7d0df49b6d27c7d2f21ca801ba80b419dcf9a46277705cd4c609bd66a10a424",
+    "after_sha256": "93b43e3bb48c0c7f1ea4f2e5588b7b81009592cf2546f074ab2b152eb6ba423f"
+  },
+  {
+    "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbeProcess.kt",
+    "before_sha256": "e53828932ddcbbb2142579b9a684ef307c9449af3a5f0a85e7ed0bd73f416080",
+    "after_sha256": "f8dd59a17d0334a5d8cc9c9b577b26e5ecead537a7f30180c975d0a25b88264a"
+  },
+  {
+    "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseRecipe.kt",
+    "before_sha256": "59c151faec761164dae849abc8b408fd6dd956ca43a368bcbfadfc8d07ce734f",
+    "after_sha256": "e405d48f71463bd8512a9433311509e92b387807f1b4c6682843dc9708ac128e"
+  },
+  {
+    "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt",
+    "before_sha256": null,
+    "after_sha256": "db140c4c0e93a349608b6e05e80033fd07e298aee4c272932e78b6d69564ce4a"
+  }
+]

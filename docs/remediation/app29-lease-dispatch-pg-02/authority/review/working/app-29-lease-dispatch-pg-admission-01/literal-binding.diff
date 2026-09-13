@@ -1,0 +1,194 @@
+--- review/working/app-29-lease-dispatch-pg01-preparation/ci/app29-gate-b.py
++++ review/working/app-29-lease-dispatch-pg-carrier-01/ci/app29-gate-b.py
+@@ -19,10 +19,10 @@
+ GATE = 'app-29-lease-dispatch-pg-01'
+ CHECKPOINT_SCHEMA = 'app29-lease-dispatch-clean-checkpoint-v1'
+ PROFILE_ID = 'app-29-lease-dispatch-pg-profile-01'
+-PROFILE_FILE = 'review/working/app-29-lease-dispatch-pg01-preparation/profile/profile.json'
+-PROFILE_SHA = None  # UNBOUND: primary binds final reviewed profile bytes, not this author's approval.
+-PROFILE_INIT = 'review/working/app-29-lease-dispatch-pg01-preparation/profile/profile.init.gradle'
+-PROFILE_INIT_SHA = None  # UNBOUND until the init's actual profile hash is finalized.
++PROFILE_FILE = 'review/working/app-29-lease-dispatch-pg-carrier-01/profile/profile.json'
++PROFILE_SHA = '315509d24f0fd4c84fd8172231e7eb79639bad1a0ae589db6e18ce0268b4ed79'  # Primary actual-value binding; no product acceptance.
++PROFILE_INIT = 'review/working/app-29-lease-dispatch-pg-carrier-01/profile/profile.init.gradle'
++PROFILE_INIT_SHA = 'e4217243d2bccf6da3ce2c089b15a5e99785d1703258c9fa59fc896afd79d9f0'  # Primary actual-value binding; no product acceptance.
+ MANIFEST_FILE = 'review/working/app-29-w03-integrated-driver-lease-dispatch-pg-01/manifest.json'
+ CREATOR_CLASS = 'me.manga.kira.backend.common.infrastructure.persistence.PoolLeaseDispatchCreatorIntegrationTest'
+ OWNERSHIP_CLASS = 'me.manga.kira.backend.common.infrastructure.persistence.OrdinarySourceGrantCleanupOwnershipIT'
+@@ -83,8 +83,8 @@
+ ORDINARY_PARENT = '6db944871c1584bd6a1f28263e8010cadd766fab'
+ ORDINARY_HEAD = 'ccdbb28f6362117882501b4da040257be6fc1990'
+ ORDINARY_TREE = 'd172ecf246a9606194f43023a0703d778b877566'
+-LEASE_HEAD = None  # UNBOUND: new clean private child of ORDINARY_HEAD after primary compilation/disposition.
+-LEASE_TREE = None  # UNBOUND: actual new private checkpoint tree.
++LEASE_HEAD = '8938526fd8fee2dfcb66ab3df4c85dfeb91cdee3'  # Primary actual-value binding; no product acceptance.
++LEASE_TREE = 'fc480e82630091138da145ade1812cedcd75e58e'  # Primary actual-value binding; no product acceptance.
+ LEASE_SOURCE_PATHS = tuple('src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/' + name for name in (
+     'GuardedDataSource.kt', 'LeaseJdbcFacade.kt', 'PersistenceJdbcGuardCall.kt', 'PersistenceJdbcGuardProtocol.kt',
+     'PersistenceJdbcLease.kt', 'PersistenceJdbcLeaseInvocation.kt', 'PersistenceJdbcPoolTransfer.kt',
+@@ -96,11 +96,11 @@
+ ))
+ SOURCE_BUNDLE = {'public_prerequisite_sha': PUBLIC_PREREQUISITE, 'private_parent_sha': ORDINARY_HEAD,
+                  'ref': 'refs/heads/' + BACKEND_BRANCH,
+-                 'source_path': None,  # UNBOUND: primary's genuine new bundle; never the historical257140-byte bundle.
++                 'source_path': 'review/working/app-29-lease-dispatch-source-checkpoint-01/backend.bundle',
+                  'path': 'docs/remediation/app29-lease-dispatch-pg-01/inputs/backend.bundle',
+-                 'sha256': None, 'bytes': None}
++                 'sha256': '235fca34c51710930fd9ced4444d0931e5273137bd4178169c3b8c9c4010ec50', 'bytes': 280735}
+ BUNDLE_MAX_BYTES = 8 * 1024**2
+-DEPLOYMENTS = {f'review/working/app-29-lease-dispatch-pg01-preparation/{p}': p for p in (
++DEPLOYMENTS = {f'review/working/app-29-lease-dispatch-pg-carrier-01/{p}': p for p in (
+     'ci/app29-gate-b.py', '.github/workflows/app29-gate-b.yml')}
+ DEPLOYMENTS[PROFILE_FILE] = PROFILE_FILE
+ DEPLOYMENTS[PROFILE_INIT] = PROFILE_INIT
+--- review/working/app-29-lease-dispatch-pg01-preparation/profile/profile.json
++++ review/working/app-29-lease-dispatch-pg-carrier-01/profile/profile.json
+@@ -608,89 +608,89 @@
+     "skipped": 0,
+     "scope": "HISTORICAL_PG01_FAIL20_21; close-executor actor/queue mechanism unmeasured. Do not infer historical causation from the new source route or a later PASS."
+   },
+-  "lease_source_stage_status": "UNBOUND",
++  "lease_source_stage_status": "BOUND_BY_PRIMARY",
+   "lease_source_target": {
+-    "path": null,
+-    "sha256": null,
+-    "source_count": null,
+-    "snapshot_count": null
++    "path": "review/working/app-29-w03-integrated-driver-lease-dispatch-linux-02/manifest.json",
++    "sha256": "9888bdff82450069df09c003d48da5413c5ebe0dda6a4cfe45687f4898a1c8e7",
++    "source_count": 481,
++    "snapshot_count": 214
+   },
+   "lease_source_checkpoint": {
+-    "path": null,
+-    "sha256": null
++    "path": "review/working/app-29-lease-dispatch-source-checkpoint-01/checkpoint.json",
++    "sha256": "2d291cf217291106d35343c6f74f4d892299e766b72615620bec122ee0f79e37"
+   },
+   "lease_checkpoint_paths": {
+-    "path": null,
+-    "sha256": null
++    "path": "review/working/app-29-lease-dispatch-source-checkpoint-01/paths.json",
++    "sha256": "4ec760ce6a72f4c2d63200018d6a60637b98800050d115b6e731b11a5456248a"
+   },
+   "lease_dispatch_source_delta": {
+     "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt": {
+       "before_sha256": "aa6ac2b7abee81370eb5a78d67d5e6af11b5e2a71aedd4bf380bc32426fdf81a",
+-      "after_sha256": null
++      "after_sha256": "7395aa04bfbb6702043dddf1a6393cf94b2abd67128bf669ee81ff39df2ca448"
+     },
+     "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt": {
+       "before_sha256": "9a7ce9fcb0022420975b8144eb6c55328ffe0f9ba270da84b1f0d83c62634697",
+-      "after_sha256": null
++      "after_sha256": "28e63d187150a4768661ee7fb257cf4d5e29d99b7a0e642619abfb2661705afd"
+     },
+     "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardCall.kt": {
+       "before_sha256": "44d1945e376ecba2c20355aad2905c241ce5edcd78eaca6bac09abab81c901bf",
+-      "after_sha256": null
++      "after_sha256": "8f01ed4e07207701fe9a7ed999e8cbe854633902fe1153e5e0fe376918f44457"
+     },
+     "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt": {
+       "before_sha256": "03abd003fa21d8aa62ccc6b1faf9e5a12b6b0a16965a8ca9abb69b7b73351e7c",
+-      "after_sha256": null
++      "after_sha256": "f0209738f66ed56298799a1b58d1f8e67e518d8a5d3f5bc591f944224cd43063"
+     },
+     "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt": {
+       "before_sha256": "22cb07b46e0d3a3093cd1753598027dc30c972c5f5aec53a22a5fdc6b9a0e0d5",
+-      "after_sha256": null
++      "after_sha256": "e22262871a9ad7e35f12b99d8c17615827e8e31294b7d2f7bb272b6bcc524693"
+     },
+     "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLeaseInvocation.kt": {
+       "before_sha256": null,
+-      "after_sha256": null
++      "after_sha256": "467ce125c4732f785ef0924a3474c64909f267a3922de446326bb0c43b05a1e6"
+     },
+     "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcPoolTransfer.kt": {
+       "before_sha256": "ba49d0d62fff6cc35118a4b3dbd4e7dc553432bd3a20cb7de368c9036c513c76",
+-      "after_sha256": null
++      "after_sha256": "d77f0b6c32d970e6bc121dd3c87d5b81fbf2cc43632fe02bc8160833155ca8bf"
+     },
+     "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceLeaseCompletion.kt": {
+       "before_sha256": "1feea05f30d7ce3badbb3fdbf7d0d3f44877c526732122ed5d5cfcb89ef9f33d",
+-      "after_sha256": null
++      "after_sha256": "87ed0ed516ec98b8c9e86ceef1b264997cf127c4d084c4386ad1851019f1fb66"
+     },
+     "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt": {
+       "before_sha256": "0bd9bec8de141db1b930dad8dea250eeda0ee5fec526c066b3fa61783e9f2c30",
+-      "after_sha256": null
++      "after_sha256": "db0cea829ce45998d824eab1acbd67154217acac5bee532f8aa3261cbee73959"
+     },
+     "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt": {
+       "before_sha256": "a919897ed97ffe30c0969faaace1ab878d7e4229d068945d544eaea2776ff286",
+-      "after_sha256": null
++      "after_sha256": "70aa9d92b96ad0595b321ed30dcc05cd73cc370c921fd05dfc87f370a1868220"
+     },
+     "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt": {
+       "before_sha256": "ff6be1f140c9a103fa4d1211df0ef9ce753b778bb4795be1cc97ec7635743d8a",
+-      "after_sha256": null
++      "after_sha256": "ca8ea5d15b8935d62564c9257abb6cd32340f995c535d5f40e4c4fea85c07ecf"
+     },
+     "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt": {
+       "before_sha256": "9d89acd83ef5c55784ff548969080636163e28c92a0d8373e511dd68024440bf",
+-      "after_sha256": null
++      "after_sha256": "9230a12733c13823366adb833b28e4783f19d8426da774fffaea7b53646bc12f"
+     },
+     "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbe.kt": {
+       "before_sha256": "b7d0df49b6d27c7d2f21ca801ba80b419dcf9a46277705cd4c609bd66a10a424",
+-      "after_sha256": null
++      "after_sha256": "93b43e3bb48c0c7f1ea4f2e5588b7b81009592cf2546f074ab2b152eb6ba423f"
+     },
+     "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbeProcess.kt": {
+       "before_sha256": "e53828932ddcbbb2142579b9a684ef307c9449af3a5f0a85e7ed0bd73f416080",
+-      "after_sha256": null
++      "after_sha256": "f8dd59a17d0334a5d8cc9c9b577b26e5ecead537a7f30180c975d0a25b88264a"
+     },
+     "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseRecipe.kt": {
+       "before_sha256": "59c151faec761164dae849abc8b408fd6dd956ca43a368bcbfadfc8d07ce734f",
+-      "after_sha256": null
++      "after_sha256": "e405d48f71463bd8512a9433311509e92b387807f1b4c6682843dc9708ac128e"
+     },
+     "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OwnedPoolLeaseCreatorPendingProbe.kt": {
+       "before_sha256": null,
+-      "after_sha256": null
++      "after_sha256": "8b27c8c4a33da10b9675eb07b3634ca8a6e0ada8a7bef599c9024bef2b227764"
+     },
+     "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt": {
+       "before_sha256": null,
+-      "after_sha256": null
++      "after_sha256": "db140c4c0e93a349608b6e05e80033fd07e298aee4c272932e78b6d69564ce4a"
+     }
+   },
+   "lease_dispatch_provenance": {
+--- review/working/app-29-lease-dispatch-pg01-preparation/profile/profile.init.gradle
++++ review/working/app-29-lease-dispatch-pg-carrier-01/profile/profile.init.gradle
+@@ -10,7 +10,7 @@
+ 
+ // Private exact18 lease-dispatch derivative of retained PG01; all historical files stay unchanged.
+ // Reuses the existing owned hosted context; no controller, process, fixture or dependency replacement.
+-def profileSha256 = null // UNBOUND: primary must bind actual final reviewed profile bytes.
++def profileSha256 = '315509d24f0fd4c84fd8172231e7eb79639bad1a0ae589db6e18ce0268b4ed79' // Primary bound to the accepted source checkpoint.
+ if (!(profileSha256 instanceof String) || !(profileSha256 ==~ /[0-9a-f]{64}/) || profileSha256 == '0' * 64) {
+     throw new GradleException('Inert lease-dispatch derivative: final profile hash is UNBOUND')
+ }
+@@ -30,7 +30,7 @@
+     }
+     digest.digest().encodeHex().toString()
+ }
+-def profileFile = new File(root, 'review/working/app-29-lease-dispatch-pg01-preparation/profile/profile.json')
++def profileFile = new File(root, 'review/working/app-29-lease-dispatch-pg-carrier-01/profile/profile.json')
+ if (sha256(profileFile) != profileSha256) {
+     throw new GradleException('Changed exact18 lease-dispatch profile')
+ }
+--- review/working/app-29-lease-dispatch-pg01-preparation/.github/workflows/app29-gate-b.yml
++++ review/working/app-29-lease-dispatch-pg-carrier-01/.github/workflows/app29-gate-b.yml
+@@ -5,8 +5,8 @@
+     paths:
+       - .github/workflows/app29-gate-b.yml
+       - ci/app29-gate-b.py
+-      - review/working/app-29-lease-dispatch-pg01-preparation/profile/profile.json
+-      - review/working/app-29-lease-dispatch-pg01-preparation/profile/profile.init.gradle
++      - review/working/app-29-lease-dispatch-pg-carrier-01/profile/profile.json
++      - review/working/app-29-lease-dispatch-pg-carrier-01/profile/profile.init.gradle
+       - ci/app29-gate-b.request.json
+ permissions:
+   contents: read
