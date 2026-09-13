@@ -1,0 +1,18 @@
+{
+  "at_utc": "2026-09-12T17:20:33.313203+00:00",
+  "decision": "ACCEPT_SOURCE_PREPARATION_ONLY",
+  "preparation_seal_sha256": "8ab15f7e7292cee545350553572955941f9c74db00c40ff104d3b3de45130a9f",
+  "independent_review": "review/remediation/app-29-core-c2-sqlclientinfo-pg1-preparation-independent-review-01.md",
+  "independent_review_sha256": "239b36d38051b768b7c587ee0da8d99880e8a0744e159a5d01b6ac1e02af3bed",
+  "backend_source": "6db944871c1584bd6a1f28263e8010cadd766fab",
+  "backend_integration": "b2324508dd7c3c11d894e4c9a815f5e30387369a",
+  "scope": "one existing SQLClientInfo method, zero product delta over PG14, explicit NOT_APPLICABLE diagnostics; original PG14 rows/history untouched",
+  "task_args": [
+    "test",
+    "--tests",
+    "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest.real lease preserves Properties client info defaults and declared stale and foreign failure shapes"
+  ],
+  "historical_limits": "PG14 kill9/die137; Native05/full47/consumer/opaque/liveness/W03 incomplete; no unchanged rerun",
+  "deployed_checkpoint_required": true,
+  "private_source_public_push_authorized": false
+}

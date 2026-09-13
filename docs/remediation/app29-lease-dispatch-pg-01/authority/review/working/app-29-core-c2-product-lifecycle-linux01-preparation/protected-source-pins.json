@@ -1,0 +1,52 @@
+{
+  "status": "DECLARED_EXPECTED_PINS_ONLY_NOT_A_LIVE_INVENTORY_OR_FREEZE",
+  "repository": "kira-backend",
+  "observed_private_head": "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc",
+  "prior_manifest": {
+    "path": "review/working/app-29-w03-integrated-driver-core-c2-diagnostics-01/manifest.json",
+    "sha256": "2e6ba4a28bdc628d42937c3ed0f7f435c835b61d4e6f73702b50e6a2edd85511"
+  },
+  "expected_full_source_map": "Exactly prior_manifest.source_hashes with only the eight replacements below; same466 keys, unchanged other458 values.",
+  "source_hash_replacements": {
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt": "9d9a6be8888aa67f5f908c1d53db998f17e528c52a1d3d8b5bcd05362635ca3c",
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt": "ff13d4a7ad481762c7d6d222c023cb60e3cb94e22fa50841767c5c6641cb89df",
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt": "2dd3236000c8f88f2ca00435036a54a5b1ba027aeb4f3e7d4ab66ca2106533f2",
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt": "545d05d67fb0550c4fd4ea889144f7f0a49e2ac57b2d41676b04ea0d22a43d8b",
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt": "5105399988af7abbfac336f27cc4436c95a348e8032e39a0ba409f58c6a3400f",
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt": "c65198c118b4102615100464c52774f9dbd1bec70fe8655337fadcda4895c350",
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt": "4bf8c36b1ec8f01ea8a7b775ea7c769ca2fa8f837fc8d1d351d1172c860ce24e",
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt": "cf46316c372696c3aa91ca6e5455c582e40d436c82c791e586c3adce29173db1"
+  },
+  "expected_source_path_count": 466,
+  "expected_snapshot_path_count": 199,
+  "historical_seed": {
+    "path": "review/working/app-29-w03-integrated-driver-development-07/manifest.json",
+    "sha256": "3effe74b4b9daa5198a7ce24347e195da495bf26aeed3aa9519820dd917e4a6a",
+    "retained_path_count": 348,
+    "all_paths_required": true
+  },
+  "timer_anchor": {
+    "path": "review/working/app-29-w03-d1-timer-a-02/manifest.json",
+    "sha256": "e955789a8342a21c224f216147bad9190161a4c0df5d36b977622320154917f2"
+  },
+  "inherited_removed_paths": [
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/TransportBoundTestFixtures.kt"
+  ],
+  "new_removals_authorized": false,
+  "historical_input_rule": "All102 prior historical_input_hashes remain exactly unchanged; all63 prior approved_inputs remain identical members of the new approved_inputs.",
+  "old_active_tool_rule": "All10 prior validation_tooling pins remain in the new validation_tooling OR approved_inputs with identical bytes; old carrier tools are provenance only, never local execution.",
+  "unchanged_fixture_pins": {
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OwnedCallerTestScope.kt": "0c77a20900256ef113d4b22ba1d38e4cbbc346a6851c262cd64d06ff779b4ee5",
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleTestScope.kt": "7574167d18008256a43ff056e5797d5882abe1defc4ffcdda46e72a02a0ae9ec"
+  },
+  "additional_build_input_pins_for_primary_readback": {
+    "build.gradle.kts": "8b6116173f5a5fd76de7c9654685754631e2df1a480a692082995b3122fb7aa0",
+    "settings.gradle.kts": "f2ffbdad8a2e99edd1b87d7b03d66e669ea2e1965bde5abab10d630d50841044",
+    ".editorconfig": "ecc589d2ee57adaacd3e951b625a6f4ad31f6ebc41f354e332cf0b9b39f2c6cd",
+    "config/detekt/detekt.yml": "509eb13c3915934d49a3de84dcb5332ff372deee0326c6aaceeed4c2a0b38760",
+    "gradlew": "b187b4c52e749f5760afdd6fadc31b2a98ad35fb249bf0dff03b72650f320409",
+    "gradle/wrapper/gradle-wrapper.jar": "7d3a4ac4de1c32b59bc6a4eb8ecb8e612ccd0cf1ae1e99f66902da64df296172",
+    "gradle/wrapper/gradle-wrapper.properties": "89032df14851e71a09ea7eaaffde8c85d3e806cb5365bd747ae9ec843dcae1dd"
+  },
+  "limitation": "These finite expected pins derive from accepted packets/prior manifest. The unmodified v3 tool, invoked later only by primary, must prove actual membership/source/history/ref/snapshot continuity; no such invocation occurred here."
+}

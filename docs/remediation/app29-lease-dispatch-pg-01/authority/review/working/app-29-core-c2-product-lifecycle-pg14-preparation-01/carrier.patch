@@ -1,0 +1,597 @@
+--- a/ci/app29-gate-b.py
++++ b/ci/app29-gate-b.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""One private exact-ten changed-product attempt; no consumer/native/full47 qualification."""
++"""One private exact-fourteen post-structural attempt; no consumer/native/full47 qualification."""
+ import argparse
+ import hashlib
+ import json
+@@ -15,15 +15,15 @@
+ 
+ ADMIN = Path(__file__).resolve().parent.parent
+ BACKEND = ADMIN.parent / 'backend'
+-PAYLOAD = ADMIN / 'docs/remediation/app29-core-c2-product-lifecycle-pg10-01'
+-GATE = 'app-29-core-c2-product-lifecycle-pg10-01'
++PAYLOAD = ADMIN / 'docs/remediation/app29-core-c2-product-lifecycle-pg14-01'
++GATE = 'app-29-core-c2-product-lifecycle-pg14-01'
+ CHECKPOINT_SCHEMA = 'app29-core-c2-clean-checkpoint-v1'
+-PROFILE_ID = 'app-29-core-c2-product-lifecycle-pg10-profile-01'
+-PROFILE_FILE = 'review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.json'
+-PROFILE_SHA = 'f721c8d972206b973b2d3aefa4246bbd2d768c66f6f2908c470b3f896526b339'
+-PROFILE_INIT = 'review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.init.gradle'
+-PROFILE_INIT_SHA = '09742b6796f0fe3d65f2b172272ab8a697ea5a07dadad7298bed1c062ee61ada'
+-MANIFEST_FILE = 'review/working/app-29-w03-integrated-driver-core-c2-product-lifecycle-pg10-01/manifest.json'
++PROFILE_ID = 'app-29-core-c2-product-lifecycle-pg14-profile-01'
++PROFILE_FILE = 'review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/profile/profile.json'
++PROFILE_SHA = '36c3637229efbe08186014f4c60684aa0569430b26bae9d13f8b811917e82225'
++PROFILE_INIT = 'review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/profile/profile.init.gradle'
++PROFILE_INIT_SHA = '61fb92e47baa8dcabcd6a7521e01872984e196d16cfd643776f3a50b25a81964'
++MANIFEST_FILE = 'review/working/app-29-w03-integrated-driver-core-c2-product-lifecycle-pg14-01/manifest.json'
+ CLASS = 'me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest'
+ METHODS = (
+     'throwing original RETURN override leaves F G T free and retires its exact source without a second return',
+@@ -35,9 +35,13 @@
+     'RETURN InterruptedException adaptation throwing Error preserves that error without a late restoration callback',
+     'failed post consent real Hikari tail seals actor admission but cannot retire the successor epoch',
+     'consented real Hikari recycle tail retains no successor eviction or abort authority',
+-    'exact retirement sample result preserves its Throwable and does not absorb adjacent budget failure')
++    'exact retirement sample result preserves its Throwable and does not absorb adjacent budget failure',
++    'throwing overriding original checkout sample cannot orphan its captured handle or future return right',
++    'genuine throwing RETURN TL entry restores the authentic lineage and revokes only its still unused future right',
++    'real post commit Blob work cannot silently commit through Hikari auto commit reset',
++    'real commit failure retains unknown outcome and refuses reset before native auto commit')
+ DIAGNOSTIC_CASES = ('RETURN_SAMPLE', 'FAILED_POST_CONSENT_TAIL')
+-TEST_COUNTS = {CLASS: 10}
++TEST_COUNTS = {CLASS: 14}
+ TASKS = ['test'] + [arg for method in METHODS for arg in ('--tests', CLASS + '.' + method)]
+ SEED = 'review/working/app-29-w03-integrated-driver-development-07/manifest.json'
+ SEED_SHA = '3effe74b4b9daa5198a7ce24347e195da495bf26aeed3aa9519820dd917e4a6a'
+@@ -53,12 +57,13 @@
+ PRIVATE_PARENT = '989a8c07b90d956a5f2484f223be41b5d99a8a3c'
+ PREVIOUS_PRIVATE_PARENT = '926927ab805a2a3b78957862f3b744d0fe399ac5'
+ DIAGNOSTIC_PARENT = 'eb8fed8b6b620a0c7448c223bf49c1683f8eaadc'
+-SOURCE_BUNDLE = {'public_prerequisite_sha': PUBLIC_PREREQUISITE, 'private_parent_sha': DIAGNOSTIC_PARENT,
++PRODUCT_LIFECYCLE_PARENT = '1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1'
++SOURCE_BUNDLE = {'public_prerequisite_sha': PUBLIC_PREREQUISITE, 'private_parent_sha': PRODUCT_LIFECYCLE_PARENT,
+                  'ref': 'refs/heads/' + BACKEND_BRANCH,
+-                 'source_path': 'review/working/app-29-core-c2-product-lifecycle-private-checkpoint-01/backend.bundle',
+-                 'path': 'docs/remediation/app29-core-c2-product-lifecycle-pg10-01/inputs/backend.bundle'}
++                 'source_path': 'review/working/app-29-core-c2-post-structural-private-checkpoint-01/backend.bundle',
++                 'path': 'docs/remediation/app29-core-c2-product-lifecycle-pg14-01/inputs/backend.bundle'}
+ BUNDLE_MAX_BYTES = 8 * 1024**2
+-DEPLOYMENTS = {f'review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/{p}': p for p in (
++DEPLOYMENTS = {f'review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/{p}': p for p in (
+     'ci/app29-gate-b.py', '.github/workflows/app29-gate-b.yml')}
+ DEPLOYMENTS[PROFILE_FILE] = PROFILE_FILE
+ DEPLOYMENTS[PROFILE_INIT] = PROFILE_INIT
+@@ -74,7 +79,7 @@
+     'Evidence copy drift': 'CAPTURE_COPY_DRIFT',
+     'Required raw evidence inventory missing': 'CAPTURE_REQUIRED_INVENTORY',
+     'Wrong diagnostic XML inventory': 'XML_INVENTORY',
+-    'Require exactly the ten fixed changed-product source identities': 'XML_EXPECTED_IDENTITIES',
++    'Require exactly the fourteen fixed post-structural source identities': 'XML_EXPECTED_IDENTITIES',
+     'Unsafe XML': 'XML_SAFE',
+     'Missing, extra or duplicate diagnostic testcase': 'XML_ACTUAL_IDENTITIES',
+     'Contradictory diagnostic testcase outcome': 'XML_OUTCOME',
+@@ -141,7 +146,7 @@
+             and all(value[k] == v for k, v in SOURCE_BUNDLE.items()), 'Wrong fixed private source transport')
+     require(type(value['bytes']) is int and 0 < value['bytes'] <= BUNDLE_MAX_BYTES
+             and isinstance(value['sha256'], str) and re.fullmatch('[0-9a-f]{64}', value['sha256'])
+-            and value['sha256'] != '0' * 64 and binding['backend_sha'] not in (PUBLIC_PREREQUISITE, CORE_BASELINE, PRIVATE_PARENT, PREVIOUS_PRIVATE_PARENT, DIAGNOSTIC_PARENT),
++            and value['sha256'] != '0' * 64 and binding['backend_sha'] not in (PUBLIC_PREREQUISITE, CORE_BASELINE, PRIVATE_PARENT, PREVIOUS_PRIVATE_PARENT, DIAGNOSTIC_PARENT, PRODUCT_LIFECYCLE_PARENT),
+             'Unbound/oversized private checkpoint bundle')
+     return value
+ 
+@@ -254,6 +259,33 @@
+                                           for p, row in source_delta.items()), 'Wrong accepted eight-source baseline')
+     expected_sources = dict(current['source_hashes'])
+     expected_sources.update({p: row['after_sha256'] for p, row in source_delta.items()})
++    # Preserve the accepted PG10 stage before applying only the nineteen structural successors.
++    predecessor = profile['post_structural_predecessor']
++    require(manifest['approved_inputs'].get(predecessor['path']) == predecessor['sha256']
++            and digest(safe(authority, predecessor['path'])) == predecessor['sha256'], 'Accepted PG10 source freeze missing or changed')
++    pg10 = read_json(safe(authority, predecessor['path']))
++    require(pg10['repositories']['kira-backend'] == {'head': PRODUCT_LIFECYCLE_PARENT, 'branch': BACKEND_BRANCH, 'status': ''}
++            and predecessor['backend_sha'] == PRODUCT_LIFECYCLE_PARENT and pg10['validation_task_args'] == TASKS[:21]
++            and pg10['source_hashes'] == expected_sources and pg10['removed_paths'] == current['removed_paths']
++            and pg10['review_subject_paths'] == current['review_subject_paths']
++            and pg10['historical_input_hashes'] == current['historical_input_hashes'], 'Wrong immutable PG10 source/authority predecessor')
++    require(pg10['approved_inputs'].items() <= manifest['approved_inputs'].items()
++            and pg10['validation_tooling'].items() <= manifest['approved_inputs'].items(), 'PG10 approved authority or tooling provenance omitted')
++    structural = profile['post_structural_checkpoint']
++    require(manifest['approved_inputs'].get(structural['path']) == structural['sha256']
++            and digest(safe(authority, structural['path'])) == structural['sha256'], 'Private structural checkpoint missing or changed')
++    structural_checkpoint = read_json(safe(authority, structural['path']))
++    post_delta = profile['post_structural_source_delta']
++    require(len(post_delta) == 19 and structural_checkpoint['source_delta'] == post_delta
++            and structural_checkpoint['head'] == binding['backend_sha']
++            and structural_checkpoint['parent'] == PRODUCT_LIFECYCLE_PARENT and structural_checkpoint['branch'] == BACKEND_BRANCH
++            and structural_checkpoint['public_push_authorized'] is False and structural_checkpoint['source_count'] == 466
++            and structural_checkpoint['seed_paths_preserved'] == 348
++            and structural_checkpoint['bundle_path'] == source_bundle['source_path']
++            and structural_checkpoint['bundle_sha256'] == source_bundle['sha256']
++            and structural_checkpoint['bundle_bytes'] == source_bundle['bytes']
++            and all(expected_sources.get(p) == row['before'] for p, row in post_delta.items()), 'Wrong accepted nineteen-source successor binding')
++    expected_sources.update({p: row['after'] for p, row in post_delta.items()})
+     expected_snapshots = {str(PurePosixPath(MANIFEST_FILE).parent / 'sources' / p): expected_sources[p]
+                           for p in current['review_subject_paths']}
+     require(manifest['source_hashes'] == expected_sources
+@@ -272,7 +304,7 @@
+             and manifest['approved_inputs'].get(test_binding['patch_path']) == test_binding['patch_sha256']
+             and all(manifest['approved_inputs'].get(row['proposal_path']) == row['after_sha256'] for row in source_delta.values())
+             and all(manifest['approved_inputs'].get(p) == sha
+-                    for field in ('native_candidate_evidence', 'diagnostic_authority', 'product_lifecycle_authority')
++                    for field in ('native_candidate_evidence', 'diagnostic_authority', 'product_lifecycle_authority', 'post_structural_authority')
+                     for p, sha in profile[field].items()),
+             'Missing exact accepted proposals, source/history authority or retained Native05 inputs')
+     require(manifest['inventory_seed_manifest'] == SEED and manifest['inventory_seed_manifest_sha256'] == SEED_SHA
+@@ -325,7 +357,9 @@
+         require(current['source_hashes'].get(row['path']) == sha, 'Diagnostic baseline changed original Core C2 source')
+         if row['path'] in source_delta:
+             sha = source_delta[row['path']]['after_sha256']
+-        require(manifest['source_hashes'].get(row['path']) == sha, 'Frozen source is not exact C2 plus accepted diagnostics and product delta')
++        if row['path'] in post_delta:
++            sha = post_delta[row['path']]['after']
++        require(manifest['source_hashes'].get(row['path']) == sha, 'Frozen source is not exact C2 plus accepted diagnostics, product and structural deltas')
+     return {'manifest_sha256': checkpoint['manifest_sha256'], 'sources': len(manifest['source_hashes']),
+             'seed_paths': 348, 'local_v3': 'PRIMARY_BOUND_LOCAL_RECEIPT_NOT_HOSTED_REEXECUTION', 'authority_files': len(pins),
+             'core_sources': 21, 'snapshots': 199, 'profile': PROFILE_ID,
+@@ -341,7 +375,7 @@
+         self.end = self.start + binding['budgets']['controller_seconds']
+         self.phase_end = self.start + binding['budgets']['preflight_seconds']
+         self.cancelled, self.started, self.clean_daemon, self.events_since = False, False, False, None
+-        self.run = Path(os.environ['RUNNER_TEMP']) / ('app29-core-c2-product-lifecycle-pg10-01-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
++        self.run = Path(os.environ['RUNNER_TEMP']) / ('app29-core-c2-product-lifecycle-pg14-01-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
+         self.run.mkdir(mode=0o700, exist_ok=False)
+         for name in ('reports', 'gradle', 'w01', 'tmp', 'home', 'project-cache', 'kotlin-cache'):
+             (self.run / name).mkdir(mode=0o700)
+@@ -350,7 +384,7 @@
+                        'carrier_sha': os.environ['GITHUB_SHA'], 'commands': [], 'failures': [], 'processes': [],
+                        'containers': 'UNKNOWN', 'outputs_absent': False, 'capture_complete': False,
+                        'captured_file_hashes': {}, 'owned_output_cleanup': {}, 'diagnostics': {'status': 'NOT_EVALUATED'},
+-                       'consumer': {'status': 'NOT_EVALUATED', 'scope': 'OUTSIDE_PG10_VALIDATION'}}
++                       'consumer': {'status': 'NOT_EVALUATED', 'scope': 'OUTSIDE_PG14_VALIDATION'}}
+         self.java = Path(os.environ['JAVA_HOME']).resolve()
+         self.env = {'PATH': str(self.java / 'bin') + ':/usr/bin:/bin', 'JAVA_HOME': str(self.java),
+                     'HOME': str(self.run / 'home'), 'GRADLE_USER_HOME': str(self.run / 'gradle'),
+@@ -457,6 +491,9 @@
+         commit = self.command(label + '-backend-commit', ['git', '--no-replace-objects', 'cat-file', 'commit', 'HEAD'], cleaning=cleaning)
+         header, separator, _ = commit.partition(b'\n\n')
+         parents = [row[7:].decode('ascii') for row in header.split(b'\n') if row.startswith(b'parent ')]
++        product = self.command(label + '-product-lifecycle-parent-commit', ['git', '--no-replace-objects', 'cat-file', 'commit', PRODUCT_LIFECYCLE_PARENT], cleaning=cleaning)
++        product_header, product_separator, _ = product.partition(b'\n\n')
++        product_parents = [row[7:].decode('ascii') for row in product_header.split(b'\n') if row.startswith(b'parent ')]
+         diagnostic = self.command(label + '-diagnostic-parent-commit', ['git', '--no-replace-objects', 'cat-file', 'commit', DIAGNOSTIC_PARENT], cleaning=cleaning)
+         diagnostic_header, diagnostic_separator, _ = diagnostic.partition(b'\n\n')
+         diagnostic_parents = [row[7:].decode('ascii') for row in diagnostic_header.split(b'\n') if row.startswith(b'parent ')]
+@@ -471,16 +508,18 @@
+         core_parents = [row[7:].decode('ascii') for row in core_header.split(b'\n') if row.startswith(b'parent ')]
+         self.result.setdefault('source_checkout_final', {})[label] = {
+             'head': sha, 'branch': branch, 'parents': parents,
++            'product_lifecycle_parent': {'head': PRODUCT_LIFECYCLE_PARENT, 'parents': product_parents},
+             'diagnostic_parent': {'head': DIAGNOSTIC_PARENT, 'parents': diagnostic_parents},
+             'private_parent': {'head': PRIVATE_PARENT, 'parents': ancestor_parents},
+             'previous_private_parent': {'head': PREVIOUS_PRIVATE_PARENT, 'parents': previous_parents},
+             'core_baseline': {'head': CORE_BASELINE, 'parents': core_parents}}
+         require(sha == self.binding['backend_sha'] and branch == BACKEND_BRANCH
+-                and separator and parents == [DIAGNOSTIC_PARENT] and diagnostic_separator and diagnostic_parents == [PRIVATE_PARENT]
++                and separator and parents == [PRODUCT_LIFECYCLE_PARENT] and product_separator and product_parents == [DIAGNOSTIC_PARENT]
++                and diagnostic_separator and diagnostic_parents == [PRIVATE_PARENT]
+                 and ancestor_separator and ancestor_parents == [PREVIOUS_PRIVATE_PARENT]
+                 and previous_separator and previous_parents == [CORE_BASELINE]
+                 and core_separator and core_parents == [PUBLIC_PREREQUISITE],
+-                'Require exact changed-product tip ->eb8fed8 ->989a ->926927 ->49da ->public prerequisite, with no merges or extra descendants')
++                'Require exact post-structural tip ->1c91 ->eb8fed8 ->989a ->926927 ->49da ->public prerequisite, with no merges or extra descendants')
+         require(not self.command(label + '-status', ['git', 'status', '--porcelain=v1', '--untracked-files=all'], cleaning=cleaning), 'Checkpoint is dirty')
+         names = self.command(label + '-tracked', ['git', 'ls-files', '-z'], cleaning=cleaning).decode().split('\0')[:-1]
+         hashes = {p: digest(safe(BACKEND, p)) for p in names}
+@@ -594,16 +633,16 @@
+     xmls = list((reports / 'test-results/test').glob('*.xml'))
+     require([p.name for p in xmls] == ['TEST-' + CLASS + '.xml'], 'Wrong diagnostic XML inventory')
+     expected = [(CLASS, method + '()') for method in METHODS]
+-    require(profile['expected_test_count'] == 10 and profile['test_classes'] == [CLASS]
++    require(profile['expected_test_count'] == 14 and profile['test_classes'] == [CLASS]
+             and profile['expected_witnesses'] == []
+             and profile['expected_tests'] == [{'class': CLASS, 'method': m, 'display_name': m + '()'} for m in METHODS],
+-            'Require exactly the ten fixed changed-product source identities')
++            'Require exactly the fourteen fixed post-structural source identities')
+     raw = xmls[0].read_text(encoding='utf-8-sig')
+     require('\x00' not in raw and '<!DOCTYPE' not in raw.upper() and '<!ENTITY' not in raw.upper(), 'Unsafe XML')
+     suite = ET.fromstring(raw)
+     cases = suite.findall('testcase')
+     identities = [(case.get('classname'), case.get('name')) for case in cases]
+-    require(suite.tag == 'testsuite' and suite.get('name') == CLASS and suite.get('tests') == '10'
++    require(suite.tag == 'testsuite' and suite.get('name') == CLASS and suite.get('tests') == '14'
+             and sorted(identities) == sorted(expected), 'Missing, extra or duplicate diagnostic testcase')
+     outcomes = []
+     for case in cases:
+@@ -642,7 +681,7 @@
+     folder = safe(reports, profile['report_directory'])
+     cp = read_json(folder / 'effective-classpath.txt')
+     require(cp['profile'] == PROFILE_ID and cp['java_home'] == str(java)
+-            and cp['source_inventory'] == profile['source_inventory'] and cp['expected_test_count'] == 10
++            and cp['source_inventory'] == profile['source_inventory'] and cp['expected_test_count'] == 14
+             and cp['expected_witnesses'] == [], 'Wrong actual diagnostic classpath/profile/JDK')
+     entries = cp['entries']
+     require(len({e['path'] for e in entries}) == len(entries)
+@@ -652,8 +691,8 @@
+         rows = [e for e in entries if e[flag] > 0]
+         require(len(rows) == 1 and rows[0]['path'] == str(safe(ADMIN, profile[key]['path']))
+                 and rows[0]['sha256'] == profile[key]['sha256'], 'Wrong explicit class supplier')
+-    return {'status': 'RECORDED', 'test_status': 'PASS' if counts['PASS'] == 10 else 'FAIL',
+-            'tests': 10, 'classes': TEST_COUNTS, 'identities': sorted(identities), 'outcomes': outcomes, 'counts': counts,
++    return {'status': 'RECORDED', 'test_status': 'PASS' if counts['PASS'] == 14 else 'FAIL',
++            'tests': 14, 'classes': TEST_COUNTS, 'identities': sorted(identities), 'outcomes': outcomes, 'counts': counts,
+             'profile': PROFILE_ID, 'fixed_scalar_capture': 'CAPTURED' if scalar_capture else 'INCOMPLETE_OR_UNAVAILABLE',
+             'raw_shutdown_diagnostics': records, 'diagnostic_coverage': coverage,
+             'diagnostic_limit': 'Best-effort non-atomic scalars; not causality, completion, repair or consumer proof.',
+@@ -678,9 +717,9 @@
+         require(carrier == os.environ['GITHUB_SHA'], 'Carrier checkout differs from exact workflow SHA')
+         profile = read_json(safe(ADMIN, PROFILE_FILE))
+         require(profile['profile_id'] == PROFILE_ID and profile['task_args'] == TASKS
+-                and profile['expected_test_count'] == 10 and profile['expected_witnesses'] == []
++                and profile['expected_test_count'] == 14 and profile['expected_witnesses'] == []
+                 and profile['final_jar']['qualification'] == 'UNQUALIFIED',
+-                'Wrong exact-ten changed-product profile/task/candidate scope')
++                'Wrong exact-fourteen post-structural profile/task/candidate scope')
+         gate.result['historical_result'] = profile['historical_result']
+         gate.result['historical_diagnostics_result'] = profile['historical_diagnostics_result']
+         gate.materialize_source()
+@@ -785,7 +824,7 @@
+                   and gate.result['diagnostics'].get('fixed_scalar_capture') == 'CAPTURED' and gate.result['containers'] == 'NORMAL_ABSENT'
+                   and all(r['outcome'] == 'NORMAL' for r in gate.result['commands']) and final_containers is True)
+         gate.result['status'] = 'PASS' if passed else 'FAIL'
+-        gate.result['limitation'] = 'Exactly ten changed-product methods only, with original two-case scalar requirements. Historical hosted02 45/47 and diagnostics01 0/2 with failed cleanup remain unchanged. Raw scalars are non-atomic, not completion or causal proof. No opaque real-eviction hard-fault/liveness claim or consumer/full47/Native05 qualification; Native05 remains UNQUALIFIED, D05 PARTIAL / D06 unreviewed; W03/App29/native/full qualification remain open.'
++        gate.result['limitation'] = 'Exactly fourteen post-structural methods only, with original two-case scalar requirements. Historical PG10 on1c91, hosted02 45/47 and diagnostics01 0/2 with failed cleanup remain unchanged. Raw scalars are non-atomic, not completion or causal proof; NORMAL_ABSENT is not graceful-shutdown or zero-kill proof. SQLClientInfo declaration/defaults/foreign-caller runtime coverage remains outside this one-class selection. No opaque real-eviction hard-fault/liveness claim or consumer/full47/Native05 qualification; Native05 remains UNQUALIFIED, D05 PARTIAL / D06 unreviewed; W03/App29/native/full qualification remain open.'
+         save(gate.reports / 'result.json', gate.result)
+     return 0 if gate.result['status'] == 'PASS' else 1
+ 
+--- a/.github/workflows/app29-gate-b.yml
++++ b/.github/workflows/app29-gate-b.yml
+@@ -1,12 +1,12 @@
+-name: App29 Core C2 changed-product PG10 (private, no qualification)
++name: App29 Core C2 post-structural PG14 (private, no qualification)
+ on:
+   push:
+     branches: [remediation/app-29-backend-complaints]
+     paths:
+       - .github/workflows/app29-gate-b.yml
+       - ci/app29-gate-b.py
+-      - review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.json
+-      - review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.init.gradle
++      - review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/profile/profile.json
++      - review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/profile/profile.init.gradle
+       - ci/app29-gate-b.request.json
+ permissions:
+   contents: read
+@@ -43,17 +43,17 @@
+         with:
+           distribution: temurin
+           java-version: '21'
+-      - name: Run exactly ten Core C2 changed-product methods (no qualification)
++      - name: Run exactly fourteen Core C2 post-structural methods (no qualification)
+         id: validation
+         shell: bash
+         run: |
+           umask 077
+           python3 -B admin/ci/app29-gate-b.py
+-      - name: Retain raw ten-case outcomes, original diagnostics, source and owned-cleanup receipts
++      - name: Retain raw fourteen-case outcomes, original diagnostics, source and owned-cleanup receipts
+         if: always() && steps.validation.outcome != 'skipped'
+         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+         with:
+-          name: app29-core-c2-product-lifecycle-pg10-01-${{ github.run_id }}-${{ github.run_attempt }}
+-          path: ${{ runner.temp }}/app29-core-c2-product-lifecycle-pg10-01-${{ github.run_id }}-${{ github.run_attempt }}/reports/
++          name: app29-core-c2-product-lifecycle-pg14-01-${{ github.run_id }}-${{ github.run_attempt }}
++          path: ${{ runner.temp }}/app29-core-c2-product-lifecycle-pg14-01-${{ github.run_id }}-${{ github.run_attempt }}/reports/
+           retention-days: 3
+           if-no-files-found: error
+--- a/ci/app29-gate-b.request.json
++++ b/ci/app29-gate-b.request.json
+@@ -1,17 +1,17 @@
+ {
+-  "schema": "app-29-core-c2-product-lifecycle-pg10-01",
+-  "authorized": true,
++  "schema": "app-29-core-c2-product-lifecycle-pg14-01",
++  "authorized": false,
+   "attempts": 1,
+-  "backend_sha": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+-  "checkpoint_sha256": "d29c4f6a399faebf88ed2def0ddc3ae2c2048eea9d1658d9567e50e602ffdbe5",
++  "backend_sha": "6db944871c1584bd6a1f28263e8010cadd766fab",
++  "checkpoint_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+   "source_bundle": {
+     "public_prerequisite_sha": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+-    "private_parent_sha": "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc",
++    "private_parent_sha": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+     "ref": "refs/heads/remediation/app-29-backend-complaints",
+-    "source_path": "review/working/app-29-core-c2-product-lifecycle-private-checkpoint-01/backend.bundle",
+-    "path": "docs/remediation/app29-core-c2-product-lifecycle-pg10-01/inputs/backend.bundle",
+-    "sha256": "26315048e8463395c7a8ea1a351a83c1b0c6c55fdab52fc57fb62565e32d1b93",
+-    "bytes": 208275
++    "source_path": "review/working/app-29-core-c2-post-structural-private-checkpoint-01/backend.bundle",
++    "path": "docs/remediation/app29-core-c2-product-lifecycle-pg14-01/inputs/backend.bundle",
++    "sha256": "2506c18cc5e40f089cc1176a65a79d449ff02b13f4c08e0719c24d359e9882da",
++    "bytes": 217809
+   },
+   "budgets": {
+     "job_minutes": 25,
+@@ -21,10 +21,10 @@
+     "cleanup_seconds": 180
+   },
+   "tool_sha256": {
+-    "ci/app29-gate-b.py": "230140399aa9353ef6f3628c1c961aa1cda96f52bbfa5b97c8245fa9f2b3b301",
+-    ".github/workflows/app29-gate-b.yml": "7822bd6fb67d1916977520ceb5e77adf1949a2ae774ac5e9b8917a99e72da625",
+-    "review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.json": "f721c8d972206b973b2d3aefa4246bbd2d768c66f6f2908c470b3f896526b339",
+-    "review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.init.gradle": "09742b6796f0fe3d65f2b172272ab8a697ea5a07dadad7298bed1c062ee61ada",
++    "ci/app29-gate-b.py": "7fce9fae743a4d235350d2c93610142fc7a0177f2b7d7e44031b56b8315f0576",
++    ".github/workflows/app29-gate-b.yml": "790377568f065d1e2f64bad1a796a3d17f4a32cea224204adda25465c5d3a328",
++    "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/profile/profile.json": "36c3637229efbe08186014f4c60684aa0569430b26bae9d13f8b811917e82225",
++    "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/profile/profile.init.gradle": "61fb92e47baa8dcabcd6a7521e01872984e196d16cfd643776f3a50b25a81964",
+     "ci/app29_owned_children.py": "56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385"
+   }
+ }
+--- a/profile/profile.json
++++ b/profile/profile.json
+@@ -1,7 +1,7 @@
+ {
+   "schema_version": 1,
+-  "profile_id": "app-29-core-c2-product-lifecycle-pg10-profile-01",
+-  "scope": "TEN_CASE_CHANGED_PRODUCT_VALIDATION_ONLY; retains original two-case shutdown diagnostics; no consumer, Native05, full47 or W03 qualification",
++  "profile_id": "app-29-core-c2-product-lifecycle-pg14-profile-01",
++  "scope": "FOURTEEN_CASE_POST_STRUCTURAL_VALIDATION_ONLY; prior10 plus four same-class negative controls, with original two-case shutdown diagnostics; no consumer, Native05, full47 or W03 qualification",
+   "test_classes": [
+     "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest"
+   ],
+@@ -26,9 +26,17 @@
+     "--tests",
+     "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.consented real Hikari recycle tail retains no successor eviction or abort authority",
+     "--tests",
+-    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.exact retirement sample result preserves its Throwable and does not absorb adjacent budget failure"
++    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.exact retirement sample result preserves its Throwable and does not absorb adjacent budget failure",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.throwing overriding original checkout sample cannot orphan its captured handle or future return right",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.genuine throwing RETURN TL entry restores the authentic lineage and revokes only its still unused future right",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.real post commit Blob work cannot silently commit through Hikari auto commit reset",
++    "--tests",
++    "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest.real commit failure retains unknown outcome and refuses reset before native auto commit"
+   ],
+-  "expected_test_count": 10,
++  "expected_test_count": 14,
+   "expected_tests": [
+     {
+       "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+@@ -79,9 +87,29 @@
+       "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
+       "method": "exact retirement sample result preserves its Throwable and does not absorb adjacent budget failure",
+       "display_name": "exact retirement sample result preserves its Throwable and does not absorb adjacent budget failure()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
++      "method": "throwing overriding original checkout sample cannot orphan its captured handle or future return right",
++      "display_name": "throwing overriding original checkout sample cannot orphan its captured handle or future return right()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
++      "method": "genuine throwing RETURN TL entry restores the authentic lineage and revokes only its still unused future right",
++      "display_name": "genuine throwing RETURN TL entry restores the authentic lineage and revokes only its still unused future right()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
++      "method": "real post commit Blob work cannot silently commit through Hikari auto commit reset",
++      "display_name": "real post commit Blob work cannot silently commit through Hikari auto commit reset()"
++    },
++    {
++      "class": "me.manga.kira.backend.common.infrastructure.persistence.PersistencePgOwnedCutIntegrationTest",
++      "method": "real commit failure retains unknown outcome and refuses reset before native auto commit",
++      "display_name": "real commit failure retains unknown outcome and refuses reset before native auto commit()"
+     }
+   ],
+-  "report_directory": "reports/core-c2-product-lifecycle-pg10-01",
++  "report_directory": "reports/core-c2-product-lifecycle-pg14-01",
+   "witness_property_file": "worker-runtime.txt",
+   "expected_witnesses": [],
+   "original_provider_gate": "app-29-gate-b-hosted-01",
+@@ -119,7 +147,7 @@
+   "source_inventory": {
+     "path": "review/working/app-29-real-pool-return-adaptation-c2-01/test-source-inventory.json",
+     "sha256": "823f49b359b8dec60d1b024c2bfd4e3d2d6822a42fed1a8c8d0e905b5ba87650",
+-    "kind": "Historical47 textual declarations only, NOT this run's executed selection. Exact PG10 identities are expected_tests: original RETURN7, failed post-consent tail, ordinary consented-tail control and new exact retirement-sample discriminator. Historical45 passes and diagnostics01 0/2 are not relabelled."
++    "kind": "Historical47 textual declarations only, NOT this run's executed selection. Exact PG14 identities are expected_tests: unchanged prior10 plus failed-checkout, failed-RETURN-TL-entry, pending-auto-commit and unknown-auto-commit controls in the same class. Historical PG10 on1c91,45 passes and diagnostics01 0/2 are not relabelled."
+   },
+   "core_source_manifest": {
+     "path": "review/working/app-29-real-pool-return-adaptation-c2-01/source-manifest.json",
+@@ -143,11 +171,11 @@
+     "snapshot_count": 199,
+     "approved_input_count": 63,
+     "historical_input_count": 102,
+-    "proposed_delta": "Only the eight product_lifecycle_source_delta paths change from before_sha256 to after_sha256; every other source hash, path and removal remains exact. Fresh clean-checkpoint genuine v3 freeze/local preflight is required."
++    "proposed_delta": "Historical stage: apply the unchanged eight product_lifecycle_source_delta replacements and require exact equality to the accepted PG10 predecessor source map. Successor stage: apply only the nineteen post_structural_source_delta replacements over PG10; every other source hash, path and removal remains exact. Fresh clean-checkpoint genuine v3 freeze/local preflight is required."
+   },
+   "predecessor_profile": {
+-    "path": "review/working/app-29-core-c2-diagnostics-preparation-01/profile/profile.json",
+-    "sha256": "a5e6cf435dd0457cfd24f8cefa2cbe4fa90445bf884d028fe67bca07ec6664b7"
++    "path": "review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.json",
++    "sha256": "f721c8d972206b973b2d3aefa4246bbd2d768c66f6f2908c470b3f896526b339"
+   },
+   "historical_result": {
+     "run_id": "34672394928",
+@@ -182,16 +210,17 @@
+     "review/working/app-29-core-c2-isolation-getter-source-01/source-delta.patch": "5be5cd1adb568dc796a01f7756b070cc7fead7c64d99ee925c12530ab8e772ae"
+   },
+   "limits": [
+-    "One Test task, one worker, exactly ten ordinary @Test methods in the existing one-class PER_CLASS/SAME_THREAD lazy PostgreSQL fixture; no wildcard, backtick or parentheses in argv selectors. Normal compilation remains unrestricted.",
++    "One Test task, one worker, exactly fourteen ordinary @Test methods in the existing one-class PER_CLASS/SAME_THREAD lazy PostgreSQL fixture; no wildcard, backtick or parentheses in argv selectors. Normal compilation remains unrestricted.",
+     "All original 1s/operation budgets, actual native/Entry/epoch/UNKNOWN/retirement and teardown assertions are retained. No prewarm, process-only substitute, timeout extension or extra hard fault.",
+-    "Fixed-case raw scalar requirements remain only RETURN_SAMPLE and FAILED_POST_CONSENT_TAIL, with one CAPTURED BEFORE_SHUTDOWN/AFTER_SHUTDOWN record for each. The other eight methods do not invent diagnostic labels or positive witnesses.",
++    "Fixed-case raw scalar requirements remain only RETURN_SAMPLE and FAILED_POST_CONSENT_TAIL, with one CAPTURED BEFORE_SHUTDOWN/AFTER_SHUTDOWN record for each. The other twelve methods do not invent diagnostic labels or positive witnesses.",
+     "Raw fixed-case scalars are best-effort and non-atomic, not causal or lifecycle-completion evidence. Missing/UNAVAILABLE/duplicate required-phase output cannot pass. Actual FAIL/ERROR/SKIP outcomes and owned-command nonzero exits remain sticky.",
+     "Same one lazy PostgreSQL17.6-alpine plus Ryuk0.12.0; accepted cleanup guard requires exactly 2 containers/1 PostgreSQL/1 Ryuk, with all existing session, event, image, ownership, capture-before-delete and absence gates retained.",
+     "No positive worker-witness expectations. Effective classpath and class-load logs are context only; Native05 remains UNQUALIFIED.",
+-    "Historical hosted02 45/47 and diagnostics01 0/2 plus failed cleanup remain separate, unchanged evidence. This attempt cannot become a new full47/consumer/native qualification.",
+-    "Preserve all466 current source keys with exactly8 accepted hash changes, all348 historical seed paths, all199 snapshot subjects, all63 predecessor approved inputs and all102 historical pins; no inventory-helper modification.",
++    "Historical PG10 on1c91, hosted02 45/47 and diagnostics01 0/2 plus failed cleanup remain separate, unchanged evidence. Prior PostgreSQL kill9/die137 is retained; NORMAL_ABSENT is not graceful-shutdown or zero-kill proof. This attempt cannot become a new full47/consumer/native qualification.",
++    "Preserve all466 source keys via unchanged historical8 then exactly19 accepted structural replacements, all348 seed paths, all199 snapshot subjects, all63 diagnostics approved inputs plus every PG10 approved/tooling input and all102 historical pins; no inventory-helper modification.",
+     "Hard dominance is MODEL plus unchanged generic-catch source review plus exact sample/adjacent-budget discrimination, not an executed opaque real-eviction fault or a queue/liveness guarantee.",
+-    "D05 PARTIAL / D06 unreviewed; W03/App29/native/full qualification remain open. Source/preparation acceptance is not execution authority. Primary alone freezes/checkpoints/adopts/launches."
++    "Direct SQLClientInfo declaration/defaults/foreign-caller coverage belongs to a separate PG-owning class and remains outside this one-class14 selection. No second fixture, process-only probe or consumer witness is added.",
++    "D05 PARTIAL/not import-ready / D06 unreviewed/unexecuted; W03/App29/native/full qualification remain open. Source/preparation acceptance is not execution authority. Primary alone freezes/checkpoints/adopts/launches."
+   ],
+   "historical_diagnostics_result": {
+     "run_id": "34678157417",
+@@ -259,5 +288,111 @@
+     "review/working/app-29-core-c2-product-lifecycle-tests-01/source-pins-after.sha256": "b5eed778684969fbf3e8e3afd41a316be62f4dd5cbeb1b595de00aadfe578754",
+     "review/working/app-29-core-c2-product-lifecycle-tests-01/SHA256SUMS": "58f45260e7d130f91a56cd6e54f8ca18602ce96d8715c29a52a154e37e079fe0",
+     "review/working/app-29-core-c2-product-lifecycle-tests-01/SELECTORS.md": "050f342603128ffa6a9e1be5592d5c864c1b945bc6f8ee472a586dd24b7acb22"
++  },
++  "post_structural_predecessor": {
++    "path": "review/working/app-29-w03-integrated-driver-core-c2-product-lifecycle-pg10-01/manifest.json",
++    "sha256": "f44346d3f76072b62c61e72fa8231e318650ec0cd0da8d976f2ef043f16dbb3d",
++    "backend_sha": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
++    "scope": "IMMUTABLE_PG10_SOURCE_AND_AUTHORITY_PREDECESSOR_NOT_CURRENT_RUNTIME_ACCEPTANCE"
++  },
++  "post_structural_checkpoint": {
++    "path": "review/working/app-29-core-c2-post-structural-private-checkpoint-01/checkpoint.json",
++    "sha256": "6e7cfcdb0598531092750a122b3cae985fe06f629455ee030773ba2242992556",
++    "scope": "PRIVATE_SOURCE_TRANSPORT_AND_19_PATH_DELTA_ONLY_NOT_FRESH_V3_OR_PG14_ADMISSION"
++  },
++  "post_structural_source_delta": {
++    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt": {
++      "after": "ca15b08299177033ca255b5de670a47e12b05e39a4077ece7078e306a7bfa398",
++      "before": "9d9a6be8888aa67f5f908c1d53db998f17e528c52a1d3d8b5bcd05362635ca3c"
++    },
++    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt": {
++      "after": "1d2fd29239d948d30814544abdd2999e870b12bf42de780231b0ded05d5ac674",
++      "before": "0e6acaf9ca87a5f16672c3efa090c2dde8491c3e80e7b8cc19e6fb78f56f698f"
++    },
++    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt": {
++      "after": "f45890e53648b8e4abb30fdc9ff6250de6927413a9f510cc672babef1b43462c",
++      "before": "c3c2095193dac21bae09219e75a50b79b2da6ed5512db4ad0168da88676b30c0"
++    },
++    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt": {
++      "after": "e3e52b0ad68eb8ab929e01959ce6665a547bb2103a1d081ba0c90ca008724180",
++      "before": "ff13d4a7ad481762c7d6d222c023cb60e3cb94e22fa50841767c5c6641cb89df"
++    },
++    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcPoolTransfer.kt": {
++      "after": "ba49d0d62fff6cc35118a4b3dbd4e7dc553432bd3a20cb7de368c9036c513c76",
++      "before": "04ff9655211046f13af24395eb9bb489c3375702fc3dd057f225792da11e3b49"
++    },
++    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcTransaction.kt": {
++      "after": "f750a4ad1079ef638f28ad9478231c955dae6b462822254559d43c7a05475d8a",
++      "before": "55e1393e113e750a49572b39ca4217b5b701ecc4fa7edb8c338e72c7dd1fb462"
++    },
++    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceManagedObserver.kt": {
++      "after": "e582e0ad2f7df1cf615b7da07a28588e1d35997b5f52f39fdd4fae14a8bb89ee",
++      "before": "392f637a22ca16f967ee028cbf0731f8c93622560556fa4bbef7e47657d63b23"
++    },
++    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt": {
++      "after": "4d5d74ed2fce172ebcfe6b38d085916e9f8d34af809ddf9950b2cbceba044650",
++      "before": "2dd3236000c8f88f2ca00435036a54a5b1ba027aeb4f3e7d4ab66ca2106533f2"
++    },
++    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutAccess.kt": {
++      "after": "6b11275185862051541d5fe1ba0c2d3b7bfa4b2a95a531161c381e01e3dc35c9",
++      "before": "4141070d8e4332dd8e5cddccf7ab6d3cdf906682cd6092aa96d9ce7b4acf4f5c"
++    },
++    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt": {
++      "after": "fde12ce0e37fa545b9339e9baf41a443dde66dcef927f48272e7406ac2dbfee9",
++      "before": "f7127c8d922a1a17f34e7230b6ae715ec36f99e819e5bb35a907f347f40c337d"
++    },
++    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcFacade.kt": {
++      "after": "5356b3ab244a3433410c8b40aea372715ffa1be863c8031b8d7890558cc7a230",
++      "before": "a58c7aedd83c96dc572f94351fe77387922c949a066ca5a49f80744b569b6c74"
++    },
++    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustody.kt": {
++      "after": "c658703d6fe07c23fd67bd2db98c568cc589bc096d3dda89ea2dcdcec597a503",
++      "before": "545d05d67fb0550c4fd4ea889144f7f0a49e2ac57b2d41676b04ea0d22a43d8b"
++    },
++    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt": {
++      "after": "24ce6c0595f4fec9774177220716b45a98d659fc33ac9b05b5d2cbc035e366aa",
++      "before": "5105399988af7abbfac336f27cc4436c95a348e8032e39a0ba409f58c6a3400f"
++    },
++    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt": {
++      "after": "9d89acd83ef5c55784ff548969080636163e28c92a0d8373e511dd68024440bf",
++      "before": "2cbd7a055d12000953c37301a7d08839df739d391b4fafa453e8acb62944963e"
++    },
++    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt": {
++      "after": "b87e92bb9d78fb8f37afed414bd07899c59606536b972c6a444dda1cbc677322",
++      "before": "c65198c118b4102615100464c52774f9dbd1bec70fe8655337fadcda4895c350"
++    },
++    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbeProcess.kt": {
++      "after": "e53828932ddcbbb2142579b9a684ef307c9449af3a5f0a85e7ed0bd73f416080",
++      "before": "b115bbde5d83873d0dfa63a88571a2da601a0dbaf91c4db9c7cac1c73b09cf3a"
++    },
++    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendantsTest.kt": {
++      "after": "a2e3ce055fcb98c350c49fff7522b959f223369568220312d5b1761c9369f2a9",
++      "before": "0997dd22f9c2ee5f36c837559a113134c0c3a59f17b4087b0746989b331407c6"
++    },
++    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt": {
++      "after": "44a4712a49c7ea1f5b04081421b34296a8798b76d580c96b5db7bcdace00f1d1",
++      "before": "4bf8c36b1ec8f01ea8a7b775ea7c769ca2fa8f837fc8d1d351d1172c860ce24e"
++    },
++    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt": {
++      "after": "953d018327fc7b40c53ab291bed061cae48751f8f20e0c5c0c3a369e03a2513e",
++      "before": "cf46316c372696c3aa91ca6e5455c582e40d436c82c791e586c3adce29173db1"
++    }
++  },
++  "post_structural_authority": {
++    "review/remediation/app-29-core-c2-post-structural-pg-selection-advisory.md": "d934676c715da7aaef8e008c264e0b5e5e7cb30e4a909103878f521a44bc4f64",
++    "review/working/app-29-core-c2-post-structural-private-checkpoint-01/checkpoint.json": "6e7cfcdb0598531092750a122b3cae985fe06f629455ee030773ba2242992556",
++    "review/working/app-29-core-c2-post-structural-private-checkpoint-01/reviewed-source.patch": "6e9d0fb7aa8615fe71eb0c02b7da5a188f28cae49fe67e53e87ed1fdcf7693a0",
++    "review/working/app-29-core-c2-post-structural-private-checkpoint-01/primary-compile-static-disposition.json": "dae02d3340ecf9f9288bcbc4ca72d98ce1cbaa6e86e8ba771b6ac345d7a70030",
++    "review/working/app-29-w03-integrated-driver-core-c2-residual-static-linux-01/manifest.json": "7a48620648806214d5c4158488cd33432b57e9c234a1a5c94b76015fcf36cacf",
++    "review/working/app-29-core-c2-product-lifecycle-pg10-launch-01/primary-acceptance.json": "c08b0f8ad69d674bedcb9edad54c99f51d34ccc7802c9272c53de3b81e56935a",
++    "review/remediation/app-29-core-c2-product-lifecycle-pg10-01-independent-actual-result-review.md": "bfdbbd51e446814ea861ad5ec188be8efa1f21d7eaea3b2f51a5c4c9e8e81d2a"
++  },
++  "historical_pg10_result": {
++    "run_id": "34691665288",
++    "backend_sha": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
++    "passed": 10,
++    "failed": 0,
++    "scope": "HISTORICAL_EXACT_PG10_ONLY; excludes later layout/structural changes and does not qualify this PG14 source",
++    "cleanup_limit": "Controller-unforced final absence; original PostgreSQL kill9/die137 retained. Not graceful-shutdown or zero-kill proof."
+   }
+ }
+--- a/profile/profile.init.gradle
++++ b/profile/profile.init.gradle
+@@ -8,7 +8,7 @@
+ import org.gradle.api.tasks.testing.Test
+ import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
+ 
+-// Private exact-ten changed-product derivative of reviewed CoreC2 diagnostics; historical bytes stay unchanged.
++// Private exact-fourteen post-structural derivative of reviewed CoreC2 PG10; historical bytes stay unchanged.
+ // Reuses the existing owned hosted context; no controller, process, fixture or dependency replacement.
+ def runPath = System.getenv('W01_RUN')
+ if (!runPath) throw new GradleException('W01_RUN is required')
+@@ -26,15 +26,15 @@
+     }
+     digest.digest().encodeHex().toString()
+ }
+-def profileFile = new File(root, 'review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.json')
+-if (sha256(profileFile) != 'f721c8d972206b973b2d3aefa4246bbd2d768c66f6f2908c470b3f896526b339') {
+-    throw new GradleException('Changed exact-ten changed-product profile')
++def profileFile = new File(root, 'review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/profile/profile.json')
++if (sha256(profileFile) != '36c3637229efbe08186014f4c60684aa0569430b26bae9d13f8b811917e82225') {
++    throw new GradleException('Changed exact-fourteen post-structural profile')
+ }
+ def profile = new JsonSlurper().parse(profileFile)
+ def exactMethods = profile.expected_tests.collect { it['class'] + '.' + it.method }
+-if (profile.profile_id != 'app-29-core-c2-product-lifecycle-pg10-profile-01' || profile.expected_test_count != 10 ||
+-        exactMethods.size() != 10 || exactMethods.toSet().size() != 10 || profile.expected_witnesses != []) {
+-    throw new GradleException('Require exactly ten changed-product methods and no positive-witness selection')
++if (profile.profile_id != 'app-29-core-c2-product-lifecycle-pg14-profile-01' || profile.expected_test_count != 14 ||
++        exactMethods.size() != 14 || exactMethods.toSet().size() != 14 || profile.expected_witnesses != []) {
++    throw new GradleException('Require exactly fourteen post-structural methods and no positive-witness selection')
+ }
+ def originalInit = new File(run, 'original.init.gradle')
+ if (sha256(originalInit) != profile.original_init.sha256) throw new GradleException('Changed historical source init')
+@@ -163,7 +163,7 @@
+             new File(report, 'effective-classpath.txt').text = JsonOutput.prettyPrint(JsonOutput.toJson([
+                     profile: profile.profile_id, source_inventory: profile.source_inventory,
+                     expected_test_count: profile.expected_test_count, expected_witnesses: profile.expected_witnesses,
+-                    scope: 'Exact-ten changed-product validation only; classpath context, not consumer/JAR qualification',
++                    scope: 'Exact-fourteen post-structural validation only; classpath context, not consumer/JAR qualification',
+                     removed_stock: [component: stock[0].id.componentIdentifier.displayName,
+                                     path: stock[0].file.canonicalPath, sha256: sha256(stock[0].file)],
+                     deduplicated_checker: checkers.collect { [path: it.file.canonicalPath, sha256: sha256(it.file)] },

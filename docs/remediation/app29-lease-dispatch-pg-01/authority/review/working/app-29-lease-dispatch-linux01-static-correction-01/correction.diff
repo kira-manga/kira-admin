@@ -1,0 +1,756 @@
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardCall.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardCall.kt
+@@ -92,7 +92,11 @@
+             identity === lease.identity && identity.epoch === token.epoch && kind === dispatch.kind &&
+             context.actualFrame(this) && token.actualAdmitted() && dispatch.creatorAvailable(lease)
+ 
+-    internal fun retainCreator(prepared: PoolLifecycle.LeaseDispatchCreator, lease: PersistenceJdbcLease, dispatch: PersistenceJdbcDispatch.Frame): PersistenceProducerEpoch.OuterTail {
++    internal fun retainCreator(
++        prepared: PoolLifecycle.LeaseDispatchCreator,
++        lease: PersistenceJdbcLease,
++        dispatch: PersistenceJdbcDispatch.Frame,
++    ): PersistenceProducerEpoch.OuterTail {
+         check(admitsCreator(lease, dispatch))
+         creator = prepared
+         dispatch.retainCreator(prepared)
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt
+@@ -402,7 +402,8 @@
+         }
+ 
+         internal fun select(lower: PhysicalJdbcFacade, ownership: PersistenceOwnership): PersistenceJdbcPoolEpoch {
+-            if (!lease.issuedDispatch(issuance) || ended || caller !== Thread.currentThread() || frames.get() !== this) PersistenceJdbcGuardContext.refuse()
++            if (!lease.issuedDispatch(issuance)) PersistenceJdbcGuardContext.refuse()
++            if (ended || caller !== Thread.currentThread() || frames.get() !== this) PersistenceJdbcGuardContext.refuse()
+             return lease.select(lower, ownership, returning, kind)
+         }
+ 
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLeaseInvocation.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLeaseInvocation.kt
+@@ -33,9 +33,11 @@
+         if (failure is Error) throw failure
+         // Preserve an already adapted outer/finally failure, without pretending that its
+         // unsuccessful creator end completed. No suppression can release either count.
+-        if (outerFailure == null) throw declaredFailure(
+-            lease.state.context.adaptFailure(failure ?: IllegalStateException("Persistence creator tail refused.")),
+-        )
++        if (outerFailure == null) {
++            throw declaredFailure(
++                lease.state.context.adaptFailure(failure ?: IllegalStateException("Persistence creator tail refused.")),
++            )
++        }
+     }
+ 
+     override fun toString(): String = "PersistenceJdbcLeaseInvocation(redacted)"
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceLeaseCompletion.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceLeaseCompletion.kt
+@@ -85,8 +85,7 @@
+     internal fun quiescent(): Boolean {
+         if (!ingressEnded || !acquisition.completionProven()) return false
+         if (!acquisition.hasCaptured()) return lease == null && acquisition.entitlement == null
+-        if (checkout?.actualEnded() != true) return false
+-        if (lease?.state?.epoch?.outerTailsEnded() == false) return false
++        if (checkout?.actualEnded() != true || lease?.state?.epoch?.outerTailsEnded() == false) return false
+         if (operation?.completionProven() == false || dispatch?.actualEnded() == false || returning?.actualEnded() == false) return false
+         if (acquisition.entitlement?.completionProven() == false) return false
+         return returning?.consented() == true || terminal?.reclaimed() == true
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt
+@@ -299,11 +299,7 @@
+     }
+ 
+     /** One admitted call's retained outer adapter/finalizer tail, not another producer or lease registry. */
+-    internal class OuterTail private constructor(
+-        private val epoch: PersistenceProducerEpoch,
+-        private val issuance: Any,
+-        internal val call: Call,
+-    ) {
++    internal class OuterTail private constructor(private val epoch: PersistenceProducerEpoch, private val issuance: Any, internal val call: Call) {
+         private val phase = AtomicReference(TailPhase.PREPARED)
+         private val failed = AtomicBoolean()
+ 
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt
+@@ -432,125 +432,6 @@
+         return synchronized(gate) { if (entitlement.prepareLocked(issuance, operation)) operation else null }
+     }
+ 
+-    private fun bindLease(entitlement: LeaseEntitlement, lease: PersistenceJdbcLease): Boolean {
+-        if (!entitlement.authentic(this, issuance) || owner.ownershipLockHeld()) return false
+-        val acquisition = entitlement.acquisition ?: return false
+-        if (!lease.preparedForAcquisition(this, acquisition)) return false
+-        return synchronized(gate) {
+-            val frame = acquisition.frame
+-            if (acquisition.entitlement !== entitlement || !frame.authentic(this, issuance) || !frame.active() || PoolCallFrames.current() !== frame) {
+-                return@synchronized false
+-            }
+-            entitlement.bindLeaseLocked(issuance, lease)
+-        }
+-    }
+-
+-    private fun prepareLeaseDispatch(
+-        entitlement: LeaseEntitlement,
+-        lease: PersistenceJdbcLease,
+-        dispatch: PersistenceJdbcDispatch.Frame,
+-        call: PersistenceJdbcGuardCall,
+-    ): LeaseDispatchCreator? {
+-        if (owner.ownershipLockHeld() || !call.admitsCreator(lease, dispatch)) return null
+-        if (!synchronized(gate) { entitlement.canDispatchLocked(this, issuance, lease) }) return null
+-        val frame = PoolCallFrame.prepareLeaseDispatch(this, issuance, Thread.currentThread(), call.budget, lease.state.epoch)
+-        val creator = LeaseDispatchCreator.prepare(this, frame, entitlement, lease, dispatch, call)
+-        frame.retainCreator(issuance, creator)
+-        return creator
+-    }
+-
+-    private fun enterLeaseDispatch(creator: LeaseDispatchCreator): Boolean {
+-        val frame = creator.frame
+-        if (owner.ownershipLockHeld() || !frame.authenticCreator(this, issuance, creator) || !creator.call.admitsCreator(creator.lease, creator.dispatch)) return false
+-        if (!synchronized(gate) { creator.entitlement.canDispatchLocked(this, issuance, creator.lease) }) {
+-            creator.refusedBeforeEntry = true // Exact caller/guard, but its unadmitted terminal association was revoked.
+-            return false
+-        }
+-        if (!frame.claimEntry(issuance, PoolCallFrames.current())) return false
+-        creator.setupStarted = true
+-        var setupReturned = false
+-        try {
+-            val tail = creator.call.retainCreator(creator, creator.lease, creator.dispatch)
+-            creator.tail = tail // Both the genuine Call and this retained ticket precede registration.
+-            tail.register()
+-            PoolCallFrames.install(frame)
+-            val admitted = synchronized(gate) {
+-                if (!creator.entitlement.canDispatchLocked(this, issuance, creator.lease)) return@synchronized false
+-                val count = Math.addExact(operations, 1L)
+-                operations = count
+-                creator.counted = true
+-                frame.activate(issuance)
+-                true
+-            }
+-            // The guard already admitted the exact kind/caller/budget. Do not mint another
+-            // allowance or rerun BUSINESS readiness after that epoch has retired/sealed.
+-            setupReturned = true
+-            return admitted
+-        } finally {
+-            try {
+-                if (!setupReturned) failLeaseDispatch(creator)
+-            } finally {
+-                if (!creator.counted) {
+-                    var restored = false
+-                    try {
+-                        refuseEntry(frame)
+-                        restored = true
+-                    } finally {
+-                        if (!restored) failLeaseDispatch(creator)
+-                        creator.refusedBeforeEntry = setupReturned && restored
+-                    }
+-                }
+-            }
+-        }
+-    }
+-
+-    private fun endLeaseDispatch(creator: LeaseDispatchCreator): Boolean {
+-        val frame = creator.frame
+-        if (owner.ownershipLockHeld() || !frame.authenticCreator(this, issuance, creator) || creator.failed) return false
+-        if (!creator.dispatch.actualEnded() || !creator.call.creatorGuardEnded(creator)) return false
+-        if (!creator.counted) {
+-            if (!creator.refusedBeforeEntry || !creator.claimEnd()) return false
+-            var ended = false
+-            try {
+-                creator.tail?.end()
+-                frame.finish(issuance)
+-                ended = true
+-                return true
+-            } finally {
+-                if (!ended) failLeaseDispatch(creator)
+-            }
+-        }
+-        if (PoolCallFrames.current() !== frame || !frame.claimEnd(issuance) || !creator.claimEnd()) return false
+-        var ended = false
+-        try {
+-            PoolCallFrames.restore(frame)
+-            synchronized(gate) {
+-                check(operations > 0L)
+-                requireNotNull(creator.tail).end()
+-                // No allocation, profile/adaptation callback or TL operation follows this
+-                // final epoch cut. These prevalidated scalar publications complete the ticket.
+-                operations--
+-                frame.finish(issuance)
+-                ended = true
+-            }
+-            return true
+-        } finally {
+-            if (!ended) failLeaseDispatch(creator)
+-        }
+-    }
+-
+-    private fun failLeaseDispatch(creator: LeaseDispatchCreator): Boolean {
+-        if (owner.ownershipLockHeld() || !creator.frame.authenticCreator(this, issuance, creator) || !creator.setupStarted || creator.frame.ended()) return false
+-        creator.failed = true
+-        recordBookkeepingFailure()
+-        try {
+-            creator.tail?.fail()
+-        } finally {
+-            if (creator.call.retainedCreator(creator)) creator.call.creatorFailed(creator)
+-        }
+-        return true
+-    }
+-
+     private fun revoke(entitlement: LeaseEntitlement): Boolean {
+         if (!entitlement.authentic(this, issuance) || owner.ownershipLockHeld()) return false
+         return synchronized(gate) {
+@@ -692,13 +573,34 @@
+         /** Outside F/G/T. Consuming a real operation already revokes future ingress; its current outer tail remains counted. */
+         fun revoke(): Boolean = pool.revoke(this)
+ 
+-        internal fun bindLease(candidate: PersistenceJdbcLease): Boolean = pool.bindLease(this, candidate)
+-
+-        internal fun prepareDispatch(lease: PersistenceJdbcLease, dispatch: PersistenceJdbcDispatch.Frame, call: PersistenceJdbcGuardCall): LeaseDispatchCreator? =
+-            pool.prepareLeaseDispatch(this, lease, dispatch, call)
++        internal fun bindLease(candidate: PersistenceJdbcLease): Boolean {
++            if (!authentic(pool, pool.issuance) || pool.owner.ownershipLockHeld()) return false
++            val acquisition = this.acquisition ?: return false
++            if (!candidate.preparedForAcquisition(pool, acquisition)) return false
++            return synchronized(pool.gate) {
++                val frame = acquisition.frame
++                if (acquisition.entitlement !== this || !frame.authentic(pool, pool.issuance)) return@synchronized false
++                if (!frame.active() || PoolCallFrames.current() !== frame) return@synchronized false
++                bindLeaseLocked(pool.issuance, candidate)
++            }
++        }
++
++        internal fun prepareDispatch(
++            lease: PersistenceJdbcLease,
++            dispatch: PersistenceJdbcDispatch.Frame,
++            call: PersistenceJdbcGuardCall,
++        ): LeaseDispatchCreator? {
++            if (pool.owner.ownershipLockHeld() || !call.admitsCreator(lease, dispatch)) return null
++            if (!synchronized(pool.gate) { canDispatchLocked(pool, pool.issuance, lease) }) return null
++            val frame = PoolCallFrame.prepareLeaseDispatch(pool, pool.issuance, Thread.currentThread(), call.budget, lease.state.epoch)
++            val creator = LeaseDispatchCreator.prepare(pool, frame, this, lease, dispatch, call)
++            frame.retainCreator(pool.issuance, creator)
++            return creator
++        }
+ 
+         internal fun bindLeaseLocked(authority: Any, candidate: PersistenceJdbcLease): Boolean {
+-            if (issuance !== authority || phase !== EntitlementPhase.AVAILABLE || prepared != null || lease != null) return false
++            if (issuance !== authority || phase !== EntitlementPhase.AVAILABLE) return false
++            if (prepared != null || lease != null) return false
+             lease = candidate
+             return true
+         }
+@@ -763,10 +665,106 @@
+         internal var failed = false
+         private val endClaimed = AtomicBoolean()
+ 
+-        internal fun enter(): Boolean = pool.enterLeaseDispatch(this)
+-
+-        internal fun end(): Boolean = pool.endLeaseDispatch(this)
+-        internal fun failBeforeEnd(): Boolean = pool.failLeaseDispatch(this)
++        internal fun enter(): Boolean {
++            val frame = this.frame
++            if (pool.owner.ownershipLockHeld() ||
++                !frame.authenticCreator(pool, pool.issuance, this) ||
++                !call.admitsCreator(lease, dispatch)
++            ) {
++                return false
++            }
++            if (!synchronized(pool.gate) { entitlement.canDispatchLocked(pool, pool.issuance, lease) }) {
++                refusedBeforeEntry = true // Exact caller/guard, but its unadmitted terminal association was revoked.
++                return false
++            }
++            if (!frame.claimEntry(pool.issuance, PoolCallFrames.current())) return false
++            setupStarted = true
++            var setupReturned = false
++            try {
++                val tail = call.retainCreator(this, lease, dispatch)
++                this.tail = tail // Both the genuine Call and this retained ticket precede registration.
++                tail.register()
++                PoolCallFrames.install(frame)
++                val admitted = synchronized(pool.gate) {
++                    if (!entitlement.canDispatchLocked(pool, pool.issuance, lease)) return@synchronized false
++                    val count = Math.addExact(pool.operations, 1L)
++                    pool.operations = count
++                    counted = true
++                    frame.activate(pool.issuance)
++                    true
++                }
++                // The guard already admitted the exact kind/caller/budget. Do not mint another
++                // allowance or rerun BUSINESS readiness after that epoch has retired/sealed.
++                setupReturned = true
++                return admitted
++            } finally {
++                try {
++                    if (!setupReturned) failBeforeEnd()
++                } finally {
++                    if (!counted) restoreRefusedEntry(frame, setupReturned)
++                }
++            }
++        }
++
++        private fun restoreRefusedEntry(frame: PoolCallFrame, setupReturned: Boolean) {
++            var restored = false
++            try {
++                pool.refuseEntry(frame)
++                restored = true
++            } finally {
++                if (!restored) failBeforeEnd()
++                refusedBeforeEntry = setupReturned && restored
++            }
++        }
++
++        internal fun end(): Boolean {
++            val frame = this.frame
++            if (pool.owner.ownershipLockHeld() || !frame.authenticCreator(pool, pool.issuance, this) || failed) return false
++            if (!dispatch.actualEnded() || !call.creatorGuardEnded(this)) return false
++            if (!counted) {
++                if (!refusedBeforeEntry || !claimEnd()) return false
++                var ended = false
++                try {
++                    tail?.end()
++                    frame.finish(pool.issuance)
++                    ended = true
++                    return true
++                } finally {
++                    if (!ended) failBeforeEnd()
++                }
++            }
++            if (PoolCallFrames.current() !== frame || !frame.claimEnd(pool.issuance) || !claimEnd()) return false
++            var ended = false
++            try {
++                PoolCallFrames.restore(frame)
++                synchronized(pool.gate) {
++                    check(pool.operations > 0L)
++                    requireNotNull(tail).end()
++                    // No allocation, profile/adaptation callback or TL operation follows this
++                    // final epoch cut. These prevalidated scalar publications complete the ticket.
++                    pool.operations--
++                    frame.finish(pool.issuance)
++                    ended = true
++                }
++                return true
++            } finally {
++                if (!ended) failBeforeEnd()
++            }
++        }
++
++        internal fun failBeforeEnd(): Boolean {
++            if (pool.owner.ownershipLockHeld() || !frame.authenticCreator(pool, pool.issuance, this)) return false
++            if (!setupStarted || frame.ended()) return false
++            failed = true
++            pool.recordBookkeepingFailure()
++            try {
++                tail?.fail()
++            } finally {
++                if (call.retainedCreator(this)) call.creatorFailed(this)
++            }
++            return true
++        }
++
+         internal fun claimEnd(): Boolean = endClaimed.compareAndSet(false, true)
+         internal fun actualEnded(): Boolean = frame.ended()
+ 
+--- a/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt
++++ b/src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt
+@@ -93,8 +93,13 @@
+         internal fun prepare(pool: PoolLifecycle, issuance: Any, kind: PoolCallKind, caller: Thread, budget: PersistenceTimeBudget): PoolCallFrame =
+             PoolCallFrame(pool, issuance, kind, caller, budget)
+ 
+-        internal fun prepareLeaseDispatch(pool: PoolLifecycle, issuance: Any, caller: Thread, budget: PersistenceTimeBudget?, epoch: PersistenceProducerEpoch): PoolCallFrame =
+-            PoolCallFrame(pool, issuance, PoolCallKind.LEASE_DISPATCH, caller, budget, epoch)
++        internal fun prepareLeaseDispatch(
++            pool: PoolLifecycle,
++            issuance: Any,
++            caller: Thread,
++            budget: PersistenceTimeBudget?,
++            epoch: PersistenceProducerEpoch,
++        ): PoolCallFrame = PoolCallFrame(pool, issuance, PoolCallKind.LEASE_DISPATCH, caller, budget, epoch)
+     }
+ }
+ 
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbe.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbe.kt
+@@ -48,8 +48,11 @@
+         check(case.poolPendingFailure && port in 1..65535)
+         val handshake = PgLifecycleDatabaseHandshake(root.resolve("phases"), nonce, PgLifecycleDatabaseParty.CHILD, case)
+         val result = runCatching {
+-            if (case.poolCreatorFailure) OwnedPoolLeaseCreatorPendingProbe.verify(case, port, nonce, handshake)
+-            else OwnedPoolPendingProbe.verify(case, port, nonce, handshake)
++            if (case.poolCreatorFailure) {
++                OwnedPoolLeaseCreatorPendingProbe.verify(case, port, nonce, handshake)
++            } else {
++                OwnedPoolPendingProbe.verify(case, port, nonce, handshake)
++            }
+         }
+         if (result.isFailure) {
+             describeFailure("pool_pending", requireNotNull(result.exceptionOrNull()))
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OwnedPoolLeaseCreatorPendingProbe.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OwnedPoolLeaseCreatorPendingProbe.kt
+@@ -29,36 +29,7 @@
+         val failure = AtomicReference<Throwable?>()
+         val caller = Thread.ofPlatform().daemon(true).inheritInheritableThreadLocals(false).name("w03-lease-creator-pending").unstarted {
+             try {
+-                val connection = pool.connection
+-                check(connection is LeaseJdbcFacade)
+-                val lease = ownedCutField(requireNotNull(ownedCutField(connection, "calls")), "lease") as PersistenceJdbcLease
+-                val entry = scope.entries().single { it.jdbc.currentPoolState(lease.state) }
+-                val input = if (case.mode === PgLifecycleDatabaseMode.POOL_LEASE_CREATOR_DECLARED_TAIL) checkedInput(connection) else null
+-                val fault = CreatorInvocationFailure(case.mode, lease, entry, pool, lifecycle, gate)
+-                selected.set(fault)
+-                fault.use {
+-                    val outcome = runCatching {
+-                        when (case.mode) {
+-                            PgLifecycleDatabaseMode.POOL_LEASE_CREATOR_CLIENT_INFO_TAIL -> connection.setClientInfo("ApplicationName", "w03c_$nonce")
+-                            PgLifecycleDatabaseMode.POOL_LEASE_CREATOR_DECLARED_TAIL -> requireNotNull(input).read()
+-                            else -> connection.autoCommit
+-                        }
+-                    }
+-                    val problem = requireNotNull(outcome.exceptionOrNull())
+-                    when (case.mode) {
+-                        PgLifecycleDatabaseMode.POOL_LEASE_CREATOR_CLIENT_INFO_TAIL -> check(problem.javaClass === SQLClientInfoException::class.java)
+-                        PgLifecycleDatabaseMode.POOL_LEASE_CREATOR_DECLARED_TAIL -> check(problem.javaClass === IOException::class.java)
+-                        else -> check(problem is SQLException)
+-                    }
+-                    fault.requireFailedOnCaller()
+-                    // A new invocation is refused; it cannot retry end, restore a failed TL,
+-                    // fill a missing count or consume the still-available terminal right.
+-                    check(runCatching { connection.autoCommit }.exceptionOrNull() is SQLException)
+-                    check(!fault.creator.enter() && !fault.creator.end())
+-                    check(lease.prepareCreator(fault.creator.dispatch, fault.creator.call) == null)
+-                    fault.requireFailedOnCaller()
+-                }
+-                result.set(CreatorPendingEvidence(Thread.currentThread(), scope, pool, lifecycle, lease, entry, fault))
++                result.set(verifyCaller(case, nonce, scope, pool, lifecycle, gate, selected))
+             } catch (problem: Throwable) {
+                 failure.set(problem)
+             }
+@@ -125,6 +96,47 @@
+         handshake.publish(PgLifecycleDatabasePhase.RETAINED)
+         handshake.await(PgLifecycleDatabasePhase.EXIT)
+         evidence.requireRetained() // Same dead caller and exact still-outstanding state; never a replayed end receipt.
++    }
++
++    private fun verifyCaller(
++        case: PgLifecycleDatabaseCase,
++        nonce: String,
++        scope: PgLifecycleTestScope,
++        pool: GuardedDataSource,
++        lifecycle: PoolLifecycle,
++        gate: CreatorPendingGate,
++        selected: AtomicReference<CreatorInvocationFailure?>,
++    ): CreatorPendingEvidence {
++        val connection = pool.connection
++        check(connection is LeaseJdbcFacade)
++        val lease = ownedCutField(requireNotNull(ownedCutField(connection, "calls")), "lease") as PersistenceJdbcLease
++        val entry = scope.entries().single { it.jdbc.currentPoolState(lease.state) }
++        val input = if (case.mode === PgLifecycleDatabaseMode.POOL_LEASE_CREATOR_DECLARED_TAIL) checkedInput(connection) else null
++        val fault = CreatorInvocationFailure(case.mode, lease, entry, pool, lifecycle, gate)
++        selected.set(fault)
++        fault.use {
++            val outcome = runCatching {
++                when (case.mode) {
++                    PgLifecycleDatabaseMode.POOL_LEASE_CREATOR_CLIENT_INFO_TAIL -> connection.setClientInfo("ApplicationName", "w03c_$nonce")
++                    PgLifecycleDatabaseMode.POOL_LEASE_CREATOR_DECLARED_TAIL -> requireNotNull(input).read()
++                    else -> connection.autoCommit
++                }
++            }
++            val problem = requireNotNull(outcome.exceptionOrNull())
++            when (case.mode) {
++                PgLifecycleDatabaseMode.POOL_LEASE_CREATOR_CLIENT_INFO_TAIL -> check(problem.javaClass === SQLClientInfoException::class.java)
++                PgLifecycleDatabaseMode.POOL_LEASE_CREATOR_DECLARED_TAIL -> check(problem.javaClass === IOException::class.java)
++                else -> check(problem is SQLException)
++            }
++            fault.requireFailedOnCaller()
++            // A new invocation is refused; it cannot retry end, restore a failed TL,
++            // fill a missing count or consume the still-available terminal right.
++            check(runCatching { connection.autoCommit }.exceptionOrNull() is SQLException)
++            check(!fault.creator.enter() && !fault.creator.end())
++            check(lease.prepareCreator(fault.creator.dispatch, fault.creator.call) == null)
++            fault.requireFailedOnCaller()
++        }
++        return CreatorPendingEvidence(Thread.currentThread(), scope, pool, lifecycle, lease, entry, fault)
+     }
+ 
+     private fun checkedInput(connection: Connection): InputStream = connection.createStatement().use { statement ->
+@@ -258,7 +270,8 @@
+         }
+ 
+         override fun remove() {
+-            if (Thread.currentThread() === caller && poolDelegate.get() === selected?.frame && selected != null && !entryFailure) {
++            val exactFrame = Thread.currentThread() === caller && poolDelegate.get() === selected?.frame
++            if (exactFrame && selected != null && !entryFailure) {
+                 check(ownedCutField(creator.frame, "phase").toString() == "ENDING")
+                 check(creator.call.creatorGuardEnded(creator) && PersistenceJdbcDispatch.current() == null && coreDelegate.get() == null)
+                 if (mode === PgLifecycleDatabaseMode.POOL_LEASE_CREATOR_END_BEFORE_TL) inject()
+@@ -281,7 +294,8 @@
+         override fun set(value: PersistenceJdbcGuardCall?) = coreDelegate.set(value)
+ 
+         override fun remove() {
+-            if (Thread.currentThread() === caller && selected != null && coreDelegate.get() === creator.call && coreFailure) {
++            val selectedCaller = Thread.currentThread() === caller && selected != null
++            if (selectedCaller && coreDelegate.get() === creator.call && coreFailure) {
+                 check(creator.dispatch.actualEnded() && PersistenceJdbcDispatch.current() == null)
+                 requireNativeEnded()
+                 if (mode === PgLifecycleDatabaseMode.POOL_LEASE_CREATOR_CORE_BEFORE_TL) inject()
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt
+@@ -66,18 +66,7 @@
+         val entitlement = ownedCutField(lease, "entitlement") as PoolLifecycle.LeaseEntitlement
+         assertTrue(lower is PhysicalJdbcFacade)
+         assertSame(lower, ownedCutField(poolEntry, "connection"))
+-        assertEquals(0L, f.lifecycle.activeAcquisitions())
+-        assertNull(PoolCallFrames.current())
+-        assertFalse(PoolActorCustody.currentThreadOwnsActorFrame())
+-        assertEquals(1, closer.corePoolSize)
+-        assertEquals(1, closer.maximumPoolSize)
+-        assertEquals(5L, closer.getKeepAliveTime(TimeUnit.SECONDS))
+-        assertTrue(closer.allowsCoreThreadTimeOut())
+-        assertEquals(0, closer.poolSize)
+-        assertEquals(0, closer.largestPoolSize)
+-        assertEquals(0, closer.activeCount)
+-        assertTrue(closer.queue.isEmpty())
+-        assertEquals(0L, closer.completedTaskCount)
++        requireInitialCloseWorkerState(f.lifecycle, closer)
+ 
+         OwnedCallerTestScope().use { calls ->
+             val closeTail = calls.gate()
+@@ -185,6 +174,21 @@
+                 connection.close()
+             }
+         }
++    }
++
++    private fun requireInitialCloseWorkerState(lifecycle: PoolLifecycle, closer: ThreadPoolExecutor) {
++        assertEquals(0L, lifecycle.activeAcquisitions())
++        assertNull(PoolCallFrames.current())
++        assertFalse(PoolActorCustody.currentThreadOwnsActorFrame())
++        assertEquals(1, closer.corePoolSize)
++        assertEquals(1, closer.maximumPoolSize)
++        assertEquals(5L, closer.getKeepAliveTime(TimeUnit.SECONDS))
++        assertTrue(closer.allowsCoreThreadTimeOut())
++        assertEquals(0, closer.poolSize)
++        assertEquals(0, closer.largestPoolSize)
++        assertEquals(0, closer.activeCount)
++        assertTrue(closer.queue.isEmpty())
++        assertEquals(0L, closer.completedTaskCount)
+     }
+ 
+     @Test
+@@ -271,7 +275,13 @@
+             val lease = ownedPoolLease(connection)
+             val context = lease.state.context
+             val entitlement = ownedCutField(lease, "entitlement") as PoolLifecycle.LeaseEntitlement
+-            val forgedToken = PersistenceProducerEpoch.Call.prepare(lease.state.epoch, Any(), Thread.currentThread(), PersistenceProducerEpoch.Kind.FOREGROUND, null)
++            val forgedToken = PersistenceProducerEpoch.Call.prepare(
++                lease.state.epoch,
++                Any(),
++                Thread.currentThread(),
++                PersistenceProducerEpoch.Kind.FOREGROUND,
++                null,
++            )
+             val forgedCall = PersistenceJdbcGuardCall.prepare(context, lease.identity, forgedToken, PersistenceJdbcGuardCallKind.BUSINESS, null)
+             assertFalse(forgedToken.actualAdmitted())
+             withCreatorCall(lease, enterCreator = false) { actual ->
+@@ -346,58 +356,59 @@
+     }
+ 
+     @Test
+-    fun `present returned dispatch cannot upgrade through pool authority and a revoked lease cannot enter a prepared creator`() = withOwnedCutPool(database.value) { f ->
+-        val connection = f.pool.connection
+-        val lease = ownedPoolLease(connection)
+-        val lower = ownedCutField(lease, "lower") as Connection
+-        val stale = lease.enterDispatch() // A dispatch alone is not an admitted guard or creator.
+-        try {
+-            connection.close()
+-            assertTrue(lease.completion.quiescent())
+-            assertSame(stale, PersistenceJdbcDispatch.current())
+-            val acquisition = f.lifecycle.prepareAcquisition(PersistenceTimeBudget.start(1_000))
+-            assertTrue(acquisition.enter())
++    fun `present returned dispatch cannot upgrade through pool authority and a revoked lease cannot enter a prepared creator`() =
++        withOwnedCutPool(database.value) { f ->
++            val connection = f.pool.connection
++            val lease = ownedPoolLease(connection)
++            val lower = ownedCutField(lease, "lower") as Connection
++            val stale = lease.enterDispatch() // A dispatch alone is not an admitted guard or creator.
+             try {
+-                assertTrue(f.lifecycle.isAuthenticPoolCaller())
+-                assertThrows<SQLException> { lower.autoCommit }
+-                assertThrows<SQLException> { lease.state.context.enter(lease.identity, PersistenceJdbcGuardCallKind.BUSINESS) }
+-                stale.end()
+-                assertTrue(lower.autoCommit, "Absent stale dispatch, this actual pool caller may select only the genuine unleased pool epoch.")
++                connection.close()
++                assertTrue(lease.completion.quiescent())
++                assertSame(stale, PersistenceJdbcDispatch.current())
++                val acquisition = f.lifecycle.prepareAcquisition(PersistenceTimeBudget.start(1_000))
++                assertTrue(acquisition.enter())
++                try {
++                    assertTrue(f.lifecycle.isAuthenticPoolCaller())
++                    assertThrows<SQLException> { lower.autoCommit }
++                    assertThrows<SQLException> { lease.state.context.enter(lease.identity, PersistenceJdbcGuardCallKind.BUSINESS) }
++                    stale.end()
++                    assertTrue(lower.autoCommit, "Absent stale dispatch, this actual pool caller may select only the genuine unleased pool epoch.")
++                } finally {
++                    assertTrue(acquisition.end())
++                }
+             } finally {
+-                assertTrue(acquisition.end())
+-            }
+-        } finally {
+-            if (!stale.actualEnded()) stale.end()
+-            connection.close()
+-        }
+-
+-        val revokedConnection = f.pool.connection
+-        val revokedLease = ownedPoolLease(revokedConnection)
+-        val entitlement = ownedCutField(revokedLease, "entitlement") as PoolLifecycle.LeaseEntitlement
+-        val entry = f.entry(revokedConnection)
+-        try {
+-            withCreatorCall(revokedLease, enterCreator = false) { admitted ->
+-                val prepared = requireNotNull(revokedLease.prepareCreator(admitted.dispatch, admitted.call))
+-                assertTrue(entitlement.revoke())
+-                assertFalse(entitlement.revoke())
+-                assertFalse(prepared.enter())
+-                assertNull(revokedLease.prepareCreator(admitted.dispatch, admitted.call))
+-                assertEquals(0L, creatorTailCount(revokedLease))
+-                assertEquals(0L, f.lifecycle.actorSnapshot().activeOperations)
+-                admitted.finishGuard()
+-                assertTrue(prepared.end(), "Only its genuinely unadmitted refusal may settle; no tail/count was granted.")
+-                assertFalse(prepared.enter())
+-                assertFalse(prepared.end())
+-                assertNull(ownedCutField(entitlement, "prepared"))
+-            }
+-            assertThrows<SQLException> { revokedConnection.close() }
+-            awaitLifecycleFact { f.scope.entries().none { it === entry } }
+-            assertTrue(revokedLease.completion.quiescent())
+-            assertEquals(0L, f.lifecycle.actorSnapshot().futureLeaseEntries)
+-        } finally {
+-            revokedConnection.close()
+-        }
+-    }
++                if (!stale.actualEnded()) stale.end()
++                connection.close()
++            }
++
++            val revokedConnection = f.pool.connection
++            val revokedLease = ownedPoolLease(revokedConnection)
++            val entitlement = ownedCutField(revokedLease, "entitlement") as PoolLifecycle.LeaseEntitlement
++            val entry = f.entry(revokedConnection)
++            try {
++                withCreatorCall(revokedLease, enterCreator = false) { admitted ->
++                    val prepared = requireNotNull(revokedLease.prepareCreator(admitted.dispatch, admitted.call))
++                    assertTrue(entitlement.revoke())
++                    assertFalse(entitlement.revoke())
++                    assertFalse(prepared.enter())
++                    assertNull(revokedLease.prepareCreator(admitted.dispatch, admitted.call))
++                    assertEquals(0L, creatorTailCount(revokedLease))
++                    assertEquals(0L, f.lifecycle.actorSnapshot().activeOperations)
++                    admitted.finishGuard()
++                    assertTrue(prepared.end(), "Only its genuinely unadmitted refusal may settle; no tail/count was granted.")
++                    assertFalse(prepared.enter())
++                    assertFalse(prepared.end())
++                    assertNull(ownedCutField(entitlement, "prepared"))
++                }
++                assertThrows<SQLException> { revokedConnection.close() }
++                awaitLifecycleFact { f.scope.entries().none { it === entry } }
++                assertTrue(revokedLease.completion.quiescent())
++                assertEquals(0L, f.lifecycle.actorSnapshot().futureLeaseEntries)
++            } finally {
++                revokedConnection.close()
++            }
++        }
+ 
+     @Test
+     fun `foreign actual statement cancellation keeps only its own outer tail while original RETURN waits for it`() = withOwnedCutPool(database.value) { f ->
+@@ -559,16 +570,18 @@
+                                 assertEquals(1, f.admission.activeOwners())
+                                 // This is a rights test, not the first-close-worker route oracle above.
+                                 // Creation must use the admitted tail, not recheck failed BUSINESS admission.
+-                                val actor = requireNotNull(hikari.threadFactory.newThread {
+-                                    try {
+-                                        assertTrue(PoolActorCustody.currentThreadOwnsActorFrame())
+-                                        assertTrue(f.ownedPool.lifecycle.isAuthenticPoolCaller())
+-                                        actorRan.set(true)
+-                                    } catch (failure: Throwable) {
+-                                        actorFailure.set(failure)
+-                                        throw failure
+-                                    }
+-                                })
++                                val actor = requireNotNull(
++                                    hikari.threadFactory.newThread {
++                                        try {
++                                            assertTrue(PoolActorCustody.currentThreadOwnsActorFrame())
++                                            assertTrue(f.ownedPool.lifecycle.isAuthenticPoolCaller())
++                                            actorRan.set(true)
++                                        } catch (failure: Throwable) {
++                                            actorFailure.set(failure)
++                                            throw failure
++                                        }
++                                    },
++                                )
+                                 actor.start()
+                                 awaitLifecycleFact { actor.state === Thread.State.TERMINATED && !actor.isAlive }
+                                 actorFailure.get()?.let { throw it }
+@@ -591,7 +604,12 @@
+                 }
+             }
+             assertThrows<PersistencePhaseException> { f.newExecutor(store).cleanupSourceGrants() }
+-            awaitLifecycleFact { runCatching { requireConnectionFree(); true }.getOrDefault(false) }
++            awaitLifecycleFact {
++                runCatching {
++                    requireConnectionFree()
++                    true
++                }.getOrDefault(false)
++            }
+             assertTrue(witnessed && actorRan.get())
+             assertTrue(requireNotNull(selected).state.epoch.outerTailsEnded())
+             assertTrue(requireNotNull(selected).completion.quiescent())
+@@ -652,11 +670,7 @@
+ }
+ 
+ /** Real already-acquired upper guard protocol only; no fixture installation of a token, epoch or count. */
+-private fun withCreatorCall(
+-    lease: PersistenceJdbcLease,
+-    enterCreator: Boolean = true,
+-    body: (ActualCreatorCall) -> Unit,
+-) {
++private fun withCreatorCall(lease: PersistenceJdbcLease, enterCreator: Boolean = true, body: (ActualCreatorCall) -> Unit) {
+     val dispatch = lease.enterDispatch()
+     val call = try {
+         lease.state.context.enter(lease.identity, PersistenceJdbcGuardCallKind.BUSINESS)
+@@ -673,11 +687,8 @@
+     }
+ }
+ 
+-private class ActualCreatorCall(
+-    private val lease: PersistenceJdbcLease,
+-    val dispatch: PersistenceJdbcDispatch.Frame,
+-    val call: PersistenceJdbcGuardCall,
+-) : AutoCloseable {
++private class ActualCreatorCall(private val lease: PersistenceJdbcLease, val dispatch: PersistenceJdbcDispatch.Frame, val call: PersistenceJdbcGuardCall) :
++    AutoCloseable {
+     private var retained: PoolLifecycle.LeaseDispatchCreator? = null
+     private var guardEnded = false
+     val creator: PoolLifecycle.LeaseDispatchCreator get() = requireNotNull(retained)
+@@ -705,11 +716,9 @@
+ }
+ 
+ /** Intercept only one exact pool-TL removal. All real values stay in the original ThreadLocal. */
+-private class CreatorOuterEndBarrier(
+-    private val lease: PersistenceJdbcLease,
+-    private val kind: PersistenceJdbcGuardCallKind,
+-    private val held: () -> Unit,
+-) : ThreadLocal<PoolCallFrame?>(), AutoCloseable {
++private class CreatorOuterEndBarrier(private val lease: PersistenceJdbcLease, private val kind: PersistenceJdbcGuardCallKind, private val held: () -> Unit) :
++    ThreadLocal<PoolCallFrame?>(),
++    AutoCloseable {
+     private val caller = Thread.currentThread()
+     private val storage = requireNotNull(ownedCutField(PoolCallFrames, "storage"))
+     private val field = creatorField(storage, "current")
+@@ -754,8 +763,7 @@
+     }
+ }
+ 
+-internal fun creatorEpochState(lease: PersistenceJdbcLease): Any =
+-    requireNotNull((ownedCutField(lease.state.epoch, "state") as AtomicReference<*>).get())
++internal fun creatorEpochState(lease: PersistenceJdbcLease): Any = requireNotNull((ownedCutField(lease.state.epoch, "state") as AtomicReference<*>).get())
+ 
+ internal fun creatorTailCount(lease: PersistenceJdbcLease): Long = ownedCutField(creatorEpochState(lease), "outerTails") as Long
+ 

@@ -1,0 +1,23 @@
+{
+  "at_utc": "2026-09-12T15:05:59.409717+00:00",
+  "authorized": true,
+  "attempts": 1,
+  "backend_sha": "6db944871c1584bd6a1f28263e8010cadd766fab",
+  "manifest_sha256": "fc979ee558b53d18337b0a5104f2b574e0bde2147a52f5ac96585a779c56a121",
+  "deployed_checkpoint_sha256": "b977d7836997e0da2866ee440dad5140452a108731f6d740b68c43032b3fe5bb",
+  "authorized_request_sha256": "14c5b4a48388e3f9318e8b2742a2ef21e7b072173bbe5f1df0c0ba76b75aabd7",
+  "preparation_seal_sha256": "846a81ded067851f620d80a4531845ee68923f004a2329e9018cd5c6bfa8dce2",
+  "independent_source_review_sha256": "ca56b68ac2a30d5c62f367e4ad50fd87592b70111f0e6a78c6760be84b274d21",
+  "selected_tests": 14,
+  "reason": "Changed19 structural/test paths after acceptedPG10; selected prior10 +4 existing controls. Local Docker unavailable; use existing one-job private Ubuntu carrier. No local compile or redundant full suite.",
+  "budgets": {
+    "job_minutes": 25,
+    "controller_seconds": 1200,
+    "preflight_seconds": 120,
+    "validation_seconds": 900,
+    "cleanup_seconds": 180
+  },
+  "resource_hygiene": "Reviewed owned stop/drain/preserve/clean/finalstop;8GiB floor; no foreign resources",
+  "limitations": "Not W03/Native05/D05/D06/full47/consumer/provider qualification; raw scalar four-row gate and historical failures retained.",
+  "scope": "One new targeted hosted attempt on this exact private source after source-only binding check; no deployment/release/main/public source push."
+}

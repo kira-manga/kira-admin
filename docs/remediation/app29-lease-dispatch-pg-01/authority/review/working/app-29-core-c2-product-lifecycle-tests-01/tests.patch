@@ -1,0 +1,324 @@
+diff --git a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt
+index 1bfbcba..5d9ebf5 100644
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePgOwnedCutIntegrationTest.kt
+@@ -707,6 +707,80 @@ class PersistencePgOwnedCutIntegrationTest {
+         }
+     }
+ 
++    @Test
++    fun `exact retirement sample result preserves its Throwable and does not absorb adjacent budget failure`() =
++        withOwnedCutPool(database.value) { f ->
++            OwnedCallerTestScope().use { callers ->
++                val behavior = OwnedCallerTestBehavior()
++                val caller = callers.launch(OwnedCallerTestKind.OVERRIDING, behavior) {
++                    val connection = f.pool.connection
++                    val lease = ownedPoolLease(connection)
++                    val entry = f.entry(connection)
++                    val original = PersistenceOwnedFactoryCaller.capture()
++                    val clock = AtomicLong()
++                    val budget = PersistenceTimeBudget.start(1_000, clock::get)
++                    val problem = IllegalStateException("Injected exact retirement sample failure.")
++                    try {
++                        // Direct internal-boundary probes, not a manufactured admitted RETURN or an eviction receipt.
++                        val samples = behavior.samples.get()
++                        behavior.sampleFailure = problem
++                        val result = entry.jdbc.retireLeasedState(lease.state, budget, original)
++                        assertTrue(result is PersistenceLeaseRetirementClaim.CallerSampleFailed)
++                        assertSame(problem, (result as PersistenceLeaseRetirementClaim.CallerSampleFailed).failure)
++                        assertEquals(
++                            samples + 1,
++                            behavior.samples.get(),
++                            "Only the exact outside-lock sample produces this result, without retry or adaptation.",
++                        )
++                        assertTrue(original.isCurrent())
++                        assertTrue(entry.jdbc.currentPoolState(lease.state))
++                        assertFalse(entry.retirementRequested.get() || lease.state.epoch.sealedAndEnded())
++                        assertEquals(1L, f.lifecycle.actorSnapshot().futureLeaseEntries)
++                        assertEquals(0L, f.lifecycle.actorSnapshot().activeOperations)
++                        clock.set(TimeUnit.MILLISECONDS.toNanos(1_000))
++                        assertSame(PersistenceLeaseRetirementClaim.Refused, entry.jdbc.retireLeasedState(lease.state, budget, original))
++                        assertEquals(samples + 1, behavior.samples.get(), "Original expiry short-circuits the still-throwing override.")
++                        behavior.sampleFailure = null
++                        val reads = java.util.concurrent.atomic.AtomicInteger()
++                        val clockProblem = IllegalStateException("Injected retirement budget recheck failure.")
++                        val brokenBudget = PersistenceTimeBudget.start(1_000) {
++                            if (reads.incrementAndGet() == 3) throw clockProblem
++                            0L
++                        }
++                        assertSame(
++                            clockProblem,
++                            assertThrows<IllegalStateException> { entry.jdbc.retireLeasedState(lease.state, brokenBudget, original) },
++                            "The budget check after a successful sample is not a CallerSampleFailed outcome.",
++                        )
++                        assertEquals(3, reads.get())
++                        assertEquals(samples + 2, behavior.samples.get())
++                        assertFalse(entry.retirementRequested.get())
++                        assertNull(f.lifecycle.actorSnapshot().firstFailure)
++                        // A separate direct claim probe, not a reset/replacement of any admitted RETURN allowance.
++                        assertSame(
++                            PersistenceLeaseRetirementClaim.Claimed,
++                            entry.jdbc.retireLeasedState(lease.state, PersistenceTimeBudget.start(1_000), original),
++                        )
++                        assertTrue(entry.retirementRequested.get() && lease.state.epoch.sealedAndEnded())
++                        assertThrows<SQLException> { connection.close() } // The one real RETURN keeps its original 1s budget/finalizers.
++                        val entitlement = ownedCutField(lease, "entitlement") as PoolLifecycle.LeaseEntitlement
++                        val operation = ownedCutField(entitlement, "prepared") as PoolLifecycle.Operation
++                        assertTrue(operation.actualFrameEnded())
++                        assertEquals(TimeUnit.MILLISECONDS.toNanos(1_000), ownedCutField(operation.frame.budget, "allowanceNanos"))
++                        connection.close()
++                        assertSame(operation, ownedCutField(entitlement, "prepared"))
++                        awaitLifecycleFact { f.scope.entries().none { it === entry } }
++                        true
++                    } finally {
++                        behavior.sampleFailure = null
++                        connection.close()
++                    }
++                }
++                assertTrue(caller.value())
++                assertEquals(Thread.State.TERMINATED, caller.thread.state)
++            }
++        }
++
+     @Test
+     fun `blocked overriding original checkout sample retains its real holder with F G T free before successful delivery`() =
+         withOwnedCutPool(database.value) { f -> assertOwnedCheckoutCaller(f, CheckoutCallerFault.NONE) }
+@@ -1300,6 +1374,13 @@ internal class OwnedCutPool(val scope: PgLifecycleTestScope, val pool: GuardedDa
+         assertEquals(0, actors.constructing)
+         assertTrue(actors.factorySealed)
+         assertTrue(actors.retiredGenerations > 0L, "A real stock-Hikari population, not an inert MODEL shell, ended.")
++        if (shutdownDiagnosticCase != null) {
++            assertEquals(PoolShutdownObservation.UNKNOWN, observation)
++            assertEquals(PoolActorFault.BOOKKEEPING_FAILED, actors.firstFailure)
++            assertEquals(0, actors.retainedGenerations, "The two clean incident cuts must retain no live or unresolved NEW generation.")
++            assertEquals(PoolShutdownObservation.UNKNOWN, receipt.observe())
++            assertEquals(actors, lifecycle.actorSnapshot())
++        }
+     }
+ 
+     /** Best-effort, non-atomic scalar reads only; never a lifecycle observer, cleanup action or completion proof. */
+@@ -1587,6 +1668,17 @@ private fun assertOwnedReturnCaller(f: OwnedCutPool, fault: ReturnCallerFault) {
+         assertEquals(0L, f.lifecycle.actorSnapshot().futureLeaseEntries)
+         assertEquals(0L, f.lifecycle.actorSnapshot().activeOperations)
+         if (f.expectedPoolUnknown) assertEquals(PoolActorFault.BOOKKEEPING_FAILED, f.lifecycle.actorSnapshot().firstFailure)
++        if (fault === ReturnCallerFault.SAMPLE) {
++            assertEquals(
++                behavior.gateAtSample + 1,
++                behavior.samples.get(),
++                "The exact repeated retirement sample still occurs once under the original allowance.",
++            )
++            assertFalse(
++                f.lifecycle.actorSnapshot().factorySealed,
++                "The positively identified second sample must not fall into the opaque eviction hard catch.",
++            )
++        }
+         awaitLifecycleFact { f.scope.entries().none { it === entry } }
+     }
+ }
+@@ -1733,7 +1825,10 @@ private class ConsentedRecycleBarrier(
+             if (!released.await(5, TimeUnit.SECONDS)) timedOut.set(true)
+             // The authentic original RETURN actor still exists, but its exact source credential
+             // was revoked before this point. This call MUST be a no-op against the successor.
+-            fixture.pool.evictOwned(lease, ownedCutField(lease, "handle") as Connection, attempt.budget)
++            assertSame(
++                PersistenceLeaseRetirementClaim.Refused,
++                fixture.pool.evictOwned(lease, ownedCutField(lease, "handle") as Connection, attempt.budget),
++            )
+             if (failTail) throw SQLException("Injected post-consent Hikari bookkeeping failure.")
+         }
+         return value
+@@ -1785,6 +1880,10 @@ private fun assertConsentedOldTail(f: OwnedCutPool, failTail: Boolean) {
+                         assertFalse(current.state.epoch.poisoned())
+                         if (failTail) {
+                             assertEquals(PoolActorFault.BOOKKEEPING_FAILED, f.lifecycle.actorSnapshot().firstFailure)
++                            assertFalse(
++                                f.lifecycle.actorSnapshot().factorySealed,
++                                "The failed old tail preserves this authentic successor RETURN's creator rights.",
++                            )
+                             assertThrows<SQLException> { borrowed.createStatement() }
+                             assertThrows<SQLException> { borrowed.close() }
+                         } else {
+diff --git a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt
+index d917fa6..8f37a12 100644
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolActorCustodyTest.kt
+@@ -71,6 +71,64 @@ class PoolActorCustodyTest {
+         assertEquals(0, calls.get())
+     }
+ 
++    @ParameterizedTest(name = "{displayName} [{index}] {argumentsWithNames}")
++    @ValueSource(strings = ["incident-first", "hard-first", "operation-hard"])
++    fun `MODEL RETURN incident preserves authentic creation and generic or factory hard faults stay dominant`(order: String) =
++        ActorFixture().use { fixture ->
++            val acquisition = fixture.creator()
++            try {
++                assertTrue(acquisition.capture(PhysicalTestConnection().raw)) // MODEL handle; the enclosing creator remains genuinely active.
++                val entitlement = requireNotNull(acquisition.prepareLeaseEntitlement())
++                val returning = requireNotNull(entitlement.prepareReturn(PersistenceTimeBudget.start(30_000)))
++                assertTrue(returning.enter())
++                try {
++                    assertNull(fixture.lifecycle.actorSnapshot().firstFailure)
++                    assertFalse(fixture.lifecycle.actorSnapshot().factorySealed)
++                    if (order == "hard-first") assertNull(fixture.pool.threadFactory.newThread(null))
++                    assertTrue(returning.recordReturnIncidentBeforeEnd())
++                    assertFalse(fixture.lifecycle.businessReady())
++                    assertFalse(fixture.lifecycle.businessAdmissionOpen())
++                    if (order == "incident-first") {
++                        assertFalse(fixture.lifecycle.actorSnapshot().factorySealed)
++                        val calls = AtomicInteger()
++                        val actor = requireNotNull(
++                            fixture.emit(
++                                Runnable {
++                                    assertTrue(fixture.lifecycle.isAuthenticPoolCaller())
++                                    assertFalse(fixture.lifecycle.businessAdmissionOpen())
++                                    calls.incrementAndGet()
++                                },
++                            ),
++                        )
++                        actor.start()
++                        awaitActorTermination(actor)
++                        assertEquals(1, calls.get())
++                        assertNull(fixture.pool.threadFactory.newThread(null)) // Genuine later hard refusal, not another incident classification.
++                        assertEquals(1L, fixture.lifecycle.actorSnapshot().retiredGenerations)
++                    } else if (order == "operation-hard") {
++                        assertFalse(fixture.lifecycle.actorSnapshot().factorySealed)
++                        assertTrue(returning.failBeforeEnd(), "The exact generic hard API must still seal despite an earlier incident.")
++                    }
++                    val first = if (order == "hard-first") PoolActorFault.UNAUTHENTICATED_CREATION else PoolActorFault.BOOKKEEPING_FAILED
++                    assertEquals(first, fixture.lifecycle.actorSnapshot().firstFailure)
++                    assertTrue(fixture.lifecycle.actorSnapshot().factorySealed)
++                    assertTrue(returning.recordReturnIncidentBeforeEnd())
++                    assertNull(fixture.emit(Runnable { error("An incident must never reopen a hard-sealed factory.") }))
++                    assertEquals(first, fixture.lifecycle.actorSnapshot().firstFailure)
++                    assertTrue(fixture.lifecycle.actorSnapshot().factorySealed)
++                    assertEquals(0, fixture.lifecycle.actorSnapshot().retainedGenerations)
++                    assertEquals(1L, fixture.lifecycle.actorSnapshot().activeOperations)
++                    assertSame(returning.frame, PoolCallFrames.current())
++                    assertFalse(returning.actualFrameEnded() || returning.frame.completion.hasEnded())
++                } finally {
++                    assertTrue(returning.end())
++                }
++            } finally {
++                // Only now may this uninitialized MODEL acquisition record its separate hard startup failure.
++                assertTrue(acquisition.end())
++            }
++        }
++
+     @Test
+     fun `ordinary unstarted platform Thread has no inherited app context and foreign or reentrant run cannot execute its delegate twice`() =
+         ActorFixture().use { fixture ->
+diff --git a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt
+index 25b754a..465c8cb 100644
+--- a/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt
++++ b/src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleTest.kt
+@@ -214,6 +214,91 @@ class PoolLifecycleTest {
+         }
+     }
+ 
++    @Test
++    fun `MODEL exact RETURN incident retains custody and seals only the empty UNKNOWN cut`() = InertPoolFixture().use { fixture ->
++        InertPoolFixture().use { other ->
++            OwnedCallerTestScope().use { callers ->
++                val entitlement = modelLeaseEntitlement(fixture.lifecycle)
++                val evictionEntitlement = modelLeaseEntitlement(fixture.lifecycle)
++                val budget = PersistenceTimeBudget.start(30_000)
++                val returning = requireNotNull(entitlement.prepareReturn(budget))
++                val otherBefore = other.lifecycle.actorSnapshot()
++                val prepared = fixture.lifecycle.actorSnapshot()
++                assertNull(prepared.firstFailure)
++                assertFalse(prepared.factorySealed, "No MODEL initialization fault may mask the final-seal branch.")
++                assertFalse(returning.recordReturnIncidentBeforeEnd())
++                assertEquals(prepared, fixture.lifecycle.actorSnapshot())
++                assertTrue(returning.enter())
++                try {
++                    val active = fixture.lifecycle.actorSnapshot()
++                    val forged = PoolLifecycle.Operation.prepare(fixture.lifecycle, returning.frame, entitlement)
++                    val wrongPool = PoolLifecycle.Operation.prepare(other.lifecycle, returning.frame, entitlement)
++                    assertFalse(
++                        forged.recordReturnIncidentBeforeEnd(),
++                        "Sharing the exact active frame and consumed right is not prepared-Operation identity.",
++                    )
++                    assertFalse(wrongPool.recordReturnIncidentBeforeEnd())
++                    assertTrue(callers.launch { !returning.recordReturnIncidentBeforeEnd() }.value())
++                    assertEquals(active, fixture.lifecycle.actorSnapshot())
++                    assertEquals(otherBefore, other.lifecycle.actorSnapshot())
++                    val eviction = requireNotNull(evictionEntitlement.prepareEviction(budget))
++                    assertTrue(eviction.enter())
++                    try {
++                        val nested = fixture.lifecycle.actorSnapshot()
++                        assertFalse(eviction.recordReturnIncidentBeforeEnd(), "An authentic EVICTION is not a RETURN incident grant.")
++                        assertFalse(returning.recordReturnIncidentBeforeEnd(), "Even the authentic RETURN must be the current top frame.")
++                        assertSame(eviction.frame, PoolCallFrames.current())
++                        assertEquals(nested, fixture.lifecycle.actorSnapshot())
++                    } finally {
++                        assertTrue(eviction.end())
++                    }
++                    assertFalse(eviction.recordReturnIncidentBeforeEnd())
++                    assertTrue(returning.recordReturnIncidentBeforeEnd())
++                    val incident = fixture.lifecycle.actorSnapshot()
++                    assertEquals(PoolActorFault.BOOKKEEPING_FAILED, incident.firstFailure)
++                    assertFalse(incident.factorySealed)
++                    assertEquals(0L, incident.futureLeaseEntries)
++                    assertEquals(1L, incident.activeOperations)
++                    assertSame(returning.frame, PoolCallFrames.current())
++                    assertSame(budget, returning.frame.budget)
++                    assertFalse(returning.actualFrameEnded() || returning.frame.completion.hasEnded())
++                    assertFalse(entitlement.revoke())
++                    assertNull(entitlement.prepareReturn(PersistenceTimeBudget.start(30_000)))
++                    assertFalse(fixture.lifecycle.prepareAcquisition(PersistenceTimeBudget.start(30_000)).enter())
++                    assertTrue(returning.recordReturnIncidentBeforeEnd())
++                    assertFalse(
++                        forged.recordReturnIncidentBeforeEnd(),
++                        "An earlier incident must not give the forged operation hard-failure authority either.",
++                    )
++                    assertEquals(incident, fixture.lifecycle.actorSnapshot())
++                } finally {
++                    assertTrue(returning.end())
++                    evictionEntitlement.revoke() // Only an unused MODEL right if an earlier assertion failed.
++                }
++                assertFalse(returning.recordReturnIncidentBeforeEnd())
++                assertTrue(returning.actualFrameEnded() && returning.frame.completion.hasEnded())
++                assertNull(PoolCallFrames.current())
++                val receipt = requireNotNull(fixture.lifecycle.requestShutdown())
++                assertEquals(PoolShutdownInvocation.RETURNED, fixture.lifecycle.closePool())
++                assertFalse(
++                    fixture.lifecycle.actorSnapshot().factorySealed,
++                    "No earlier hard failure or shutdown invocation seals this MODEL population.",
++                )
++                assertEquals(PoolShutdownObservation.UNKNOWN, receipt.observe())
++                val ended = fixture.lifecycle.actorSnapshot()
++                assertEquals(PoolActorFault.BOOKKEEPING_FAILED, ended.firstFailure)
++                assertEquals(0L, ended.futureLeaseEntries)
++                assertEquals(0L, ended.activeOperations)
++                assertEquals(0, ended.constructing)
++                assertEquals(0, ended.retainedGenerations)
++                assertTrue(ended.factorySealed)
++                assertEquals(PoolShutdownObservation.UNKNOWN, receipt.observe())
++                assertEquals(ended, fixture.lifecycle.actorSnapshot())
++                assertEquals(otherBefore, other.lifecycle.actorSnapshot())
++            }
++        }
++    }
++
+     @ParameterizedTest(name = "{displayName} [{index}] {argumentsWithNames}")
+     @ValueSource(strings = ["request", "handoff"])
+     fun `the first shutdown budget is retained across duplicate requests and cannot be replenished by observation`(origin: String) =
+@@ -422,6 +507,18 @@ class PoolLifecycleTest {
+     }
+ }
+ 
++/** MODEL captured handles only; the uninstalled inert pool cannot inject a startup fault into the incident oracle. */
++private fun modelLeaseEntitlement(lifecycle: PoolLifecycle): PoolLifecycle.LeaseEntitlement {
++    val acquisition = lifecycle.prepareAcquisition(PersistenceTimeBudget.start(30_000))
++    assertTrue(acquisition.enter())
++    return try {
++        assertTrue(acquisition.capture(PhysicalTestConnection().raw))
++        requireNotNull(acquisition.prepareLeaseEntitlement())
++    } finally {
++        assertTrue(acquisition.end())
++    }
++}
++
+ /** All native shells remain unstarted. Only the existing owner proves its inert actors ended; Hikari actor drain is not asserted. */
+ private class InertPoolFixture(pool: HikariDataSource = HikariDataSource()) : AutoCloseable {
+     val owner = PersistenceJdbcLifecycleOwner(pgProbeEndpoint(1), 1, PersistencePathStyle.POSIX)

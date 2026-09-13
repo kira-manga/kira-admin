@@ -1,0 +1,32 @@
+{
+  "purpose": "Passive source/artifact byte readback for author correction record only. NOT a validation run, preflight, freeze, acceptance or independent approval.",
+  "recorded_at_utc": "2026-09-13T12:05:16.360177+00:00",
+  "original_manifest_sha256": "dde01186ffb596c48207bb2ecd5564b68ce21511cf042007e15dab0bac624e2a",
+  "original_source_inventory_keys": 481,
+  "original_seed_keys": 348,
+  "original_seed_keys_preserved": 348,
+  "original_source_digests_still_matching_live_files": 471,
+  "live_files_differing_only_by_author_correction": [
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardCall.kt",
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt",
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLeaseInvocation.kt",
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceLeaseCompletion.kt",
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt",
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt",
+    "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycleFrames.kt",
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OwnedPoolLeaseCreatorPendingProbe.kt",
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PgLifecycleDatabaseProbe.kt",
+    "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLeaseDispatchCreatorIntegrationTest.kt"
+  ],
+  "retained_original_snapshots_byte_matched": 214,
+  "retained_original_snapshot_mismatches": [],
+  "original_wip_paths": 17,
+  "corrected_existing_wip_paths": 10,
+  "unchanged_existing_wip_paths": 7,
+  "initial_input_pins_byte_matched": 16,
+  "supplemental_input_pins_byte_matched": 2,
+  "unchanged_inert_pg01_preparation_artifact_pins_byte_matched": 8,
+  "unchanged_inert_pg01_preparation_sums_sha256": "0fb51c0338e95e97e509b4f50a018b9cc1bddf3692901a6e6dc69ae8e4fae686",
+  "new_execution_evidence": null,
+  "compile_static_tests_status": "NOT_RUN_BY_CORRECTION_AUTHOR"
+}

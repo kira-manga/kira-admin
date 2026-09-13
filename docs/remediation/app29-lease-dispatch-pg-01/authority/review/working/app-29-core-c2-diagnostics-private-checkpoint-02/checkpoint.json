@@ -1,0 +1,20 @@
+{
+  "utc": "2026-09-12T05:37:34.221315+00:00",
+  "tip": "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc",
+  "parent": "989a8c07b90d956a5f2484f223be41b5d99a8a3c",
+  "public_prerequisite": "3d839130c807f6a0a9b1c896c1c6cca4b41c4538",
+  "ref": "refs/heads/remediation/app-29-backend-complaints",
+  "bundle_bytes": 200148,
+  "bundle_sha256": "36e84a965720f325ac0b91b3807f9dcc95793268a4e7a2f6a802a5b333f25e41",
+  "header": [
+    "# v2 git bundle",
+    "-3d839130c807f6a0a9b1c896c1c6cca4b41c4538 Checkpoint reviewed App29 development21 diagnostics and ownership foundation",
+    "eb8fed8b6b620a0c7448c223bf49c1683f8eaadc refs/heads/remediation/app-29-backend-complaints"
+  ],
+  "singleton_ref_verified": true,
+  "git_bundle_verify_exit": 0,
+  "supersedes_input_only": "app-29-core-c2-diagnostics-private-checkpoint-01/backend.bundle retained immutable",
+  "reason": "Existing carrier requires one explicit public prerequisite; full original bundle is valid Git data but not carrier-admissible. No source change or gate relaxation.",
+  "public_push": false,
+  "checkpoint_is_not_validated": true
+}

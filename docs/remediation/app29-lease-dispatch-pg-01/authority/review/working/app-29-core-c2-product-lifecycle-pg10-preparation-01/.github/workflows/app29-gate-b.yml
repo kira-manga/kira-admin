@@ -1,0 +1,59 @@
+name: App29 Core C2 changed-product PG10 (private, no qualification)
+on:
+  push:
+    branches: [remediation/app-29-backend-complaints]
+    paths:
+      - .github/workflows/app29-gate-b.yml
+      - ci/app29-gate-b.py
+      - review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.json
+      - review/working/app-29-core-c2-product-lifecycle-pg10-preparation-01/profile/profile.init.gradle
+      - ci/app29-gate-b.request.json
+permissions:
+  contents: read
+concurrency:
+  group: app29-gate-b-private-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  diagnostics:
+    if: github.event.repository.private == true && github.repository == 'kira-manga/kira-admin'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out the exact private carrier
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.sha }}
+          path: admin
+          persist-credentials: false
+      - name: Require separately authorized one-run checkpoint and immutable inputs
+        id: target
+        run: python3 -B admin/ci/app29-gate-b.py --emit-target
+      - name: Check out only the public Backend prerequisite (private tip imported in owned preflight)
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: kira-manga/Kira-backend
+          ref: ${{ steps.target.outputs.public_prerequisite_sha }}
+          path: backend
+          persist-credentials: false
+          fetch-depth: 1
+          fetch-tags: false
+          submodules: false
+      - name: Select hosted Temurin21 (not the historical Ubuntu Gate A JDK)
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Run exactly ten Core C2 changed-product methods (no qualification)
+        id: validation
+        shell: bash
+        run: |
+          umask 077
+          python3 -B admin/ci/app29-gate-b.py
+      - name: Retain raw ten-case outcomes, original diagnostics, source and owned-cleanup receipts
+        if: always() && steps.validation.outcome != 'skipped'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: app29-core-c2-product-lifecycle-pg10-01-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/app29-core-c2-product-lifecycle-pg10-01-${{ github.run_id }}-${{ github.run_attempt }}/reports/
+          retention-days: 3
+          if-no-files-found: error

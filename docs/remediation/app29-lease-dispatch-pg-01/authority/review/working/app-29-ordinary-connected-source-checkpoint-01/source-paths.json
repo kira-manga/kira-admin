@@ -1,0 +1,117 @@
+[
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedDataSource.kt",
+    "before_sha256": "ca15b08299177033ca255b5de670a47e12b05e39a4077ece7078e306a7bfa398",
+    "after_sha256": "aa6ac2b7abee81370eb5a78d67d5e6af11b5e2a71aedd4bf380bc32426fdf81a"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedJdbcTransactionManager.kt",
+    "before_sha256": null,
+    "after_sha256": "ac6e2039f7dae66768981947798b177b7387bc5d9d48767f2cf298a53247bce7"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/GuardedJpaTransactionManager.kt",
+    "before_sha256": null,
+    "after_sha256": "5fd30b1120b4beb6e006264209833935b883bdb3d604b9b855c5eeedf1899b53"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/LeaseJdbcFacade.kt",
+    "before_sha256": "1d2fd29239d948d30814544abdd2999e870b12bf42de780231b0ded05d5ac674",
+    "after_sha256": "9a7ce9fcb0022420975b8144eb6c55328ffe0f9ba270da84b1f0d83c62634697"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcGuardProtocol.kt",
+    "before_sha256": "f45890e53648b8e4abb30fdc9ff6250de6927413a9f510cc672babef1b43462c",
+    "after_sha256": "03abd003fa21d8aa62ccc6b1faf9e5a12b6b0a16965a8ca9abb69b7b73351e7c"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcLease.kt",
+    "before_sha256": "e3e52b0ad68eb8ab929e01959ce6665a547bb2103a1d081ba0c90ca008724180",
+    "after_sha256": "22cb07b46e0d3a3093cd1753598027dc30c972c5f5aec53a22a5fdc6b9a0e0d5"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcTransaction.kt",
+    "before_sha256": "f750a4ad1079ef638f28ad9478231c955dae6b462822254559d43c7a05475d8a",
+    "after_sha256": "1ab3cb9a72c856a46c34c2dd16aa77d0f80ae04064f06f6829c2453ee3b56e5d"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceLeaseCompletion.kt",
+    "before_sha256": null,
+    "after_sha256": "1feea05f30d7ce3badbb3fdbf7d0d3f44877c526732122ed5d5cfcb89ef9f33d"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceOwnership.kt",
+    "before_sha256": "4d5d74ed2fce172ebcfe6b38d085916e9f8d34af809ddf9950b2cbceba044650",
+    "after_sha256": "617e630de2d5b8351f9046769eaa8bf3b58f1d7f1ba88b00497efe9280ae6f34"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePhaseContext.kt",
+    "before_sha256": null,
+    "after_sha256": "2ce0328657f28541b93ba6b568f477070d09d9070ffdf902e29ac42da63b6237"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePhaseOwnership.kt",
+    "before_sha256": null,
+    "after_sha256": "b751fc526efdbee8c5c3b2fad6ec3896753270d86b28669f7a51ce63993ffdf2"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistencePhysicalCompletion.kt",
+    "before_sha256": "c555726bd9c7858669b52ef83a5fea8fef3a9d65867e73ff76d4c4ddbea00376",
+    "after_sha256": "1ffc209d1d160fb5089acb07a045788e84b4eb2401d26b3ebc6c4ab959b5a1ec"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceProducerEpoch.kt",
+    "before_sha256": "bc52f1465041db567ea08baee1ec9e223d472d1d6915f7b278fecf2ddc040cf9",
+    "after_sha256": "0bd9bec8de141db1b930dad8dea250eeda0ee5fec526c066b3fa61783e9f2c30"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcDescendants.kt",
+    "before_sha256": "fde12ce0e37fa545b9339e9baf41a443dde66dcef927f48272e7406ac2dbfee9",
+    "after_sha256": "a919897ed97ffe30c0969faaace1ab878d7e4229d068945d544eaea2776ff286"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PhysicalJdbcFacade.kt",
+    "before_sha256": "5356b3ab244a3433410c8b40aea372715ffa1be863c8031b8d7890558cc7a230",
+    "after_sha256": "740572baed8baea8dd998b69ec3aa115a19862eee610b108e00f97d6820c3b19"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PoolLifecycle.kt",
+    "before_sha256": "24ce6c0595f4fec9774177220716b45a98d659fc33ac9b05b5d2cbc035e366aa",
+    "after_sha256": "ff6be1f140c9a103fa4d1211df0ef9ce753b778bb4795be1cc97ec7635743d8a"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/complaint/infrastructure/transaction/OrdinaryPersistencePhaseExecutor.kt",
+    "before_sha256": null,
+    "after_sha256": "43ef1e1ab32603ac03a5d5ec64ccf04f73bd1e6776763a830292efd151576cbc"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/security/JdbcSourceGrantCleanupStore.kt",
+    "before_sha256": null,
+    "after_sha256": "3521657245fd5922718c21e703120bae9bac9664bdab331564170f53714ce689"
+  },
+  {
+    "path": "src/main/kotlin/me/manga/kira/backend/security/SourceGrantCleanup.kt",
+    "before_sha256": null,
+    "after_sha256": "020a40ee44d38611bdaed358519472ebbb7e29a18eb58be411c184fa0086eaa0"
+  },
+  {
+    "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupFixture.kt",
+    "before_sha256": null,
+    "after_sha256": "ce0110d46c15fefe5e152d6aa4be30d1c0539247f468c54d4cb15969db52418b"
+  },
+  {
+    "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupIT.kt",
+    "before_sha256": null,
+    "after_sha256": "d95a4a06510dc7b8b63d9064c643d8e8c91b783f52203d7328f4f141d24c1167"
+  },
+  {
+    "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/OrdinarySourceGrantCleanupOwnershipIT.kt",
+    "before_sha256": null,
+    "after_sha256": "a1ab8749ca4bf90d03bc8716e478c5f122f3f3917b17756f02e1175868fef557"
+  },
+  {
+    "path": "src/test/kotlin/me/manga/kira/backend/common/infrastructure/persistence/PersistenceJdbcTransactionTest.kt",
+    "before_sha256": null,
+    "after_sha256": "d850de351b5c7b7b27e9d7c21ae8089174b50fe49b7a20ba60efeeba4ddbb377"
+  }
+]

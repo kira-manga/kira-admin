@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "packet_id": "app-29-core-c2-sqlclientinfo-pg1-preparation-01",
+  "status": "SEALED_PRIVATE_SOURCE_ONLY_PREPARATION_FOR_INDEPENDENT_REVIEW",
+  "execution_authorized": false,
+  "fresh_v3_freeze_created": false,
+  "deployed_acceptance_checkpoint_created": false,
+  "new_source_commit_created": false,
+  "live_files_changed": false,
+  "source_binding": {
+    "head": "6db944871c1584bd6a1f28263e8010cadd766fab",
+    "parent": "1c91f0c2d1a4d797e83a0e33b871b417ebcfaae1",
+    "tree": "3558d08d9dfc826c6c1c4a79d26265f7cdee54cb",
+    "scope": "Unchanged existing private source transport binding; zero new source delta over PG14. Not a fresh context manifest or new test result.",
+    "checkpoint_path": "review/working/app-29-core-c2-post-structural-private-checkpoint-01/checkpoint.json",
+    "checkpoint_sha256": "6e7cfcdb0598531092750a122b3cae985fe06f629455ee030773ba2242992556",
+    "bundle_sha256": "2506c18cc5e40f089cc1176a65a79d449ff02b13f4c08e0719c24d359e9882da",
+    "bundle_bytes": 217809,
+    "public_push_authorized": false
+  },
+  "files": [
+    {
+      "path": "ci/app29-gate-b.py",
+      "before_path": "before/ci/app29-gate-b.py",
+      "before_origin": "kira-admin/ci/app29-gate-b.py",
+      "before_sha256": "7fce9fae743a4d235350d2c93610142fc7a0177f2b7d7e44031b56b8315f0576",
+      "before_bytes": 61118,
+      "after_sha256": "ad2d09e5dd5419ba48bc66b73ccfd502a593e88ca2362b7b277a8dfe6f759d2d",
+      "after_bytes": 62603
+    },
+    {
+      "path": ".github/workflows/app29-gate-b.yml",
+      "before_path": "before/.github/workflows/app29-gate-b.yml",
+      "before_origin": "kira-admin/.github/workflows/app29-gate-b.yml",
+      "before_sha256": "790377568f065d1e2f64bad1a796a3d17f4a32cea224204adda25465c5d3a328",
+      "before_bytes": 2602,
+      "after_sha256": "6088e8813ceafd11ade49274b12a07395cf674d39696ca1fbdb500e42f0c3ea4",
+      "after_bytes": 2587
+    },
+    {
+      "path": "ci/app29-gate-b.request.json",
+      "before_path": "before/ci/app29-gate-b.request.json",
+      "before_origin": "kira-admin/ci/app29-gate-b.request.json",
+      "before_sha256": "14c5b4a48388e3f9318e8b2742a2ef21e7b072173bbe5f1df0c0ba76b75aabd7",
+      "before_bytes": 1612,
+      "after_sha256": "a80f7c2618ab201bd6b08fa86ed851cd4b3e29b031b991c1b29b20a584ba8c9b",
+      "after_bytes": 1593,
+      "request_state": "authorized=false; new deployed checkpoint_sha256 remains64 zeroes, never filled by source receipt or historical PG14 checkpoint"
+    },
+    {
+      "path": "profile/profile.json",
+      "before_path": "before/profile/profile.json",
+      "before_origin": "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/profile/profile.json",
+      "before_sha256": "36c3637229efbe08186014f4c60684aa0569430b26bae9d13f8b811917e82225",
+      "before_bytes": 32644,
+      "after_sha256": "173b4f5131cacd7b89b8bd24b1700eac34218969b7921c80a6beb9dee72c0d37",
+      "after_bytes": 29086
+    },
+    {
+      "path": "profile/profile.init.gradle",
+      "before_path": "before/profile/profile.init.gradle",
+      "before_origin": "review/working/app-29-core-c2-product-lifecycle-pg14-preparation-01/profile/profile.init.gradle",
+      "before_sha256": "61fb92e47baa8dcabcd6a7521e01872984e196d16cfd643776f3a50b25a81964",
+      "before_bytes": 11279,
+      "after_sha256": "f4d6c74702278adc8224ee834da7735884281bd83b977da40d5e111bfe70568d",
+      "after_bytes": 11237
+    }
+  ],
+  "documentary_copies": [
+    {
+      "path": "before/pg14-deployed-checkpoint.json",
+      "origin": "kira-admin/docs/remediation/app29-core-c2-product-lifecycle-pg14-01/checkpoint.json",
+      "sha256": "b977d7836997e0da2866ee440dad5140452a108731f6d740b68c43032b3fe5bb",
+      "bytes": 1305,
+      "scope": "Exact historical PG14 deployed-checkpoint copy under review/ for unchanged freezer input allowlist; NOT the new deployed checkpoint and not a sixth candidate."
+    }
+  ],
+  "auxiliary_sha256": {
+    "README.md": "fce149a17a6dd56d11f4af66d9b1698af7d8f9337e8a495f187a8c5a019f024c",
+    "recipe.json": "6e2bde944fd6e71e057602c643133b1aebeaa9fa94f83c2cc6b13ce68c1742dd",
+    "carrier.patch": "c3b90d5a6e8e47ffe3a5f9ce72130caa39f419f1b60879f0973916ae78189142",
+    "before.sha256": "777b914d9af8dedfc2dd1635802a181a6a8caef5a158bf7d5a11bb200cb8a22f",
+    "after.sha256": "1d6472984e2349472e73b1c2f1c6ecb98c18312a502588a8074efe700bb8c82a",
+    "inputs.sha256": "a7d0f8eef19821786be1865326350d8d2c54c87c0ca79e19139e105822704c81"
+  },
+  "selection": {
+    "profile_id": "app-29-core-c2-sqlclientinfo-pg1-profile-01",
+    "gate": "app-29-core-c2-sqlclientinfo-pg1-01",
+    "test_count": 1,
+    "test_class_count": 1,
+    "task_argv_count": 3,
+    "task_args": [
+      "test",
+      "--tests",
+      "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest.real lease preserves Properties client info defaults and declared stale and foreign failure shapes"
+    ],
+    "expected_tests": [
+      {
+        "class": "me.manga.kira.backend.common.infrastructure.persistence.PhysicalJdbcDescendantsTest",
+        "method": "real lease preserves Properties client info defaults and declared stale and foreign failure shapes",
+        "display_name": "real lease preserves Properties client info defaults and declared stale and foreign failure shapes()"
+      }
+    ],
+    "positive_witness_count": 0,
+    "source_delta_count_over_pg14": 0,
+    "historical_structural_delta_count_over_pg10": 19,
+    "shutdown_diagnostics": {
+      "status": "NOT_APPLICABLE",
+      "expected_record_count": 0
+    },
+    "rule": "One existing PhysicalJdbcDescendantsTest method; separate same-source profile, zero PG14 rerun, no invented scalar rows. Original PG14 still requires four CAPTURED rows."
+  },
+  "retained_predecessor": {
+    "path": "review/working/app-29-w03-integrated-driver-core-c2-product-lifecycle-pg14-01/manifest.json",
+    "sha256": "fc979ee558b53d18337b0a5104f2b574e0bde2147a52f5ac96585a779c56a121",
+    "backend_sha": "6db944871c1584bd6a1f28263e8010cadd766fab",
+    "scope": "IMMUTABLE_PG14_SAME_SOURCE_AND_AUTHORITY_PREDECESSOR_NOT_NEW_ONE_METHOD_ADMISSION",
+    "primary_acceptance_path": "review/working/app-29-core-c2-product-lifecycle-pg14-admission-01/primary-acceptance.json",
+    "primary_acceptance_sha256": "265d9443479871281367a38d29700814c60d475554d76fd75e105522728b6485",
+    "original_preparation_seal_sha256": "846a81ded067851f620d80a4531845ee68923f004a2329e9018cd5c6bfa8dce2",
+    "approved_input_count_to_preserve": 143,
+    "tooling_provenance_pair_count_to_preserve": 10,
+    "source_count": 466,
+    "seed_path_count": 348,
+    "snapshot_subject_count": 199,
+    "historical_input_count": 102,
+    "new_active_tool_rule": "original5 plus new5 only, expected10; retain old tooling as approved-input provenance"
+  },
+  "pending_primary_only": [
+    "Independent source-only review of the exact sealed derivative and primary disposition",
+    "Recheck true current Git/ref/source context; fresh full-v3 same-source one-method freeze and genuine local preflight",
+    "Complete private authority transport and distinct new deployed acceptance checkpoint",
+    "Separately hashed final request binding actual new checkpoint plus explicit one-attempt execution authority; immutable unauthorized draft stays unchanged"
+  ],
+  "verification_scope": "Passive reads, text/data diffs and hashes only. All52 observed-input pins and five before/after pairs matched; no new freeze/payload directories. No carrier/helper/freezer import/execution, AST/compile/checker/test/build, Docker/network/download, dispatch, Git writes or live product/carrier edits. Not runtime qualification.",
+  "seal_scope": "SHA256SUMS binds five candidates, five before-images, one historical checkpoint copy, six auxiliaries and this packet (18 files). SEAL.sha256 binds SHA256SUMS. Neither is a fresh v3 freeze/admission/result. External observation pins are workspace-relative; packet sums are packet-relative."
+}
