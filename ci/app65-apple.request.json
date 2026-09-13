@@ -1,0 +1,20 @@
+{
+  "schema": "app65-apple-resources-v1",
+  "authorization": "APP65_APPLE01_ONE_ATTEMPT_AUTHORIZED",
+  "sourceRepository": "kira-manga/kira-app",
+  "expectedRunAttempt": 1,
+  "sourceSha": "138ad8573609e935866cde72db970d9ddd8afa9e",
+  "sourceTree": "13c5895dadbf1615f4d80752a40dd2f5c867266a",
+  "sourceCorrectionReviewSha256": "8fee4602c1ae9bbbe2a34493b7d2d7bc725a55097d902a1af8066edc29005271",
+  "sourcePinsSha256": "007db9f9b4fe744309584af66c0cb160e580b8d7967a2a1a041b81cd9b9f04c3",
+  "ownerSha256": "9f69c87182eba29030fcd65c49b4e8459a41749440dab9767f3fbfe0c02db6cf",
+  "developerDir": "/Applications/Xcode_26.4.1.app/Contents/Developer",
+  "xcodegenSha256": "8774da746668bc18fe74e54cbaf10f2631a1fb05947cd374179aa912f14f99db",
+  "rexmlGemSha256": "19e0a2c3425dfbf2d4fc1189747bdb2f849b6c5e74180401b15734bc97b5d142",
+  "controllerSha256": "fdad1a33438b5d529b47b18ed6c55897391588890532753fa8ffd702a9d31666",
+  "proofSha256": "166772214cd01381cef339bfdd38cdb4accbd001f68bd5fb0cc70fe8f1f282d7",
+  "workflowSha256": "6708d4445e76bf802f28d2c9da03e78dbfd336d8ee9647b46fa6007ae9483239",
+  "independentToolingReviewSha256": "1b1181f5ff176dbe8c908a181bf61fb4aa67eb81c612d8504c7b5543c678de82",
+  "toolPrerequisitesReviewSha256": "ebf0446d1456587f02b329b8d5b96bbad3b7862fd26224179d63372a80b40b96",
+  "prerequisitesSha256": "d21bbadfaa74f63d74b5a69e6d8bdbf84f3e31c75cddb9d08ae331228dec5db9"
+}

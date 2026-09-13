@@ -1,0 +1,282 @@
+{
+  "status": "UNBOUND_SOURCE_OBSERVATION_NOT_CHECKPOINT",
+  "baseSha": "512437b2048bee949b570e543a09b341b2211a6a",
+  "branchObserved": "remediation/app-65-ios-libwebp-notices",
+  "files": {
+    ".github/workflows/testflight.yml": {
+      "sha256": "44284a4956da9f2419f97ea1d51800fe284a652eef1cb4e455d97b78d61f753c",
+      "bytes": 15656,
+      "role": "preserved-anchor"
+    },
+    "Gemfile": {
+      "sha256": "0c41d832bdf61aa072c4af7dbb6c92c9de1427a474de1cf158362ae7cda9a3c2",
+      "bytes": 320,
+      "role": "preserved-anchor"
+    },
+    "Gemfile.lock": {
+      "sha256": "25a3ea2a4d70e2806c12c1f9c6ea96ff5279e2e4f74ca65106188f289106f086",
+      "bytes": 15803,
+      "role": "preserved-anchor"
+    },
+    "composeApp/build.gradle.kts": {
+      "sha256": "dd68e8eb30ec477b88940ae9d16845518ed979aa414466886582da6a79f8d84d",
+      "bytes": 20105,
+      "role": "preserved-anchor"
+    },
+    "docs/ENGINEERING_NOTES.md": {
+      "sha256": "7fd9d2ff20c1f3b9969503d61f0177f86da9d62199abbc0ea82b7bda4ef7ce6c",
+      "bytes": 19217,
+      "role": "candidate"
+    },
+    "docs/release/INTERNAL_RELEASE_QA.md": {
+      "sha256": "8d79a463a03d6f6e21ce10e8d782e6e617d3f7a891e349dd240ed2b8c9531981",
+      "bytes": 15754,
+      "role": "candidate"
+    },
+    "fastlane/Fastfile": {
+      "sha256": "75b8bddaa74bf45dea5d3bc35d799a695b2858791dd0ad82ea69fcc6e714cd7c",
+      "bytes": 13311,
+      "role": "candidate"
+    },
+    "iosApp/iosApp/Info.plist": {
+      "sha256": "708ca4944a642ef0304608f3fe7615563d0ec703b453256169157951d836c50a",
+      "bytes": 4160,
+      "role": "preserved-anchor"
+    },
+    "iosApp/iosApp/Settings.bundle/Acknowledgements.plist": {
+      "sha256": "f5fd5759da2a3674e20df5e466e5e4f3aff9237b6bf964680ee5f4e37cef270c",
+      "bytes": 3531,
+      "role": "candidate"
+    },
+    "iosApp/iosApp/Settings.bundle/Root.plist": {
+      "sha256": "d2dfb389cfc377a5348dd7c23d545f5965be59e1b9453e351dd7d59d80fc1f43",
+      "bytes": 483,
+      "role": "candidate"
+    },
+    "iosApp/iosApp/Settings.bundle/ar.lproj/Root.strings": {
+      "sha256": "4b8be21f59e3426adad07c879b4339127e70696e4715e8737fb3c720ae5aec03",
+      "bytes": 290,
+      "role": "candidate"
+    },
+    "iosApp/iosApp/Settings.bundle/de.lproj/Root.strings": {
+      "sha256": "b7da5c33e9e01ca15b994e46adafec59f6774b6ddf13821c083722f216b52c7e",
+      "bytes": 272,
+      "role": "candidate"
+    },
+    "iosApp/iosApp/Settings.bundle/en.lproj/Root.strings": {
+      "sha256": "be771f254b63553c780a761a0f9a768a74d7f98dd1c7dd1e8022452719321a3f",
+      "bytes": 265,
+      "role": "candidate"
+    },
+    "iosApp/iosApp/Settings.bundle/es.lproj/Root.strings": {
+      "sha256": "9f852e80fe89a9d508a17a5078f6927aea82448747fa08b1ca376ccce0cc858c",
+      "bytes": 264,
+      "role": "candidate"
+    },
+    "iosApp/iosApp/Settings.bundle/fr.lproj/Root.strings": {
+      "sha256": "5a3e5b72e1ea8d923964dec862e35aa4fcd1bcdaeb97b6283e8c89c4675b0c85",
+      "bytes": 263,
+      "role": "candidate"
+    },
+    "iosApp/iosApp/Settings.bundle/id.lproj/Root.strings": {
+      "sha256": "4f1586488b69842c640bd4746cce0ad8e6c2c60d9df06371b5d14c3c3fb05bb0",
+      "bytes": 272,
+      "role": "candidate"
+    },
+    "iosApp/iosApp/Settings.bundle/in.lproj/Root.strings": {
+      "sha256": "4f1586488b69842c640bd4746cce0ad8e6c2c60d9df06371b5d14c3c3fb05bb0",
+      "bytes": 272,
+      "role": "candidate"
+    },
+    "iosApp/iosApp/Settings.bundle/it.lproj/Root.strings": {
+      "sha256": "33e74135816ab5d83ae2e935c3adaa06baddbbef1d44793d456f81313b161a15",
+      "bytes": 265,
+      "role": "candidate"
+    },
+    "iosApp/iosApp/Settings.bundle/ja.lproj/Root.strings": {
+      "sha256": "a43a520e8a190fc9848aeaf84feed7589b08812eb1eb8675bb4b0e41506ecd82",
+      "bytes": 285,
+      "role": "candidate"
+    },
+    "iosApp/iosApp/Settings.bundle/pt.lproj/Root.strings": {
+      "sha256": "3588a5a7f41bb6b604d8e5582f04f22464d60e413b1d9709f313a7d17d738a39",
+      "bytes": 265,
+      "role": "candidate"
+    },
+    "iosApp/iosApp/Settings.bundle/ru.lproj/Root.strings": {
+      "sha256": "22fc7332e68fc995d5ed6c6795bfa12de7cfcb083798cf5c5f1b12c151444eb6",
+      "bytes": 314,
+      "role": "candidate"
+    },
+    "iosApp/iosApp/Settings.bundle/tr.lproj/Root.strings": {
+      "sha256": "fec16eab99fb0b4a28a74d0d63df453be032876398431a63badc43749de25194",
+      "bytes": 275,
+      "role": "candidate"
+    },
+    "iosApp/iosApp/iosApp.entitlements": {
+      "sha256": "dd7d6ab03f80ca66ce96c369f5608be7e2e86958d4332d57dad7146fabd9754f",
+      "bytes": 783,
+      "role": "preserved-anchor"
+    },
+    "iosApp/project.yml": {
+      "sha256": "2a26a203e00fed34671e8a6ec50890edfa0956c0b94f2347543a5730e735bb23",
+      "bytes": 13608,
+      "role": "candidate"
+    },
+    "platform/build.gradle.kts": {
+      "sha256": "421a71ab59252e3c4f06e48cd6c92560270d6cc9f389b32434ff8f19f726c124",
+      "bytes": 14618,
+      "role": "preserved-anchor"
+    },
+    "platform/libs/libwebp/COPYING": {
+      "sha256": "5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf",
+      "bytes": 1496,
+      "role": "candidate"
+    },
+    "platform/libs/libwebp/PATENTS": {
+      "sha256": "cc3273e0694ea5896145e0677699b53471b03ea43021ddc50e7923fbb9f5023c",
+      "bytes": 1436,
+      "role": "candidate"
+    },
+    "platform/libs/libwebp/README.md": {
+      "sha256": "878109b556ab68b0b54555b2e6aeff27fdf95f7ed780e0ee1ec7f6ff1e7a661e",
+      "bytes": 4656,
+      "role": "candidate"
+    },
+    "platform/libs/libwebp/include/webp/decode.h": {
+      "sha256": "300db34c56d965ee8304f0f0e947ba226403362833ce5d956c6d5f9814a5297f",
+      "bytes": 23960,
+      "role": "preserved-anchor"
+    },
+    "platform/libs/libwebp/include/webp/demux.h": {
+      "sha256": "984983b09785e2af7e8c5cefd2e2f08d2116870c13108445665b11256aa82fec",
+      "bytes": 15998,
+      "role": "preserved-anchor"
+    },
+    "platform/libs/libwebp/include/webp/encode.h": {
+      "sha256": "009eb07d15f117b7e26484d0bc0c2a6a571ba378c7ddac0ea4322596167aeab1",
+      "bytes": 28480,
+      "role": "preserved-anchor"
+    },
+    "platform/libs/libwebp/include/webp/format_constants.h": {
+      "sha256": "6f26d54038b770c5f9ddcd8f8e2da05d43c92168cb30f0e7060240f90df5fd7f",
+      "bytes": 4016,
+      "role": "preserved-anchor"
+    },
+    "platform/libs/libwebp/include/webp/mux.h": {
+      "sha256": "c72cf593f8194c671efcade33f1678294380120d45a337511d612a3acb643f35",
+      "bytes": 25966,
+      "role": "preserved-anchor"
+    },
+    "platform/libs/libwebp/include/webp/mux_types.h": {
+      "sha256": "d3313ad38c26d17abd244ab683e662dedead1489ec0f910bc31eba7ce2f8838c",
+      "bytes": 3259,
+      "role": "preserved-anchor"
+    },
+    "platform/libs/libwebp/include/webp/types.h": {
+      "sha256": "5ec7cd176fa921379ae463cecb2ab1616068031e58ad705f51c1f3bbc7d70aa3",
+      "bytes": 3133,
+      "role": "preserved-anchor"
+    },
+    "platform/libs/libwebp/ios-arm64-simulator/libwebp.a": {
+      "sha256": "ab7bbf5d3baa0f97c1c56093311aafa68a840d5fcf488fa174f12604c0d1bd24",
+      "bytes": 674448,
+      "role": "preserved-anchor"
+    },
+    "platform/libs/libwebp/ios-arm64/libwebp.a": {
+      "sha256": "0bce31ff784afdf403ae1a66a0383234283627415f09b2e207a801672e6ecebd",
+      "bytes": 659320,
+      "role": "preserved-anchor"
+    },
+    "platform/libs/libwebp/provenance.json": {
+      "sha256": "c2a658e9188b7afb476183c6c469fa159f9f10faa02aa223ee6b6dedeb48bb31",
+      "bytes": 1877,
+      "role": "candidate"
+    },
+    "platform/src/iosMain/kotlin/me/manga/kira/platform/cbz/IosLibWebpEncoder.kt": {
+      "sha256": "719f0070b21f8f9569db239cdc88c75b86a61360c6d3209aa44ef4886fbb9fd6",
+      "bytes": 8282,
+      "role": "preserved-anchor"
+    },
+    "platform/src/iosMain/kotlin/me/manga/kira/platform/cbz/IosWebpEncoderFlags.kt": {
+      "sha256": "4011bf6b3e0fb82a3ad0878176079507ca825238974e66773049cfae7cb374e9",
+      "bytes": 1373,
+      "role": "preserved-anchor"
+    },
+    "platform/src/iosTest/kotlin/me/manga/kira/platform/cbz/IosLibWebpLinkageTest.kt": {
+      "sha256": "3ca10920119ef5fa885d7d941ca105e7073bc42572d6155b7237c41fabf3fd30",
+      "bytes": 1981,
+      "role": "preserved-anchor"
+    },
+    "platform/src/nativeInterop/cinterop/libwebp.def": {
+      "sha256": "ceeb8cc717e8e98ce21b5ae6cc57865c80aeda00c4c5ae1113a6ed652d39b0db",
+      "bytes": 414,
+      "role": "preserved-anchor"
+    },
+    "release/ios/lib/libwebp_ipa_notices.rb": {
+      "sha256": "e915e35d33f2edc6ca665921e4ee78a525057e480474a98e3f24e7919a4f128f",
+      "bytes": 3759,
+      "role": "candidate"
+    },
+    "release/ios/lib/libwebp_notices.rb": {
+      "sha256": "78334992450232946f2024b31bb192429c7b4578ac705bdf8ce3a93f8b601328",
+      "bytes": 7134,
+      "role": "candidate"
+    },
+    "release/ios/lib/plist_reader.rb": {
+      "sha256": "cc7b1b4887cfec5a238bf640a62f87accdf90c712883963b9de898b88cedf635",
+      "bytes": 2059,
+      "role": "candidate-correction"
+    },
+    "release/ios/validate_artifacts.rb": {
+      "sha256": "c2d64ec075fdf53a3d473992d3bdaa6d925a0deb4107618f6dc3faf88aee8e43",
+      "bytes": 9792,
+      "role": "candidate"
+    },
+    "release/ios/validate_project_configuration.rb": {
+      "sha256": "1a540acd7ff60aa9f4ab32ab499a538b506175e0411c698958f08b19b2f6b17b",
+      "bytes": 4162,
+      "role": "candidate"
+    },
+    "release/ios/write_release_configuration.rb": {
+      "sha256": "cc043a623b5ddf9b9076c38a9d3b2e3b954d5c2bbf2cd0279bd78bcad6726536",
+      "bytes": 1948,
+      "role": "preserved-anchor"
+    },
+    "release/mobile-release.json": {
+      "sha256": "c4db16c773c6b5788d1a8b1920579341dfdf1c75deb5e9fec7452fad136c378d",
+      "bytes": 1841,
+      "role": "preserved-anchor"
+    },
+    "scripts/release/tests/ios-libwebp-artifacts-test.rb": {
+      "sha256": "0f35f5f416b7184a66920f6b7a6248c56fe9eaa7187925a594d5ba13c0017f07",
+      "bytes": 8610,
+      "role": "candidate"
+    },
+    "scripts/release/tests/ios-libwebp-ipa-notices-test.rb": {
+      "sha256": "0000d71bd5cd61c53d657b907e50c62fdade347c6bb235e2b4c247b57034efbb",
+      "bytes": 2794,
+      "role": "candidate"
+    },
+    "scripts/release/tests/ios-libwebp-notices-test.rb": {
+      "sha256": "cddc74fead92287136407d99ef1c0b29999e6f7e3bfdc1c9013b930c9a4f3b51",
+      "bytes": 8430,
+      "role": "candidate"
+    },
+    "scripts/release/tests/ios-libwebp-upload-lanes-test.rb": {
+      "sha256": "3a38fce69854550b3123bb45b28297447d53523c2c2574d4b712d5d043430efd",
+      "bytes": 6253,
+      "role": "candidate"
+    },
+    "scripts/release/tests/ios-upload-only-workflow-test.rb": {
+      "sha256": "182c5fe8e7a6b991bae244c9690ef23b5b406d9a93406ce0440298bdb1271175",
+      "bytes": 8302,
+      "role": "candidate"
+    },
+    "scripts/release/tests/libwebp-notice-fixtures.rb": {
+      "sha256": "dd7d6de54c3a55295200a7e9b63c7c8c67e7e35f97defbb4d4712bf76a9bb150",
+      "bytes": 3469,
+      "role": "candidate"
+    }
+  }
+}
