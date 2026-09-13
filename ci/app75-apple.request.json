@@ -2,7 +2,7 @@
   "android05ReviewSha256": "a8982200e42538a3cc0f53fc334f01be9fc04ea5549b71b317c713db345fbcbb",
   "authorization": "APP75_APPLE01_ONE_ATTEMPT_AUTHORIZED",
   "coldPublicAcquisitionAuthorized": true,
-  "controllerSha256": "7a973caffae5909d5a23110267cddf5798824a1892d398786dda29c4f2d6531c",
+  "controllerSha256": "ca26d2ed5a7adbe2fd3da216f75b83775b42fcbea7cdf7cf2e310457837db735",
   "desktop04AcceptanceSha256": "16be9a2a7613bc614b6e779a3ab64d0de91bf7475129383edc83de647067e93b",
   "desktop04ReviewSha256": "76818634e9e354d5c7a5ebbb6364c8731f426fb3c4f5d337ec0a83bb2e80481a",
   "developerDir": "/Applications/Xcode_26.4.1.app/Contents/Developer",
@@ -10,9 +10,9 @@
   "initSha256": "0ebd7a7f6b335329e7d8d2a9df891f07e2a90dd21ffbfd2abe8bea299342f0be",
   "ownerHelperSha256": "9f69c87182eba29030fcd65c49b4e8459a41749440dab9767f3fbfe0c02db6cf",
   "schema": "app75-apple-private-v1",
-  "sourceInputsSha256": "fe66a79ad5c7a27accddf96a2eeba7c1b7f7f9ece64039a221e3ee55a01fd6ca",
+  "sourceInputsSha256": "62826a371557dfef8f1fcae983fdf657f317df6072ecac4e795157e668b6e9f2",
   "sourceRepository": "kira-manga/kira-app",
-  "sourceSha": "a9f3116716715b2c59c37662b64bebf6eec3b708",
+  "sourceSha": "5e80956bd3d4dee5f7ee44ccd2e4341bce245403",
   "tasks": [
     ":data:compileKotlinIosSimulatorArm64",
     ":ui:compileKotlinIosSimulatorArm64"
