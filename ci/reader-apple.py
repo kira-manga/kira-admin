@@ -165,6 +165,7 @@ def test_argv(source, run, udid):
             '-Pkotlin.incremental=false', '-PkiraUseMavenLocal=false',
             '-Porg.gradle.java.installations.auto-download=false', '-Pandroid.builder.sdkDownload=false', '-Dorg.gradle.vfs.watch=false',
             '-Pkotlin.project.persistent.dir=' + str(run / 'kotlin'),
+            f'-Duser.home={run / "home"}',
             f'-Dorg.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=768m -Dreader.apple.owner={run.name} '
             f'-Duser.home={run / "home"} -Djava.io.tmpdir={run / "tmp"}']
 

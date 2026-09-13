@@ -29,6 +29,24 @@ def sourceSha = System.getenv('READER_APPLE_SOURCE_SHA')
 def realHome = new File(System.getenv('READER_APPLE_SIMULATOR_HOME')).canonicalFile
 def device = System.getenv('READER_APPLE_DEVICE')
 require(run.isDirectory() && reports.isDirectory() && sourceSha == '816b48d96cd407e551b9fcd5b5c6eda2d5936167', 'Wrong owned source/run')
+// Actual early-init observations, not the controller's declared tools.homes values.
+def homeObservation = [
+    actualEnvironmentHome: System.getenv('HOME'),
+    actualJvmUserHome: System.getProperty('user.home'),
+    expectedScratchHome: new File(run, 'home').path,
+    realHomeCanonical: realHome.path,
+    gradleUserHomeCanonical: gradle.gradleUserHomeDir.canonicalPath,
+    explicitStartParameterUserHome: gradle.startParameter.systemPropertiesArgs['user.home']
+]
+homeObservation.predicates = [
+    environmentMatchesScratch: homeObservation.actualEnvironmentHome == homeObservation.expectedScratchHome,
+    jvmMatchesScratch: homeObservation.actualJvmUserHome == homeObservation.expectedScratchHome,
+    realHomeIsDirectory: realHome.isDirectory(),
+    realHomeOutsideRun: !realHome.toPath().startsWith(run.toPath())
+]
+def homeObservationLine = 'READER_APPLE_HOME_OBSERVATION ' + JsonOutput.toJson(homeObservation)
+require(homeObservationLine.getBytes('UTF-8').length <= 8192, 'Oversized allowlisted HOME observation')
+logger.lifecycle(homeObservationLine)
 require(System.getenv('HOME') == new File(run, 'home').path && System.getProperty('user.home') == new File(run, 'home').path &&
     realHome.isDirectory() && !realHome.toPath().startsWith(run.toPath()), 'Gradle and Simulator homes must stay separate')
 require(device ==~ /[0-9A-F]{8}(?:-[0-9A-F]{4}){3}-[0-9A-F]{12}/, 'Missing exact owned device')
