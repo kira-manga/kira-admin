@@ -1,7 +1,7 @@
-# BOUND CANDIDATE ONLY: exact source/auth are set; live admission/launch remain primary-owned.
+# UNBOUND AUTHOR COPY: source checkpoint is null and request disabled; no launch authorization.
 # Retain the predecessor concurrency group; primary also holds the existing host-local batch.lock.
 # No VM-side claim is made to that primary-host lock.
-name: Backend20 focused atomic-bootstrap validation (private)
+name: Backend22 signed-candidate export validation (private)
 'on':
   push:
     branches: [remediation/app-29-backend-complaints]
@@ -24,7 +24,7 @@ jobs:
           ref: ${{ github.sha }}
           path: admin
           persist-credentials: false
-      - name: Require explicit primary authorization and an exact Backend20 commit
+      - name: Require explicit primary EXPORT authorization and an exact Backend22 commit
         id: target
         timeout-minutes: 1
         shell: bash
@@ -32,16 +32,22 @@ jobs:
           python3 -B - <<'PY'
           import json, os, re
           from pathlib import Path
+          expected_backend_sha = 'f6b118bef0b6380a1d40c23334b4d66b65f282ab'  # Exact independently reviewed source checkpoint.
+          if (not isinstance(expected_backend_sha, str) or not re.fullmatch('[0-9a-f]{40}', expected_backend_sha) or
+                  expected_backend_sha == '0' * 40):
+              raise SystemExit('UNBOUND Backend22 export checkpoint; no Backend checkout/build permitted')
           value = json.loads(Path('admin/ci/backend20-atomic-bootstrap.request.json').read_text())
           sha = value.get('backend_sha', '')
-          if (value.get('authorization') != 'BACKEND20_ONE_TARGETED_BATCH_AUTHORIZED' or
+          if (set(value) != {'authorization', 'authorized', 'runAllowed', 'backend_sha', 'classes', 'methods', 'status'} or
+                  value.get('authorization') != 'BACKEND22_ONE_TARGETED_BATCH_AUTHORIZED' or
                   value.get('authorized') is not True or value.get('runAllowed') is not True or
-                  not isinstance(sha, str) or not re.fullmatch('[0-9a-f]{40}', sha) or sha == '0' * 40):
-              raise SystemExit('Unbound or unauthorized Backend20 request; no Backend checkout/build permitted')
+                  value.get('status') != 'PRIMARY_BOUND_EXPORT' or
+                  not isinstance(sha, str) or not re.fullmatch('[0-9a-f]{40}', sha) or sha == '0' * 40 or sha != expected_backend_sha):
+              raise SystemExit('Disabled, wrong-phase or unbound Backend22 export request; no Backend checkout/build permitted')
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               output.write('sha=' + sha + '\n')
           PY
-      - name: Check out only the exact public Backend20 target
+      - name: Check out only the exact public Backend22 export target
         timeout-minutes: 1
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
@@ -55,7 +61,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Run 169 exact methods / 239 expected cases with compilation, statics and the bootstrap reference witness once
+      - name: "Run Backend22 export: 10 ordinary methods + 1 explicit export, compilation, statics and reference witness once"
         id: validation
         timeout-minutes: 28
         env:

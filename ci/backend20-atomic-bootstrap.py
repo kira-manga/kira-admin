@@ -1,117 +1,158 @@
-"""Private Backend20 derivative of the mature Backend11 owner; never import as a library.
+"""UNBOUND private Backend22 EXPORT derivative of accepted Backend20 hosted04 machinery.
 
-Primary-bound candidate; live admission/launch remain primary-owned. Even a later PASS is targeted bootstrap evidence, not deployment,
-reconciliation/adoption, a full-suite result or issue closure. Primary holds the existing local
-batch.lock across hosted launch/collection/cleanup; this VM does not claim that host-local lock.
+Exactly10 ordinary methods + 1 explicit candidate export; not fixture admission, comparison,
+App validation, deployment or issue closure. Legacy backend20* carrier names are retained.
+Primary must bind the real source checkpoint and independently reviewed tooling before admission;
+never import or launch this inert author revision. Primary holds the existing local batch.lock
+across hosted launch/collection/cleanup; this VM does not claim that host-local lock.
 """
-import hashlib, json, os, re, shutil, signal, subprocess, tarfile, time
+import hashlib, json, os, re, shutil, signal, stat, subprocess, tarfile, time
 from pathlib import Path, PurePosixPath
 from xml.etree import ElementTree as ET
 
+# Future real checkpoint is deliberately absent. Refuse before request reads, outputs or helpers.
+EXPECTED_BACKEND_SHA = 'f6b118bef0b6380a1d40c23334b4d66b65f282ab'
+if (not isinstance(EXPECTED_BACKEND_SHA, str) or
+        not re.fullmatch('[0-9a-f]{40}', EXPECTED_BACKEND_SHA) or EXPECTED_BACKEND_SHA == '0' * 40):
+    raise SystemExit('UNBOUND Backend22 export source checkpoint; no request/output/helper/workload permitted')
+PHASE = 'EXPORT'
+SOURCE_REVIEW_SHA = '8bb35081c8d8d2650eab7619294fc73f74c7057d404aac9648f5d9850bef0c1c'
+PREPARATION_PINS_SHA = 'bb3fe6e9918188020b5ca19e35159066afa1650aba035600951c171d6329152f'
+GENERATE_ENV = 'KIRA_BACKEND22_GENERATE_FIXTURE'
+FIXTURE_RESOURCE = 'fixtures/bootstrap-v2-v6-signed.json'
+
 ADMIN = Path(__file__).resolve().parent.parent
 BACKEND = ADMIN.parent / 'backend'
+REQUEST_PATH = ADMIN / 'ci/backend20-atomic-bootstrap.request.json'
+TARGETS = json.loads(REQUEST_PATH.read_text())
+if (set(TARGETS) != {'authorization', 'authorized', 'runAllowed', 'backend_sha', 'classes', 'methods', 'status'} or
+        TARGETS.get('authorization') != 'BACKEND22_ONE_TARGETED_BATCH_AUTHORIZED' or
+        TARGETS.get('authorized') is not True or TARGETS.get('runAllowed') is not True or
+        TARGETS.get('status') != 'PRIMARY_BOUND_EXPORT' or TARGETS.get('backend_sha') != EXPECTED_BACKEND_SHA):
+    raise SystemExit('Disabled, unbound or wrong-phase Backend22 export request; no outputs/helpers permitted')
+CLASSES, METHODS = TARGETS['classes'], TARGETS['methods']
 RUN = Path(os.environ['BACKEND20_RUN'])
 RUN.mkdir(mode=0o700, exist_ok=False)
 REPORTS, HOME, W01, TEMP = (RUN / n for n in ('reports', 'gradle', 'w01', 'tmp'))
 for directory in (REPORTS, HOME, W01, TEMP): directory.mkdir(mode=0o700)
 ENV = dict(os.environ, GRADLE_USER_HOME=str(HOME), W01_RUN=str(W01), TMPDIR=str(TEMP),
            JAVA_TOOL_OPTIONS=f'-Djava.io.tmpdir={TEMP}', DOCKER_HOST='unix:///var/run/docker.sock')
-TARGETS = json.loads((ADMIN / 'ci/backend20-atomic-bootstrap.request.json').read_text())
-CLASSES, METHODS = TARGETS['classes'], TARGETS['methods']
+# Only the one explicit export Gradle command receives true; stops and other commands do not.
+ENV.pop(GENERATE_ENV, None)
+CANDIDATE_BUILD = BACKEND / 'build'  # Producer Path.of(), not the relocated Gradle buildDirectory.
+CANDIDATE_PATH = CANDIDATE_BUILD / FIXTURE_RESOURCE
+CANDIDATE_COPY = REPORTS / 'candidate' / Path(FIXTURE_RESOURCE).name
+EXPECTED_FIXTURE_PATH = BACKEND / 'src/test/resources' / FIXTURE_RESOURCE
 
-# Primary-bound exact source checkpoint; live admission/launch remain primary-owned.
-EXPECTED_BACKEND_SHA = 'fbc19a69a19c2e646f2a5ed5c48a491b20e93a76'
-# Two corrected assertions: exactly2 existing methods/cases in2 JPA PostgreSQL classes.
-# Retain122 hosted03 and115 older passes separately; no corrected-source239-case claim.
+# Export only: exact10 ordinary cases plus1 explicit candidate-export case across5 classes.
+# No comparison method, broad Startup class or historical Backend20 selection is admitted here.
 EXPECTED_CLASSES = {
-    'me.manga.kira.backend.sourceconfig.admin.SourceOperationalModeIT': 1,
-    'me.manga.kira.backend.sourceconfig.public.PublicSourceSummaryConsistencyIT': 1,
+    'me.manga.kira.backend.sourceconfig.InitialSourceCatalogFixturesTest': 4,
+    'me.manga.kira.backend.sourceconfig.admin.BootstrapEndpointIT': 2,
+    'me.manga.kira.backend.sourceconfig.admin.FullBundledParityIT': 1,
+    'me.manga.kira.backend.sourceconfig.StartupConsistencyIT': 3,
+    'me.manga.kira.backend.sourceconfig.public.BootstrapSignedCatalogFixtureIT': 1,
 }
 EXPECTED_METHODS = {
-    'me.manga.kira.backend.sourceconfig.admin.SourceOperationalModeIT': [
-        'three-state mode is protected idempotent and publishes one atomic catalog revision',
+    'me.manga.kira.backend.sourceconfig.InitialSourceCatalogFixturesTest': [
+        'raw historical fixture carries all revision6 generic models including Azora chapter opt in',
+        'helper keeps reference metadata and the entire raw source list without substitution',
+        'helper refuses same roster non Azora model drift rather than repairing it',
+        'unoverridden source defaults align with bundle6 and retain the server minimum100',
     ],
-    'me.manga.kira.backend.sourceconfig.public.PublicSourceSummaryConsistencyIT': [
-        'removal after document selection preserves the complete old summary generation',
+    'me.manga.kira.backend.sourceconfig.admin.BootstrapEndpointIT': [
+        'valid same roster stale Azora is rejected without bootstrap or public artifacts',
+        'valid same roster non Azora drift is rejected without bootstrap or public artifacts',
+    ],
+    'me.manga.kira.backend.sourceconfig.admin.FullBundledParityIT': [
+        'the full bundled document parses, validates, canonicalizes, imports, serves and re-checksums',
+    ],
+    'me.manga.kira.backend.sourceconfig.StartupConsistencyIT': [
+        'fresh empty DB passes both checks',
+        'existing snapshots with a consistent pointer pass',
+        'minimum-server-revision not greater than bundled-revision-floor fails fast',
+    ],
+    'me.manga.kira.backend.sourceconfig.public.BootstrapSignedCatalogFixtureIT': [
+        'exportCandidateOnly',
     ],
 }
-# Ordinary methods keep (); parameterized XML display names are exact and unique.
 EXPECTED_CASES = {
-    'me.manga.kira.backend.sourceconfig.admin.SourceOperationalModeIT': [
-        'three-state mode is protected idempotent and publishes one atomic catalog revision()',
+    'me.manga.kira.backend.sourceconfig.InitialSourceCatalogFixturesTest': [
+        'raw historical fixture carries all revision6 generic models including Azora chapter opt in()',
+        'helper keeps reference metadata and the entire raw source list without substitution()',
+        'helper refuses same roster non Azora model drift rather than repairing it()',
+        'unoverridden source defaults align with bundle6 and retain the server minimum100()',
     ],
-    'me.manga.kira.backend.sourceconfig.public.PublicSourceSummaryConsistencyIT': [
-        'removal after document selection preserves the complete old summary generation()',
+    'me.manga.kira.backend.sourceconfig.admin.BootstrapEndpointIT': [
+        'valid same roster stale Azora is rejected without bootstrap or public artifacts()',
+        'valid same roster non Azora drift is rejected without bootstrap or public artifacts()',
+    ],
+    'me.manga.kira.backend.sourceconfig.admin.FullBundledParityIT': [
+        'the full bundled document parses, validates, canonicalizes, imports, serves and re-checksums()',
+    ],
+    'me.manga.kira.backend.sourceconfig.StartupConsistencyIT': [
+        'fresh empty DB passes both checks()',
+        'existing snapshots with a consistent pointer pass()',
+        'minimum-server-revision not greater than bundled-revision-floor fails fast()',
+    ],
+    'me.manga.kira.backend.sourceconfig.public.BootstrapSignedCatalogFixtureIT': [
+        'exportCandidateOnly()',
     ],
 }
-# Current66 source bytes, including the authorized12 annotation-name-only corrections.
+# Accepted Backend22 named source/build/anchor/migration bytes; not a future checkpoint identity.
 EXPECTED_SOURCE_SHA256 = {
-    'src/main/kotlin/me/manga/kira/backend/common/web/RequestBodySizeLimitFilter.kt': '0b78a3e8a368de063f715a3b55d0b61344dba1eddb7b0ac6268a5b0d281d20e4',
-    'src/main/kotlin/me/manga/kira/backend/sourceconfig/api/GenericV2CutoverController.kt': '76b203af5028c0207aaa5cea69917672ac42545a40a9c9d86ac0aec2e0b058ce',
-    'src/main/kotlin/me/manga/kira/backend/sourceconfig/api/dto/InitialSourceCatalogReceiptResponse.kt': 'ea1077fa34aed836f40689e82c637347524302c0dab9052b281553b3d16988a2',
-    'src/main/kotlin/me/manga/kira/backend/sourceconfig/application/BundledImportService.kt': '7ca4e4896b9138df41ed7681705fe0d47103d697b80543df9d76dbec8379b1b6',
+    '.editorconfig': 'ecc589d2ee57adaacd3e951b625a6f4ad31f6ebc41f354e332cf0b9b39f2c6cd',
+    'AGENTS.md': 'e65987b4aacc4b090d2cc3e3bcba040d56fefae4c0357afef3588b323f59f7b9',
+    'README.md': '6e61bfbc8fcb87976b68b081a916f7a8f7399377abb1ae1b03f5a387ae50151a',
+    'build.gradle.kts': '8b6116173f5a5fd76de7c9654685754631e2df1a480a692082995b3122fb7aa0',
+    'config/detekt/detekt.yml': '509eb13c3915934d49a3de84dcb5332ff372deee0326c6aaceeed4c2a0b38760',
+    'docs/LOCAL_DEV.md': 'b17f1680b045d33d8420b2c64ba5f00ddff57d10c4ab9be46dc1a16a3ad8a5aa',
+    'docs/MIGRATION_BUNDLED_TO_REMOTE.md': 'a688796bea719124b77ca3266dea202863252915d3092d3ff72e3bcddc419d08',
+    'docs/PLAN.md': 'a4023a9a1c488075db2379a6a40b967dffde00aea778f84f3b5d2ff878da21c6',
+    'docs/SOURCE_CONFIG_LIFECYCLE.md': '8dff875d302a67667858fc0669a4947b80f2d12f3aa9853100c0deffbe5c46ae',
+    'docs/SOURCE_DOCUMENT_SIGNING.md': 'be9f52ebb202a66cce2adf070affcc1c462be88389afa8b8d7f833674c99aa6f',
+    'docs/USAGE.md': 'b9987018093ceacf036ba006617bcd1dc5138dafa4c2b6bfa837a9de095c54f9',
+    'gradle.lockfile': '5e4078d2b0dff054871f67fc58b2349ab28b2c79d703ce541a5c9a9b2b50605f',
+    'gradle/libs.versions.toml': '041f4429eef81414ad3ede5825d570d1e1f8790fd8014332c9355a3a2177a120',
+    'gradle/wrapper/gradle-wrapper.jar': '7d3a4ac4de1c32b59bc6a4eb8ecb8e612ccd0cf1ae1e99f66902da64df296172',
+    'gradle/wrapper/gradle-wrapper.properties': '89032df14851e71a09ea7eaaffde8c85d3e806cb5365bd747ae9ec843dcae1dd',
+    'gradlew': 'b187b4c52e749f5760afdd6fadc31b2a98ad35fb249bf0dff03b72650f320409',
+    'settings.gradle.kts': 'f2ffbdad8a2e99edd1b87d7b03d66e669ea2e1965bde5abab10d630d50841044',
+    'src/main/kotlin/me/manga/kira/backend/config/ClockConfig.kt': '6fc237a25dc359abf91fb96507809c5e04254af11e6f1ce272e03e701ba572f1',
+    'src/main/kotlin/me/manga/kira/backend/config/KiraConfigProperties.kt': '003d8c331f896e0d62cc7decffc2ce9946c4fc2ea452b3c245954eccf9aa53e3',
+    'src/main/kotlin/me/manga/kira/backend/security/JwtService.kt': '5d81bc94df2f1a28337220ab99151002c10045879a690267bdc65b412090ecc0',
+    'src/main/kotlin/me/manga/kira/backend/security/SecurityConfig.kt': 'f421d64ce0aea32b7d9e95c6624ebd9c62bd3a09e69838c652252ce7b99ffb60',
     'src/main/kotlin/me/manga/kira/backend/sourceconfig/application/DocumentAssemblyService.kt': '1dce418396abe743a70a2a1156cb843978883a6629e3030cf73aadd3a85e885f',
     'src/main/kotlin/me/manga/kira/backend/sourceconfig/application/GenericV2CutoverService.kt': '33c118e558fdd8ab8230e068c5445dd1ca0527bdf3059ab51cf65433631d6f01',
-    'src/main/kotlin/me/manga/kira/backend/sourceconfig/application/SourceAdminService.kt': '7bed1600540175d0cb3dbd355c5d975b37a35e3890a9278d04e22b676222cedd',
     'src/main/kotlin/me/manga/kira/backend/sourceconfig/domain/InitialSourceCatalogPolicy.kt': '23d53cc1ee42ef25c31f1a887938c269076416ff9839ae7b9919fbb3fea46966',
-    'src/main/kotlin/me/manga/kira/backend/sourceconfig/domain/InitialSourceCatalogState.kt': 'e9743c5043705f3dc71891961635034d62a379f23daa1ac5be0f28f2b2ef5319',
-    'src/main/kotlin/me/manga/kira/backend/sourceconfig/domain/PublishedDocumentRepository.kt': 'b5a86110acca52c8c37d9cf2b9fac424c69461246f14c870a585e968afe0453c',
     'src/main/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/ClasspathInitialSourceCatalogPolicy.kt': '78d3767b580c3df392f8a54654b9ed5442a92da40d6e2a3c5026110915a40e60',
-    'src/main/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/DocumentPublicationStateEntity.kt': '89829545f064e80d0efa7ce37aec78b346717b9263f6b759cb0b61e74f5771ef',
-    'src/main/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/JpaPublishedDocumentRepositoryAdapter.kt': 'f3a9341cec57e54fc6f8a9fe5a4e0831b943a9f32d50fb07972ddff41e5b1409',
-    'src/main/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/PublicationStateStartupValidator.kt': 'dc1f72dbe2605714ccf582bb9cae8c55dde1bf14603011f48d1d4db8d1af8313',
-    'src/main/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/SpringDataDocumentPublicationStateRepository.kt': 'fc17599298b36371faa644c6529b7259156c55a8da6067de21f9d381dec5230f',
+    'src/main/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/RevisionFloorStartupValidator.kt': '06157babfda0a6a3d6f6416775bd35b170fb796667efd89178e76be02edc113a',
+    'src/main/resources/db/migration/V10__source_catalog_v2.sql': '02861602565a779ba3c135f353b658fcdb70921e813cd55c840aac8f6b868d41',
+    'src/main/resources/db/migration/V11__source_editor_drafts.sql': 'd07498dea1167916b539733d0087539438377b73399ecb816120b8b10258e268',
+    'src/main/resources/db/migration/V12__admin_step_up_grants.sql': '83ba1521125518bb6c81a3fccf390f73ad1ceba2e758ebb6cfb2cb79c8d08073',
+    'src/main/resources/db/migration/V13_1__user_credential_version.sql': '08086569e570276c2bad7184a1a2cc70410d1d07c7a6eed57563f51c01f4575e',
     'src/main/resources/db/migration/V13_2__source_catalog_bootstrap_state.sql': 'f3b283507efe057ff15516060c02b27908449f60ab7a03f757a2747d75930045',
+    'src/main/resources/db/migration/V13__source_changesets.sql': '2860a22d36a52c4f3b79c30704aa8a9dea6bcf554a0dde5c255529ca778eaa60',
+    'src/main/resources/db/migration/V1__users.sql': '258b001e00c9e196d6a03f41a12ac5c3114cb026b886f00a9eb0c06c5aabfa3f',
+    'src/main/resources/db/migration/V2__source_config.sql': '62be7c7851b1726041bf20c4dd6b94d4ce84f942d8610c7c9cb5dd66a597e3c2',
+    'src/main/resources/db/migration/V3__published_documents.sql': 'e1c3681df987f70e9f71402212c6219d469581b811fbc7c68958d0fb5b51bd23',
+    'src/main/resources/db/migration/V4__audit_log.sql': 'e53c6125b720b3adf73584a1a804869caf69c003504e0e10766ab496b6423204',
+    'src/main/resources/db/migration/V5__completions.sql': '34f863306aa47d138c9c6971a70d32c22f4928b7d39d60d4b45f1410f39ac6c5',
+    'src/main/resources/db/migration/V6__completion_retention.sql': '90dfc7a272cac558b87c495519275e1437ecbc38a0fae0364d7e981f4183d1cc',
+    'src/main/resources/db/migration/V7__signed_published_documents.sql': 'd6ddaa2b248598e34e507544e9426be86a7c6740e806a00ed32154f4a9fee243',
+    'src/main/resources/db/migration/V8__enforce_completion_result_xor.sql': '3bb5490732cd45fb7fa97420a31cd5d9ff57b4690a7447a3b6f5b97bc60b13ea',
+    'src/main/resources/db/migration/V9__tutorials.sql': '03a61db889326d7b7893904ab2914f4d667228d3d42853cfe16ec324a1186ea2',
     'src/main/resources/source-config/bootstrap/app-bundle-v6-generic.json': '42a26ca29182a0c8c1150196ff55979fc41a8d828ed60556e9dcf6062b8b9095',
-    'src/test/kotlin/me/manga/kira/backend/common/web/RequestBodySizeLimitFilterTest.kt': 'e01a0073e70bdc391aa476548bd19546add85a7d70f35ffa0dcbbeaaf3425b09',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/FlywayIncrementalOrderIT.kt': '43ead5ba258d45e3cdcfbe804d33aab6ff181beba7cd457b22730b25eabea476',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/FlywayMigrationIT.kt': 'b58412530ff4130d9563202d5419437ed62a557a0198d7b5e2fc9562848d1d13',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/InitialSourceCatalogFixtures.kt': '9ffa510f535e7361b1f28eb3a118823004f9e72d33a36ea437691f5f7a5863d3',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/StartupConsistencyIT.kt': '5e06db961ddd35c5c55720c799e6be8c0a12e517b4472bddb2d04efb2f1de34b',
+    'src/test/kotlin/me/manga/kira/backend/sourceconfig/InitialSourceCatalogFixtures.kt': '07e729dd897ba0899d086f8b2b1b2f5b6ec8aa3a87c582dd3e9f928cefa77bab',
+    'src/test/kotlin/me/manga/kira/backend/sourceconfig/InitialSourceCatalogFixturesTest.kt': '947db836a03a6f17fb966b43c937bf17bba7381362884b8459badc9e01ada396',
+    'src/test/kotlin/me/manga/kira/backend/sourceconfig/StartupConsistencyIT.kt': '1ed4070a137a5555dd3a5796ed233a6e03c6446d1b4bc66596474b729b1390dc',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/AbstractAdminSourceIT.kt': '757ca4c2c54b59365259340f245c8ddef523bea6aa9a728c09d35b6dc875f212',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/AuditLogIT.kt': 'f06196caaa7d99c91d585cd513ba9538f05f35aecf43c4c2bbe0cc927050d519',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/BootstrapConcurrencyIT.kt': 'f54345069b0c2099c491f2816adb636471b59ca173833869e1f92f21acf0c5ae',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/BootstrapEndpointIT.kt': 'c9a75f08230a464b5e8bfa67ed0ed32b09a1dffa5bbbb146429fcef348491f44',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/BootstrapLateRollbackIT.kt': '01b0a7b769b3b67f6e7820cdcec9bb2ecc5b07d976f54aa7981058ef2ba2581b',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/BootstrapPublicationGuardIT.kt': '3ed1c1cf5abe622a93189b52b8bd61e5752981b43afec9e750ba90dd84bc7d1e',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/BootstrapReplayIT.kt': '3073f0bf57ac546110c6f460c361a92cb460d37da323cc202cc5fbe6d8541008',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/ConcurrentDifferentSourcePublishIT.kt': '9c94cf3f082a087f6ce509d8451044f31286113afa93f542fde8f142bf8c7385',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/ConcurrentSameSourcePublishIT.kt': '88ed6aeb19bd0476d41776cf10172662f2369ffe517be333f88fe74ce113fefd',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/DisableRemoveVisibilityIT.kt': '2100d6eb53b6d4142bbaee4e30d098999f036841bafa9f873e15069a55573db6',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/DocumentOrderDeterminismIT.kt': '6ab5c46e1eb0f8b73414e1629183a9d98214f5db6c29185dd49489cea853982e',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/EmptyDocumentPublishIT.kt': 'd90eaf8819f23490f9f9c0094a257bf1be4989fca0328e31b9ab74e57fa09e19',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/EndpointCompletenessIT.kt': '8e0c1f5d221929cfaa4d06ebc90c5219c4fc72bc863690324f45c397a356aff5',
+    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/BootstrapEndpointIT.kt': 'f38c37fcbe3ddd6022d8699d9e358405f1af88d07f7cbe3ab2b1b402a5df0fd5',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/FullBundledParityIT.kt': '35c1a00ae1359ba64ae90feb4ce4c3269786c1186759369258abf8b6dc3e84e7',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/ImportBundledIT.kt': '1bc6a6406619facba5454fbc52d252846dcbcfbbeb03ba327ccbba7b3b1eaf01',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/ImportCreatesSingleSnapshotIT.kt': '279a19ec00a9f6c48af0cb08ea3ab388b3fd034027932bb9f1f10df466532771',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/ImportNoChangesIsNoOpIT.kt': '02ae637387b85f7e64ff121037392d5d4fe2f99042d07a0b74982ff839d92d97',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/LifecycleNeutralStorageIT.kt': '361e7c5a718fdc1302d19d981884d48d0ce152619344715b1ec3e61cedf32022',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/PublicConfigSecretsRejectedIT.kt': 'c1646d0eb17fcc781038bee44dd6837a9665adfe17bc303e924f933ae40a19da',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/PublicationFailureRollbackIT.kt': '0a9c8c585274264df766fcf2e6f4b76dba06c329e18dadfa97298fd5eb78e59e',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/PublishInvalidFailsIT.kt': 'bcfea31adcc76410828bfbf4a7befcb4b8c9e052e1197bdf28e014253d27bff0',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/PublishStateRulesIT.kt': '1a77ab51e4a0ce31eb4ccb62dd2ac953d0658f6a08fa0a1f3606cae6df684b22',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/RemovedCannotReturnIT.kt': 'a7e3f612a227ec9ba826b5387fb38c53ac13186de5802c2314f5ed236c4f4bf4',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/RetiredSourceVisibilityIT.kt': 'd52af4a7c653910e6692be522cf1d7bdb25b40602d53bb7523835799ac34b651',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/RollbackIT.kt': '0955d55d4f6280b71283f60a627237ac24de5e5e498d152f04d41199ed54269f',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/ServerManagedLifecycleIT.kt': 'c60f9a818513cfb36e814b06fd77097f9fb070e82ac5dafb0f9390195e99d893',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/SnapshotTimestampConsistencyIT.kt': '1d339de4a9b7ead1b0ac3649f5e976cc8a9a9fe023275770d44e77feaa9ca5a5',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/SourceChangesetIT.kt': '427f7eda67a55df068688abc73c41366e638d5aaf08b7062e21c42d743e1e7a6',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/SourceEditorDraftIT.kt': 'a26764c204b98fe78221ddbdaed55d810c487256ecb1d3effd6858fb3e5595d6',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/SourceOperationalModeIT.kt': '6a5ac6fedee59aee933b211391ba0c25cd931e08f1326195a59943a94436305d',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/SourcePublishFlowIT.kt': '2f1d50b6cfee2128d9b48cb8671254af7f281356b06cb9e573cb00de6fd23c10',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/StrictAdminParserIT.kt': '780ba482d3bb92d46a41167adf38bca8446d48a2ede15862ce0b1b1dba0fbd27',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/api/GenericV2CutoverControllerTest.kt': '5463c7cf1fcba65a24186259511d5103ed2c64469fa91b152906cd1bda1bbe2b',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/domain/InitialSourceCatalogPolicyTest.kt': '1cef40d03932ada4fa61d85c6f77524c48d991e612a8e97220c7b824bf1c4b9a',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/AdminHistoryRepositoryIT.kt': '786bac5a93a345a6c5d764ca740c797a7f882f86119952815fbaf0a3935c8f94',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/ETagIT.kt': '6d33e2702a5c74da8aa7c606915bb8196a134af8086d3a418e87aa367641c317',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/IfNoneMatchVariantsIT.kt': 'cbec6825b348256556cfca5bd4742bc74f743cc7ba8f2ab2cde2c17027b3e34f',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/PublicSourceSummaryConsistencyIT.kt': 'c2179ce8dc4eacfdc85488914839f97f237a4052a860972287aed7a84bdb30e8',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/PublicSourcesIT.kt': 'fa3fd72b7f8aabbc8592e3f2271ef8d1e4773c01a2d5e7e3631c3b9608e962f2',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/RawBytesChecksumIT.kt': 'd0dcb4d9cffc2ca54d881081374db384ef72a38fa23bae5355efd93b20272a5a',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/SourceCatalogV2IT.kt': 'a1053ba8636947d3ffb69cd3da34af233ea544e9301b47b699f6bd8fe1cb8d93',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/signing/SignedDocumentIT.kt': 'f99e5bffe90d329b7f945a437f47690f27461b8c85b295e486fe30257e3e6f05',
+    'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/BootstrapSignedCatalogFixtureIT.kt': 'c7e1ead020c09054fb7baf5c51d0f840c5b767059727a01032fa9343774a75e4',
     'src/test/kotlin/me/manga/kira/backend/support/AbstractIntegrationTest.kt': 'b39a14d78dcfe1385b03e69d56b7aa7f4b45b7a3c48b0b5e6970154231a21496',
-    'src/test/kotlin/me/manga/kira/backend/user/SecurityMatrixIT.kt': '65eca9e5da8e2174916de2bf631d365e65bb7322dd5e2066a1efe25404505539',
+    'src/test/resources/application-test.yml': 'af538d332c0dd2b05a7d555b28f434d5e8d3ac445810e1a22a83bffaabc7f17e',
+    'src/test/resources/fixtures/bundled-full.json': '1aa86aac2f1ac4aa1fb2b7e3770617b0f364d699bfdd5e14788d6c3d71c9643c',
 }
 REFERENCE_RESOURCE = 'source-config/bootstrap/app-bundle-v6-generic.json'
 REFERENCE_SHA = '42a26ca29182a0c8c1150196ff55979fc41a8d828ed60556e9dcf6062b8b9095'
@@ -119,6 +160,7 @@ REFERENCE_SHA = '42a26ca29182a0c8c1150196ff55979fc41a8d828ed60556e9dcf6062b8b909
 # the actual test task's classpath before its selected tests, not a Boot jar or provider run.
 REFERENCE_INIT = r'''import groovy.json.JsonOutput
 import java.net.URLClassLoader
+import java.nio.file.Files
 import java.security.MessageDigest
 import org.gradle.api.tasks.testing.Test
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
@@ -127,28 +169,48 @@ gradle.projectsEvaluated {
     def p = gradle.rootProject
     p.tasks.named('test', Test).configure {
         extensions.getByType(JacocoTaskExtension).enabled = false
+        workingDir = p.projectDir
+        systemProperty 'junit.jupiter.execution.parallel.enabled', 'false'
         doFirst {
             def resource = '@REFERENCE_RESOURCE@'
             def expected = '@REFERENCE_SHA@'
+            def fixture = 'fixtures/bootstrap-v2-v6-signed.json'
+            def fixtureSource = p.file('src/test/resources/' + fixture).absoluteFile
+            def fixtureProcessed = new File(p.layout.buildDirectory.get().asFile, 'resources/test/' + fixture).absoluteFile
+            def generateName = 'KIRA_BACKEND22_GENERATE_FIXTURE'
             def source = p.file('src/main/resources/' + resource).canonicalFile
             def processed = new File(p.layout.buildDirectory.get().asFile, 'resources/main/' + resource).canonicalFile
             def urls = classpath.files.collect { it.toURI().toURL() } as URL[]
             def digest = { bytes -> MessageDigest.getInstance('SHA-256').digest(bytes).encodeHex().toString() }
             def receipt = [test_task: path, resource: resource, expected_sha256: expected,
                 source_path: source.path, processed_path: processed.path,
-                classpath: urls.collect { it.toExternalForm() }, accepted: false]
+                classpath: urls.collect { it.toExternalForm() }, accepted: false,
+                phase: 'EXPORT', project_directory: p.projectDir.canonicalPath,
+                working_directory: workingDir.canonicalPath, max_parallel_forks: maxParallelForks,
+                fork_every: forkEvery, max_heap_size: maxHeapSize,
+                junit_parallel_enabled: systemProperties['junit.jupiter.execution.parallel.enabled'],
+                generation_environment_present: environment.containsKey(generateName),
+                generation_environment_value: environment[generateName],
+                expected_fixture_source_absent: !fixtureSource.exists() && !Files.isSymbolicLink(fixtureSource.toPath()),
+                expected_fixture_processed_absent: !fixtureProcessed.exists() && !Files.isSymbolicLink(fixtureProcessed.toPath())]
             def loader = new URLClassLoader(urls, (ClassLoader) null)
             try {
                 receipt.source_sha256 = digest(source.bytes)
                 receipt.processed_sha256 = digest(processed.bytes)
                 def resources = Collections.list(loader.getResources(resource))
                 receipt.resolved_resources = resources.collect { it.toExternalForm() }
+                receipt.expected_fixture_resources = Collections.list(loader.getResources(fixture)).collect { it.toExternalForm() }
                 if (resources.size() == 1) {
                     receipt.loaded_sha256 = resources[0].openStream().withCloseable { digest(it.bytes) }
                 }
                 receipt.accepted = receipt.source_sha256 == expected && receipt.processed_sha256 == expected &&
-                    receipt.loaded_sha256 == expected && receipt.resolved_resources == [processed.toURI().toURL().toExternalForm()]
-                if (!receipt.accepted) throw new GradleException('Backend20 bootstrap reference source/processed/classpath loading mismatch')
+                    receipt.loaded_sha256 == expected && receipt.resolved_resources == [processed.toURI().toURL().toExternalForm()] &&
+                    receipt.working_directory == receipt.project_directory && receipt.max_parallel_forks == 1 &&
+                    receipt.fork_every == 0 && receipt.max_heap_size == '512m' && receipt.junit_parallel_enabled == 'false' &&
+                    receipt.generation_environment_present && receipt.generation_environment_value == 'true' &&
+                    receipt.expected_fixture_source_absent && receipt.expected_fixture_processed_absent &&
+                    receipt.expected_fixture_resources.isEmpty()
+                if (!receipt.accepted) throw new GradleException('Backend22 export reference/configuration/resource-absence mismatch')
             } finally {
                 try { loader.close() } finally {
                     new File(System.getenv('W01_RUN'), 'bootstrap-reference-resource.json').text = JsonOutput.prettyPrint(JsonOutput.toJson(receipt)) + '\n'
@@ -264,9 +326,76 @@ def verify_source_pins(phase):
             observed[relative] = hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() and not path.is_symlink() else None
     finally:
         (REPORTS / ('source-pins-' + phase + '.json')).write_text(json.dumps(observed, indent=2) + '\n')
-    require(observed == EXPECTED_SOURCE_SHA256, 'Backend20 source pins differ: ' + phase)
+    require(observed == EXPECTED_SOURCE_SHA256, 'Backend22 export source pins differ: ' + phase)
+
+def candidate_root_matches():
+    if not candidate_root_owned or candidate_root_identity is None: return False
+    try: info = CANDIDATE_BUILD.lstat()
+    except OSError: return False
+    return stat.S_ISDIR(info.st_mode) and (info.st_dev, info.st_ino) == candidate_root_identity and CANDIDATE_BUILD.resolve() == CANDIDATE_BUILD
+
+def capture_candidate():
+    global candidate_observation
+    candidate_observation = {
+        'phase': PHASE, 'admitted': False, 'captured': False, 'ownership': candidate_ownership,
+        'original_path': str(CANDIDATE_PATH), 'copy_path': str(CANDIDATE_COPY),
+        'source_checkpoint': EXPECTED_BACKEND_SHA, 'carrier_sha': os.environ.get('GITHUB_SHA'),
+        'source_review_sha256': SOURCE_REVIEW_SHA, 'preparation_pins_sha256': PREPARATION_PINS_SHA,
+        'classes': CLASSES, 'methods': METHODS, 'generation_environment_name': GENERATE_ENV,
+        'base_command_environment_present': GENERATE_ENV in ENV, 'command_environment_present': started,
+        'command_environment_value': 'true' if started else None,
+        'expected_test_working_directory': str(BACKEND), 'actual_test_configuration': reference_observation.get('witness'),
+        'gradle_started': started, 'gradle_exit': gradle_exit, 'validation_exit_before_capture': result,
+        'xml_verified': xml_verified, 'xml': xml_observations, 'report_failure_before_capture': report_failure,
+    }
+    try:
+        settled = workers_gone and drain('before-candidate-capture')
+        candidate_observation['settled'] = settled
+        require(settled and started, 'Candidate is not settled after an actual export command')
+        require(candidate_root_matches(), 'Real Backend build root is not the exclusively created owned directory')
+        require(CANDIDATE_PATH.parent.is_dir() and not CANDIDATE_PATH.parent.is_symlink() and
+                CANDIDATE_PATH.resolve(strict=True) == CANDIDATE_PATH, 'Unsafe candidate parent/path')
+        identity = lambda info: (info.st_dev, info.st_ino, info.st_mode, info.st_nlink, info.st_size, info.st_mtime_ns, info.st_ctime_ns)
+        with os.fdopen(os.open(CANDIDATE_PATH, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as stream:
+            before_capture = os.fstat(stream.fileno())
+            require(stat.S_ISREG(before_capture.st_mode) and before_capture.st_nlink == 1 and before_capture.st_size > 0,
+                    'Candidate must be a nonempty regular owned file, not a link')
+            data = stream.read()
+            require(identity(os.fstat(stream.fileno())) == identity(before_capture), 'Candidate changed while reading')
+        require(identity(CANDIDATE_PATH.lstat()) == identity(before_capture) and len(data) == before_capture.st_size,
+                'Candidate changed or was incomplete after reading')
+        CANDIDATE_COPY.parent.mkdir(mode=0o700, exist_ok=False)
+        with os.fdopen(os.open(CANDIDATE_COPY, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600), 'wb') as stream:
+            require(stream.write(data) == len(data), 'Incomplete exclusive binary candidate copy')
+        copied = CANDIDATE_COPY.read_bytes()
+        require(copied == data == CANDIDATE_PATH.read_bytes() and
+                identity(CANDIDATE_PATH.lstat()) == identity(before_capture) and candidate_root_matches(),
+                'Original/captured candidate bytes or ownership changed')
+        candidate_observation.update({
+            'captured': True, 'bytes': len(data), 'original_sha256': hashlib.sha256(data).hexdigest(),
+            'copy_sha256': hashlib.sha256(copied).hexdigest(), 'byte_identical': True,
+            'owner_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            'request_sha256': hashlib.sha256(REQUEST_PATH.read_bytes()).hexdigest(),
+            'workflow_sha256': hashlib.sha256((ADMIN / '.github/workflows/backend20-atomic-bootstrap.yml').read_bytes()).hexdigest(),
+            'original_init_sha256': hashlib.sha256((W01 / 'original.init.gradle').read_bytes()).hexdigest(),
+            'supplemental_init_sha256': hashlib.sha256((W01 / 'bootstrap-reference.init.gradle').read_bytes()).hexdigest(),
+            'owned_children_sha256': OWNED_CHILDREN_SHA,
+            'source_pin_receipts': {name: hashlib.sha256((REPORTS / name).read_bytes()).hexdigest()
+                for name in ('source-pins-before.json', 'source-pins-after.json') if (REPORTS / name).is_file()},
+            'command_receipt_sha256_at_capture': hashlib.sha256((REPORTS / 'commands.log').read_bytes()).hexdigest(),
+            'acceptance': 'UNREVIEWED_RAW_CANDIDATE; not comparison, transfer or App acceptance',
+        })
+    except Exception as failure:
+        candidate_observation['capture_error'] = str(failure)
+        raise
+    finally:
+        with (REPORTS / 'candidate-receipt.json').open('x') as receipt:
+            receipt.write(json.dumps(candidate_observation, indent=2) + '\n')
 
 result, started, before, cleanup_failed, project_caches = 1, False, None, False, []
+candidate_root_owned, candidate_root_identity, candidate_captured = False, None, False
+candidate_ownership, candidate_observation = {}, {}
+raw_reports_copied, report_failure = False, None
 gradle_exit, xml_verified, sources_clean, preserved, containers_absent = None, False, False, False, None
 container_force_requested = False
 xml_observations, static_reports = [], {}
@@ -274,8 +403,9 @@ reference_source_sha, reference_observation, reference_verified = None, {}, Fals
 source_pins_before_verified, source_pins_after_verified = False, False
 try:
     require(set(TARGETS) == {'authorization', 'authorized', 'runAllowed', 'backend_sha', 'classes', 'methods', 'status'}, 'Unexpected request fields')
-    require(TARGETS['authorization'] == 'BACKEND20_ONE_TARGETED_BATCH_AUTHORIZED', 'Draft is not authorized')
+    require(TARGETS['authorization'] == 'BACKEND22_ONE_TARGETED_BATCH_AUTHORIZED', 'Draft is not authorized')
     require(TARGETS['authorized'] is True and TARGETS['runAllowed'] is True, 'Execution is explicitly disabled')
+    require(TARGETS['status'] == 'PRIMARY_BOUND_EXPORT', 'Wrong Backend22 phase/status')
     require(os.environ.get('GITHUB_REPOSITORY') == 'kira-manga/kira-admin' and
             os.environ.get('GITHUB_REF') == 'refs/heads/remediation/app-29-backend-complaints' and
             os.environ.get('GITHUB_EVENT_NAME') == 'push' and os.environ.get('GITHUB_RUN_ATTEMPT') == '1', 'Wrong carrier/event or rerun')
@@ -284,7 +414,7 @@ try:
     OWNER = OwnedChildren()  # Refuse unavailable subreaping before the first command.
     target = TARGETS['backend_sha']
     require(CLASSES == EXPECTED_CLASSES and all(type(count) is int for count in CLASSES.values()) and
-            METHODS == EXPECTED_METHODS, 'Invalid exact Backend20 class/count/method selection')
+            METHODS == EXPECTED_METHODS, 'Invalid exact Backend22 export class/count/method selection')
     note('Primary-bound request: ' + json.dumps(TARGETS, sort_keys=True))
     require(isinstance(target, str) and re.fullmatch('[0-9a-f]{40}', target) and target != '0' * 40 and
             target == EXPECTED_BACKEND_SHA, 'Unbound or unexpected backend target')
@@ -298,9 +428,15 @@ try:
     source_pins_before_verified = True
     reference_source_sha = hashlib.sha256((BACKEND / 'src/main/resources' / REFERENCE_RESOURCE).read_bytes()).hexdigest()
     note('Source bootstrap reference SHA256: ' + reference_source_sha)
-    require(reference_source_sha == REFERENCE_SHA, 'Backend20 source bootstrap reference differs from the reviewed bytes')
+    require(reference_source_sha == REFERENCE_SHA, 'Backend22 export source bootstrap reference differs from the reviewed bytes')
     for name in ('.gradle', '.kotlin'): require(not (BACKEND / name).exists(), 'Unexpected preexisting project cache: ' + name)
     project_caches = [BACKEND / '.gradle', BACKEND / '.kotlin']
+    require(BACKEND.is_dir() and not BACKEND.is_symlink() and BACKEND.resolve() == BACKEND, 'Unsafe Backend project directory')
+    require(not CANDIDATE_BUILD.exists() and not CANDIDATE_BUILD.is_symlink(), 'Preexisting real Backend build root; not owned')
+    require(not EXPECTED_FIXTURE_PATH.exists() and not EXPECTED_FIXTURE_PATH.is_symlink(), 'Export requires absent expected fixture resource')
+    candidate_ownership = {'parent': str(BACKEND), 'root': str(CANDIDATE_BUILD), 'candidate': str(CANDIDATE_PATH),
+                           'root_prior_absent': True, 'candidate_prior_absent': True,
+                           'expected_resource': str(EXPECTED_FIXTURE_PATH), 'expected_resource_prior_absent': True}
     require(space_ok('before-private-inputs', force=True), 'Insufficient or unknown free space before private inputs')
     archive = ADMIN / 'docs/remediation/checkpoint-2026-09-08/review-evidence.tar.gz'
     with archive.open('rb') as stream: require(hashlib.file_digest(stream, 'sha256').hexdigest() == ARCHIVE_SHA, 'Private archive hash mismatch')
@@ -341,9 +477,17 @@ try:
     before = set((REPORTS / 'preexisting-containers.log').read_text().splitlines())
     require(not before, 'Expected a dedicated clean hosted runner; do not touch preexisting containers')
     require(not CANCELLED, 'Cancelled before validation')
+    # Exclusive creation, not deletion/adoption of an existing producer root.
+    CANDIDATE_BUILD.mkdir(mode=0o700, exist_ok=False)
+    candidate_root_owned = True
+    candidate_root_stat = CANDIDATE_BUILD.lstat()
+    candidate_root_identity = (candidate_root_stat.st_dev, candidate_root_stat.st_ino)
+    require(candidate_root_matches(), 'Cannot establish real Backend build-root ownership')
+    candidate_ownership.update({'created_exclusively': True, 'device': candidate_root_identity[0], 'inode': candidate_root_identity[1]})
+    (REPORTS / 'candidate-ownership.json').write_text(json.dumps(candidate_ownership, indent=2) + '\n')
     selectors = [name + '.' + method for name in CLASSES for method in METHODS[name]]
     tasks = ['compileKotlin', 'compileTestKotlin', 'test'] + [part for name in selectors for part in ('--tests', name)] + ['ktlintMainSourceSetCheck', 'ktlintTestSourceSetCheck', 'detekt', '--continue', '-x', 'jacocoTestReport']
-    gradle_exit = command(['./gradlew', '--no-daemon', '--no-parallel', '--no-configuration-cache', '--console=plain', '--max-workers=1', '--no-build-cache', '-Dorg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=512m', '-Dorg.gradle.vfs.watch=false', '-Pkotlin.compiler.execution.strategy=in-process', '--init-script', str(W01 / 'original.init.gradle'), '--init-script', str(W01 / 'bootstrap-reference.init.gradle'), *tasks], 'gradle-test', 18 * 60)
+    gradle_exit = command(['./gradlew', '--no-daemon', '--no-parallel', '--no-configuration-cache', '--console=plain', '--max-workers=1', '--no-build-cache', '-Dorg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=512m', '-Dorg.gradle.vfs.watch=false', '-Pkotlin.compiler.execution.strategy=in-process', '--init-script', str(W01 / 'original.init.gradle'), '--init-script', str(W01 / 'bootstrap-reference.init.gradle'), *tasks], 'gradle-test', 18 * 60, extra={GENERATE_ENV: 'true'})
     result = gradle_exit
 except (Exception, KeyboardInterrupt) as failure:
     note('FAIL: ' + str(failure))
@@ -377,7 +521,7 @@ finally:
                     static_reports[tool].append(destination.name)
         for filename in ('bootstrap-reference.init.gradle', 'bootstrap-reference-resource.json'):
             if (W01 / filename).is_file(): shutil.copyfile(W01 / filename, REPORTS / filename)
-        preserved = True  # Missing output is reported below; a failed copy forbids its deletion.
+        raw_reports_copied = True  # Candidate capture must also complete before preservation permits deletion.
         processed_reference = W01 / 'backend-build/resources/main' / REFERENCE_RESOURCE
         source_reference = BACKEND / 'src/main/resources' / REFERENCE_RESOURCE
         reference_observation = {'settled': workers_gone, 'expected_sha256': REFERENCE_SHA, 'source_before_sha256': reference_source_sha,
@@ -408,7 +552,7 @@ finally:
             identities = [(case.get('classname'), case.get('name')) for case in cases]
             require(len(set(identities)) == expected and all(cls == name and method for cls, method in identities), 'Wrong/duplicate testcase identity')
             require(not any(node.tag in ('failure', 'error', 'skipped') for node in suite.iter()), 'Failure/error/skip in focused XML')
-            require({method for _, method in identities} == set(EXPECTED_CASES[name]), 'Wrong Backend20 testcase identities: ' + name)
+            require({method for _, method in identities} == set(EXPECTED_CASES[name]), 'Wrong Backend22 export testcase identities: ' + name)
         xml_verified = True
         witness = reference_observation.get('witness') or {}
         # java.io.File.toURI().toURL() spells local URLs file:/..., not pathlib's file:///....
@@ -417,7 +561,13 @@ finally:
                 reference_observation['processed_sha256'] == REFERENCE_SHA and witness.get('accepted') is True and
                 witness.get('test_task') == ':test' and witness.get('resource') == REFERENCE_RESOURCE and
                 all(witness.get(field) == REFERENCE_SHA for field in ('expected_sha256', 'source_sha256', 'processed_sha256', 'loaded_sha256')) and
-                witness.get('resolved_resources') == [processed_url], 'Missing/mismatched source, processed or loaded bootstrap reference evidence')
+                witness.get('resolved_resources') == [processed_url] and witness.get('phase') == PHASE and
+                witness.get('working_directory') == witness.get('project_directory') == str(BACKEND) and
+                witness.get('max_parallel_forks') == 1 and witness.get('fork_every') == 0 and witness.get('max_heap_size') == '512m' and
+                witness.get('junit_parallel_enabled') == 'false' and witness.get('generation_environment_present') is True and
+                witness.get('generation_environment_value') == 'true' and witness.get('expected_fixture_source_absent') is True and
+                witness.get('expected_fixture_processed_absent') is True and witness.get('expected_fixture_resources') == [],
+                'Missing/mismatched reference, export configuration or expected-resource absence evidence')
         reference_verified = True
         require(all(static_reports.get(tool) for tool in ('ktlint', 'detekt')), 'Missing static reports')
         require(command(['git', 'rev-parse', 'HEAD'], 'backend-sha-after', cleaning=True) == 0 and
@@ -426,9 +576,19 @@ finally:
                 not (REPORTS / 'source-after.log').read_text().strip(), 'Backend source changed during validation')
         verify_source_pins('after')
         source_pins_after_verified = True
+        require(not EXPECTED_FIXTURE_PATH.exists() and not EXPECTED_FIXTURE_PATH.is_symlink(), 'Export wrote an expected fixture resource')
         sources_clean = True
     except Exception as failure:
+        report_failure = str(failure)
         note('REPORT FAIL: ' + str(failure))
+        result = result or 1
+    # Capture even if another selected task or report gate failed; such a batch stays failed.
+    try:
+        capture_candidate()
+        candidate_captured = True
+        preserved = raw_reports_copied  # A failed/partial candidate or receipt copy never reaches here.
+    except Exception as failure:
+        note('CANDIDATE CAPTURE FAIL: ' + str(failure))
         result = result or 1
     if started and before is not None and workers_gone:
         if cleanup_command(['docker', 'ps', '-aq', '--no-trunc', '--filter', 'label=org.testcontainers=true'], 'remaining-testcontainers'):
@@ -448,8 +608,10 @@ finally:
     files_safe = workers_gone and drain('after-docker-before-files') and preserved and containers_safe
     if not containers_safe: note('RETAINING owned outputs/home/temp/project caches: container absence not proved')
     elif not files_safe: note('RETAINING owned outputs/home/temp/project caches: process absence or report preservation not proved')
-    for directory in ((W01, TEMP, *(project_caches if started else [])) if files_safe else ()):
+    for directory in ((W01, TEMP, *(project_caches if started else []), *([CANDIDATE_BUILD] if candidate_root_owned else [])) if files_safe else ()):
         try:
+            if directory == CANDIDATE_BUILD:
+                require(candidate_root_matches(), 'Refusing deletion of a replaced/unowned Backend build root')
             if directory.exists(): shutil.rmtree(directory)
         except Exception as failure:
             cleanup_failed = True
@@ -468,12 +630,12 @@ finally:
     except Exception as failure:
         cleanup_failed = True
         note('GRADLE HOME CLEANUP FAIL: ' + str(failure))
-    outputs_absent = not any(path.exists() for path in (W01, HOME, TEMP, *project_caches))
+    outputs_absent = not any(path.exists() for path in (W01, HOME, TEMP, *project_caches)) and not CANDIDATE_BUILD.exists() and not CANDIDATE_BUILD.is_symlink()
     cleanup_failed |= not outputs_absent or (started and containers_absent is not True)
     process_status = 'UNKNOWN_OR_INCOMPLETE' if any(not item['ok'] for item in DRAINS) else ('FORCED' if any(item.get('term') or item.get('kill') for item in DRAINS) else 'COMPLETE')
     container_status = 'NOT_STARTED' if not started else ('UNKNOWN' if containers_absent is None else ('PRESENT' if not containers_absent else ('FORCED' if container_force_requested else 'COMPLETE')))
     ownership_status = 'UNKNOWN_OR_INCOMPLETE' if process_status == 'UNKNOWN_OR_INCOMPLETE' or container_status in ('UNKNOWN', 'PRESENT') else ('FORCED' if process_status == 'FORCED' or container_status == 'FORCED' else 'COMPLETE')
-    passed = result == 0 and gradle_exit == 0 and xml_verified and reference_verified and sources_clean and preserved and ownership_status == 'COMPLETE' and not cleanup_failed and not CANCELLED and source_pins_before_verified and source_pins_after_verified and SPACE_CHECKS > 0 and SPACE_FAILURE is None
+    passed = result == 0 and gradle_exit == 0 and xml_verified and reference_verified and sources_clean and preserved and candidate_captured and ownership_status == 'COMPLETE' and not cleanup_failed and not CANCELLED and source_pins_before_verified and source_pins_after_verified and SPACE_CHECKS > 0 and SPACE_FAILURE is None
     note(f'validation_result={result}; process_ownership={process_status}; container_ownership={container_status}; ownership={ownership_status}; cleanup_failed={cleanup_failed}; cancelled={CANCELLED}; job_exit={0 if passed else 1}')
-    (REPORTS / 'result.json').write_text(json.dumps({'backend_sha': TARGETS['backend_sha'], 'carrier_sha': os.environ.get('GITHUB_SHA'), 'classes': CLASSES, 'methods': METHODS, 'gradle_exit': gradle_exit, 'validation_exit': result, 'xml_verified': xml_verified, 'xml': xml_observations, 'static_reports': static_reports, 'reference_verified': reference_verified, 'reference': reference_observation, 'scope': 'TARGETED_BOOTSTRAP_TEST_EVIDENCE_ONLY; not deployment, reconciliation/adoption or full Backend20 acceptance', 'sources_clean': sources_clean, 'source_pins_before_verified': source_pins_before_verified, 'source_pins_after_verified': source_pins_after_verified, 'disk_space': {'floor_bytes': MIN_FREE_BYTES, 'poll_seconds': SPACE_POLL_SECONDS, 'observations': SPACE_CHECKS, 'minimum_available_by_device': SPACE_MINIMUM, 'failure': SPACE_FAILURE, 'receipt': 'disk-space.jsonl'}, 'serialization': {'hosted_concurrency_group': 'backend11-private-completion-leases', 'primary_host_lock': 'PRIMARY_OWNED_EXTERNAL_PREREQUISITE; not observed by this VM'}, 'reports_preserved': preserved, 'drains': DRAINS, 'process_ownership_status': process_status, 'container_ownership_status': container_status, 'ownership_status': ownership_status, 'cleanup_failed': cleanup_failed, 'containers_absent': containers_absent, 'container_force_requested': container_force_requested, 'cancelled': CANCELLED, 'outputs_absent': outputs_absent, 'status': 'PASS' if passed else 'FAIL'}, indent=2) + '\n')
+    (REPORTS / 'result.json').write_text(json.dumps({'backend_sha': TARGETS['backend_sha'], 'carrier_sha': os.environ.get('GITHUB_SHA'), 'classes': CLASSES, 'methods': METHODS, 'gradle_exit': gradle_exit, 'validation_exit': result, 'xml_verified': xml_verified, 'xml': xml_observations, 'static_reports': static_reports, 'reference_verified': reference_verified, 'reference': reference_observation, 'scope': 'BACKEND22_EXPORT_ONLY: exact10 ordinary+1 explicit export; not fixture admission, comparison, App, deployment or cross-repo acceptance', 'phase': PHASE, 'candidate_captured': candidate_captured, 'candidate': candidate_observation, 'candidate_build_root_absent': not CANDIDATE_BUILD.exists() and not CANDIDATE_BUILD.is_symlink(), 'sources_clean': sources_clean, 'source_pins_before_verified': source_pins_before_verified, 'source_pins_after_verified': source_pins_after_verified, 'disk_space': {'floor_bytes': MIN_FREE_BYTES, 'poll_seconds': SPACE_POLL_SECONDS, 'observations': SPACE_CHECKS, 'minimum_available_by_device': SPACE_MINIMUM, 'failure': SPACE_FAILURE, 'receipt': 'disk-space.jsonl'}, 'serialization': {'hosted_concurrency_group': 'backend11-private-completion-leases', 'primary_host_lock': 'PRIMARY_OWNED_EXTERNAL_PREREQUISITE; not observed by this VM'}, 'reports_preserved': preserved, 'drains': DRAINS, 'process_ownership_status': process_status, 'container_ownership_status': container_status, 'ownership_status': ownership_status, 'cleanup_failed': cleanup_failed, 'containers_absent': containers_absent, 'container_force_requested': container_force_requested, 'cancelled': CANCELLED, 'outputs_absent': outputs_absent, 'status': 'PASS' if passed else 'FAIL'}, indent=2) + '\n')
 raise SystemExit(0 if passed else 1)

@@ -1,19 +1,37 @@
 {
-  "authorization": "BACKEND20_ONE_TARGETED_BATCH_AUTHORIZED",
+  "authorization": "BACKEND22_ONE_TARGETED_BATCH_AUTHORIZED",
   "authorized": true,
   "runAllowed": true,
-  "backend_sha": "fbc19a69a19c2e646f2a5ed5c48a491b20e93a76",
+  "backend_sha": "f6b118bef0b6380a1d40c23334b4d66b65f282ab",
   "classes": {
-    "me.manga.kira.backend.sourceconfig.admin.SourceOperationalModeIT": 1,
-    "me.manga.kira.backend.sourceconfig.public.PublicSourceSummaryConsistencyIT": 1
+    "me.manga.kira.backend.sourceconfig.InitialSourceCatalogFixturesTest": 4,
+    "me.manga.kira.backend.sourceconfig.admin.BootstrapEndpointIT": 2,
+    "me.manga.kira.backend.sourceconfig.admin.FullBundledParityIT": 1,
+    "me.manga.kira.backend.sourceconfig.StartupConsistencyIT": 3,
+    "me.manga.kira.backend.sourceconfig.public.BootstrapSignedCatalogFixtureIT": 1
   },
   "methods": {
-    "me.manga.kira.backend.sourceconfig.admin.SourceOperationalModeIT": [
-      "three-state mode is protected idempotent and publishes one atomic catalog revision"
+    "me.manga.kira.backend.sourceconfig.InitialSourceCatalogFixturesTest": [
+      "raw historical fixture carries all revision6 generic models including Azora chapter opt in",
+      "helper keeps reference metadata and the entire raw source list without substitution",
+      "helper refuses same roster non Azora model drift rather than repairing it",
+      "unoverridden source defaults align with bundle6 and retain the server minimum100"
     ],
-    "me.manga.kira.backend.sourceconfig.public.PublicSourceSummaryConsistencyIT": [
-      "removal after document selection preserves the complete old summary generation"
+    "me.manga.kira.backend.sourceconfig.admin.BootstrapEndpointIT": [
+      "valid same roster stale Azora is rejected without bootstrap or public artifacts",
+      "valid same roster non Azora drift is rejected without bootstrap or public artifacts"
+    ],
+    "me.manga.kira.backend.sourceconfig.admin.FullBundledParityIT": [
+      "the full bundled document parses, validates, canonicalizes, imports, serves and re-checksums"
+    ],
+    "me.manga.kira.backend.sourceconfig.StartupConsistencyIT": [
+      "fresh empty DB passes both checks",
+      "existing snapshots with a consistent pointer pass",
+      "minimum-server-revision not greater than bundled-revision-floor fails fast"
+    ],
+    "me.manga.kira.backend.sourceconfig.public.BootstrapSignedCatalogFixtureIT": [
+      "exportCandidateOnly"
     ]
   },
-  "status": "BOUND PREPARATION ONLY; no live admission/launch. Exactly2 corrected-assertion JPA cases; retain122 hosted03 and115 older passes separately. Normal main/test compilation; explicit main then test ktlint and unchanged configured detekt. Primary batch.lock spans hosted launch/collection/cleanup."
+  "status": "PRIMARY_BOUND_EXPORT"
 }
