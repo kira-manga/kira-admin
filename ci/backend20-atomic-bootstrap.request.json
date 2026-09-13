@@ -2,7 +2,7 @@
   "authorization": "BACKEND20_ONE_TARGETED_BATCH_AUTHORIZED",
   "authorized": true,
   "runAllowed": true,
-  "backend_sha": "bbaf92d2b1aa7a307bb72ab9f0131aa229f89fbc",
+  "backend_sha": "5c60975e81c581615533fa6b70295a4fa2f56d5a",
   "classes": {
     "me.manga.kira.backend.common.web.RequestBodySizeLimitFilterTest": 10,
     "me.manga.kira.backend.sourceconfig.FlywayIncrementalOrderIT": 13,

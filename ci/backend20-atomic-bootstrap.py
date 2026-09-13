@@ -20,7 +20,7 @@ TARGETS = json.loads((ADMIN / 'ci/backend20-atomic-bootstrap.request.json').read
 CLASSES, METHODS = TARGETS['classes'], TARGETS['methods']
 
 # Primary-bound exact source checkpoint; live admission/launch remain primary-owned.
-EXPECTED_BACKEND_SHA = 'bbaf92d2b1aa7a307bb72ab9f0131aa229f89fbc'
+EXPECTED_BACKEND_SHA = '5c60975e81c581615533fa6b70295a4fa2f56d5a'
 # Source-derived:169 exact methods /239 cases /46 classes (102 unit +137 real PostgreSQL).
 EXPECTED_CLASSES = {
     'me.manga.kira.backend.common.web.RequestBodySizeLimitFilterTest': 10,
@@ -670,16 +670,16 @@ EXPECTED_CASES = {
 # Current66 source bytes, including the authorized12 annotation-name-only corrections.
 EXPECTED_SOURCE_SHA256 = {
     'src/main/kotlin/me/manga/kira/backend/common/web/RequestBodySizeLimitFilter.kt': '0b78a3e8a368de063f715a3b55d0b61344dba1eddb7b0ac6268a5b0d281d20e4',
-    'src/main/kotlin/me/manga/kira/backend/sourceconfig/api/GenericV2CutoverController.kt': 'ac84ed8ded48e3b0616b5267d4f4cec9c709bdca9925d67e7833530aedcf39ec',
+    'src/main/kotlin/me/manga/kira/backend/sourceconfig/api/GenericV2CutoverController.kt': '76b203af5028c0207aaa5cea69917672ac42545a40a9c9d86ac0aec2e0b058ce',
     'src/main/kotlin/me/manga/kira/backend/sourceconfig/api/dto/InitialSourceCatalogReceiptResponse.kt': 'ea1077fa34aed836f40689e82c637347524302c0dab9052b281553b3d16988a2',
-    'src/main/kotlin/me/manga/kira/backend/sourceconfig/application/BundledImportService.kt': '76aca62f7806282a1082b289dbb2a2271e0fccbf1695332a77bf6098f5ef600c',
-    'src/main/kotlin/me/manga/kira/backend/sourceconfig/application/DocumentAssemblyService.kt': 'b1f17c60f33ad92ec0dfac0f90f023f3b1faa5cae00201cb8cc8512e96f86ca4',
-    'src/main/kotlin/me/manga/kira/backend/sourceconfig/application/GenericV2CutoverService.kt': 'cabbaeffbe747a9ca44f93ab4749213b88c548dcae485fb38932a028403e1481',
+    'src/main/kotlin/me/manga/kira/backend/sourceconfig/application/BundledImportService.kt': '7ca4e4896b9138df41ed7681705fe0d47103d697b80543df9d76dbec8379b1b6',
+    'src/main/kotlin/me/manga/kira/backend/sourceconfig/application/DocumentAssemblyService.kt': '1dce418396abe743a70a2a1156cb843978883a6629e3030cf73aadd3a85e885f',
+    'src/main/kotlin/me/manga/kira/backend/sourceconfig/application/GenericV2CutoverService.kt': '33c118e558fdd8ab8230e068c5445dd1ca0527bdf3059ab51cf65433631d6f01',
     'src/main/kotlin/me/manga/kira/backend/sourceconfig/application/SourceAdminService.kt': '7bed1600540175d0cb3dbd355c5d975b37a35e3890a9278d04e22b676222cedd',
-    'src/main/kotlin/me/manga/kira/backend/sourceconfig/domain/InitialSourceCatalogPolicy.kt': 'faf5ae5322802d319e07ba3f34d1f097aec96ca67d9f99b1aa4459cf2c8f9e5a',
-    'src/main/kotlin/me/manga/kira/backend/sourceconfig/domain/InitialSourceCatalogState.kt': '6103607776f26c838eccbf49b77d05f2f0fb769b14aa3c99d533c6a9bc5b126e',
+    'src/main/kotlin/me/manga/kira/backend/sourceconfig/domain/InitialSourceCatalogPolicy.kt': '23d53cc1ee42ef25c31f1a887938c269076416ff9839ae7b9919fbb3fea46966',
+    'src/main/kotlin/me/manga/kira/backend/sourceconfig/domain/InitialSourceCatalogState.kt': 'e9743c5043705f3dc71891961635034d62a379f23daa1ac5be0f28f2b2ef5319',
     'src/main/kotlin/me/manga/kira/backend/sourceconfig/domain/PublishedDocumentRepository.kt': 'b5a86110acca52c8c37d9cf2b9fac424c69461246f14c870a585e968afe0453c',
-    'src/main/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/ClasspathInitialSourceCatalogPolicy.kt': '5fc274a22cec267693dc3b922514337330484204b95241f2e5a4afe730f267c8',
+    'src/main/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/ClasspathInitialSourceCatalogPolicy.kt': '78d3767b580c3df392f8a54654b9ed5442a92da40d6e2a3c5026110915a40e60',
     'src/main/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/DocumentPublicationStateEntity.kt': '2997ba5798d59a7b7503db5021e1bf4e93fedd4715bbc4dfba3500ff343dae6e',
     'src/main/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/JpaPublishedDocumentRepositoryAdapter.kt': 'f3a9341cec57e54fc6f8a9fe5a4e0831b943a9f32d50fb07972ddff41e5b1409',
     'src/main/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/PublicationStateStartupValidator.kt': 'dc1f72dbe2605714ccf582bb9cae8c55dde1bf14603011f48d1d4db8d1af8313',
@@ -691,9 +691,9 @@ EXPECTED_SOURCE_SHA256 = {
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/FlywayMigrationIT.kt': 'b58412530ff4130d9563202d5419437ed62a557a0198d7b5e2fc9562848d1d13',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/InitialSourceCatalogFixtures.kt': '9ffa510f535e7361b1f28eb3a118823004f9e72d33a36ea437691f5f7a5863d3',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/StartupConsistencyIT.kt': '5e06db961ddd35c5c55720c799e6be8c0a12e517b4472bddb2d04efb2f1de34b',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/AbstractAdminSourceIT.kt': '47049c09279149268763e7192ce50daf8e869bfef1ba3f45464764f8fca93289',
+    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/AbstractAdminSourceIT.kt': '757ca4c2c54b59365259340f245c8ddef523bea6aa9a728c09d35b6dc875f212',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/AuditLogIT.kt': 'f06196caaa7d99c91d585cd513ba9538f05f35aecf43c4c2bbe0cc927050d519',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/BootstrapConcurrencyIT.kt': '66a3cbe96ce289fcf11e853cb7ab22b18b5fff8eae8f66f58fbc1cb6bab91e92',
+    'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/BootstrapConcurrencyIT.kt': 'f54345069b0c2099c491f2816adb636471b59ca173833869e1f92f21acf0c5ae',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/BootstrapEndpointIT.kt': 'c9a75f08230a464b5e8bfa67ed0ed32b09a1dffa5bbbb146429fcef348491f44',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/BootstrapLateRollbackIT.kt': '01b0a7b769b3b67f6e7820cdcec9bb2ecc5b07d976f54aa7981058ef2ba2581b',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/BootstrapPublicationGuardIT.kt': '3ed1c1cf5abe622a93189b52b8bd61e5752981b43afec9e750ba90dd84bc7d1e',
@@ -723,8 +723,8 @@ EXPECTED_SOURCE_SHA256 = {
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/SourceOperationalModeIT.kt': 'f0fd722742abc297b25d1e8ffdf2ba9cbdb8a2d3b1b06b41823c1e71ed3b57d7',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/SourcePublishFlowIT.kt': '2f1d50b6cfee2128d9b48cb8671254af7f281356b06cb9e573cb00de6fd23c10',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/admin/StrictAdminParserIT.kt': '780ba482d3bb92d46a41167adf38bca8446d48a2ede15862ce0b1b1dba0fbd27',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/api/GenericV2CutoverControllerTest.kt': '53c8bff80af002c29f6d5a63867ae753bc5ed23abca65b6d89c9ccd859c2a457',
-    'src/test/kotlin/me/manga/kira/backend/sourceconfig/domain/InitialSourceCatalogPolicyTest.kt': '9d3a64f1199aeb842fcde1c678e488a1b5b372f177e80f0a44c954d1310cca72',
+    'src/test/kotlin/me/manga/kira/backend/sourceconfig/api/GenericV2CutoverControllerTest.kt': '5463c7cf1fcba65a24186259511d5103ed2c64469fa91b152906cd1bda1bbe2b',
+    'src/test/kotlin/me/manga/kira/backend/sourceconfig/domain/InitialSourceCatalogPolicyTest.kt': '1cef40d03932ada4fa61d85c6f77524c48d991e612a8e97220c7b824bf1c4b9a',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/infrastructure/AdminHistoryRepositoryIT.kt': '786bac5a93a345a6c5d764ca740c797a7f882f86119952815fbaf0a3935c8f94',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/ETagIT.kt': '6d33e2702a5c74da8aa7c606915bb8196a134af8086d3a418e87aa367641c317',
     'src/test/kotlin/me/manga/kira/backend/sourceconfig/public/IfNoneMatchVariantsIT.kt': 'cbec6825b348256556cfca5bd4742bc74f743cc7ba8f2ab2cde2c17027b3e34f',
