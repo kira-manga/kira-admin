@@ -139,7 +139,7 @@ def checked_request():
 
 def child_environment(run, original, runner_home):
     marker = 'reader.apple.owner=' + run.name
-    java = original['JAVA_HOME_21_ARM64']  # Installed runner input only; no setup/install/fallback step.
+    java = original['JAVA_HOME_21_arm64']  # Installed runner input only; no setup/install/fallback step.
     result = {'PATH': java + '/bin:/usr/bin:/bin:/usr/sbin:/sbin', 'JAVA_HOME': java, 'HOME': str(run / 'home'),
               'GRADLE_USER_HOME': str(run / 'gradle-home'), 'KONAN_DATA_DIR': str(run / 'konan'),
               'TMPDIR': str(run / 'tmp') + '/', 'DEVELOPER_DIR': XCODE, 'CI': 'true',
@@ -587,7 +587,7 @@ def test_once(request):
     runner_home = Path(os.environ['HOME']).resolve()
     require(runner_home == Path(pwd.getpwuid(os.getuid()).pw_dir).resolve() and runner_home.is_dir()
             and not runner_home.is_relative_to(run) and runner_home != source, 'Invalid real runner HOME')
-    java_home = os.environ.get('JAVA_HOME_21_ARM64', '')
+    java_home = os.environ.get('JAVA_HOME_21_arm64', '')
     require(java_home and Path(java_home).is_absolute() and (Path(java_home) / 'bin/java').is_file()
             and (Path(java_home) / 'release').is_file(), 'Missing installed hosted JDK21 ARM64; no install/fallback')
     require(shutil.disk_usage(temporary).free >= 8 * 1024**3, 'Existing 8 GiB free-disk floor required')

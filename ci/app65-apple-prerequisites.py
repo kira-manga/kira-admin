@@ -284,12 +284,31 @@ class Prerequisites:
             (self.root / 'gems').mkdir(mode=0o700)
             (self.root / 'bin').mkdir(mode=0o700)
             gem_script = Path('/usr/bin/gem').resolve(strict=True)  # One system locator, never PATH/gem discovery.
-            receipt.update(stage='local-install', rubySha256=hashlib.sha256(
+            receipt.update(stage='gemrc-absence', rubySha256=hashlib.sha256(
                 self.xcodegen_bytes(Path('/usr/bin/ruby'), 33554432, self.work_end)).hexdigest(),
                 gemScriptPath=str(gem_script), gemScriptRequestedPath='/usr/bin/gem',
                 gemScriptSha256=hashlib.sha256(self.xcodegen_bytes(gem_script, 1048576, self.work_end)).hexdigest())
             self.save('prerequisites.json', self.receipt)
-            self.call(['/usr/bin/ruby', '--disable-gems', gem_script, '--norc', 'install', '--local', archive,
+            # Apple RubyGems 3.0.3.1 reads rc files before --norc suppresses their merge.
+            # Metadata only for its two exact paths; do not load RubyGems/configuration here.
+            gemrc_paths = self.call(['/usr/bin/ruby', '--disable-gems', '-retc', '-e', """
+abort 'Unexpected gemrc environment' if ENV.key?('GEMRC') || Dir.home != ENV.fetch('HOME')
+paths = [File.join(Etc.sysconfdir, 'gemrc'), File.join(Dir.home, '.gemrc')]
+paths.each do |path|
+  begin
+    File.lstat(path)
+  rescue Errno::ENOENT
+    next
+  end
+  abort "Ambient gemrc must be absent: #{path}"
+end
+puts paths
+"""], 'rexml-gemrc-absence', seconds=10, end=self.work_end).splitlines()
+            require(len(gemrc_paths) == 2 and all(len(path) <= 4096 and path.startswith('/') for path in gemrc_paths)
+                    and gemrc_paths[1] == str(self.recipe.run / 'home/.gemrc'), 'Unexpected gemrc absence receipt')
+            receipt.update(stage='local-install', absentGemrcPaths=gemrc_paths)
+            self.save('prerequisites.json', self.receipt)
+            self.call(['/usr/bin/ruby', '--disable-gems', gem_script, 'install', '--norc', '--local', archive,
                        '--install-dir', self.root / 'gems', '--bindir', self.root / 'bin', '--no-user-install',
                        '--no-document', '--ignore-dependencies'], 'rexml-local-install', seconds=90, end=self.work_end)
             receipt['stage'] = 'installed-attribution'
