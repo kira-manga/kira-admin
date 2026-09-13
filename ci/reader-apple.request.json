@@ -1,0 +1,35 @@
+{
+  "schema": "reader-apple01-private-v1",
+  "authorization": "READER_APPLE01_ONE_ATTEMPT_AUTHORIZED",
+  "acquisitionAuthorization": "PUBLIC_DECLARED_WRAPPER_GRADLE_NATIVE_ONLY",
+  "sourceRepository": "kira-manga/kira-app",
+  "sourceSha": "816b48d96cd407e551b9fcd5b5c6eda2d5936167",
+  "sourceTree": "f7e4a653045f85ca5b4c6ab5e90080045a68f268",
+  "tasks": [
+    ":ui:compileKotlinIosArm64",
+    ":ui:compileKotlinIosSimulatorArm64",
+    ":presentation:iosSimulatorArm64Test"
+  ],
+  "expectedRunAttempt": 1,
+  "planSha256": "3023bce52e43d0f80b1a4aea43018f55b586ae2f8c6d85fd21233a60e5d802d0",
+  "sourcePinsSha256": "bc981e103eccf5764ef92b7ee8b427dd1b25eec28e1a1a0314ca7981d5f1b28b",
+  "selectorsSha256": "106e7637b9b5e31ed477154ddfb8b1950e971069be006f8b440ed103c7a0d3f9",
+  "selectors": [
+    "me.manga.kira.presentation.reader.ReaderViewModelActiveNavigationTest.previousFromAppendedChapterReplacesAnchorAndRebindsChapterWork",
+    "me.manga.kira.presentation.reader.ReaderViewModelActiveNavigationTest.previousAndNextChooseTheActiveNeighborEvenWhenItIsAlreadyLoaded",
+    "me.manga.kira.presentation.reader.ReaderViewModelActiveNavigationTest.sameMangaRouteReplayDoesNotRewindAppendedFeedOrExplicitNavigation",
+    "me.manga.kira.presentation.reader.ReaderViewModelActiveNavigationTest.differentMangaEntryReplacesTheFeedAndReloadsItsChapterList",
+    "me.manga.kira.presentation.reader.ReaderViewModelActiveNavigationTest.pagedNavigationRetainsPreviousNextEndAndLoadingGuards",
+    "me.manga.kira.presentation.reader.ReaderViewModelActiveNavigationTest.previousToAnchorCancelsPendingAppendAndOldProgressBeforeReplacementArrives",
+    "me.manga.kira.presentation.reader.ReaderViewModelActiveNavigationTest.manualWebRecoveryForwardsTheRequestedChapterAndSourceAsAnEffect",
+    "me.manga.kira.presentation.reader.ReaderViewModelAppendTest.appendNextChapter_appendsBelow_keepingCurrentPages",
+    "me.manga.kira.presentation.reader.ReaderViewModelAppendTest.appendNextChapter_isIdempotentAndNoOpAtEnd",
+    "me.manga.kira.presentation.reader.ReaderViewModelActiveChapterTest.resume_savesAgainstActiveChapter_withWithinChapterIndex",
+    "me.manga.kira.presentation.reader.ReaderViewModelActiveChapterTest.bookmarkAndHistory_followActiveChapter_onlyWhenChapterUrlChanges"
+  ],
+  "ownerHelperSha256": "9f69c87182eba29030fcd65c49b4e8459a41749440dab9767f3fbfe0c02db6cf",
+  "developerDir": "/Applications/Xcode_26.4.1.app/Contents/Developer",
+  "controllerSha256": "231dbcb1fac854e07e7dd5cf2c4a0a11f2faf7e3d2343feef79557d1c8273295",
+  "initSha256": "b14c69541ddbf8ddcb22b632c178062a73929bb6578fd6e0573525ae76183ba8",
+  "workflowSha256": "e2fc7b71a193a67780b895feaa3cc021cb8bd248ebe6352488cdc7c5fa29a615"
+}
