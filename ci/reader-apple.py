@@ -15,10 +15,10 @@ import time
 import xml.etree.ElementTree as ET
 
 CONTROL = Path(__file__).resolve().parents[1]
-CANDIDATE = '6c5630695bb5952ac60679387e2b92f4d1cc042f'
-TREE = '5d6da41afb12ccd82f511271b3bb7c2c273f923b'
-PLAN = '3023bce52e43d0f80b1a4aea43018f55b586ae2f8c6d85fd21233a60e5d802d0'
-PINS_HASH = '7f258b25ebbe46e043d4bfeb715efb4c8f614f9a6637387770714e7bff9498d9'
+CANDIDATE = 'ed352290121b8141be7054c068169fcef0cfcdf9'
+TREE = '9a6c3322a3a264106f4634c8e727f2f8ed96a750'
+PLAN = 'd7a410d219d157f9e6842df489a45e65764615cba4d3c1e68d612281fad5ade8'
+PINS_HASH = '4df5a54f9b5bd2621c0622854713eae93f9afb9e8e35a962514f462e4271793f'
 SELECTORS_HASH = '106e7637b9b5e31ed477154ddfb8b1950e971069be006f8b440ed103c7a0d3f9'
 # Explicit primary-selected successor, with separate App44 Apple11 reviews; not App3's stale d6e5 owner.
 OWNER_HASH = '9f69c87182eba29030fcd65c49b4e8459a41749440dab9767f3fbfe0c02db6cf'
@@ -89,11 +89,11 @@ def selectors():
 
 def source_inputs():
     path = CONTROL / 'ci/reader-apple.source-pins.sha256'
-    require(digest(path) == PINS_HASH, 'Changed source68 manifest')
+    require(digest(path) == PINS_HASH, 'Changed source86 manifest')
     rows = [line.split(maxsplit=1) for line in path.read_text().splitlines()]
     result = {name: sha for sha, name in rows}
-    require(len(rows) == len(result) == 68 and all(re.fullmatch('[0-9a-f]{64}', sha)
-            and not Path(name).is_absolute() and '..' not in Path(name).parts for name, sha in result.items()), 'Invalid source68')
+    require(len(rows) == len(result) == 86 and all(re.fullmatch('[0-9a-f]{64}', sha)
+            and not Path(name).is_absolute() and '..' not in Path(name).parts for name, sha in result.items()), 'Invalid source86')
     return result
 
 
@@ -206,6 +206,8 @@ def resource_inventory(source):
 
 def simctl(commands, runner_home, args, label, seconds=15, end=None, cleaning=False):
     # One borrowed command owner, but CoreSimulator always sees the real account HOME.
+    if cleaning:
+        commands.retire_observer()  # Settle the previous owned leaf before this command needs a group join.
     return commands.call(['/usr/bin/xcrun', 'simctl', *args], label, seconds=seconds, end=end,
                          extra={'HOME': str(runner_home)}, cleaning=cleaning)
 
@@ -270,16 +272,25 @@ def create_simulator(owner, commands, runner_home, state, work_end):
     owner.save(commands.reports / 'simulator.json', state)
 
 
-def dispose_simulator(owner, commands, runner_home, state):
+def dispose_simulator(owner, commands, runner_home, state, errors):
     if not state.get('creating') and not state.get('udid'):
         return True
     udid = state.get('udid')
     bound = state.get('createdOwnership')
+    def shutdown():
+        try:
+            simctl(commands, runner_home, ['shutdown', udid], 'shutdown-owned-simulator', seconds=30, cleaning=True)
+        except Exception as error:
+            errors.append('simulator shutdown: ' + str(error))
+            # A failed join is an ambiguous side effect, not permission to repeat shutdown.
+            require(commands.drain(), 'Owned shutdown work is unsettled; retain device/scratch')
+            require(bound is not None, 'Unbound shutdown failure; retain device/scratch')
+            # Continue once to the existing fresh same-root Shutdown inventory below.
     if bound is not None:
         require(simulator_identity(runner_home, state) == bound, 'Owned simulator root changed before cleanup')
         require(type(state.get('bootIntended')) is bool, 'Missing owned simulator boot intent')
         if state['bootIntended']:
-            simctl(commands, runner_home, ['shutdown', udid], 'shutdown-owned-simulator', cleaning=True)
+            shutdown()
     matches = [row for row in devices(commands, runner_home, cleaning=True)
                if row['name'] == state['name'] or row['udid'] == udid]
     require(len(matches) <= 1 and all(row['name'] == state['name'] and row['runtime'] == RUNTIME
@@ -294,7 +305,7 @@ def dispose_simulator(owner, commands, runner_home, state):
         owner.save(commands.run / 'simulator.json', state)
         if bound is None:  # Uncertain create still requires inventory-based ownership recovery first.
             if device['state'] != 'Shutdown':
-                simctl(commands, runner_home, ['shutdown', udid], 'shutdown-owned-simulator', cleaning=True)
+                shutdown()
             current = [row for row in devices(commands, runner_home, cleaning=True) if row['udid'] == udid]
             require(len(current) == 1 and current[0]['state'] == 'Shutdown', 'Owned shutdown unproven')
         simctl(commands, runner_home, ['delete', udid], 'delete-owned-simulator', cleaning=True)
@@ -471,6 +482,7 @@ def run_recipe(owner, source, run, request, system, runner_home):
     owner.save(reports / 'result.json', result)  # Fail-closed evidence even if the helper capability gate refuses.
     def stop(label):
         try:
+            commands.retire_observer()
             commands.call([str(source / 'gradlew'), '--stop'], label, seconds=40, cleaning=True)
         except Exception as error:
             errors.append(label + ': ' + str(error))
@@ -541,7 +553,7 @@ def run_recipe(owner, source, run, request, system, runner_home):
         except Exception as error:
             errors.append('preserve/clean: ' + str(error))
         try:
-            result['simulatorRemoved'] = dispose_simulator(owner, commands, runner_home, state)
+            result['simulatorRemoved'] = dispose_simulator(owner, commands, runner_home, state, errors)
         except Exception as error:
             errors.append('simulator cleanup: ' + str(error))
         try:
@@ -550,15 +562,23 @@ def run_recipe(owner, source, run, request, system, runner_home):
             errors.append('simulator cleanup receipt: ' + str(error))
         if started:
             stop('gradle-stop-final')
+        final_source_clean = False
         try:
             if source_ready and result.get('outputsRemoved'):
+                commands.retire_observer()
                 require(not commands.call(['/usr/bin/git', '-C', str(source), 'status', '--porcelain', '--untracked-files=all'],
                                           'source-final-clean', cleaning=True).strip(), 'Unexpected source mutation remains')
                 require(commands.call(['/usr/bin/git', '-C', str(source), 'rev-parse', 'HEAD'],
                                       'source-final-sha', cleaning=True).strip() == CANDIDATE, 'Source checkpoint moved')
+            final_source_clean = True
+        except Exception as error:
+            errors.append('final source: ' + str(error))
+        try:
+            # Git/source failure must not skip the final existing-owner group drain.
             result['afterFinalStop'] = (absence(commands, run, source, state, final=True) if commands else
                                         {'absent': True, 'noChildOwnerCreated': True})
             require(result['afterFinalStop']['absent'] and result.get('simulatorRemoved'), 'Owned workers/device remain; retain scratch')
+            require(final_source_clean, 'Final source unverified; retain scratch')
             result['scratchRemoved'] = remove_scoped(run, SCRATCH)
         except Exception as error:
             errors.append('final ownership/clean: ' + str(error))

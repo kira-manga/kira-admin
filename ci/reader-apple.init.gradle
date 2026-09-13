@@ -28,7 +28,7 @@ def reports = new File(run, 'reports')
 def sourceSha = System.getenv('READER_APPLE_SOURCE_SHA')
 def realHome = new File(System.getenv('READER_APPLE_SIMULATOR_HOME')).canonicalFile
 def device = System.getenv('READER_APPLE_DEVICE')
-require(run.isDirectory() && reports.isDirectory() && sourceSha == '6c5630695bb5952ac60679387e2b92f4d1cc042f', 'Wrong owned source/run')
+require(run.isDirectory() && reports.isDirectory() && sourceSha == 'ed352290121b8141be7054c068169fcef0cfcdf9', 'Wrong owned source/run')
 // Actual early-init observations, not the controller's declared tools.homes values.
 def homeObservation = [
     actualEnvironmentHome: System.getenv('HOME'),
@@ -99,7 +99,7 @@ def simulator = read('simulator.json')
 def request = read('request.json')
 def selectors = sourceBinding.selectors
 def source = new File(sourceBinding.root).canonicalFile
-require(sourceBinding.sha == sourceSha && sourceBinding.tree == '5d6da41afb12ccd82f511271b3bb7c2c273f923b' &&
+require(sourceBinding.sha == sourceSha && sourceBinding.tree == '9a6c3322a3a264106f4634c8e727f2f8ed96a750' &&
     request.sourceSha == sourceSha && request.selectors == selectors && selectors.size() == 11 && selectors.toSet().size() == 11 &&
     simulator.udid == device && simulator.runnerHome == realHome.path, 'Different source/selector/Simulator binding')
 def arguments = roots + selectors.collectMany { ['--tests', it] } + ['--device', device]
@@ -113,9 +113,21 @@ def graphPaths = []
 def dependencies = [':core': [], ':domain': [':core'], ':presentation': [':core', ':domain'], ':ui': [':core', ':domain', ':presentation']]
 def stdlib = new File(run, 'konan/kotlin-native-prebuilt-macos-aarch64-2.4.0/klib/common/stdlib').canonicalFile
 def maven = new File(run, 'gradle-home/caches/modules-2/files-2.1').canonicalFile.toPath()
+def platformBase = new File(run, 'konan/kotlin-native-prebuilt-macos-aarch64-2.4.0/klib/platform').toPath()
+def platformPrefix = 'org.jetbrains.kotlin.native.platform.'
 def libraryArtifacts = [:] // Keep each full leaf inventory once, not once per compiler that consumes it.
 def libraries = { collection, target, expectedProjects ->
-    def rows = collection.collect { it.canonicalFile }.sort { it.path }.collect { file ->
+    def rows = collection.collect { it.absoluteFile }.sort { it.canonicalPath }.collect { input ->
+        def file = input.canonicalFile
+        def platformInput = file.toPath().startsWith(platformBase) || input.toPath().startsWith(platformBase)
+        if (platformInput) {
+            def parent = platformBase.resolve(target).toFile()
+            def name = file.isDirectory() ? file.name : (file.isFile() && file.name.endsWith('.klib') ? file.name.dropRight(5) : '')
+            require(target in targets.values() && input == file && parent.canonicalFile == parent &&
+                file.parentFile == parent && !Files.isSymbolicLink(input.toPath()) &&
+                name.startsWith(platformPrefix) && name.length() > platformPrefix.length(),
+                'Invalid owned Native platform input: ' + input)
+        }
         def value = fingerprint(file)
         require(!libraryArtifacts.containsKey(file.path) || libraryArtifacts[file.path] == value, 'Changed previously observed library')
         libraryArtifacts[file.path] = value
@@ -126,6 +138,7 @@ def libraries = { collection, target, expectedProjects ->
             return [origin: 'normal-project-output', task: normal.key, fingerprint: reference]
         }
         if (file == stdlib) return [origin: 'owned-native-stdlib', fingerprint: reference]
+        if (platformInput) return [origin: 'owned-native-platform', target: target, fingerprint: reference]
         require(file.toPath().startsWith(maven), 'Unattributed compiler/link library: ' + file)
         def parts = maven.relativize(file.toPath()).collect { it.toString() }
         // Gradle9.6.1 stores SHA-1 hex without leading zeros (GroupedAndNamedUniqueFileStore).

@@ -3,16 +3,16 @@
   "authorization": "READER_APPLE01_ONE_ATTEMPT_AUTHORIZED",
   "acquisitionAuthorization": "PUBLIC_DECLARED_WRAPPER_GRADLE_NATIVE_ONLY",
   "sourceRepository": "kira-manga/kira-app",
-  "sourceSha": "6c5630695bb5952ac60679387e2b92f4d1cc042f",
-  "sourceTree": "5d6da41afb12ccd82f511271b3bb7c2c273f923b",
+  "sourceSha": "ed352290121b8141be7054c068169fcef0cfcdf9",
+  "sourceTree": "9a6c3322a3a264106f4634c8e727f2f8ed96a750",
   "tasks": [
     ":ui:compileKotlinIosArm64",
     ":ui:compileKotlinIosSimulatorArm64",
     ":presentation:iosSimulatorArm64Test"
   ],
   "expectedRunAttempt": 1,
-  "planSha256": "3023bce52e43d0f80b1a4aea43018f55b586ae2f8c6d85fd21233a60e5d802d0",
-  "sourcePinsSha256": "7f258b25ebbe46e043d4bfeb715efb4c8f614f9a6637387770714e7bff9498d9",
+  "planSha256": "d7a410d219d157f9e6842df489a45e65764615cba4d3c1e68d612281fad5ade8",
+  "sourcePinsSha256": "4df5a54f9b5bd2621c0622854713eae93f9afb9e8e35a962514f462e4271793f",
   "selectorsSha256": "106e7637b9b5e31ed477154ddfb8b1950e971069be006f8b440ed103c7a0d3f9",
   "selectors": [
     "me.manga.kira.presentation.reader.ReaderViewModelActiveNavigationTest.previousFromAppendedChapterReplacesAnchorAndRebindsChapterWork",
@@ -29,7 +29,7 @@
   ],
   "ownerHelperSha256": "9f69c87182eba29030fcd65c49b4e8459a41749440dab9767f3fbfe0c02db6cf",
   "developerDir": "/Applications/Xcode_26.4.1.app/Contents/Developer",
-  "controllerSha256": "25c60748221dde0d57a970762a2899932f26247ebc9229d060d23c248d592208",
-  "initSha256": "fb737a8d42a16d6a7edd1af4602b21d534d0546ac7fab8c07d54f9184fb89f61",
+  "controllerSha256": "654336934a4114adadd8a21098384808adf8cb14dbb7e00793477b8a4e892102",
+  "initSha256": "ce6fcf582045153154d4d2da8350c3fe461e1b212842ffb0894e267c8249f433",
   "workflowSha256": "e2fc7b71a193a67780b895feaa3cc021cb8bd248ebe6352488cdc7c5fa29a615"
 }
