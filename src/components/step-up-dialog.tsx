@@ -2,46 +2,54 @@
 
 import { FormEvent, useState } from 'react';
 
-import { authenticatedFetch } from '@/lib/client-api';
+import { useActionOwner } from '@/lib/action-owner';
+import { verifyProtectedAction } from '@/lib/step-up';
 import { Button, Field, Input } from './ui';
 
 export function StepUpDialog({ action, onCancel, onApproved }: { action: string; onCancel: () => void; onApproved: () => Promise<void> }) {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const owner = useActionOwner();
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    const ticket = owner.acquire();
+    if (!ticket) return;
     setBusy(true);
     setError('');
     try {
-      const response = await authenticatedFetch('/api/auth/step-up', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+      await verifyProtectedAction({
+        password,
+        isCurrent: ticket.isCurrent,
+        clearPassword: () => setPassword(''),
+        onApproved,
       });
-      if (!response.ok) {
-        const problem = await response.json().catch(() => ({})) as { detail?: string };
-        throw new Error(problem.detail ?? 'Password verification failed.');
-      }
-      setPassword('');
-      await onApproved();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'The protected action failed.');
+      if (ticket.isCurrent()) setError(caught instanceof Error ? caught.message : 'The protected action failed.');
     } finally {
-      setBusy(false);
+      if (owner.release(ticket)) {
+        setPassword('');
+        setBusy(false);
+      }
     }
+  }
+
+  function cancel() {
+    // Claim cancellation synchronously too: a same-turn submit must not start
+    // verification while the parent's dismissal is waiting to commit.
+    if (owner.acquire()) onCancel();
   }
 
   return (
     <div className="modal-layer" role="dialog" aria-modal="true" aria-label="Confirm protected action">
-      <button className="modal-scrim" type="button" onClick={onCancel} aria-label="Cancel" />
+      <button className="modal-scrim" type="button" onClick={cancel} disabled={busy} aria-label="Cancel" />
       <form className="modal-card compact" onSubmit={submit}>
         <div className="modal-heading"><div><span>SECURITY CHECK</span><h3>Confirm {action}</h3></div></div>
         <p className="modal-copy">Enter your administrator password. The one-time approval expires quickly and is never exposed to browser JavaScript.</p>
-        <Field label="Administrator password"><Input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required /></Field>
+        <Field label="Administrator password"><Input type="password" value={password} disabled={busy} onChange={(event) => { if (!owner.isLocked()) setPassword(event.target.value); }} autoComplete="current-password" required /></Field>
         {error ? <p className="form-error" role="alert">{error}</p> : null}
-        <div className="modal-actions"><Button type="button" onClick={onCancel}>Cancel</Button><Button type="submit" tone="primary" disabled={busy}>{busy ? 'Verifying…' : 'Verify and continue'}</Button></div>
+        <div className="modal-actions"><Button type="button" onClick={cancel} disabled={busy}>Cancel</Button><Button type="submit" tone="primary" disabled={busy}>{busy ? 'Verifying…' : 'Verify and continue'}</Button></div>
       </form>
     </div>
   );

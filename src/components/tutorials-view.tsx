@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 
 import { apiFetch } from '@/lib/client-api';
+import { buildFeaturedToggleItems } from '@/lib/tutorial-featured-order';
 import type { AdminCategory, AdminTutorial, TutorialMedia, TutorialRevision } from '@/lib/types';
 import { Icon } from './icons';
 import { TutorialEditor } from './tutorial-editor';
@@ -82,8 +83,7 @@ export function TutorialsView() {
 
   async function toggleFeatured() {
     if (!selected) return;
-    const featured = tutorials.filter((item) => item.featuredPosition !== null && item.id !== selected.id).sort((a, b) => (a.featuredPosition ?? 0) - (b.featuredPosition ?? 0));
-    const next = tutorials.map((item) => ({ id: item.id, position: item.position, featuredPosition: item.id === selected.id ? (selected.featuredPosition === null ? featured.length : null) : item.featuredPosition }));
+    const next = buildFeaturedToggleItems(tutorials, selected);
     try { await mutate(() => apiFetch('tutorials/reorder', { method: 'POST', body: JSON.stringify({ items: next }) }), selected.featuredPosition === null ? 'Tutorial added to the homepage.' : 'Tutorial removed from the homepage.'); } catch { /* shown above */ }
   }
 
@@ -100,7 +100,7 @@ export function TutorialsView() {
         )) : <EmptyState icon="history" title="No revisions yet" copy="Open the editor to write the first bilingual version of this tutorial." />}</div></> : <EmptyState icon="tutorials" title="Choose a tutorial" copy="Select a guide to manage its content and publishing state." />}</div>
       </section> : <EmptyState icon="tutorials" title="Your tutorial library is ready" copy="Create the first guide identity, then write its bilingual revision." action={<Button tone="primary" icon="plus" onClick={() => setCreateOpen(true)}>Create tutorial</Button>} />}
 
-      {createOpen ? <div className="modal-layer"><button className="modal-scrim" onClick={() => setCreateOpen(false)} /><form className="modal-card compact" onSubmit={createTutorial}><div className="modal-heading"><div><span>NEW TUTORIAL</span><h3>Create a guide identity</h3></div><button type="button" onClick={() => setCreateOpen(false)}><Icon name="close" /></button></div><Field label="Stable slug" hint="This becomes /tutorials/your-slug and cannot be renamed later."><Input name="slug" placeholder="organize-your-library" pattern="[a-z0-9-]+" required autoFocus /></Field><label className="check-row"><input type="checkbox" name="featured" /><span><strong>Feature on the homepage</strong><small>Add this guide to the home tutorial browser.</small></span></label><div className="modal-actions"><Button type="button" onClick={() => setCreateOpen(false)}>Cancel</Button><Button tone="primary" icon="plus" type="submit" disabled={busy}>Create tutorial</Button></div></form></div> : null}
+      {createOpen ? <div className="modal-layer"><button className="modal-scrim" onClick={() => setCreateOpen(false)} /><form className="modal-card compact" onSubmit={createTutorial}><div className="modal-heading"><div><span>NEW TUTORIAL</span><h3>Create a guide identity</h3></div><button type="button" onClick={() => setCreateOpen(false)}><Icon name="close" /></button></div><Field label="Stable slug" hint="Maximum 96 characters. This becomes /tutorials/your-slug and cannot be renamed later."><Input name="slug" placeholder="organize-your-library" pattern="[a-z0-9-]+" maxLength={96} required autoFocus /></Field><label className="check-row"><input type="checkbox" name="featured" /><span><strong>Feature on the homepage</strong><small>Add this guide to the home tutorial browser.</small></span></label><div className="modal-actions"><Button type="button" onClick={() => setCreateOpen(false)}>Cancel</Button><Button tone="primary" icon="plus" type="submit" disabled={busy}>Create tutorial</Button></div></form></div> : null}
       {editorOpen && selected ? <TutorialEditor slug={selected.slug} base={latestRevision} categories={categories} media={media} busy={busy} onClose={() => setEditorOpen(false)} onSave={saveRevision} /> : null}
     </div>
   );

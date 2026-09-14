@@ -1,71 +1,130 @@
 name: Deploy server3
 
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Successful push/main CI run ID (never latest)
+        required: true
+        type: string
+      run_attempt:
+        description: Exact successful producer attempt
+        required: true
+        type: string
+      artifact_id:
+        description: Immutable admin-image artifact ID from that attempt
+        required: true
+        type: string
+      zip_sha256:
+        description: Outer artifact ZIP SHA256 (64 lowercase hex characters)
+        required: true
+        type: string
 
 permissions:
   contents: read
+  actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+  CANDIDATE_RUN_ID: ${{ inputs.run_id }}
+  CANDIDATE_ATTEMPT: ${{ inputs.run_attempt }}
+  CANDIDATE_ARTIFACT_ID: ${{ inputs.artifact_id }}
+  CANDIDATE_ZIP_SHA256: ${{ inputs.zip_sha256 }}
 
 concurrency:
   group: kira-admin-server3-production
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  preflight:
     if: >-
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.head_branch == 'main' &&
-      github.event.workflow_run.event == 'push'
+      github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+      github.repository == 'kira-manga/kira-admin'
     runs-on: ubuntu-latest
-    environment: production
-    timeout-minutes: 30
+    timeout-minutes: 15
+    outputs:
+      candidate: ${{ steps.candidate.outputs.candidate }}
+      policy: ${{ steps.policy.outputs.policy }}
     steps:
-      - name: Check out verified source
+      - name: Check out this promotion revision, never producer-selected scripts
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.sha }}
+          persist-credentials: false
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Allocate owned preflight scratch
+        id: scratch
+        run: python3 scripts/ci/image_release.py scratch
 
-      - name: Build exact verified SHA
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
-        with:
-          context: .
-          load: true
-          push: false
-          tags: kira-admin:${{ github.event.workflow_run.head_sha }}
-          build-args: |
-            VERSION=${{ github.event.workflow_run.head_sha }}
-            VCS_REF=${{ github.event.workflow_run.head_sha }}
-            BUILD_DATE=1970-01-01T00:00:00Z
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Configure pinned SSH host
+      - name: Verify and freeze the explicit candidate before native approval
+        id: candidate
         env:
+          SCRATCH: ${{ steps.scratch.outputs.path }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci/image_release.py verify
+
+      - name: Fail closed on unsupported or incomplete native protection
+        id: policy
+        env:
+          SCRATCH: ${{ steps.scratch.outputs.path }}
+          # EXTERNAL: owner-authorized single-repository read-only policy token.
+          # Only this policy API process receives it, never download/build/SSH commands.
+          ADMIN8_POLICY_READ_TOKEN: ${{ secrets.ADMIN8_POLICY_READ_TOKEN }}
+        run: python3 scripts/ci/image_release.py policy
+
+      - name: Remove only owned preflight scratch
+        if: always() && steps.scratch.outputs.path != ''
+        env:
+          SCRATCH: ${{ steps.scratch.outputs.path }}
+        run: python3 scripts/ci/image_release.py cleanup
+
+  promote:
+    needs: preflight
+    if: >-
+      github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+      github.repository == 'kira-manga/kira-admin'
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 25
+    env:
+      EXPECTED_CANDIDATE: ${{ needs.preflight.outputs.candidate }}
+      EXPECTED_POLICY: ${{ needs.preflight.outputs.policy }}
+    steps:
+      - name: Check out only the trusted promotion revision after native approval
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Allocate owned promotion scratch
+        id: scratch
+        run: python3 scripts/ci/image_release.py scratch
+
+      - name: Reverify the frozen artifact, load it, and inspect the exact tag and image ID
+        env:
+          SCRATCH: ${{ steps.scratch.outputs.path }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci/image_release.py verify
+
+      - name: Recheck the native policy immediately before SSH setup
+        env:
+          SCRATCH: ${{ steps.scratch.outputs.path }}
+          ADMIN8_POLICY_READ_TOKEN: ${{ secrets.ADMIN8_POLICY_READ_TOKEN }}
+        run: python3 scripts/ci/image_release.py policy
+
+      - name: Recheck candidate bindings, then stream the original verified gzip through the fixed gateway
+        env:
+          SCRATCH: ${{ steps.scratch.outputs.path }}
+          GITHUB_TOKEN: ${{ github.token }}
           DEPLOY_KEY: ${{ secrets.SERVER3_SSH_PRIVATE_KEY }}
           KNOWN_HOSTS: ${{ secrets.SERVER3_KNOWN_HOSTS }}
-        shell: bash
-        run: |
-          set +x
-          install -d -m 700 ~/.ssh
-          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/kira_server3
-          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/kira_server3 ~/.ssh/known_hosts
-
-      - name: Stream image through the restricted deploy gateway
-        env:
           DEPLOY_HOST: ${{ vars.SERVER3_HOST }}
           DEPLOY_PORT: ${{ vars.SERVER3_PORT }}
           DEPLOY_USER: ${{ vars.SERVER3_USER }}
-          REVISION: ${{ github.event.workflow_run.head_sha }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          docker save "kira-admin:$REVISION" | gzip -9 | \
-            ssh -i ~/.ssh/kira_server3 -p "${DEPLOY_PORT:-22}" \
-              -o BatchMode=yes -o IdentitiesOnly=yes \
-              "$DEPLOY_USER@$DEPLOY_HOST" "deploy admin $REVISION"
+        run: python3 scripts/ci/image_release.py transfer
+
+      - name: Remove only owned credentials, archives and loaded image tag on every exit
+        if: always() && steps.scratch.outputs.path != ''
+        env:
+          SCRATCH: ${{ steps.scratch.outputs.path }}
+        run: python3 scripts/ci/image_release.py cleanup
