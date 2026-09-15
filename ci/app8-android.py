@@ -524,7 +524,7 @@ def inside():
         with answer.open('rb') as stdin:
             commands.run(['/sdk/cmdline-tools/latest/bin/avdmanager', 'create', 'avd', '-n', runtime['avd'], '-k', IMAGE,
                           '-p', work / 'device'], 'create-avd', stdin=stdin)
-        server = commands.start([adb[0], '-L', 'tcp:127.0.0.1:5037', 'nodaemon', 'server'], 'private-adb')
+        server = commands.start([adb[0], '-L', 'tcp:localhost:5037', 'nodaemon', 'server'], 'private-adb')
         boot_end = min(time.monotonic() + 180, commands.end)
         while True:
             require(server[0].poll() is None and time.monotonic() < boot_end and not CANCELLED, 'Private adb readiness failed')
