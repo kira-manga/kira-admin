@@ -1,0 +1,38 @@
+name: App8 SDK metadata only (public synthetic)
+
+on:
+  push:
+    branches: [validation/app8-android-sdk-metadata-20260915-01]
+    paths: [ci/app8-sdk-metadata.request.json]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: app8-sdk-metadata-20260915
+  cancel-in-progress: false
+
+jobs:
+  sdk-metadata:
+    if: >-
+      ${{ github.repository == 'kira-manga/kira-admin' &&
+          github.event.repository.private == false && github.event_name == 'push' &&
+          github.ref == 'refs/heads/validation/app8-android-sdk-metadata-20260915-01' &&
+          github.run_attempt == 1 }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Read fixed SDK metadata once; no tool installation or native phase
+        id: metadata
+        run: python3 -I -B ci/app8-sdk-metadata.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always() && steps.metadata.outcome != 'skipped'
+        with:
+          name: app8-sdk-metadata-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/app8-sdk-metadata-${{ github.run_id }}-${{ github.run_attempt }}/sdk-metadata.json
+          retention-days: 3
+          if-no-files-found: error

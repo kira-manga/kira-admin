@@ -1,0 +1,31 @@
+{
+  "authoritativeApi26": {
+    "abi": "x86_64",
+    "apiLevel": 26,
+    "archive": {
+      "bytes": 980740438,
+      "checksum": "0eb13cc91cf164b617eaf85e4030289cb18189de",
+      "checksumType": "sha1",
+      "relativeUrl": "x86_64-26_r16.zip"
+    },
+    "archiveDownloaded": false,
+    "dependencies": [
+      {
+        "minimumRevision": "26.1.3",
+        "path": "emulator"
+      }
+    ],
+    "evidence": "AUTHORITATIVE_REMOTE_DESCRIPTOR_NOT_INSTALLED_IMAGE",
+    "manifestSha256": "b42b307e9289f993fe4446fa22da5ea6aebe7981ee7eb9ff7d4a04f7e734ef7e",
+    "package": "system-images;android-26;google_apis;x86_64",
+    "revision": "16",
+    "tag": "google_apis",
+    "url": "https://dl.google.com/android/repository/sys-img/google_apis/sys-img2-3.xml"
+  },
+  "authorization": "APP8_SDK_METADATA_SINGLE_RUN_AUTHORIZED",
+  "baseCarrier": "455364ee3433df78d0d47f735e968ba60a65df89",
+  "collectorSha256": "67d020a6f27bdd4decbdf8df2259ca251338b9df106a5ecefa5fe82c75b05b87",
+  "issueSha": "d7b024a1c77f434726c64df36e059ea5af55961c",
+  "schema": "app8-sdk-metadata-request-v1",
+  "unchangedNativeControllerSha256": "63d2a2a2b0fc64099304da355c59d79771ea085f1ffb6c62d3d9615334f8a58c"
+}
