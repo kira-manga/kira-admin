@@ -2,7 +2,7 @@ name: App8 Android diagnostic (public synthetic)
 
 on:
   push:
-    branches: [validation/app8-libpulse-20260915-01]
+    branches: [validation/app8-libpulse-target-20260915-01]
     paths: [ci/app8-android.request.json]
 
 permissions:
@@ -17,7 +17,7 @@ jobs:
     if: >-
       ${{ github.repository == 'kira-manga/kira-admin' &&
           github.event.repository.private == false && github.event_name == 'push' &&
-          github.ref == 'refs/heads/validation/app8-libpulse-20260915-01' &&
+          github.ref == 'refs/heads/validation/app8-libpulse-target-20260915-01' &&
           github.run_attempt == 1 }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10

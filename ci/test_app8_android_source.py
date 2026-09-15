@@ -6,6 +6,7 @@ isolation evidence. Primary must separately authorize even these tests.
 import copy
 import importlib.util
 import json
+import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 import unittest
@@ -67,7 +68,7 @@ class SourcePredicates(unittest.TestCase):
                 with mock.patch.object(DRAFT, 'read_json', return_value=request):
                     with self.assertRaisesRegex(RuntimeError, 'Wrong hosted invocation'):
                         DRAFT.outside()  # Old complaint carrier branch is not admitted.
-            hosted['GITHUB_REF'] = 'refs/heads/validation/app8-libpulse-20260915-01'
+            hosted['GITHUB_REF'] = 'refs/heads/validation/app8-libpulse-target-20260915-01'
             with mock.patch.dict(DRAFT.os.environ, hosted, clear=True):
                 with mock.patch.object(DRAFT, 'read_json', return_value=request):
                     with mock.patch.object(DRAFT.platform, 'system', return_value='NOT_A_HOST'):
@@ -274,7 +275,7 @@ class SourcePredicates(unittest.TestCase):
         checkpoint = SOURCE.parent.parent / 'docs/remediation/app8-native/checkpoint-policy-provenance.json'
         self.assertEqual(request['checkpointProvenanceSha256'], DRAFT.digest(checkpoint))
         workflow = (SOURCE.parent.parent / '.github/workflows/app8-android.yml').read_text()
-        branch = 'validation/app8-libpulse-20260915-01'
+        branch = 'validation/app8-libpulse-target-20260915-01'
         self.assertIn('branches: [' + branch + ']', workflow)
         self.assertIn("github.ref == 'refs/heads/" + branch + "'", workflow)
         self.assertIn('github.event.repository.private == false', workflow)
@@ -332,7 +333,8 @@ class SourcePredicates(unittest.TestCase):
         self.assertLess(text.index("inputs / 'request.json'"), text.index('package_inputs = {'))
         self.assertLess(text.index('package_inputs = {'), text.index("'prepare-missing-declared-sdk'"))
         self.assertEqual(text.count("'prepare-missing-declared-sdk'"), 1)
-        pulse = text.split("pulse_library = Path('/usr/lib/x86_64-linux-gnu/libpulse.so.0')", 1)[1].split("image = sdk /", 1)[0]
+        outside = text.split('def outside():', 1)[1]
+        pulse = outside.split("pulse_library = Path('/usr/lib/x86_64-linux-gnu/libpulse.so.0')", 1)[1].split("image = sdk /", 1)[0]
         self.assertIn("['/usr/bin/dpkg-query', '-W', '-f=${Status}', 'libpulse0']", pulse)
         self.assertIn("'libpulse0-package-status', seconds=5, accepted=(0, 1)", pulse)
         self.assertIn("pulse_prepared = pulse_status != 'install ok installed' or not pulse_present\n        if pulse_prepared:", pulse)
@@ -341,12 +343,27 @@ class SourcePredicates(unittest.TestCase):
         self.assertIn("'/usr/bin/env', 'DEBIAN_FRONTEND=noninteractive', 'NEEDRESTART_MODE=l'", pulse)
         self.assertIn("'/usr/bin/apt-get', '--yes', '--no-install-recommends', '--no-remove',\n                          '-o', 'DPkg::Lock::Timeout=10', 'install', 'libpulse0']", pulse)
         self.assertIn("'prepare-required-libpulse0', seconds=70, end=deadline - 70)", pulse)
-        self.assertIn('pulse_library.is_file() and pulse_library.resolve().is_relative_to(pulse_library.parent)', pulse)
+        self.assertIn('pulse_resolved = pulse_library.resolve(strict=True)', pulse)
+        self.assertIn('pulse_resolved.is_file() and pulse_resolved.is_relative_to(pulse_library.parent)', pulse)
         self.assertEqual(text.count("'/usr/bin/apt-get'"), 1)
         self.assertLess(text.index("inputs / 'request.json'"), text.index("'libpulse0-package-status'"))
         self.assertLess(text.index("'prepare-required-libpulse0'"), text.index("commands.dispose('preparation')"))
-        self.assertIn("digest(Path('/usr/lib/x86_64-linux-gnu/libpulse.so.0'), commands.end) == runtime['libpulse0']['sha256']", text)
-        self.assertIn("'sha256': digest(pulse_library, deadline - 70)", text)
+        inside = text.split('def inside():', 1)[1].split('def outside():', 1)[0]
+        self.assertIn("pulse_library = Path('/usr/lib/x86_64-linux-gnu/libpulse.so.0')", inside)
+        self.assertIn('pulse_resolved = pulse_library.resolve(strict=True)', inside)
+        self.assertIn("pulse_resolved.is_relative_to(pulse_library.parent)\n                and str(pulse_resolved) == runtime['libpulse0']['resolvedPath']", inside)
+        self.assertIn("digest(pulse_resolved, commands.end) == runtime['libpulse0']['sha256']", inside)
+        self.assertLess(inside.index('pulse_resolved.is_relative_to'), inside.index('digest(pulse_resolved,'))
+        self.assertIn("'resolvedPath': str(pulse_resolved)", outside)
+        self.assertIn("'sha256': digest(pulse_resolved, deadline - 70)", outside)
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / 'libpulse.so.fixture'
+            target.write_bytes(b'app8 synthetic SONAME target\n')
+            soname = Path(directory) / 'libpulse.so.0'
+            soname.symlink_to(target.name)
+            with self.assertRaisesRegex(RuntimeError, 'Missing/nonregular bound input'):
+                DRAFT.digest(soname)  # Generic digest remains strict.
+            self.assertEqual(DRAFT.digest(soname.resolve(strict=True)), DRAFT.digest(target))
         self.assertLess(text.index("commands.dispose('preparation')"), text.index('Missing required SDK tool/platform after preparation'))
         self.assertLess(text.index("commands.dispose('preparation')"), text.index("commands.start(['sudo'"))
         self.assertEqual(text.count("commands.run(['/jdk/bin/javac'"), 1)

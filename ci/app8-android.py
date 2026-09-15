@@ -462,7 +462,12 @@ def inside():
         for relative, expected in runtime['sdkHashes'].items():
             require(digest(Path('/sdk') / relative, commands.end) == expected, 'Prepared SDK tool/platform or image properties changed before isolation')
         require(digest(Path('/jdk/bin/java'), commands.end) == runtime['jdkJavaSha256'], 'Prepared JDK java changed before isolation')
-        require(digest(Path('/usr/lib/x86_64-linux-gnu/libpulse.so.0'), commands.end) == runtime['libpulse0']['sha256'],
+        pulse_library = Path('/usr/lib/x86_64-linux-gnu/libpulse.so.0')
+        pulse_resolved = pulse_library.resolve(strict=True)
+        require(pulse_resolved.is_relative_to(pulse_library.parent)
+                and str(pulse_resolved) == runtime['libpulse0']['resolvedPath'],
+                'libpulse0 canonical target escaped the fixed prefix or changed across isolation')
+        require(digest(pulse_resolved, commands.end) == runtime['libpulse0']['sha256'],
                 'Prepared libpulse0 changed or is unavailable in the existing isolated runtime prefix')
         save(reports / 'tool-identities.json', runtime)
         for argv, label in ((['/jdk/bin/javac', '-version'], 'javac-version'), ([bt / 'aapt2', 'version'], 'aapt-version'),
@@ -639,7 +644,7 @@ def outside():
             and request['shippingPolicyPath'] == POLICY_PATH and request['acceptedSourceGuardResultSha256'] == CHECKPOINT_GUARD_HASH,
             'Unbound request/source')
     require(os.environ.get('GITHUB_REPOSITORY') == 'kira-manga/kira-admin'
-            and os.environ.get('GITHUB_REF') == 'refs/heads/validation/app8-libpulse-20260915-01'
+            and os.environ.get('GITHUB_REF') == 'refs/heads/validation/app8-libpulse-target-20260915-01'
             and os.environ.get('GITHUB_EVENT_NAME') == 'push' and os.environ.get('GITHUB_RUN_ATTEMPT') == '1'
             and os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted', 'Wrong hosted invocation')
     require(platform.system() == 'Linux' and platform.machine() == 'x86_64', 'Hosted x86_64 Linux required')
@@ -728,7 +733,8 @@ def outside():
                           '/usr/bin/apt-get', '--yes', '--no-install-recommends', '--no-remove',
                           '-o', 'DPkg::Lock::Timeout=10', 'install', 'libpulse0'],
                          'prepare-required-libpulse0', seconds=70, end=deadline - 70)
-        require(pulse_library.is_file() and pulse_library.resolve().is_relative_to(pulse_library.parent),
+        pulse_resolved = pulse_library.resolve(strict=True)
+        require(pulse_resolved.is_file() and pulse_resolved.is_relative_to(pulse_library.parent),
                 'libpulse0 SONAME is not available within the existing declared runtime prefix')
         image = sdk / 'system-images/android-26/google_apis/x86_64'
         package_inputs = {
@@ -764,8 +770,8 @@ def outside():
                    'hostNamespaces': namespace_identity('self'), 'sdkHashes': sdk_hashes,
                    'jdkJavacSha256': digest(jdk / 'bin/javac'), 'jdkJavaSha256': digest(jdk / 'bin/java'),
                    'libpulse0': {'packageStatusBefore': pulse_status, 'sonamePresentBefore': pulse_present,
-                                 'preparationAttempted': pulse_prepared, 'resolvedPath': str(pulse_library.resolve()),
-                                 'sha256': digest(pulse_library, deadline - 70)},
+                                 'preparationAttempted': pulse_prepared, 'resolvedPath': str(pulse_resolved),
+                                 'sha256': digest(pulse_resolved, deadline - 70)},
                    'imageProperties': properties, 'imagePrepared': prepared,
                    'sdkPreparedPackages': missing_packages,
                    'shippingCompileSdk': metadata['android']['compileSdk'], 'probeCompilePlatform': tools['compilePlatform'],
