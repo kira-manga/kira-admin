@@ -3,7 +3,7 @@ name: App8 Android diagnostic (public synthetic)
 on:
   push:
     branches: [validation/app8-libpulse-target-20260915-01]
-    paths: [ci/app8-android.request.json]
+    paths: [ci/app8-android.request.json, .github/workflows/app8-android.yml]
 
 permissions:
   contents: read
@@ -55,6 +55,8 @@ jobs:
             ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/002-prepare-required-libpulse0.log
             ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/005-no-host-ipc.log
             ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/009-emulator-version.log
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/*-private-adb.log
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/*-isolated-phase.log
             ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/*-allow-native.log
             ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/*-deny-native.log
           retention-days: 3
