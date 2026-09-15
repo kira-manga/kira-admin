@@ -462,6 +462,8 @@ def inside():
         for relative, expected in runtime['sdkHashes'].items():
             require(digest(Path('/sdk') / relative, commands.end) == expected, 'Prepared SDK tool/platform or image properties changed before isolation')
         require(digest(Path('/jdk/bin/java'), commands.end) == runtime['jdkJavaSha256'], 'Prepared JDK java changed before isolation')
+        require(digest(Path('/usr/lib/x86_64-linux-gnu/libpulse.so.0'), commands.end) == runtime['libpulse0']['sha256'],
+                'Prepared libpulse0 changed or is unavailable in the existing isolated runtime prefix')
         save(reports / 'tool-identities.json', runtime)
         for argv, label in ((['/jdk/bin/javac', '-version'], 'javac-version'), ([bt / 'aapt2', 'version'], 'aapt-version'),
                             ([adb[0], 'version'], 'adb-version'), (['/sdk/emulator/emulator', '-version'], 'emulator-version')):
@@ -637,7 +639,7 @@ def outside():
             and request['shippingPolicyPath'] == POLICY_PATH and request['acceptedSourceGuardResultSha256'] == CHECKPOINT_GUARD_HASH,
             'Unbound request/source')
     require(os.environ.get('GITHUB_REPOSITORY') == 'kira-manga/kira-admin'
-            and os.environ.get('GITHUB_REF') == 'refs/heads/validation/app8-sdk-scaffold-20260915-01'
+            and os.environ.get('GITHUB_REF') == 'refs/heads/validation/app8-libpulse-20260915-01'
             and os.environ.get('GITHUB_EVENT_NAME') == 'push' and os.environ.get('GITHUB_RUN_ATTEMPT') == '1'
             and os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted', 'Wrong hosted invocation')
     require(platform.system() == 'Linux' and platform.machine() == 'x86_64', 'Hosted x86_64 Linux required')
@@ -653,7 +655,7 @@ def outside():
     passed, failure = False, None
     try:
         require(os.getuid() > 0 and stat.S_ISCHR(Path('/dev/kvm').stat().st_mode), 'Missing KVM/unprivileged runner')
-        for tool in ('sudo', 'unshare', 'chroot', 'setpriv', 'mount', 'ip', 'timeout', 'find'):
+        for tool in ('sudo', 'unshare', 'chroot', 'setpriv', 'mount', 'ip', 'timeout', 'find', 'dpkg-query', 'apt-get'):
             require(shutil.which(tool, path=env['PATH']), 'Missing installed isolation prerequisite: ' + tool)
         tools = request['toolchain']
         require(tools == {'javaHomeEnvironment': 'JAVA_HOME_17_X64', 'buildTools': '36.0.0', 'compilePlatform': 'android-36',
@@ -713,6 +715,21 @@ def outside():
         shutil.copyfile(source.with_name('app8-android.request.json'), inputs / 'request.json')
         # No preparation, namespace or native command precedes immutable input binding.
         commands.env = dict(env, JAVA_HOME=str(jdk), ANDROID_HOME=str(sdk), ANDROID_SDK_ROOT=str(sdk))
+        pulse_library = Path('/usr/lib/x86_64-linux-gnu/libpulse.so.0')
+        pulse_status = commands.run(['/usr/bin/dpkg-query', '-W', '-f=${Status}', 'libpulse0'],
+                                    'libpulse0-package-status', seconds=5, accepted=(0, 1)).strip()
+        pulse_present = pulse_library.is_file()
+        pulse_prepared = pulse_status != 'install ok installed' or not pulse_present
+        if pulse_prepared:
+            # Root-side deadline precedes the outer cap; the existing drain must still prove absence.
+            require(time.monotonic() + 80 < deadline - 70, 'Insufficient bounded libpulse0 preparation window')
+            commands.run(['sudo', '-n', '/usr/bin/timeout', '--signal=TERM', '--kill-after=5s', '60s',
+                          '/usr/bin/env', 'DEBIAN_FRONTEND=noninteractive', 'NEEDRESTART_MODE=l',
+                          '/usr/bin/apt-get', '--yes', '--no-install-recommends', '--no-remove',
+                          '-o', 'DPkg::Lock::Timeout=10', 'install', 'libpulse0'],
+                         'prepare-required-libpulse0', seconds=70, end=deadline - 70)
+        require(pulse_library.is_file() and pulse_library.resolve().is_relative_to(pulse_library.parent),
+                'libpulse0 SONAME is not available within the existing declared runtime prefix')
         image = sdk / 'system-images/android-26/google_apis/x86_64'
         package_inputs = {
             'emulator': ('emulator/emulator',),
@@ -728,7 +745,7 @@ def outside():
         if missing_packages:
             commands.run([sdk / 'cmdline-tools/latest/bin/sdkmanager', '--sdk_root=' + str(sdk), *missing_packages],
                          'prepare-missing-declared-sdk', seconds=120)
-        require(commands.dispose('preparation'), 'SDK preparation left abnormal/forced descendants; refusing isolation')
+        require(commands.dispose('preparation'), 'SDK/runtime preparation left abnormal/forced descendants; refusing isolation')
         for relative in expected_tools:
             require((sdk / relative).is_file(), 'Missing required SDK tool/platform after preparation: ' + relative)
         properties = dict(line.split('=', 1) for line in (image / 'source.properties').read_text().splitlines() if '=' in line)
@@ -746,6 +763,9 @@ def outside():
                    'nonce': nonce, 'avd': 'App8-' + nonce, 'workDeadline': deadline - 70, 'cleanupDeadline': deadline - 10,
                    'hostNamespaces': namespace_identity('self'), 'sdkHashes': sdk_hashes,
                    'jdkJavacSha256': digest(jdk / 'bin/javac'), 'jdkJavaSha256': digest(jdk / 'bin/java'),
+                   'libpulse0': {'packageStatusBefore': pulse_status, 'sonamePresentBefore': pulse_present,
+                                 'preparationAttempted': pulse_prepared, 'resolvedPath': str(pulse_library.resolve()),
+                                 'sha256': digest(pulse_library, deadline - 70)},
                    'imageProperties': properties, 'imagePrepared': prepared,
                    'sdkPreparedPackages': missing_packages,
                    'shippingCompileSdk': metadata['android']['compileSdk'], 'probeCompilePlatform': tools['compilePlatform'],
