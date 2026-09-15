@@ -218,6 +218,12 @@ fail_layout() { printf 'Unsupported declared runtime layout: %s\n' "$1" >&2; exi
 grep -Fxq 'ID=ubuntu' /etc/os-release || fail_layout '/etc/os-release must declare ID=ubuntu'
 grep -Fxq 'VERSION_ID="24.04"' /etc/os-release || fail_layout '/etc/os-release must declare VERSION_ID="24.04"'
 runtime_prefixes=(/usr/bin /usr/sbin /usr/lib/x86_64-linux-gnu /usr/lib64 /usr/lib/python3.12 /usr/lib/locale)
+sdk_prefixes=(cmdline-tools/latest platform-tools emulator build-tools/36.0.0 platforms/android-36 system-images/android-26/google_apis/x86_64)
+for prefix in "${sdk_prefixes[@]}"; do
+  path="$sdk/$prefix"
+  [[ -d "$path" && ! -L "$path" && $(readlink -e "$path") == "$path" ]] || fail_layout "$path must be a direct complete package directory"
+done
+[[ -f "$sdk/.knownPackages" && ! -L "$sdk/.knownPackages" ]] || fail_layout 'SDK discovery hash must be a regular file'
 for path in /usr /usr/lib "${runtime_prefixes[@]}" /usr/lib/python3.12/encodings /usr/lib/python3.12/lib-dynload; do
   [[ -d "$path" && ! -L "$path" && $(readlink -e "$path") == "$path" ]] || fail_layout "$path must be a direct directory"
 done
@@ -258,7 +264,15 @@ for prefix in "${runtime_prefixes[@]}"; do
   run mount --bind "$prefix" "$root$prefix"
   run mount -o remount,bind,ro,nosuid,nodev "$root$prefix"
 done
-for pair in "$sdk:sdk" "$jdk:jdk" "$inputs:inputs" "$work:work" "$reports:reports"; do
+for prefix in "${sdk_prefixes[@]}"; do
+  mkdir -p "$root/sdk/$prefix"
+  run mount --bind "$sdk/$prefix" "$root/sdk/$prefix"
+  run mount -o remount,bind,ro,nosuid,nodev "$root/sdk/$prefix"
+done
+touch "$root/sdk/.knownPackages"
+run mount --bind "$sdk/.knownPackages" "$root/sdk/.knownPackages"
+run mount -o remount,bind,ro,nosuid,nodev "$root/sdk/.knownPackages"
+for pair in "$jdk:jdk" "$inputs:inputs" "$work:work" "$reports:reports"; do
   source=${pair%:*}; target=${pair##*:}; run mount --bind "$source" "$root/$target"
   if [[ $target != work && $target != reports ]]; then run mount -o remount,bind,ro,nosuid,nodev "$root/$target"; fi
 done
@@ -286,6 +300,10 @@ cat > "$reports/runtime-profile.json" <<APP8_RUNTIME_PROFILE
   "profile": "ubuntu-24.04-x86_64-python3.12",
   "stage": "bootstrap-before-full-ipc-scan",
   "usrView": "synthetic",
+  "sdkView": "synthetic-complete-packages",
+  "readOnlySdkPackagePrefixes": ["/sdk/cmdline-tools/latest", "/sdk/platform-tools", "/sdk/emulator", "/sdk/build-tools/36.0.0", "/sdk/platforms/android-36", "/sdk/system-images/android-26/google_apis/x86_64"],
+  "readOnlySdkDiscoveryMetadata": ["/sdk/.knownPackages"],
+  "javaCommandPath": "/jdk/bin/java",
   "readOnlyRuntimePrefixes": ["/usr/bin", "/usr/sbin", "/usr/lib/x86_64-linux-gnu", "/usr/lib64", "/usr/lib/python3.12", "/usr/lib/locale"],
   "recursiveBind": false,
   "mountFlags": ["ro", "nosuid", "nodev"],
@@ -301,7 +319,7 @@ cat > "$reports/runtime-profile.json" <<APP8_RUNTIME_PROFILE
 APP8_RUNTIME_PROFILE
 exec chroot "$root" /usr/bin/setpriv --reuid="$uid" --regid="$gid" --groups="$gid,$kvm_gid" \
   --bounding-set=-all --inh-caps=-all --ambient-caps=-all --no-new-privs \
-  /usr/bin/env -i PATH=/usr/bin:/bin:/usr/sbin:/sbin HOME=/work/home TMPDIR=/tmp LANG=C.UTF-8 \
+  /usr/bin/env -i PATH=/jdk/bin:/usr/bin:/bin:/usr/sbin:/sbin HOME=/work/home TMPDIR=/tmp LANG=C.UTF-8 \
   JAVA_HOME=/jdk ANDROID_HOME=/sdk ANDROID_SDK_ROOT=/sdk ANDROID_USER_HOME=/work/android \
   ANDROID_AVD_HOME=/work/avd ANDROID_EMULATOR_HOME=/work/android \
   ADB_SERVER_SOCKET=tcp:127.0.0.1:5037 \
@@ -440,6 +458,7 @@ def inside():
                                         'root': 'private-read-only', 'nonIpConfinement': 'not-claimed', 'inheritedNetworkFds': False})
         for relative, expected in runtime['sdkHashes'].items():
             require(digest(Path('/sdk') / relative, commands.end) == expected, 'Prepared SDK tool/platform or image properties changed before isolation')
+        require(digest(Path('/jdk/bin/java'), commands.end) == runtime['jdkJavaSha256'], 'Prepared JDK java changed before isolation')
         save(reports / 'tool-identities.json', runtime)
         for argv, label in ((['/jdk/bin/javac', '-version'], 'javac-version'), ([bt / 'aapt2', 'version'], 'aapt-version'),
                             ([adb[0], 'version'], 'adb-version'), (['/sdk/emulator/emulator', '-version'], 'emulator-version')):
@@ -615,7 +634,7 @@ def outside():
             and request['shippingPolicyPath'] == POLICY_PATH and request['acceptedSourceGuardResultSha256'] == CHECKPOINT_GUARD_HASH,
             'Unbound request/source')
     require(os.environ.get('GITHUB_REPOSITORY') == 'kira-manga/kira-admin'
-            and os.environ.get('GITHUB_REF') == 'refs/heads/validation/app8-android-diagnostic-20260915-01'
+            and os.environ.get('GITHUB_REF') == 'refs/heads/validation/app8-sdk-exposure-20260915-01'
             and os.environ.get('GITHUB_EVENT_NAME') == 'push' and os.environ.get('GITHUB_RUN_ATTEMPT') == '1'
             and os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted', 'Wrong hosted invocation')
     require(platform.system() == 'Linux' and platform.machine() == 'x86_64', 'Hosted x86_64 Linux required')
@@ -644,7 +663,8 @@ def outside():
                           'cmdline-tools/latest/bin/sdkmanager', 'cmdline-tools/latest/bin/avdmanager']
         for relative in ('cmdline-tools/latest/bin/sdkmanager', 'cmdline-tools/latest/bin/avdmanager'):
             require((sdk / relative).is_file(), 'Missing installed SDK command-line tool: ' + relative)
-        require((jdk / 'bin/javac').is_file() and (jdk / 'bin/keytool').is_file(), 'Missing installed JDK17')
+        require((jdk / 'bin/javac').is_file() and (jdk / 'bin/keytool').is_file()
+                and (jdk / 'bin/java').is_file() and not (jdk / 'bin/java').is_symlink(), 'Missing installed JDK17')
         payload = source.parent.parent / 'docs/remediation/app8-native'
         require(digest(payload / 'manifest.json') == MANIFEST, 'Frozen native manifest mismatch')
         manifest = read_json(payload / 'manifest.json')
@@ -715,11 +735,15 @@ def outside():
         # Bind SDK tools/platform and image identity/revision, not multi-GB image contents.
         image_properties = str((image / 'source.properties').relative_to(sdk))
         sdk_hashes = {relative: digest(sdk / relative, deadline - 70) for relative in expected_tools + [image_properties]}
+        require((sdk / '.knownPackages').is_file() and not (sdk / '.knownPackages').is_symlink()
+                and (sdk / '.knownPackages').stat().st_size <= 256, 'Unsupported SDK discovery hash')
+        sdk_hashes['.knownPackages'] = digest(sdk / '.knownPackages', deadline - 70)
         nonce = secrets.token_hex(16)
         runtime = {'issueSha': ISSUE, 'historicalSha': BASE, 'carrierSha': os.environ['GITHUB_SHA'],
                    'nonce': nonce, 'avd': 'App8-' + nonce, 'workDeadline': deadline - 70, 'cleanupDeadline': deadline - 10,
                    'hostNamespaces': namespace_identity('self'), 'sdkHashes': sdk_hashes,
-                   'jdkJavacSha256': digest(jdk / 'bin/javac'), 'imageProperties': properties, 'imagePrepared': prepared,
+                   'jdkJavacSha256': digest(jdk / 'bin/javac'), 'jdkJavaSha256': digest(jdk / 'bin/java'),
+                   'imageProperties': properties, 'imagePrepared': prepared,
                    'sdkPreparedPackages': missing_packages,
                    'shippingCompileSdk': metadata['android']['compileSdk'], 'probeCompilePlatform': tools['compilePlatform'],
                    'probeManifestSha256': MANIFEST, 'sourceGuardRerun': False}

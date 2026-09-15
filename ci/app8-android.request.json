@@ -1,26 +1,26 @@
 {
-  "schema": "app8-android-private-v1",
+  "acceptedSourceGuardResultSha256": "68a99cbc40fcc5cde08028411c019d8505f350b711282eb5c334f0c1e7efdede",
   "authorization": "APP8_ANDROID_SINGLE_RUN_AUTHORIZED",
-  "issueSha": "d7b024a1c77f434726c64df36e059ea5af55961c",
+  "checkpointProvenanceSha256": "fccd5dc99d2f0c6a291fd6ac5513d260c8b2aa5369a1d491fb056350682d61c6",
   "historicalSha": "2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c",
-  "probeManifestSha256": "b5f0070646575c99a2f9ef5b46d2550b949c6810459ac7ab7788c29e42baf6b0",
+  "issueSha": "d7b024a1c77f434726c64df36e059ea5af55961c",
+  "orchestratorSha256": "e177c15bb2630d6688eaa34caee236ab09e2e8f79733ea44a6ee5a13e0918d19",
   "ownedChildrenSha256": "56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385",
   "policySha256": {
     "allow": "03d8bc818916ef40f4ba440aab50100c170a216acab814957d74fbf41f434b6a",
     "deny": "dea35ebed76536c24c13f74036f02dc874f944147cb3a49c2ad0550f71e3e0c7"
   },
-  "shippingPolicyPath": "app/src/main/res/xml/network_security_config.xml",
+  "probeManifestSha256": "b5f0070646575c99a2f9ef5b46d2550b949c6810459ac7ab7788c29e42baf6b0",
+  "schema": "app8-android-private-v1",
   "shippingBuildInputSha256": "2f5af388a012de3933fe5b3d10bb8071fbc35acd14b3fb83eb8ca8d5dc767cd8",
   "shippingCompileSdk": 37,
   "shippingManifestSha256": "43219eaa3bbdacd7640209aa675423b0261ff2aabf177ef4ba9cbd0e74869952",
-  "acceptedSourceGuardResultSha256": "68a99cbc40fcc5cde08028411c019d8505f350b711282eb5c334f0c1e7efdede",
-  "orchestratorSha256": "63d2a2a2b0fc64099304da355c59d79771ea085f1ffb6c62d3d9615334f8a58c",
-  "checkpointProvenanceSha256": "fccd5dc99d2f0c6a291fd6ac5513d260c8b2aa5369a1d491fb056350682d61c6",
+  "shippingPolicyPath": "app/src/main/res/xml/network_security_config.xml",
   "toolchain": {
-    "javaHomeEnvironment": "JAVA_HOME_17_X64",
     "buildTools": "36.0.0",
     "compilePlatform": "android-36",
-    "systemImage": "system-images;android-26;google_apis;x86_64",
-    "missingSdkPreparationSeconds": 120
+    "javaHomeEnvironment": "JAVA_HOME_17_X64",
+    "missingSdkPreparationSeconds": 120,
+    "systemImage": "system-images;android-26;google_apis;x86_64"
   }
 }

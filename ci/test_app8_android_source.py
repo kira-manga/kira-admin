@@ -67,7 +67,7 @@ class SourcePredicates(unittest.TestCase):
                 with mock.patch.object(DRAFT, 'read_json', return_value=request):
                     with self.assertRaisesRegex(RuntimeError, 'Wrong hosted invocation'):
                         DRAFT.outside()  # Old complaint carrier branch is not admitted.
-            hosted['GITHUB_REF'] = 'refs/heads/validation/app8-android-diagnostic-20260915-01'
+            hosted['GITHUB_REF'] = 'refs/heads/validation/app8-sdk-exposure-20260915-01'
             with mock.patch.dict(DRAFT.os.environ, hosted, clear=True):
                 with mock.patch.object(DRAFT, 'read_json', return_value=request):
                     with mock.patch.object(DRAFT.platform, 'system', return_value='NOT_A_HOST'):
@@ -274,7 +274,7 @@ class SourcePredicates(unittest.TestCase):
         checkpoint = SOURCE.parent.parent / 'docs/remediation/app8-native/checkpoint-policy-provenance.json'
         self.assertEqual(request['checkpointProvenanceSha256'], DRAFT.digest(checkpoint))
         workflow = (SOURCE.parent.parent / '.github/workflows/app8-android.yml').read_text()
-        branch = 'validation/app8-android-diagnostic-20260915-01'
+        branch = 'validation/app8-sdk-exposure-20260915-01'
         self.assertIn('branches: [' + branch + ']', workflow)
         self.assertIn("github.ref == 'refs/heads/" + branch + "'", workflow)
         self.assertIn('github.event.repository.private == false', workflow)
@@ -351,7 +351,21 @@ class SourcePredicates(unittest.TestCase):
         self.assertIn('run mount -o remount,bind,ro,nosuid,nodev "$root$prefix"', bootstrap)
         self.assertNotIn('"/usr:usr"', bootstrap)
         self.assertNotIn('--rbind', bootstrap)
-        self.assertIn('for pair in "$sdk:sdk" "$jdk:jdk" "$inputs:inputs" "$work:work" "$reports:reports"; do', bootstrap)
+        sdk_prefixes = ['cmdline-tools/latest', 'platform-tools', 'emulator', 'build-tools/36.0.0',
+                        'platforms/android-36', 'system-images/android-26/google_apis/x86_64']
+        self.assertEqual(bootstrap.count('sdk_prefixes=(' + ' '.join(sdk_prefixes) + ')'), 1)
+        self.assertEqual(bootstrap.count('for prefix in "${sdk_prefixes[@]}"; do'), 2)
+        self.assertIn('run mount --bind "$sdk/$prefix" "$root/sdk/$prefix"', bootstrap)
+        self.assertIn('run mount -o remount,bind,ro,nosuid,nodev "$root/sdk/$prefix"', bootstrap)
+        self.assertIn('run mount --bind "$sdk/.knownPackages" "$root/sdk/.knownPackages"', bootstrap)
+        self.assertIn('run mount -o remount,bind,ro,nosuid,nodev "$root/sdk/.knownPackages"', bootstrap)
+        self.assertNotIn('"$sdk:sdk"', bootstrap)
+        self.assertIn('for pair in "$jdk:jdk" "$inputs:inputs" "$work:work" "$reports:reports"; do', bootstrap)
+        self.assertIn('PATH=/jdk/bin:/usr/bin:/bin:/usr/sbin:/sbin HOME=/work/home', bootstrap)
+        self.assertIn("sdk_hashes['.knownPackages'] = digest(sdk / '.knownPackages', deadline - 70)", text)
+        self.assertLess(text.index("commands.dispose('preparation')"), text.index("sdk_hashes['.knownPackages']"))
+        self.assertIn("'jdkJavaSha256': digest(jdk / 'bin/java')", text)
+        self.assertIn("digest(Path('/jdk/bin/java'), commands.end) == runtime['jdkJavaSha256']", text)
         self.assertIn('for path in /usr /usr/lib "${runtime_prefixes[@]}" /usr/lib/python3.12/encodings /usr/lib/python3.12/lib-dynload;', bootstrap)
         self.assertIn('-d "$path" && ! -L "$path" && $(readlink -e "$path") == "$path"', bootstrap)
         self.assertIn('-L "$path" && $(readlink "$path") == "$target"', bootstrap)
@@ -365,6 +379,10 @@ class SourcePredicates(unittest.TestCase):
         self.assertEqual(profile['profile'], 'ubuntu-24.04-x86_64-python3.12')
         self.assertEqual(profile['stage'], 'bootstrap-before-full-ipc-scan')
         self.assertEqual(profile['usrView'], 'synthetic')
+        self.assertEqual(profile['sdkView'], 'synthetic-complete-packages')
+        self.assertEqual(profile['readOnlySdkPackagePrefixes'], ['/sdk/' + prefix for prefix in sdk_prefixes])
+        self.assertEqual(profile['readOnlySdkDiscoveryMetadata'], ['/sdk/.knownPackages'])
+        self.assertEqual(profile['javaCommandPath'], '/jdk/bin/java')
         self.assertEqual(profile['mountFlags'], ['ro', 'nosuid', 'nodev'])
         self.assertIs(profile['recursiveBind'], False)
         self.assertIs(profile['layoutValidated'], True)
