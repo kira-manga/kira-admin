@@ -358,15 +358,19 @@ def isolated_process(pid, expected):
 def inspect_package(manifest, policy, resources, phase):
     require('package="me.manga.kira.transportprobe"' in manifest, 'Wrong packaged application')
     def attribute(text, name):
-        rows = re.findall(r'^\s*A: ' + re.escape(name) + r'(?:\(0x[0-9a-fA-F]+\))?=(.*)$', text, re.M)
+        names = [name]
+        if name.startswith('android:'):
+            names.append('http://schemas.android.com/apk/res/android:' + name.removeprefix('android:'))
+        rows = re.findall(r'^\s*A: (?:' + '|'.join(map(re.escape, names))
+                          + r')(?:\(0x[0-9a-fA-F]+\))?=(.*)$', text, re.M)
         require(len(rows) == 1, 'Missing/ambiguous compiled attribute: ' + name)
         return rows[0].strip()
     def boolean(text, name, value):
         actual = attribute(text, name)
         word, number = ('true', '0xffffffff') if value else ('false', '0x0')
-        require(actual in (f'(type 0x12){number}', f'"{word}" (Raw: "{word}")'), 'Unexpected compiled boolean')
-    require(attribute(manifest, 'android:minSdkVersion') == '(type 0x10)0x1a'
-            and attribute(manifest, 'android:targetSdkVersion') == '(type 0x10)0x24', 'Wrong packaged SDK levels')
+        require(actual in (word, f'(type 0x12){number}', f'"{word}" (Raw: "{word}")'), 'Unexpected compiled boolean')
+    require(attribute(manifest, 'android:minSdkVersion') in ('26', '(type 0x10)0x1a')
+            and attribute(manifest, 'android:targetSdkVersion') in ('36', '(type 0x10)0x24'), 'Wrong packaged SDK levels')
     boolean(manifest, 'android:debuggable', False)
     binding = attribute(manifest, 'android:networkSecurityConfig')
     require(re.fullmatch(r'@0x[0-9a-fA-F]{8}', binding), 'Missing compiled policy association')

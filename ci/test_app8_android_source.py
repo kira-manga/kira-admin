@@ -373,6 +373,47 @@ class SourcePredicates(unittest.TestCase):
         self.assertIn("'normalOwnedCleanup': normal_cleanup", text)
         self.assertIn("'ownedProcessAbsenceProved': absence", text)
 
+        # Relevant rows from the hash-matched aapt2 36.0.0 local allow dump.
+        namespace = 'http://schemas.android.com/apk/res/android:'
+        manifest = f'''    A: package="me.manga.kira.transportprobe" (Raw: "me.manga.kira.transportprobe")
+        A: {namespace}minSdkVersion(0x0101020c)=26
+        A: {namespace}targetSdkVersion(0x01010270)=36
+        A: {namespace}debuggable(0x0101000f)=false
+        A: {namespace}networkSecurityConfig(0x01010527)=@0x7f010000
+'''
+        policy = '''E: network-security-config (line=2)
+    E: domain-config (line=3)
+      A: cleartextTrafficPermitted=true
+        E: domain (line=4)
+          A: includeSubdomains=true
+            T: 'raijinscan.co'
+'''
+        resources = '    resource 0x7f010000 xml/network_security_config\n'
+        DRAFT.inspect_package(manifest, policy, resources, 'allow')
+        deny = 'E: network-security-config\n    E: base-config\n      A: cleartextTrafficPermitted=false\n'
+        DRAFT.inspect_package(manifest, deny, resources, 'deny')  # Synthetic deny spelling, not native evidence.
+        legacy = manifest.replace(namespace, 'android:').replace(')=26', ')=(type 0x10)0x1a').replace(')=36', ')=(type 0x10)0x24')
+        for true, false in [('(type 0x12)0xffffffff', '(type 0x12)0x0'),
+                            ('"true" (Raw: "true")', '"false" (Raw: "false")')]:
+            DRAFT.inspect_package(legacy.replace('=false', '=' + false), policy.replace('=true', '=' + true), resources, 'allow')
+            DRAFT.inspect_package(legacy.replace('=false', '=' + false), deny.replace('=false', '=' + false), resources, 'deny')
+        for bad, reason in [
+                (manifest.replace(')=26', ')=25'), 'Wrong packaged SDK levels'),
+                (manifest.replace(')=36', ')=37'), 'Wrong packaged SDK levels'),
+                (manifest.replace(')=false', ')=true'), 'Unexpected compiled boolean'),
+                (manifest.replace(namespace, ''), 'Missing/ambiguous compiled attribute'),
+                (manifest.replace(namespace, 'http://example.invalid/android:'), 'Missing/ambiguous compiled attribute'),
+                (manifest + f'A: {namespace}minSdkVersion(0x0101020c)=26\n', 'Missing/ambiguous compiled attribute'),
+                (manifest + 'A: android:minSdkVersion(0x0101020c)=26\n', 'Missing/ambiguous compiled attribute'),
+                (manifest.replace('@0x7f010000', '@0x7f010001'), 'does not reference the packaged XML')]:
+            with self.subTest(reason=reason, manifest=bad):
+                with self.assertRaisesRegex(RuntimeError, reason):
+                    DRAFT.inspect_package(bad, policy, resources, 'allow')
+        for bad in [policy.replace('cleartextTrafficPermitted=true', 'cleartextTrafficPermitted=false'),
+                    policy.replace('includeSubdomains=true', 'includeSubdomains=false')]:
+            with self.assertRaisesRegex(RuntimeError, 'Unexpected compiled boolean'):
+                DRAFT.inspect_package(manifest, bad, resources, 'allow')
+
     def test_declared_runtime_prefixes_keep_one_complete_ipc_scan(self):
         bootstrap, text = DRAFT.BOOTSTRAP, SOURCE.read_text()
         prefixes = ['/usr/bin', '/usr/sbin', '/usr/lib/x86_64-linux-gnu', '/usr/lib64',
