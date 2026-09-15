@@ -1,23 +1,23 @@
-name: App8 copied-policy Android check (private)
+name: App8 Android diagnostic (public synthetic)
 
 on:
   push:
-    branches: [remediation/app-29-backend-complaints]
+    branches: [validation/app8-android-diagnostic-20260915-01]
     paths: [ci/app8-android.request.json]
 
 permissions:
   contents: read
 
 concurrency:
-  group: app8-android-private
+  group: app8-android-public-synthetic-20260915
   cancel-in-progress: false
 
 jobs:
   android-api26:
     if: >-
       ${{ github.repository == 'kira-manga/kira-admin' &&
-          github.event.repository.private == true && github.event_name == 'push' &&
-          github.ref == 'refs/heads/remediation/app-29-backend-complaints' &&
+          github.event.repository.private == false && github.event_name == 'push' &&
+          github.ref == 'refs/heads/validation/app8-android-diagnostic-20260915-01' &&
           github.run_attempt == 1 }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -26,7 +26,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - name: One owned SDK-only API26 check
+      - name: One public synthetic owned SDK-only API26 check
         id: native
         env:
           APP8_RUN: ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}
@@ -34,9 +34,25 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always() && steps.native.outcome != 'skipped'
         with:
-          name: app8-android-${{ github.run_id }}-${{ github.run_attempt }}
+          name: app8-android-public-synthetic-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/*.json
-            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/*.log
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/result.json
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/native-summary.json
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/source-bindings.json
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/tool-identities.json
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/runtime-profile.json
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/isolation.json
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/packages.json
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/owned-intent.json
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/namespace-membership.json
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/preparation-children.json
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/inside-children.json
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/outside-children.json
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/inside-commands.json
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/allow-result.json
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/deny-result.json
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/005-no-host-ipc.log
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/*-allow-native.log
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/*-deny-native.log
           retention-days: 3
           if-no-files-found: error

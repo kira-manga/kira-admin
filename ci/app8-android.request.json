@@ -1,7 +1,7 @@
 {
   "schema": "app8-android-private-v1",
   "authorization": "APP8_ANDROID_SINGLE_RUN_AUTHORIZED",
-  "issueSha": "cebc952602fb69e03eb654dab30937e2f830a239",
+  "issueSha": "d7b024a1c77f434726c64df36e059ea5af55961c",
   "historicalSha": "2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c",
   "probeManifestSha256": "b5f0070646575c99a2f9ef5b46d2550b949c6810459ac7ab7788c29e42baf6b0",
   "ownedChildrenSha256": "56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385",
@@ -10,12 +10,12 @@
     "deny": "dea35ebed76536c24c13f74036f02dc874f944147cb3a49c2ad0550f71e3e0c7"
   },
   "shippingPolicyPath": "app/src/main/res/xml/network_security_config.xml",
-  "shippingBuildInputSha256": "fb1929a19efcac2e9d843bd3f1946f2573ff486747abf514fcf76f5f80b55889",
+  "shippingBuildInputSha256": "2f5af388a012de3933fe5b3d10bb8071fbc35acd14b3fb83eb8ca8d5dc767cd8",
   "shippingCompileSdk": 37,
-  "shippingManifestSha256": "fc86dea1b63549f7df4c0cb289e6be2dd207c1520ed90616b8e251d122da22a9",
-  "acceptedSourceGuardResultSha256": "c33add8f6fc647a9186e5e06affb433a174077601c4fb04c10ca4ef7bc2841a6",
-  "orchestratorSha256": "47a6b6d9583291304b4d39581e23a1fd9fc8ed042919a308863fa9cdb89719cd",
-  "checkpointProvenanceSha256": "116dcc3211fcf240e2c1e83869b5c24e1cd1a6c1c48b1355cb7a5b0f208c79f1",
+  "shippingManifestSha256": "43219eaa3bbdacd7640209aa675423b0261ff2aabf177ef4ba9cbd0e74869952",
+  "acceptedSourceGuardResultSha256": "68a99cbc40fcc5cde08028411c019d8505f350b711282eb5c334f0c1e7efdede",
+  "orchestratorSha256": "63d2a2a2b0fc64099304da355c59d79771ea085f1ffb6c62d3d9615334f8a58c",
+  "checkpointProvenanceSha256": "fccd5dc99d2f0c6a291fd6ac5513d260c8b2aa5369a1d491fb056350682d61c6",
   "toolchain": {
     "javaHomeEnvironment": "JAVA_HOME_17_X64",
     "buildTools": "36.0.0",

@@ -1,4 +1,4 @@
-"""PRIVATE UNEXECUTED App8 draft. One API26 tiny host; never a shipping app build.
+"""PUBLIC SYNTHETIC UNEXECUTED App8 draft. One API26 tiny host; no shipping build.
 
 Imports have no SDK/network/process actions. Reuses the existing reviewed Linux
 OwnedChildren unchanged; this file only adapts its finite command/cleanup recipe.
@@ -21,7 +21,7 @@ import sys
 import time
 import zipfile
 
-ISSUE = 'cebc952602fb69e03eb654dab30937e2f830a239'
+ISSUE = 'd7b024a1c77f434726c64df36e059ea5af55961c'
 BASE = '2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c'
 MANIFEST = 'b5f0070646575c99a2f9ef5b46d2550b949c6810459ac7ab7788c29e42baf6b0'
 OWNER_HASH = '56b66cfe8799123c719eaf048f81c542e5e4129d71c490cae99a38396c2a3385'
@@ -30,9 +30,14 @@ POLICIES = {'allow': '03d8bc818916ef40f4ba440aab50100c170a216acab814957d74fbf41f
 INPUTS = ('android/AndroidManifest.xml', 'android/TransportProbe.java', 'fixture/no_forward_proxy.py',
           'policy-inputs/allow/network_security_config.xml', 'policy-inputs/deny/network_security_config.xml',
           'policy-inputs.json', 'provenance.json')
+# Historical construction metadata remains bound to the original frozen probe manifest.
 BUILD_HASH = 'fb1929a19efcac2e9d843bd3f1946f2573ff486747abf514fcf76f5f80b55889'
 APP_MANIFEST_HASH = 'fc86dea1b63549f7df4c0cb289e6be2dd207c1520ed90616b8e251d122da22a9'
 GUARD_HASH = 'c33add8f6fc647a9186e5e06affb433a174077601c4fb04c10ca4ef7bc2841a6'
+# Current reviewed App8 join: exact source checkpoint, not a shipping-artifact assertion.
+CHECKPOINT_BUILD_HASH = '2f5af388a012de3933fe5b3d10bb8071fbc35acd14b3fb83eb8ca8d5dc767cd8'
+CHECKPOINT_APP_MANIFEST_HASH = '43219eaa3bbdacd7640209aa675423b0261ff2aabf177ef4ba9cbd0e74869952'
+CHECKPOINT_GUARD_HASH = '68a99cbc40fcc5cde08028411c019d8505f350b711282eb5c334f0c1e7efdede'
 POLICY_PATH = 'app/src/main/res/xml/network_security_config.xml'
 IMAGE = 'system-images;android-26;google_apis;x86_64'
 PACKAGE = 'me.manga.kira.transportprobe'
@@ -98,6 +103,39 @@ def normal_drain(receipt, joined):
             and all(row['pid'] in joined and row['actual_exit'] == joined[row['pid']] for row in receipt['leaders']))
 
 
+def owned_absence(receipt):
+    # Forced/unjoined exits stay abnormal, but cannot keep proved-empty scratch alive.
+    return (receipt.get('ok') is True and receipt.get('empty') is True
+            and receipt.get('remaining') == [] and receipt.get('active_popen') == []
+            and receipt.get('errors') == {})
+
+
+def scan_timeout_diagnostic(owner, process, end):
+    result = {'pid': process.pid, 'capturedMonotonicSeconds': time.monotonic(), 'fields': {}}
+    # Fixed fields only; check cleanup priority before each read, with no wait/retry/new deadline.
+    # Do not poll/reap here: the owner's unreaped Popen keeps its PID from being reused.
+    for name in ('clockTicksPerSecond', 'stat', 'io', 'cwd', 'fd/3', 'fd/4', 'fd/5', 'fd/6'):
+        try:
+            if CANCELLED or time.monotonic() >= end:
+                field = {'unavailable': 'cancelled_or_work_deadline'}
+            elif owner.active.get(process.pid) is not process or process.returncode is not None:
+                field = {'unavailable': 'not_owned_unreaped_child'}
+            elif name == 'clockTicksPerSecond':
+                field = {'value': os.sysconf('SC_CLK_TCK')}
+            elif name in ('stat', 'io'):
+                cap = 2048 if name == 'stat' else 1024
+                with open(f'/proc/{process.pid}/{name}', 'rb', buffering=0) as stream:
+                    raw = stream.read(cap + 1)
+                field = {'value': raw[:cap].decode('utf-8', errors='replace'), 'truncated': len(raw) > cap}
+            else:
+                value = os.readlink(f'/proc/{process.pid}/{name}')  # Link text only, never its target.
+                field = {'value': value[:512], 'truncated': len(value) > 512}
+            result['fields'][name] = field
+        except Exception as error:
+            result['fields'][name] = {'unavailable': type(error).__name__}
+    return result
+
+
 def logs_within_cap(reports):
     sizes = [path.stat().st_size for path in reports.glob('*.log')]
     return not sizes or (max(sizes) <= 1048576 and sum(sizes) <= 4194304)
@@ -108,6 +146,7 @@ class Commands:
         self.owner = owner_class(helper)()  # Subreaper before the first child.
         self.reports, self.env, self.end = reports, env, end
         self.sequence, self.events, self.joined = 0, [], {}
+        self.absence_proved = False
 
     def start(self, argv, label, stdin=None, end=None, cleaning=False):
         deadline = self.end if end is None else (end if cleaning else min(self.end, end))
@@ -116,6 +155,7 @@ class Commands:
         require(cleaning or logs_within_cap(self.reports), 'Diagnostic output limit exceeded before launch')
         self.sequence += 1
         log = self.reports / f'{self.sequence:03d}-{label}.log'
+        self.absence_proved = False
         with log.open('xb') as output:
             process = self.owner.track(subprocess.Popen(
                 list(map(str, argv)), env=self.env, cwd=self.env['HOME'],
@@ -137,6 +177,12 @@ class Commands:
         event = {'pid': process.pid, 'actual_exit': process.returncode, 'ended': ended, 'deadline': deadline,
                  'cancelled': CANCELLED and not cleaning, 'accepted_exit_codes': list(accepted), 'normal_join': False}
         self.events.append(event)
+        if (not cleaning and not CANCELLED and ended >= deadline and process.returncode is None
+                and log.name.endswith('-no-host-ipc.log') and self.owner.active.get(process.pid) is process):
+            try:
+                event['scan_timeout_diagnostic'] = scan_timeout_diagnostic(self.owner, process, self.end)
+            except Exception as error:
+                event['scan_timeout_diagnostic'] = {'unavailable': type(error).__name__}
         require((cleaning or not CANCELLED) and ended < deadline and process.returncode in accepted,
                 'Command failed, cancelled or exceeded its cap: ' + log.name)
         require(cleaning or logs_within_cap(self.reports), 'Diagnostic output limit exceeded at command exit')
@@ -151,9 +197,11 @@ class Commands:
         return self.wait(task, seconds, end=deadline, cleaning=cleaning, accepted=accepted)
 
     def dispose(self, name):
+        self.absence_proved = False  # An unknown/failed new drain must not reuse preparation's receipt.
         receipt = self.owner.drain()
         save(self.reports / (name + '-children.json'), receipt)
         save(self.reports / (name + '-commands.json'), self.events)
+        self.absence_proved = owned_absence(receipt)
         return normal_drain(receipt, self.joined)
 
 
@@ -558,16 +606,16 @@ def inside():
 def outside():
     source = Path(__file__).resolve()
     request = read_json(source.with_name('app8-android.request.json'))
-    require(request['authorization'] == 'APP8_ANDROID_SINGLE_RUN_AUTHORIZED', 'Private draft has no execution authorization')
+    require(request['authorization'] == 'APP8_ANDROID_SINGLE_RUN_AUTHORIZED', 'Public synthetic draft has no execution authorization')
     require(request['schema'] == 'app8-android-private-v1' and request['issueSha'] == ISSUE and request['historicalSha'] == BASE
             and request['probeManifestSha256'] == MANIFEST and request['policySha256'] == POLICIES
             and request['ownedChildrenSha256'] == OWNER_HASH and request['orchestratorSha256'] == digest(source)
-            and request['shippingBuildInputSha256'] == BUILD_HASH and request['shippingManifestSha256'] == APP_MANIFEST_HASH
+            and request['shippingBuildInputSha256'] == CHECKPOINT_BUILD_HASH and request['shippingManifestSha256'] == CHECKPOINT_APP_MANIFEST_HASH
             and request['shippingCompileSdk'] == 37
-            and request['shippingPolicyPath'] == POLICY_PATH and request['acceptedSourceGuardResultSha256'] == GUARD_HASH,
+            and request['shippingPolicyPath'] == POLICY_PATH and request['acceptedSourceGuardResultSha256'] == CHECKPOINT_GUARD_HASH,
             'Unbound request/source')
     require(os.environ.get('GITHUB_REPOSITORY') == 'kira-manga/kira-admin'
-            and os.environ.get('GITHUB_REF') == 'refs/heads/remediation/app-29-backend-complaints'
+            and os.environ.get('GITHUB_REF') == 'refs/heads/validation/app8-android-diagnostic-20260915-01'
             and os.environ.get('GITHUB_EVENT_NAME') == 'push' and os.environ.get('GITHUB_RUN_ATTEMPT') == '1'
             and os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted', 'Wrong hosted invocation')
     require(platform.system() == 'Linux' and platform.machine() == 'x86_64', 'Hosted x86_64 Linux required')
@@ -633,6 +681,7 @@ def outside():
         require(read_json(checkpoint_path) == checkpoint, 'Primary checkpoint does not attest the bound policy bytes')
         save(reports / 'source-bindings.json', {'checkpoint': checkpoint, 'checkpointProvenanceSha256': digest(checkpoint_path),
                                              'frozenInputs': {relative: entries[relative] for relative in INPUTS},
+                                             'frozenInputsScope': 'historical probe construction; current source target is checkpoint',
                                              'shippingCompileSdk': metadata['android']['compileSdk'],
                                              'probeCompilePlatform': tools['compilePlatform'],
                                              'sourceGuardRerun': False})
@@ -687,7 +736,8 @@ def outside():
     except Exception as error:
         failure = str(error)
     finally:
-        absence = commands.dispose('outside')
+        normal_cleanup = commands.dispose('outside')
+        absence = commands.absence_proved
         output_ok = logs_within_cap(reports)  # Evaluate final bytes before any retention truncation.
         scratch_removed = False
         if absence:
@@ -699,7 +749,7 @@ def outside():
                 scratch_removed = True
             except OSError as error:
                 failure = (failure or '') + '; owned scratch removal failed: ' + str(error)
-        passed = passed and absence and output_ok and scratch_removed and not CANCELLED
+        passed = passed and normal_cleanup and absence and output_ok and scratch_removed and not CANCELLED
         # Only failed oversized logs can be truncated; a truncated log never supports PASS.
         if not output_ok:
             remaining = 4194304
@@ -708,9 +758,10 @@ def outside():
                 with path.open('r+b') as stream:
                     stream.truncate(min(path.stat().st_size, keep))
                 remaining -= path.stat().st_size
-        save(reports / 'result.json', {'passed': passed and not CANCELLED, 'failure': failure, 'normalOwnedCleanup': absence,
+        save(reports / 'result.json', {'passed': passed and not CANCELLED, 'failure': failure, 'normalOwnedCleanup': normal_cleanup,
+                                      'ownedProcessAbsenceProved': absence,
                                       'logsWithinCapBeforeTruncation': output_ok, 'ownedScratchRemoved': scratch_removed,
-                                      'issueSha': ISSUE, 'historicalSha': BASE, 'scope': 'Android SDK-only copied policies',
+                                      'issueSha': ISSUE, 'historicalSha': BASE, 'scope': 'public synthetic Android SDK-only copied policies',
                                       'shippingApkMergeAccepted': False, 'macOSAttempted': False})
     return 0 if passed and not CANCELLED else 1
 
