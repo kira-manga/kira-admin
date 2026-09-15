@@ -2,7 +2,7 @@ name: App8 Android diagnostic (public synthetic)
 
 on:
   push:
-    branches: [validation/app8-sdk-exposure-20260915-01]
+    branches: [validation/app8-sdk-scaffold-20260915-01]
     paths: [ci/app8-android.request.json]
 
 permissions:
@@ -17,7 +17,7 @@ jobs:
     if: >-
       ${{ github.repository == 'kira-manga/kira-admin' &&
           github.event.repository.private == false && github.event_name == 'push' &&
-          github.ref == 'refs/heads/validation/app8-sdk-exposure-20260915-01' &&
+          github.ref == 'refs/heads/validation/app8-sdk-scaffold-20260915-01' &&
           github.run_attempt == 1 }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -52,6 +52,7 @@ jobs:
             ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/allow-result.json
             ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/deny-result.json
             ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/005-no-host-ipc.log
+            ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/009-emulator-version.log
             ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/*-allow-native.log
             ${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/*-deny-native.log
           retention-days: 3

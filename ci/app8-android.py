@@ -254,7 +254,10 @@ done
 run() { timeout --signal=TERM --kill-after=1s 10s "$@"; }
 run mount --make-rprivate /
 run mount --bind "$root" "$root"
-for path in usr usr/lib sdk jdk inputs work reports proc sys dev dev/shm tmp run var var/tmp etc; do
+# Own only scaffold parents before any borrowed package/runtime mount.
+for path in usr usr/lib sdk sdk/cmdline-tools sdk/build-tools sdk/platforms sdk/system-images \
+            sdk/system-images/android-26 sdk/system-images/android-26/google_apis \
+            jdk inputs work reports proc sys dev dev/shm tmp run var var/tmp etc; do
   mkdir -p "$root/$path"; chown "$uid:$gid" "$root/$path"
 done
 ln -s usr/bin "$root/bin"; ln -s usr/sbin "$root/sbin"; ln -s usr/lib "$root/lib"
@@ -634,7 +637,7 @@ def outside():
             and request['shippingPolicyPath'] == POLICY_PATH and request['acceptedSourceGuardResultSha256'] == CHECKPOINT_GUARD_HASH,
             'Unbound request/source')
     require(os.environ.get('GITHUB_REPOSITORY') == 'kira-manga/kira-admin'
-            and os.environ.get('GITHUB_REF') == 'refs/heads/validation/app8-sdk-exposure-20260915-01'
+            and os.environ.get('GITHUB_REF') == 'refs/heads/validation/app8-sdk-scaffold-20260915-01'
             and os.environ.get('GITHUB_EVENT_NAME') == 'push' and os.environ.get('GITHUB_RUN_ATTEMPT') == '1'
             and os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted', 'Wrong hosted invocation')
     require(platform.system() == 'Linux' and platform.machine() == 'x86_64', 'Hosted x86_64 Linux required')

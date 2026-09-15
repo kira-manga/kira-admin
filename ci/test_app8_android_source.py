@@ -67,7 +67,7 @@ class SourcePredicates(unittest.TestCase):
                 with mock.patch.object(DRAFT, 'read_json', return_value=request):
                     with self.assertRaisesRegex(RuntimeError, 'Wrong hosted invocation'):
                         DRAFT.outside()  # Old complaint carrier branch is not admitted.
-            hosted['GITHUB_REF'] = 'refs/heads/validation/app8-sdk-exposure-20260915-01'
+            hosted['GITHUB_REF'] = 'refs/heads/validation/app8-sdk-scaffold-20260915-01'
             with mock.patch.dict(DRAFT.os.environ, hosted, clear=True):
                 with mock.patch.object(DRAFT, 'read_json', return_value=request):
                     with mock.patch.object(DRAFT.platform, 'system', return_value='NOT_A_HOST'):
@@ -274,7 +274,7 @@ class SourcePredicates(unittest.TestCase):
         checkpoint = SOURCE.parent.parent / 'docs/remediation/app8-native/checkpoint-policy-provenance.json'
         self.assertEqual(request['checkpointProvenanceSha256'], DRAFT.digest(checkpoint))
         workflow = (SOURCE.parent.parent / '.github/workflows/app8-android.yml').read_text()
-        branch = 'validation/app8-sdk-exposure-20260915-01'
+        branch = 'validation/app8-sdk-scaffold-20260915-01'
         self.assertIn('branches: [' + branch + ']', workflow)
         self.assertIn("github.ref == 'refs/heads/" + branch + "'", workflow)
         self.assertIn('github.event.repository.private == false', workflow)
@@ -290,7 +290,7 @@ class SourcePredicates(unittest.TestCase):
                         'runtime-profile.json', 'isolation.json', 'packages.json', 'owned-intent.json',
                         'namespace-membership.json', 'preparation-children.json', 'inside-children.json',
                         'outside-children.json', 'inside-commands.json', 'allow-result.json', 'deny-result.json',
-                        '005-no-host-ipc.log',
+                        '005-no-host-ipc.log', '009-emulator-version.log',
                         '*-allow-native.log', '*-deny-native.log')
         prefix = '${{ runner.temp }}/app8-android-${{ github.run_id }}-${{ github.run_attempt }}/reports/'
         self.assertEqual(workflow.count('          path: |\n'), 1)
@@ -354,6 +354,16 @@ class SourcePredicates(unittest.TestCase):
         sdk_prefixes = ['cmdline-tools/latest', 'platform-tools', 'emulator', 'build-tools/36.0.0',
                         'platforms/android-36', 'system-images/android-26/google_apis/x86_64']
         self.assertEqual(bootstrap.count('sdk_prefixes=(' + ' '.join(sdk_prefixes) + ')'), 1)
+        scaffolds = bootstrap.split('for path in usr usr/lib sdk ', 1)[1].split('done', 1)[0]
+        self.assertEqual(scaffolds.split('; do', 1)[0].replace('\\\n', ' ').split(),
+                         ['sdk/cmdline-tools', 'sdk/build-tools', 'sdk/platforms', 'sdk/system-images',
+                          'sdk/system-images/android-26', 'sdk/system-images/android-26/google_apis',
+                          'jdk', 'inputs', 'work', 'reports', 'proc', 'sys', 'dev', 'dev/shm',
+                          'tmp', 'run', 'var', 'var/tmp', 'etc'])
+        self.assertIn('mkdir -p "$root/$path"; chown "$uid:$gid" "$root/$path"', scaffolds)
+        self.assertEqual(bootstrap.count('chown '), 1)
+        self.assertLess(bootstrap.index('chown "$uid:$gid" "$root/$path"'),
+                        bootstrap.index('for prefix in "${runtime_prefixes[@]}"; do'))
         self.assertEqual(bootstrap.count('for prefix in "${sdk_prefixes[@]}"; do'), 2)
         self.assertIn('run mount --bind "$sdk/$prefix" "$root/sdk/$prefix"', bootstrap)
         self.assertIn('run mount -o remount,bind,ro,nosuid,nodev "$root/sdk/$prefix"', bootstrap)
