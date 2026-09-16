@@ -1,4 +1,4 @@
-"""PRIVATE UNEXECUTED App8 Apple draft; never a shipping app build.
+"""PUBLIC-SAFE UNEXECUTED App8 Apple successor; never a shipping app build.
 
 Definitions only on import. The fixed command-group/census/device recipe is a
 small adaptation of the reviewed Darwin owner, not an imported Engine5 runner.
@@ -46,6 +46,9 @@ HOSTS = ('raijinscan.co', 'app8-probe.raijinscan.co')
 OLD_ATS = {'NSExceptionDomains': {'raijinscan.co': {
     'NSExceptionAllowsInsecureHTTPLoads': True, 'NSIncludesSubdomains': True}}}
 CANCELLED = False
+REPOSITORY = 'kira-manga/kira-admin'
+REF = 'refs/heads/validation/app8-native-current-20260916-01'
+WORKFLOW = '.github/workflows/app8-apple.yml'
 
 
 def require(ok, message):
@@ -982,13 +985,155 @@ def dispose_simulator(commands, state, cleanup):
     cleanup['simulatorRemoved'] = True
 
 
+def publish_public(commands, failure_type, failure_stage, deadline):
+    """Closed projections only; raw PF, argv, census, wire bytes and logs stay private."""
+    public = commands.run / 'public'
+    public.mkdir(mode=0o700)
+    def fields(value, names):
+        return {name: value[name] for name in names.split() if name in value}
+    # Exact source-authored reasons, never exception interpolation or substring redaction.
+    reasons = {
+        '', 'Missing/ambiguous PF status', 'Unsupported PF status', 'PF references/unknown owner present',
+        'Unknown PF reference-list shape; retain fence', 'PF reference is not the sole persisted owned token',
+        'Missing/ambiguous owned PF token; retain fence', 'Unknown/duplicate PF interface/skip output',
+        'Incomplete PF interface view', 'PF-bypass/management interface; STOP', 'Unknown interface inventory prefix',
+        'Unknown/duplicate interface header', 'Unexpected IP-bearing interface', 'Missing ordinary numeric loopback',
+        'Unexpected active Ethernet profile', 'Unknown IPv6 tunnel profile', 'Missing ordinary loopback/Ethernet IP path',
+        'Unknown numeric route display', 'Unknown/bypass route interface', 'Unexpected external default route profile',
+        'Unknown default-route ownership', 'PF status changed/does not match the required phase',
+        'Unknown/missing PF interface relative to the ordinary interface view', 'Unknown PF anchor owner',
+        'External/unknown skip or missing active loopback skip', 'Unexpected inactive root PF configuration; no generic normalization',
+        'Incomplete root deny or applicable anchor/NAT path', 'Nonempty PF state table',
+        'Unreviewed installed PF/kernel profile', 'Unsupported macOS PF profile',
+        'Missing exact installed iOS26.4.1 runtime; no download/fallback', 'Missing installed iPhone17 device type',
+        'Invalid phase/nonce/owned port', 'Unexpected loaded policy/bundle/deployment metadata', 'Native observation failed',
+        'Historical native proxy positive control failed', 'Not the specific native ATS denial', 'Candidate sent HTTP bytes',
+        'Metrics show a non-fixture remote endpoint', 'Redirect rejected', 'Authentication challenge rejected',
+        'Session authentication challenge rejected', 'Oversized fixture body',
+        'Incomplete HTTP header', 'Request capture cap exceeded; incomplete observation',
+        'Not an exact bodyless absolute-form probe request', 'Invalid or duplicated HTTP header', 'Wrong Host header',
+        'Credentials/cookies/transfer coding forbidden', 'Request body forbidden', 'Unexpected bytes after request header',
+        'Unexpected non-loopback peer', 'Connection cap exceeded; incomplete observation',
+        'Incomplete owned absence; retain scratch', 'PF token/final state unresolved; retain scratch',
+        'No proven sole-token/full-absence barrier; no release attempted; retain fence/unknown state',
+    }
+    types = {'RuntimeError', 'OSError', 'ValueError', 'TypeError', 'KeyError', 'FileNotFoundError', 'PermissionError',
+             'ProcessLookupError', 'TimeoutError', 'TimeoutExpired', 'InterruptedError', 'UnicodeDecodeError', 'JSONDecodeError'}
+    def reason(value):
+        return value if value in reasons else 'NONPUBLIC_DYNAMIC_DIAGNOSTIC'
+    def error(value):
+        kind, separator, detail = value.partition(': ')
+        return {'type': kind if separator and kind in types else 'UNCLASSIFIED',
+                'reason': reason(detail if separator and kind in types else value)}
+    def emit(name, value, limit=131072):
+        require(time.monotonic() < deadline, 'Public receipt deadline exceeded')
+        save(public / name, value, limit=limit)
+    copies = {
+        'source-bindings.json': 'checkpoint checkpointProvenanceSha256 frozenInputs sourceGuardRerun debugPolicyRuntimeAttempted orchestratorSha256 requestSha256 pfDisposableAmendmentSha256',
+        'tool-identities.json': 'developerDir pfctlSha256 python pythonExecutable kernel macOS imageVersion imageOS xcode sdkVersion sdkPath sdkSettingsSha256 sdkBuild swift toolSha256',
+        'simulator.json': 'name creating udid runtime runtimeVersion runtimeBuild deviceType',
+        'pf-lifecycle.json': 'loadAttempted enableAttempted tokenPersisted ownershipVerified ownershipLost releaseAttempted disabledAfterRelease',
+    }
+    for name, keys in copies.items():
+        if (commands.reports / name).exists():
+            value = fields(read_json(commands.reports / name), keys)
+            if name == 'source-bindings.json':
+                checkpoint = fields(value['checkpoint'], 'schema issueSha sourceTree historicalSha shippingPolicyPath policySha256 debugPolicyPath debugPolicySha256 shippingBuildInputSha256 probeManifestSha256 acceptedSourceGuardResultSha256')
+                if 'policySha256' in checkpoint:
+                    checkpoint['policySha256'] = fields(checkpoint['policySha256'], 'allow deny')
+                value['checkpoint'] = checkpoint
+                value['frozenInputs'] = {key: fields(value['frozenInputs'][key], 'path bytes sha256')
+                                         for key in INPUTS if key in value['frozenInputs']}
+            emit(name, value)
+    bundle_keys = 'bundle sourcePlistSha256 derivedPlistSha256 preSignMachOSha256 signedMachOSha256 changedKeys'
+    if (commands.reports / 'package-bindings.json').exists():
+        bundles = read_json(commands.reports / 'package-bindings.json')
+        emit('package-bindings.json', {phase: fields(bundles[phase], bundle_keys) for phase in ('allow', 'deny') if phase in bundles})
+    for phase in ('allow', 'deny'):
+        name = phase + '-installation.json'
+        if (commands.reports / name).exists():
+            installed = read_json(commands.reports / name)
+            emit(name, {**fields(installed, 'udid package appContainer dataContainer'), 'bindings': fields(installed['bindings'], bundle_keys)})
+        for suffix in ('-native.json', '-native-data.json'):
+            name = phase + suffix
+            if not (commands.reports / name).exists():
+                continue
+            receipt = read_json(commands.reports / name)
+            native = receipt['result'] if suffix == '-native.json' else receipt
+            value = fields(native, 'ok phase nonce proxyHost proxyPort systemVersion deploymentTarget loadedATS minimumIOS15RuntimeProven')
+            value['phase'] = phase if native['phase'] == phase else 'UNEXPECTED_PHASE'
+            value['nonce'] = native['nonce'] if re.fullmatch(r'[0-9a-f]{32}', native['nonce']) else 'INVALID_NONCE'
+            value['loadedATS'] = native.get('loadedATS') if native.get('loadedATS') in (None, OLD_ATS) else 'UNEXPECTED_ATS'
+            urls = {f'http://{host}/{value["nonce"]}' for host in HOSTS}
+            value['failure'] = reason(native['failure'])
+            value['observations'] = []
+            for observation in native['observations']:
+                row = fields(observation, 'url responseCode responseURL receivedBodyBytes errorDomain errorCode outcome')
+                for key in ('url', 'responseURL'):
+                    if key in row and row[key] is not None:
+                        row[key] = row[key] if row[key] in urls else 'UNEXPECTED_URL'
+                row['errorDomain'] = row['errorDomain'] if row['errorDomain'] in ('', 'NSURLErrorDomain', 'NSPOSIXErrorDomain', 'NSCocoaErrorDomain', 'kCFErrorDomainCFNetwork') else 'UNEXPECTED_ERROR_DOMAIN'
+                row['violation'] = reason(observation['violation'])
+                row['metrics'] = [fields(metric, 'proxy remoteAddress remotePort networkLoad dnsStartRecorded dnsEndRecorded protocol')
+                                  for metric in observation['metrics']]
+                for metric in row['metrics']:
+                    metric['remoteAddress'] = metric['remoteAddress'] if metric['remoteAddress'] in ('', '127.0.0.1', '::ffff:127.0.0.1') else 'NON_FIXTURE_ADDRESS'
+                    metric['protocol'] = metric.get('protocol', '') if metric.get('protocol', '') in ('', 'http/1.0', 'http/1.1', 'h2', 'h3') else 'UNEXPECTED_PROTOCOL'
+                value['observations'].append(row)  # No localizedDescription or native console log.
+            emit(name, {'result': value, **fields(receipt, 'printedNativePid nativeStart nativeEnd udid')} if suffix == '-native.json' else value)
+        name = phase + '-fixture.json'
+        if (commands.reports / name).exists():
+            fixture, value = read_json(commands.reports / name), {}
+            for kind in ('ready', 'receipt'):
+                if kind not in fixture:
+                    continue
+                row = fixture[kind]
+                value[kind] = fields(row, 'phase nonce pid bindHost port readyAtUTC lifetimeSeconds readyMonotonicSeconds deadlineMonotonicSeconds closedMonotonicSeconds closedAtUTC elapsedSeconds receivedBytes windowComplete fixtureOK')
+                if kind == 'receipt':
+                    value[kind]['errors'] = [error(item) for item in row['errors']]
+                    value[kind]['connections'] = [{**fields(connection, 'bytes host cannedResponseSent peerEOF'),
+                                                   'error': error(connection['error']) if connection['error'] else None}
+                                                  for connection in row['connections']]  # Never rawBase64/request headers.
+            emit(name, value)
+    rows = []
+    for task in commands.tasks:
+        receipt = task['receipt']
+        row = fields(receipt, 'label pid deadline started launched spawnReturned ended actualExit leaderReaped groupQuiet forced timedOut ownershipLost normalJoin groupObservationEpoch groupObserverPid')
+        for key, names in (('owner', 'pid realUid effectiveUid'), ('identity', 'pid ppid pgid')):
+            if key in receipt:
+                row[key] = {name: value for name, value in fields(receipt[key], names).items() if type(value) is int and value >= 0}
+        row['errors'] = [error(item) for item in receipt['errors']]
+        row['signalAttemptCount'] = len(receipt['signalAttempts'])
+        rows.append(row)  # No argv/output, arbitrary signal-error string, lastGroup or census retention.
+    emit('commands.json', rows, limit=1048576)
+    cleanup = read_json(commands.reports / 'cleanup.json')
+    value = fields(cleanup, 'nativeAbsent fixturesAbsent commandsAbsent workersAbsent simulatorRemoved receiptSaved forcedNativeTermination')
+    stages = {'command drain', 'fixture receipt retention', 'native data receipt retention', 'owned simulator/native cleanup',
+              'absence proof', 'owned PF release/readback', 'scratch'}
+    value['errors'] = [{'stage': item.partition(': ')[0] if item.partition(': ')[0] in stages else 'cleanup',
+                        'reason': reason(item.partition(': ')[2] if ': ' in item else item)} for item in cleanup['errors']]
+    value['workerCount'] = len(cleanup.get('workers', []))  # No host-derived process names or argv.
+    emit('cleanup.json', value)
+    result = read_json(commands.reports / 'result.json')
+    value = fields(result, 'passed normalOwnedCleanup ownedScratchRemoved logsWithinCapBeforeTruncation pfDisabledAfterOwnedRelease priorPFConfigurationRestored inactiveDenyConfigurationDisposition carrierSha run issueSha historicalSha scope shippingIpaMergeAccepted minimumIOS15RuntimeProven androidAttempted')
+    value.update(failure=reason(result['failure']) if result['failure'] is not None else None,
+                 failureType=failure_type if failure_type in types else ('UNCLASSIFIED' if failure_type else None),
+                 failureStage=failure_stage)
+    emit('result.json', value)
+    files = {path.name: {'bytes': path.stat().st_size, 'sha256': digest(path)} for path in sorted(public.iterdir())}
+    require(sum(row['bytes'] for row in files.values()) <= 4194304, 'Public receipt cap exceeded')
+    emit('export-manifest.json', {'schema': 'app8-public-receipts-v1', 'files': files, 'projectionOnly': True,
+         'rawLogsExported': False, 'rawArgvExported': False, 'rawWireExported': False, 'pfTokensExported': False})
+    require(time.monotonic() < deadline, 'Public receipt deadline exceeded')
+
+
 def main():
     os.umask(0o077)
     for number in (signal.SIGTERM, signal.SIGINT):
         signal.signal(number, interrupted)
     source = Path(__file__).resolve()
     request = read_json(source.with_name('app8-apple.request.json'))
-    require(not sys.argv[1:] and request['authorization'] == 'APP8_APPLE_SINGLE_RUN_AUTHORIZED', 'Private Apple draft has no execution authorization')
+    require(not sys.argv[1:] and request['authorization'] == 'APP8_APPLE_SINGLE_RUN_AUTHORIZED', 'Apple successor has no execution authorization')
     require(request['schema'] == 'app8-apple-private-v1' and request['issueSha'] == ISSUE
             and request['sourceTree'] == SOURCE_TREE and request['historicalSha'] == BASE
             and request['probeManifestSha256'] == MANIFEST and request['policySha256'] == POLICIES
@@ -996,12 +1141,18 @@ def main():
             and request['shippingPolicyPath'] == POLICY_PATH and request['acceptedSourceGuardResultSha256'] == GUARD_HASH
             and request['debugPolicyPath'] == DEBUG_POLICY_PATH and request['debugPolicySha256'] == DEBUG_POLICY_HASH
             and request['pfDisposableAmendmentSha256'] == '6d8060b5cba21386326c8cafc96827ef0cb4abad9f3981cb96cdfc15f478109e'
-            and request['exclusiveDisposableJobVm'] is True, 'Unbound Apple request/source/disposable-VM authority')
+            and request['exclusiveDisposableJobVm'] is True and request['repository'] == REPOSITORY
+            and request['repositoryPrivate'] is False and request['ref'] == REF
+            and request['workflowSha256'] == digest(source.parents[1] / WORKFLOW), 'Unbound Apple request/source/disposable-VM authority')
     require(request['toolchain'] == {'developerDir': XCODE, 'sdkVersion': '26.4', 'runtimeIdentifier': RUNTIME,
             'runtimeVersion': '26.4.1', 'runtimeBuild': '23E254a', 'deviceType': DEVICE_TYPE, 'deploymentTarget': '15.0',
             'pfctlSha256': PF_HASH, 'macOS': '26.6.2', 'kernel': '25.6.0'}, 'Unsupported installed toolchain/PF profile')
-    require(os.environ.get('GITHUB_REPOSITORY') == 'kira-manga/kira-admin'
-            and os.environ.get('GITHUB_REF') == 'refs/heads/remediation/app-29-backend-complaints'
+    require(os.environ.get('GITHUB_REPOSITORY') == REPOSITORY and os.environ.get('GITHUB_REF') == REF
+            and os.environ.get('APP8_REPOSITORY_PRIVATE') == 'false'
+            and re.fullmatch(r'[0-9a-f]{40}', os.environ.get('GITHUB_SHA', ''))
+            and os.environ.get('GITHUB_WORKFLOW_SHA') == os.environ['GITHUB_SHA']
+            and os.environ.get('GITHUB_WORKFLOW_REF') == REPOSITORY + '/' + WORKFLOW + '@' + REF
+            and source.parents[1] == Path(os.environ['GITHUB_WORKSPACE']).resolve()
             and os.environ.get('GITHUB_EVENT_NAME') == 'push' and os.environ.get('GITHUB_RUN_ATTEMPT') == '1'
             and os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted' and os.environ.get('ImageOS') == 'macos26'
             and platform.system() == 'Darwin' and platform.machine() == 'arm64' and os.getuid() > 0, 'Wrong exclusive standard hosted macOS invocation')
@@ -1023,6 +1174,7 @@ def main():
     cleanup = {'nativeAbsent': False, 'fixturesAbsent': False, 'commandsAbsent': False, 'workersAbsent': False,
                'simulatorRemoved': False, 'receiptSaved': False, 'forcedNativeTermination': False, 'errors': []}
     token, fixtures, passed, failure = None, [], False, None
+    failure_type, failure_stage = None, None
     try:
         deadline_capabilities()
         require(Path(XCODE).is_dir(), 'Missing installed Xcode; no download/install')
@@ -1062,6 +1214,8 @@ def main():
         passed = True
     except Exception as error:
         failure = str(error)
+        failure_type = type(error).__name__
+        failure_stage = commands.tasks[-1]['receipt']['label'] if commands.tasks else 'source-binding'
     finally:
         commands.end = min(time.monotonic() + 60, deadline - 10)
         try:
@@ -1146,6 +1300,7 @@ def main():
              'carrierSha': os.environ['GITHUB_SHA'], 'run': run.name,
              'issueSha': ISSUE, 'historicalSha': BASE, 'scope': 'Apple SDK-only copied-policy ARM simulator host',
              'shippingIpaMergeAccepted': False, 'minimumIOS15RuntimeProven': False, 'androidAttempted': False})
+        publish_public(commands, failure_type, failure_stage, deadline)
     return 0 if passed and not CANCELLED else 1
 
 
@@ -1153,5 +1308,5 @@ if __name__ == '__main__':
     try:
         raise SystemExit(main())
     except Exception as error:
-        print('APP8 APPLE INCOMPLETE: ' + str(error), file=sys.stderr)
+        print('APP8 APPLE INCOMPLETE (' + type(error).__name__ + ')', file=sys.stderr)
         raise SystemExit(1)

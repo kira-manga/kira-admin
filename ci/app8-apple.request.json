@@ -1,6 +1,10 @@
 {
   "schema": "app8-apple-private-v1",
-  "authorization": "APP8_APPLE_SOURCE_ONLY_NOT_AUTHORIZED",
+  "authorization": "APP8_APPLE_SINGLE_RUN_AUTHORIZED",
+  "repository": "kira-manga/kira-admin",
+  "repositoryPrivate": false,
+  "ref": "refs/heads/validation/app8-native-current-20260916-01",
+  "workflowSha256": "42c8028d00fbd023cdc86977a93741e9da3605beca91a446aaaf4b206120c963",
   "issueSha": "d45b9157c69cf147e47dd72737531b99ca757bc9",
   "historicalSha": "2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c",
   "probeManifestSha256": "45a6d2e5eeae53eb7b1198b4b8bad4cf27b9e5d9840a38b05989f541a7d2b432",
@@ -13,7 +17,7 @@
   "acceptedSourceGuardResultSha256": "68a99cbc40fcc5cde08028411c019d8505f350b711282eb5c334f0c1e7efdede",
   "pfDisposableAmendmentSha256": "6d8060b5cba21386326c8cafc96827ef0cb4abad9f3981cb96cdfc15f478109e",
   "exclusiveDisposableJobVm": true,
-  "orchestratorSha256": "5e75ad82e7ac247003905537a915f8feb00d35e5ea334dd38c956a9a019a1802",
+  "orchestratorSha256": "b481f8ffa9170fca36ca1e2812c8fdc32b254a239d02d8f78eb5f645f3c75b92",
   "checkpointProvenanceSha256": "277e5c1e4da26b3c400d4294ac2b645b225db44c2156afea0499d5ce256f0fea",
   "toolchain": {
     "developerDir": "/Applications/Xcode_26.4.1.app/Contents/Developer",

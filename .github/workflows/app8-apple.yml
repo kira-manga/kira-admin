@@ -1,23 +1,23 @@
-name: App8 copied-policy Apple check (private)
+name: App8 copied-policy Apple native check (public-safe)
 
 on:
   push:
-    branches: [remediation/app-29-backend-complaints]
+    branches: [validation/app8-native-current-20260916-01]
     paths: [ci/app8-apple.request.json]
 
 permissions:
   contents: read
 
 concurrency:
-  group: app8-apple-private
+  group: app8-native-public-current
   cancel-in-progress: false
 
 jobs:
   apple-arm-simulator:
     if: >-
       ${{ github.repository == 'kira-manga/kira-admin' &&
-          github.event.repository.private == true && github.event_name == 'push' &&
-          github.ref == 'refs/heads/remediation/app-29-backend-complaints' &&
+          github.event.repository.private == false && github.event_name == 'push' &&
+          github.ref == 'refs/heads/validation/app8-native-current-20260916-01' &&
           github.run_attempt == 1 }}
     runs-on: macos-26
     timeout-minutes: 10
@@ -30,13 +30,29 @@ jobs:
         id: native
         env:
           APP8_RUN: ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}
+          APP8_REPOSITORY_PRIVATE: ${{ github.event.repository.private }}
         run: python3 -B ci/app8-apple.py
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always() && steps.native.outcome != 'skipped'
         with:
           name: app8-apple-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/reports/*.json
-            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/reports/*.log
-          retention-days: 3
+            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/public/result.json
+            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/public/source-bindings.json
+            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/public/tool-identities.json
+            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/public/package-bindings.json
+            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/public/simulator.json
+            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/public/allow-installation.json
+            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/public/deny-installation.json
+            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/public/allow-native.json
+            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/public/deny-native.json
+            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/public/allow-native-data.json
+            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/public/deny-native-data.json
+            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/public/allow-fixture.json
+            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/public/deny-fixture.json
+            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/public/cleanup.json
+            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/public/pf-lifecycle.json
+            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/public/commands.json
+            ${{ runner.temp }}/app8-apple-${{ github.run_id }}-${{ github.run_attempt }}/public/export-manifest.json
+          retention-days: 1
           if-no-files-found: error
