@@ -1,0 +1,32 @@
+{
+  "schema": "app8-apple-readiness-v1",
+  "authorization": "APP8_APPLE_READINESS_SINGLE_RUN_AUTHORIZED",
+  "repository": "kira-manga/kira-admin",
+  "repositoryPrivate": false,
+  "ref": "refs/heads/validation/app8-readiness-20260916-01",
+  "exclusiveDisposableJobVm": true,
+  "wrapperSha256": "c2570d87168ffcdc552b4c549477160be08e15935f1030f02017af958f2e7ac7",
+  "workflowSha256": "ad6f18299287b9e260714ab2cfc2b9f2665637f82c50d6961d0d7fccfe084950",
+  "controllerSha256": "9f69c87182eba29030fcd65c49b4e8459a41749440dab9767f3fbfe0c02db6cf",
+  "toolchain": {
+    "developerDir": "/Applications/Xcode_26.4.1.app/Contents/Developer",
+    "xcodeVersion": "26.4.1",
+    "xcodeBuild": "17E202",
+    "sdkPath": "/Applications/Xcode_26.4.1.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk",
+    "sdkVersion": "26.4",
+    "sdkBuild": "23E252",
+    "runtimeIdentifier": "com.apple.CoreSimulator.SimRuntime.iOS-26-4",
+    "runtimeVersion": "26.4.1",
+    "runtimeBuild": "23E254a",
+    "architecture": "arm64"
+  },
+  "budgetSeconds": {
+    "overall": 150,
+    "work": 105,
+    "cleanup": 40,
+    "receipts": 5,
+    "identity": 10,
+    "runtime": 30,
+    "runtimeReserve": 31
+  }
+}
