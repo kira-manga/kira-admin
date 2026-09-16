@@ -19,16 +19,20 @@ import subprocess
 import sys
 import time
 
-ISSUE = 'cebc952602fb69e03eb654dab30937e2f830a239'
+ISSUE = 'd45b9157c69cf147e47dd72737531b99ca757bc9'
+SOURCE_TREE = '1163ffb5173d33058ab79872ee4d17a9995829e2'
 BASE = '2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c'
-MANIFEST = '881dfc6e82754f3082d868a65f157dee54e4620fb1b23f084cbe998cf5a42bcf'
-GUARD_HASH = 'c33add8f6fc647a9186e5e06affb433a174077601c4fb04c10ca4ef7bc2841a6'
-BUILD_HASH = '1068ab565071844513c06e1cfa7b8580bc4d9278dd2a8661aac903c45082533c'
+MANIFEST = '45a6d2e5eeae53eb7b1198b4b8bad4cf27b9e5d9840a38b05989f541a7d2b432'
+GUARD_HASH = '68a99cbc40fcc5cde08028411c019d8505f350b711282eb5c334f0c1e7efdede'
+BUILD_HASH = '944300de9eacdd611a9c95a85130e3cf7d13661bd4d4cd0ec44913bded2d93da'
 POLICY_PATH = 'iosApp/iosApp/Info.plist'
+DEBUG_POLICY_PATH = 'iosApp/iosApp/Info-Debug.plist'
+DEBUG_POLICY_HASH = '1fed88e215df58dca5c8e645bca0ef1751f23f919b7d927d6dee4f4ee0fbd073'
 POLICIES = {'allow': '708ca4944a642ef0304608f3fe7615563d0ec703b453256169157951d836c50a',
-            'deny': 'c0c2f75b51066e4ebc3b1e62296be449ba731ac299b6c7cd117130ba335224df'}
+            'deny': '661cb96939c5e93d11736830a1fcce0dd6c6663b183807f103ca42f255ef816d'}
 INPUTS = ('ios/TransportProbe.swift', 'fixture/no_forward_proxy.py', 'policy-inputs/allow/Info.plist',
-          'policy-inputs/deny/Info.plist', 'policy-inputs.json', 'provenance.json')
+          'policy-inputs/deny/Info.plist', 'source-inputs/Info-Debug.plist', 'source-inputs/project.yml',
+          'policy-inputs.json', 'provenance.json')
 XCODE = '/Applications/Xcode_26.4.1.app/Contents/Developer'
 RUNTIME = 'com.apple.CoreSimulator.SimRuntime.iOS-26-4'
 DEVICE_TYPE = 'com.apple.CoreSimulator.SimDeviceType.iPhone-17'
@@ -653,20 +657,28 @@ def bind_inputs(source, run, request):
         require(digest(target) == entries[relative]['sha256'], 'Copied frozen input changed')
     for phase in POLICIES:
         require(digest(inputs / f'policy-inputs/{phase}/Info.plist') == POLICIES[phase], 'Shipping plist-byte mismatch')
+    # Debug and the build routing are bound source evidence, not additional native phases.
+    require(digest(inputs / 'source-inputs/Info-Debug.plist') == DEBUG_POLICY_HASH
+            and digest(inputs / 'source-inputs/project.yml') == BUILD_HASH, 'Current source-only input mismatch')
     metadata, provenance = read_json(inputs / 'policy-inputs.json'), read_json(inputs / 'provenance.json')
     builds = {row['path']: row['sha256'] for row in metadata['currentBuildInputsReadDirectly']}
-    require(metadata['base'] == BASE and metadata['ios']['deploymentTarget'] == '15.0'
-            and metadata['ios']['shippingPlistBinding'] == 'iosApp/Info.plist' and builds['iosApp/project.yml'] == BUILD_HASH
-            and provenance['productBase'] == BASE and provenance['sourceGuardResultSha256'] == GUARD_HASH
-            and metadata['productPatchSha256'] == provenance['productPatchSha256'], 'Frozen Apple provenance mismatch')
+    require(metadata['historicalPositiveControlSha'] == BASE and metadata['sourceSha'] == ISSUE
+            and metadata['sourceTree'] == SOURCE_TREE and metadata['ios']['deploymentTarget'] == '15.0'
+            and metadata['ios']['shippingPlistBinding'] == 'iosApp/Info.plist'
+            and metadata['ios']['debugPlistBinding'] == 'iosApp/Info-Debug.plist' and builds['iosApp/project.yml'] == BUILD_HASH
+            and provenance['sourceSha'] == ISSUE and provenance['sourceTree'] == SOURCE_TREE
+            and provenance['sourceGuardResultSha256'] == GUARD_HASH
+            and provenance['policyInputsSha256'] == digest(inputs / 'policy-inputs.json'), 'Frozen Apple provenance mismatch')
     path = payload / 'apple-checkpoint-policy-provenance.json'
-    require(digest(path) == request['checkpointProvenanceSha256'], 'Missing/unbound primary Apple checkpoint provenance')
+    require(digest(path) == request['checkpointProvenanceSha256'], 'Missing/unbound Apple source checkpoint provenance')
     checkpoint = {'schema': 'app8-apple-source-checkpoint-v1', **{key: request[key] for key in (
-        'issueSha', 'historicalSha', 'shippingPolicyPath', 'policySha256', 'shippingBuildInputSha256',
+        'issueSha', 'sourceTree', 'historicalSha', 'shippingPolicyPath', 'policySha256',
+        'debugPolicyPath', 'debugPolicySha256', 'shippingBuildInputSha256',
         'probeManifestSha256', 'acceptedSourceGuardResultSha256')}}
-    require(read_json(path) == checkpoint, 'Primary checkpoint does not attest the bound Apple policy bytes')
+    require(read_json(path) == checkpoint, 'Source checkpoint does not bind the copied Apple policy bytes')
     save(run / 'reports/source-bindings.json', {'checkpoint': checkpoint, 'checkpointProvenanceSha256': digest(path),
          'frozenInputs': {relative: entries[relative] for relative in INPUTS}, 'sourceGuardRerun': False,
+         'debugPolicyRuntimeAttempted': False,
          'orchestratorSha256': digest(source), 'requestSha256': digest(source.with_name('app8-apple.request.json')),
          'pfDisposableAmendmentSha256': request['pfDisposableAmendmentSha256']})
     return inputs
@@ -676,12 +688,17 @@ def derived_plist(original):
     values = {'DEVELOPMENT_LANGUAGE': 'en', 'EXECUTABLE_NAME': EXECUTABLE, 'PRODUCT_BUNDLE_IDENTIFIER': PACKAGE,
               'PRODUCT_NAME': EXECUTABLE, 'PRODUCT_BUNDLE_PACKAGE_TYPE': 'APPL', 'MARKETING_VERSION': '1.0.5',
               'CURRENT_PROJECT_VERSION': '1', 'KIRA_APP_STORE_ID': '6792232678', 'KIRA_CRASH_DIAGNOSTICS_ENABLED': 'NO'}
+    # Only the three current source literals; no generic embedded/environment expansion.
+    background_ids = {'$(PRODUCT_BUNDLE_IDENTIFIER).' + suffix: PACKAGE + '.' + suffix
+                      for suffix in ('download.processing', 'download.continued', 'library.refresh')}
     def resolve(value):
         if isinstance(value, dict):
             return {key: resolve(child) for key, child in value.items()}
         if isinstance(value, list):
             return [resolve(child) for child in value]
         if isinstance(value, str) and '$(' in value:
+            if value in background_ids:
+                return background_ids[value]
             require(value.startswith('$(') and value.endswith(')') and value[2:-1] in values, 'Unknown plist placeholder')
             return values[value[2:-1]]
         return value
@@ -972,10 +989,12 @@ def main():
     source = Path(__file__).resolve()
     request = read_json(source.with_name('app8-apple.request.json'))
     require(not sys.argv[1:] and request['authorization'] == 'APP8_APPLE_SINGLE_RUN_AUTHORIZED', 'Private Apple draft has no execution authorization')
-    require(request['schema'] == 'app8-apple-private-v1' and request['issueSha'] == ISSUE and request['historicalSha'] == BASE
+    require(request['schema'] == 'app8-apple-private-v1' and request['issueSha'] == ISSUE
+            and request['sourceTree'] == SOURCE_TREE and request['historicalSha'] == BASE
             and request['probeManifestSha256'] == MANIFEST and request['policySha256'] == POLICIES
             and request['orchestratorSha256'] == digest(source) and request['shippingBuildInputSha256'] == BUILD_HASH
             and request['shippingPolicyPath'] == POLICY_PATH and request['acceptedSourceGuardResultSha256'] == GUARD_HASH
+            and request['debugPolicyPath'] == DEBUG_POLICY_PATH and request['debugPolicySha256'] == DEBUG_POLICY_HASH
             and request['pfDisposableAmendmentSha256'] == '6d8060b5cba21386326c8cafc96827ef0cb4abad9f3981cb96cdfc15f478109e'
             and request['exclusiveDisposableJobVm'] is True, 'Unbound Apple request/source/disposable-VM authority')
     require(request['toolchain'] == {'developerDir': XCODE, 'sdkVersion': '26.4', 'runtimeIdentifier': RUNTIME,

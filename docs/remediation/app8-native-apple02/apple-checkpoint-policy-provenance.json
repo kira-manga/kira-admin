@@ -1,13 +1,16 @@
 {
-  "acceptedSourceGuardResultSha256": "c33add8f6fc647a9186e5e06affb433a174077601c4fb04c10ca4ef7bc2841a6",
+  "schema": "app8-apple-source-checkpoint-v1",
+  "issueSha": "d45b9157c69cf147e47dd72737531b99ca757bc9",
+  "sourceTree": "1163ffb5173d33058ab79872ee4d17a9995829e2",
   "historicalSha": "2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c",
-  "issueSha": "cebc952602fb69e03eb654dab30937e2f830a239",
+  "shippingPolicyPath": "iosApp/iosApp/Info.plist",
   "policySha256": {
     "allow": "708ca4944a642ef0304608f3fe7615563d0ec703b453256169157951d836c50a",
-    "deny": "c0c2f75b51066e4ebc3b1e62296be449ba731ac299b6c7cd117130ba335224df"
+    "deny": "661cb96939c5e93d11736830a1fcce0dd6c6663b183807f103ca42f255ef816d"
   },
-  "probeManifestSha256": "881dfc6e82754f3082d868a65f157dee54e4620fb1b23f084cbe998cf5a42bcf",
-  "schema": "app8-apple-source-checkpoint-v1",
-  "shippingBuildInputSha256": "1068ab565071844513c06e1cfa7b8580bc4d9278dd2a8661aac903c45082533c",
-  "shippingPolicyPath": "iosApp/iosApp/Info.plist"
+  "debugPolicyPath": "iosApp/iosApp/Info-Debug.plist",
+  "debugPolicySha256": "1fed88e215df58dca5c8e645bca0ef1751f23f919b7d927d6dee4f4ee0fbd073",
+  "shippingBuildInputSha256": "944300de9eacdd611a9c95a85130e3cf7d13661bd4d4cd0ec44913bded2d93da",
+  "probeManifestSha256": "45a6d2e5eeae53eb7b1198b4b8bad4cf27b9e5d9840a38b05989f541a7d2b432",
+  "acceptedSourceGuardResultSha256": "68a99cbc40fcc5cde08028411c019d8505f350b711282eb5c334f0c1e7efdede"
 }

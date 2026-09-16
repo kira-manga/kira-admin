@@ -1,31 +1,36 @@
 {
-  "author": "/root/d05_completion",
-  "frozenAtUTC": "2026-09-10T07:36:47.351732+00:00",
-  "status": "UNEXECUTED PRIVATE NATIVE DRAFT FOR PRIMARY/INDEPENDENT REVIEW",
-  "nativeDraftFrozen": true,
-  "nativeBuildSyntaxCheckInstallLaunchFixtureOrCIExecuted": false,
-  "productFilesStillMatchFrozenAfterHashes": true,
-  "productBase": "2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c",
-  "productPatchSha256": "46d0639e372da3b5a318cdd7d1b20d150e6e17362c370af7c5342010e7b225d6",
-  "sourceGuardResultSha256": "c33add8f6fc647a9186e5e06affb433a174077601c4fb04c10ca4ef7bc2841a6",
-  "independentProductReviewSha256": "90df4d8887737a929d02971cb4c34be44f4eb171d703678ccf1bdc370db5a0b7",
-  "authorLedgerSnapshot": {
-    "path": "../app-8-authored/author-command-ledger.json",
-    "sha256": "e1fd95e268750ddb83044077f2dcb0471c11922bb05009a290ff4c00f83be910",
-    "boundary": "Snapshot ends before its export and final metadata/checksum writes"
+  "author": "/root/app9_finish_preflight",
+  "frozenAtUTC": "2026-09-16T00:53:47.091637+00:00",
+  "status": "UNEXECUTED PRIVATE CURRENT-SOURCE SUCCESSOR FOR PRIMARY REVIEW; NOT AUTHORIZED",
+  "sourceSha": "d45b9157c69cf147e47dd72737531b99ca757bc9",
+  "sourceTree": "1163ffb5173d33058ab79872ee4d17a9995829e2",
+  "historicalPositiveControlSha": "2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c",
+  "sourceGuardResultPath": "review/working/app-8-transport-join-20260915-01/guard.log",
+  "sourceGuardResultSha256": "68a99cbc40fcc5cde08028411c019d8505f350b711282eb5c334f0c1e7efdede",
+  "sourceGuardRerun": false,
+  "independentProductReviewPath": "review/working/app-8-transport-join-20260915-01/INDEPENDENT-REVIEW.md",
+  "independentProductReviewSha256": "145596940c2ab57dd8672d195dcb4b9f5c66c87327c8ad7f50e3af0dfd16bc6e",
+  "policyInputsSha256": "823819721a46070adbf11d385a1d0be8c3ee36e54513d80c7888620c460290d1",
+  "supersedes": {
+    "probeManifestSha256": "881dfc6e82754f3082d868a65f157dee54e4620fb1b23f084cbe998cf5a42bcf",
+    "apple04CarrierSha": "236f2a27bcce5b9a045b128cf56360690fe4821d",
+    "apple04Run": 34612656960,
+    "apple04Disposition": "FAIL / EXTERNAL VERIFICATION REQUIRED retained; inventory timeout cause unproved"
   },
-  "policyInputsSha256": "a84203915c0db3cd3c1edd4731634cd5d93c34c0ce0df6cf0a010a443c63da0d",
+  "productEditPerformed": false,
+  "newProductClosureCredit": false,
+  "nativeBuildSyntaxCheckInstallLaunchFixtureOrCIExecuted": false,
   "executionRequiresPrimaryCoordination": true,
   "unresolvedPreExecutionConditions": [
-    "Independent native-draft and minimal primary-owned runner review",
-    "Effective no-DNS/no-external/no-direct-fallback isolation covering native app, not only simctl or receiver byte counts",
-    "Installed pinned SDK/tool/image availability and SDK compilation/packaging/signing compatibility",
-    "Actual old-policy canned response and native candidate policy rejection on both platforms",
-    "Owned process/device/mapping cleanup with no forced/error outcome"
+    "Independent review of actual current-source binding and exact plist derivation delta",
+    "Fresh primary authorization; the prepared request explicitly rejects dispatch",
+    "Evidence-supported readiness decision for the original 30-second runtime inventory gate; no speculative rerun or changed profile",
+    "Existing owned isolation, both-host allow/deny native transport oracles and normal cleanup obligations remain unchanged"
   ],
   "scopeLimits": [
-    "SDK-only copied-policy hosts, not production APK/IPA merge or whole-app certification",
-    "API26/target36 Android; iOS15.0 deployment on a recorded modern ARM simulator is not minimum-iOS15-runtime proof",
-    "No added runner/workflow/supervisor, Engine/Admin helper modification, source-config change, commit, push, upload or closure"
+    "Historical allow and current Release deny remain the only native phases; Debug is copied/bound source evidence only",
+    "SDK-only Swift/Foundation copied-policy host; no Kotlin/Native dependency, shipping IPA merge or physical-device qualification",
+    "Modern ARM simulator with iOS15.0 deployment is not actual minimum-iOS15-runtime proof",
+    "No workflow, runtime cap, PF policy, process ownership, cleanup, fixture, native oracle or shipping product change"
   ]
 }

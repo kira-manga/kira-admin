@@ -1,24 +1,14 @@
 {
-  "status": "UNEXECUTED PRIVATE DRAFT",
+  "status": "UNEXECUTED PRIVATE CURRENT-SOURCE APPLE SUCCESSOR",
   "excludes": [
     "manifest.json",
-    "SHA256SUMS"
+    "apple-checkpoint-policy-provenance.json"
   ],
   "files": [
     {
-      "path": "README.md",
-      "bytes": 18803,
-      "sha256": "f4e4fafe13064666aa2ea15353f36424e832ef74a5a7c0a3dbfc292a878e7eea"
-    },
-    {
-      "path": "android/AndroidManifest.xml",
-      "bytes": 940,
-      "sha256": "bfd58cde5883d74e4c70ffaa3b794b89bdd4da85ace95c3144890c9ea0db4cb0"
-    },
-    {
-      "path": "android/TransportProbe.java",
-      "bytes": 7756,
-      "sha256": "9e53a8fc5459ae60c485983099876f711c1cc9e57902a386969d7761bc05b502"
+      "path": "ios/TransportProbe.swift",
+      "bytes": 10217,
+      "sha256": "1e3988e8541047223cfb594d43470e7ef48db39f4e3077c67d706d418422ef72"
     },
     {
       "path": "fixture/no_forward_proxy.py",
@@ -26,39 +16,34 @@
       "sha256": "99e6ee15a2b77ca702fd3bacd0d3eac5c160aad38ec90f9855454810d5954765"
     },
     {
-      "path": "ios/TransportProbe.swift",
-      "bytes": 10217,
-      "sha256": "1e3988e8541047223cfb594d43470e7ef48db39f4e3077c67d706d418422ef72"
-    },
-    {
       "path": "policy-inputs/allow/Info.plist",
       "bytes": 4160,
       "sha256": "708ca4944a642ef0304608f3fe7615563d0ec703b453256169157951d836c50a"
     },
     {
-      "path": "policy-inputs/allow/network_security_config.xml",
-      "bytes": 230,
-      "sha256": "03d8bc818916ef40f4ba440aab50100c170a216acab814957d74fbf41f434b6a"
-    },
-    {
       "path": "policy-inputs/deny/Info.plist",
-      "bytes": 3796,
-      "sha256": "c0c2f75b51066e4ebc3b1e62296be449ba731ac299b6c7cd117130ba335224df"
+      "bytes": 3927,
+      "sha256": "661cb96939c5e93d11736830a1fcce0dd6c6663b183807f103ca42f255ef816d"
     },
     {
-      "path": "policy-inputs/deny/network_security_config.xml",
-      "bytes": 146,
-      "sha256": "dea35ebed76536c24c13f74036f02dc874f944147cb3a49c2ad0550f71e3e0c7"
+      "path": "source-inputs/Info-Debug.plist",
+      "bytes": 3365,
+      "sha256": "1fed88e215df58dca5c8e645bca0ef1751f23f919b7d927d6dee4f4ee0fbd073"
+    },
+    {
+      "path": "source-inputs/project.yml",
+      "bytes": 13578,
+      "sha256": "944300de9eacdd611a9c95a85130e3cf7d13661bd4d4cd0ec44913bded2d93da"
     },
     {
       "path": "policy-inputs.json",
-      "bytes": 2772,
-      "sha256": "a84203915c0db3cd3c1edd4731634cd5d93c34c0ce0df6cf0a010a443c63da0d"
+      "bytes": 2579,
+      "sha256": "823819721a46070adbf11d385a1d0be8c3ee36e54513d80c7888620c460290d1"
     },
     {
       "path": "provenance.json",
-      "bytes": 1955,
-      "sha256": "21269d2e9961c3609528e758ede86d76bda18ae0e95c860400ddba8b41d90d1f"
+      "bytes": 2398,
+      "sha256": "dbcb67336fd3d4ed47f63a8ba48d12a3b39160c31a863c168c321cba80a57427"
     }
   ]
 }

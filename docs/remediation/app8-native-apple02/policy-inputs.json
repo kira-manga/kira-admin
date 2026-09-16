@@ -1,20 +1,16 @@
 {
-  "author": "/root/d05_completion",
-  "preparedAtUTC": "2026-09-10T07:15:13.589591+00:00",
-  "status": "PRIVATE UNEXECUTED SDK-ONLY DRAFT",
-  "sourceWorktree": "/root/projects/Kira/.worktrees/kira-app-8",
-  "base": "2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c",
+  "author": "/root/app9_finish_preflight",
+  "preparedAtUTC": "2026-09-16T00:53:47.091637+00:00",
+  "status": "UNEXECUTED SOURCE-ONLY APPLE SUCCESSOR; NOT AUTHORIZED",
+  "sourceRepository": "kira-manga/kira-app",
+  "sourceMode": "Committed Git blobs; shared app worktree not modified",
+  "sourceSha": "d45b9157c69cf147e47dd72737531b99ca757bc9",
+  "sourceTree": "1163ffb5173d33058ab79872ee4d17a9995829e2",
+  "historicalPositiveControlSha": "2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c",
   "inputs": [
     {
       "phase": "allow",
-      "path": "policy-inputs/allow/network_security_config.xml",
-      "sourcePath": "app/src/main/res/xml/network_security_config.xml",
-      "sourceVersion": "2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c",
-      "bytes": 230,
-      "sha256": "03d8bc818916ef40f4ba440aab50100c170a216acab814957d74fbf41f434b6a"
-    },
-    {
-      "phase": "allow",
+      "purpose": "Unchanged historical positive control",
       "path": "policy-inputs/allow/Info.plist",
       "sourcePath": "iosApp/iosApp/Info.plist",
       "sourceVersion": "2d6bf4bb9a67773abbf9c6c6bf641ffbd1de670c",
@@ -23,52 +19,42 @@
     },
     {
       "phase": "deny",
-      "path": "policy-inputs/deny/network_security_config.xml",
-      "sourcePath": "app/src/main/res/xml/network_security_config.xml",
-      "sourceVersion": "frozen App8 worktree after source edit",
-      "bytes": 146,
-      "sha256": "dea35ebed76536c24c13f74036f02dc874f944147cb3a49c2ad0550f71e3e0c7"
-    },
-    {
-      "phase": "deny",
+      "purpose": "Current Release policy native candidate",
       "path": "policy-inputs/deny/Info.plist",
       "sourcePath": "iosApp/iosApp/Info.plist",
-      "sourceVersion": "frozen App8 worktree after source edit",
-      "bytes": 3796,
-      "sha256": "c0c2f75b51066e4ebc3b1e62296be449ba731ac299b6c7cd117130ba335224df"
+      "sourceVersion": "d45b9157c69cf147e47dd72737531b99ca757bc9",
+      "bytes": 3927,
+      "sha256": "661cb96939c5e93d11736830a1fcce0dd6c6663b183807f103ca42f255ef816d"
+    }
+  ],
+  "sourceOnlyInputs": [
+    {
+      "purpose": "Current Debug policy binding only; no Debug native phase",
+      "path": "source-inputs/Info-Debug.plist",
+      "sourcePath": "iosApp/iosApp/Info-Debug.plist",
+      "sourceVersion": "d45b9157c69cf147e47dd72737531b99ca757bc9",
+      "bytes": 3365,
+      "sha256": "1fed88e215df58dca5c8e645bca0ef1751f23f919b7d927d6dee4f4ee0fbd073"
     }
   ],
   "currentBuildInputsReadDirectly": [
     {
-      "path": "app/build.gradle.kts",
-      "bytes": 11380,
-      "sha256": "fb1929a19efcac2e9d843bd3f1946f2573ff486747abf514fcf76f5f80b55889"
-    },
-    {
-      "path": "app/src/main/AndroidManifest.xml",
-      "bytes": 5774,
-      "sha256": "fc86dea1b63549f7df4c0cb289e6be2dd207c1520ed90616b8e251d122da22a9"
-    },
-    {
       "path": "iosApp/project.yml",
-      "bytes": 13403,
-      "sha256": "1068ab565071844513c06e1cfa7b8580bc4d9278dd2a8661aac903c45082533c"
+      "frozenPath": "source-inputs/project.yml",
+      "sourceVersion": "d45b9157c69cf147e47dd72737531b99ca757bc9",
+      "bytes": 13578,
+      "sha256": "944300de9eacdd611a9c95a85130e3cf7d13661bd4d4cd0ec44913bded2d93da"
     }
   ],
-  "android": {
-    "minSdk": 26,
-    "targetSdk": 36,
-    "compileSdk": 37,
-    "sourceLines": "app/build.gradle.kts:126-134",
-    "manifestAssociation": "@xml/network_security_config"
-  },
   "ios": {
     "deploymentTarget": "15.0",
-    "sourceLines": "iosApp/project.yml:7,72",
     "shippingPlistBinding": "iosApp/Info.plist",
-    "minimumOSRuntimeNotClaimed": true
+    "debugPlistBinding": "iosApp/Info-Debug.plist",
+    "minimumOSRuntimeNotClaimed": true,
+    "debugPolicyRuntimeAttempted": false
   },
-  "productPatchSha256": "46d0639e372da3b5a318cdd7d1b20d150e6e17362c370af7c5342010e7b225d6",
   "nativeBuildOrExecutionPerformed": false,
-  "sourceGuardExecution": "Only previously approved python3 -B scripts/check_transport_policy.py --self-test, exit 0; separately retained in app-8-authored/guard-results.json"
+  "sourceGuardExecution": "Carried accepted 2026-09-15 guard.log: eight controls and actual source PASS; not rerun for this successor",
+  "sourceGuardSourceSha256": "731dca7612fe28e53faa19a2a8d8bc3a6662e6b61f0d431c84c379255ea58b2b",
+  "scope": "Apple-only source binding. Android inputs and native acceptance are preserved in their existing packets, not requalified here."
 }

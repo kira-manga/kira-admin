@@ -110,14 +110,22 @@ class ParserRefusals(unittest.TestCase):
                 DRAFT.verify_owned_pf(None, 'synthetic', '42', state)
 
     def test_plist_derivation_preserves_literal_policy_and_refuses_unknown_placeholder(self):
+        suffixes = ('download.processing', 'download.continued', 'library.refresh')
         original = {'CFBundleIdentifier': '$(PRODUCT_BUNDLE_IDENTIFIER)', 'NSAppTransportSecurity': DRAFT.OLD_ATS,
+                    'BGTaskSchedulerPermittedIdentifiers': ['$(PRODUCT_BUNDLE_IDENTIFIER).' + suffix for suffix in suffixes],
                     'literal': {'nested': ['keep', True]}}
+        before = copy.deepcopy(original)
         changed = DRAFT.derived_plist(original)
+        self.assertEqual(changed['CFBundleIdentifier'], DRAFT.PACKAGE)
+        self.assertEqual(changed['BGTaskSchedulerPermittedIdentifiers'], [DRAFT.PACKAGE + '.' + suffix for suffix in suffixes])
         self.assertEqual(changed['NSAppTransportSecurity'], original['NSAppTransportSecurity'])
         self.assertEqual(changed['literal'], original['literal'])
-        self.assertEqual(original['CFBundleIdentifier'], '$(PRODUCT_BUNDLE_IDENTIFIER)')
-        with self.assertRaises(RuntimeError):
-            DRAFT.derived_plist(dict(original, unknown='$(UNREVIEWED)'))
+        self.assertEqual(original, before)
+        for unknown in ('$(UNREVIEWED)', '$(UNREVIEWED).library.refresh',
+                        '$(PRODUCT_BUNDLE_IDENTIFIER).unreviewed', 'prefix-$(PRODUCT_BUNDLE_IDENTIFIER).library.refresh',
+                        '$(PRODUCT_BUNDLE_IDENTIFIER).library.refresh$(UNREVIEWED)'):
+            with self.subTest(unknown=unknown), self.assertRaises(RuntimeError):
+                DRAFT.derived_plist(dict(original, unknown=unknown))
 
     def test_ats_proxy_and_natural_window_oracles_do_not_accept_connectivity_failure(self):
         for phase in ('allow', 'deny'):
