@@ -19,7 +19,7 @@ REF = 'refs/heads/validation/app8-readiness-20260916-01'
 WORKFLOW = '.github/workflows/app8-apple-readiness.yml'
 HELPER_SHA256 = '9f69c87182eba29030fcd65c49b4e8459a41749440dab9767f3fbfe0c02db6cf'
 XCODE = '/Applications/Xcode_26.4.1.app/Contents/Developer'
-SDK = XCODE + '/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk'
+SDK = XCODE + '/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.4.sdk'
 PROFILE = {'developerDir': XCODE, 'xcodeVersion': '26.4.1', 'xcodeBuild': '17E202',
            'sdkPath': SDK, 'sdkVersion': '26.4', 'sdkBuild': '23E252',
            'runtimeIdentifier': 'com.apple.CoreSimulator.SimRuntime.iOS-26-4',
