@@ -770,7 +770,7 @@ def prepare_bundles(commands, inputs):
 
 
 def devices(commands, cleaning=False):
-    value = parse_json(commands.call(['/usr/bin/xcrun', 'simctl', 'list', 'devices', '--json'], 'devices', seconds=5, cleaning=cleaning))
+    value = parse_json(commands.call(['/usr/bin/xcrun', 'simctl', 'list', 'devices', '--json'], 'devices', seconds=30, cleaning=cleaning))
     return [row for rows in value['devices'].values() for row in rows]
 
 
@@ -791,6 +791,7 @@ def create_simulator(commands, state):
     end = min(commands.end, time.monotonic() + 180)
     commands.call(['/usr/bin/xcrun', 'simctl', 'boot', state['udid']], 'boot-owned-simulator', end=end)
     commands.call(['/usr/bin/xcrun', 'simctl', 'bootstatus', state['udid'], '-b'], 'owned-bootstatus', seconds=180, end=end)
+    state['bootStatusComplete'] = True
     matches = [row for row in devices(commands) if row['udid'] == state['udid']]
     require(len(matches) == 1 and matches[0]['name'] == state['name'] and matches[0]['state'] == 'Booted', 'Owned simulator not booted')
     expected = Path(commands.env['HOME']) / 'Library/Developer/CoreSimulator/Devices' / state['udid'] / 'data'
@@ -956,8 +957,14 @@ def dispose_simulator(commands, state, cleanup):
     if not state.get('creating') and not state.get('udid'):
         cleanup['simulatorRemoved'] = True
         return
-    inventory = devices(commands, cleaning=True)
     udid = state.get('udid')
+    # creating=False follows validated create output; dataPath precedes every probe installation.
+    bootstrap_shutdown = bool(udid and state.get('creating') is False and state.get('bootStatusComplete') is True
+                              and 'dataPath' not in state and not state.get('installIntended'))
+    if bootstrap_shutdown:
+        require(re.fullmatch(r'[0-9A-F]{8}(?:-[0-9A-F]{4}){3}-[0-9A-F]{12}', udid), 'Invalid created simulator identity')
+        commands.call(['/usr/bin/xcrun', 'simctl', 'shutdown', udid], 'shutdown-owned-simulator', seconds=15, cleaning=True)
+    inventory = devices(commands, cleaning=True)
     matches = [row for row in inventory if row['name'] == state['name'] or row['udid'] == udid]
     require(len(matches) <= 1 and all(row['name'] == state['name'] and (not udid or row['udid'] == udid) for row in matches),
             'Ambiguous simulator ownership; retain fence')
@@ -965,6 +972,7 @@ def dispose_simulator(commands, state, cleanup):
         device = matches[0]
         udid = state['udid'] = device['udid']
         save(commands.run / 'simulator.json', state)
+        require(not bootstrap_shutdown or device['state'] == 'Shutdown', 'Owned simulator shutdown unproven')
         if device['state'] == 'Booted':
             native = [row for row in owned_workers(commands, state, cleaning=True) if row['executable'] == EXECUTABLE]
             if native:

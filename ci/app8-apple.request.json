@@ -17,7 +17,7 @@
   "acceptedSourceGuardResultSha256": "68a99cbc40fcc5cde08028411c019d8505f350b711282eb5c334f0c1e7efdede",
   "pfDisposableAmendmentSha256": "6d8060b5cba21386326c8cafc96827ef0cb4abad9f3981cb96cdfc15f478109e",
   "exclusiveDisposableJobVm": true,
-  "orchestratorSha256": "b481f8ffa9170fca36ca1e2812c8fdc32b254a239d02d8f78eb5f645f3c75b92",
+  "orchestratorSha256": "16dd1ec16bec10a46479aa78ca5de5734db2ce94f654346f25cdc3dd8ac4f71e",
   "checkpointProvenanceSha256": "277e5c1e4da26b3c400d4294ac2b645b225db44c2156afea0499d5ce256f0fea",
   "toolchain": {
     "developerDir": "/Applications/Xcode_26.4.1.app/Contents/Developer",
