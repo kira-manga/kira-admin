@@ -51,7 +51,7 @@ export type PreparedComplaintContentEdit =
     content: Readonly<NoticeReplyContent>;
   }>;
 
-export type ComplaintContentField = 'TARGET' | 'TYPE' | 'SUBJECT' | 'BODY' | 'IDEMPOTENCY_KEY';
+export type ComplaintContentField = 'TARGET' | 'TYPE' | 'SUBJECT' | 'BODY' | 'CLOSURE_REASON' | 'IDEMPOTENCY_KEY';
 export type ComplaintContentReason =
   | 'READ_ONLY'
   | 'VARIANT_MISMATCH'
@@ -169,7 +169,12 @@ function validateIdempotencyKey(value: string): void {
   }
 }
 
-function normalizeText(value: string, field: 'SUBJECT' | 'BODY', maximum: number, maximumBytes: number): string {
+/** Same normalization as backend ComplaintTextRules.closureReason; no request or authority. */
+export function prepareComplaintClosureReason(value: string): string {
+  return normalizeText(value, 'CLOSURE_REASON', 500, 2_000);
+}
+
+function normalizeText(value: string, field: 'SUBJECT' | 'BODY' | 'CLOSURE_REASON', maximum: number, maximumBytes: number): string {
   const lineNormalized = value.replace(/\r\n/g, '\n');
   // Match backend ComplaintTextRules: validation precedes trimming and UTF-8 measurement.
   for (let index = 0; index < lineNormalized.length; index++) {
