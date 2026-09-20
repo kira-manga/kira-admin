@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { issueAdminProof, type AdminProofCookie, type AdminSessionCookie } from '@/lib/server-session';
+import type { ComplaintMutationOperation } from '@/lib/complaint-mutation-wire';
 import { sessionGenerationHeader, stepUpProofIdHeader } from '@/lib/session-contract';
-import { appliedResponse, complaintId, complaintScope, grantA, grantB, mutationRequest, problemResponse } from '@/test/complaint-mutation-fixture';
+import { appliedResponse, complaintId, complaintScope, deletedResponse, grantA, grantB, mutationRequest, problemResponse } from '@/test/complaint-mutation-fixture';
 import { createSessionFixture, fixtureSigningSecret, signedRequestHeaders } from '@/test/server-session-fixture';
 
 const origin = 'https://admin.example.test';
@@ -17,7 +18,7 @@ function proof(grant: string, owner = session) {
   return issueAdminProof(owner, token, 'complaint-moderation-mutation', new Date(Date.now() + 300_000).toISOString(), grant);
 }
 
-async function invoke(options: { operation?: 'content' | 'status' | 'closure'; body?: BodyInit; proofs?: AdminProofCookie[];
+async function invoke(options: { operation?: ComplaintMutationOperation; body?: BodyInit; proofs?: AdminProofCookie[];
   headers?: HeadersInit; remove?: string[]; path?: string; query?: string; signal?: AbortSignal } = {}) {
   const operation = options.operation ?? 'status';
   const description = mutationRequest(operation);
@@ -26,12 +27,12 @@ async function invoke(options: { operation?: 'content' | 'status' | 'closure'; b
   });
   for (const [name, value] of new Headers(options.headers)) headers.set(name, value);
   options.remove?.forEach((name) => headers.delete(name));
-  const { PATCH } = await import('./route');
-  const path = ['complaints', complaintId, operation];
+  const handlers = await import('./route');
+  const path = operation === 'delete' ? ['complaints', complaintId] : ['complaints', complaintId, operation];
   const request = new Request(`${origin}${options.path ?? '/api/backend/' + path.join('/')}${options.query ?? `?dataScopeId=${complaintScope}`}`, {
-    method: 'PATCH', headers, body: options.body ?? description.body, signal: options.signal, duplex: 'half',
+    method: description.method, headers, body: options.body ?? (operation === 'delete' ? undefined : description.body), signal: options.signal, duplex: 'half',
   } as RequestInit);
-  return PATCH(request, { params: Promise.resolve({ path }) });
+  return handlers[description.method](request, { params: Promise.resolve({ path }) });
 }
 
 beforeEach(() => {
@@ -251,5 +252,183 @@ describe('actual bounded ordinary complaint PATCH connection', () => {
     expect(result.headers.getSetCookie()).toHaveLength(0);
     expect(outboundCancel).toHaveBeenCalledOnce();
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('actual bounded single complaint DELETE connection', () => {
+  it('forwards the exact captured method/path/key/tag with no body and emits a genuinely bodyless204', async () => {
+    for (const headers of [{}, { 'Content-Length': '0' }, { 'Transfer-Encoding': 'chunked' }] as HeadersInit[]) {
+      fetchMock.mockResolvedValueOnce(deletedResponse({ [consumedId]: grantA, 'Set-Cookie': 'upstream-secret=never', Authorization: 'never' }));
+      const response = await invoke({ operation: 'delete', remove: ['Content-Type'], headers });
+      expect(response.status).toBe(204);
+      expect(response.body).toBeNull();
+      expect(await response.text()).toBe('');
+      expect(response.headers.get('X-Kira-Complaint-Contract')).toBe('1');
+      expect(response.headers.get('cache-control')).toBe('no-store, no-transform');
+      expect(response.headers.getSetCookie()).toHaveLength(1);
+      expect(response.headers.get('set-cookie')).toContain(`${proofA.name}=; Path=/api;`);
+      expect(response.headers.get('set-cookie')).not.toContain(proofB.name);
+      for (const name of ['Content-Type', 'ETag', 'Location', consumedId, 'X-Kira-Admin-Step-Up-Grant-Id', 'Authorization']) expect(response.headers.has(name)).toBe(false);
+      const [url, init] = fetchMock.mock.calls.at(-1)!;
+      expect(url).toBe(`http://backend:8080/api/v1/admin/complaints/${complaintId}?dataScopeId=${complaintScope}`);
+      expect(init?.method).toBe('DELETE');
+      expect(init?.body).toBeUndefined();
+      const forwarded = new Headers(init?.headers);
+      expect(forwarded.get('Authorization')).toBe(`Bearer ${session.token}`);
+      expect(forwarded.get('X-Kira-Admin-Step-Up')).toBe(proofB.token);
+      expect(forwarded.get('If-Match')).toBe(mutationRequest('delete').headers['If-Match']);
+      expect(forwarded.get('X-Kira-Idempotency-Key')).toBe(mutationRequest('delete').headers['X-Kira-Idempotency-Key']);
+      for (const name of ['Cookie', sessionGenerationHeader, stepUpProofIdHeader, consumedId, 'Content-Length', 'Transfer-Encoding']) expect(forwarded.has(name)).toBe(false);
+    }
+  });
+
+  it('retires only original captured A on authorized503 and never treats selected fresh B or an uncaptured A as its replacement', async () => {
+    fetchMock.mockResolvedValueOnce(problemResponse('SERVICE_UNAVAILABLE', 503, { [consumedId]: grantA, 'X-Kira-Admin-Step-Up-Consumed': 'true' }))
+      .mockResolvedValueOnce(deletedResponse({ [consumedId]: grantA }));
+    const authorized = await invoke({ operation: 'delete' });
+    expect(authorized.status).toBe(503);
+    expect(await authorized.text()).toContain('SERVICE_UNAVAILABLE');
+    expect(authorized.headers.getSetCookie()).toHaveLength(1);
+    expect(authorized.headers.get('set-cookie')).toContain(proofA.name);
+    expect(authorized.headers.get('set-cookie')).not.toContain(proofB.name);
+    const replay = await invoke({ operation: 'delete', proofs: [proofB], remove: [stepUpProofIdHeader] });
+    expect(replay.status).toBe(204);
+    expect(replay.headers.getSetCookie()).toHaveLength(0);
+    expect(new Headers(fetchMock.mock.calls[1][1]?.headers).has('X-Kira-Admin-Step-Up')).toBe(false);
+    for (const [url, init] of fetchMock.mock.calls) {
+      expect(url).toBe(fetchMock.mock.calls[0][0]);
+      expect(init?.method).toBe('DELETE');
+      expect(init?.body).toBeUndefined();
+      for (const name of ['If-Match', 'X-Kira-Idempotency-Key']) expect(new Headers(init?.headers).get(name)).toBe(new Headers(fetchMock.mock.calls[0][1]?.headers).get(name));
+    }
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('supports proofless exact replay but never guesses retirement from missing, stale, foreign-scope/session or duplicate grant matches', async () => {
+    const other = createSessionFixture(session.token);
+    const otherProof = proof(grantA, other);
+    const duplicate = proof(grantA);
+    const source = issueAdminProof(session, 'A'.repeat(43), 'source-admin-mutation', new Date(Date.now() + 300_000).toISOString(), null);
+    for (const [proofs, association] of [
+      [[proofB, proofA], null], [[proofB], grantA], [[proofB, otherProof], grantA], [[proofB, source], grantA], [[proofA, duplicate], grantA],
+    ] as const) {
+      fetchMock.mockResolvedValueOnce(deletedResponse(association ? { [consumedId]: association } : {}));
+      const response = await invoke({ operation: 'delete', proofs: [...proofs], remove: [stepUpProofIdHeader] });
+      expect(response.status).toBe(204);
+      expect(response.headers.getSetCookie()).toHaveLength(0);
+      expect(new Headers(fetchMock.mock.calls.at(-1)?.[1]?.headers).has('X-Kira-Admin-Step-Up')).toBe(false);
+    }
+    fetchMock.mockResolvedValueOnce(deletedResponse({ [consumedId]: grantA }));
+    const matching = await invoke({ operation: 'delete', remove: [stepUpProofIdHeader] });
+    expect(matching.headers.getSetCookie()).toHaveLength(1);
+    expect(matching.headers.get('set-cookie')).toContain(proofA.name);
+    vi.useFakeTimers(); vi.setSystemTime(Date.now() + 301_000);
+    fetchMock.mockResolvedValueOnce(deletedResponse({ [consumedId]: grantA }));
+    const expired = await invoke({ operation: 'delete' });
+    expect(expired.status).toBe(204);
+    expect(expired.headers.getSetCookie()).toHaveLength(0);
+    expect(new Headers(fetchMock.mock.calls.at(-1)?.[1]?.headers).has('X-Kira-Admin-Step-Up')).toBe(false);
+  });
+
+  it('cannot retire a same-token replacement session or fresh proof issued after the original request capture', async () => {
+    let entered!: () => void;
+    let finish!: (response: Response) => void;
+    const dispatched = new Promise<void>((resolve) => { entered = resolve; });
+    fetchMock.mockImplementationOnce(() => { entered(); return new Promise<Response>((resolve) => { finish = resolve; }); });
+    const originalName = proofA.name;
+    const pending = invoke({ operation: 'delete', proofs: [proofA] });
+    await dispatched;
+    const freshProof = proof(grantB);
+    const replacement = createSessionFixture(session.token);
+    const replacementProof = proof(grantA, replacement);
+    finish(deletedResponse({ [consumedId]: grantA }));
+    const result = await pending;
+    expect(result.status).toBe(204);
+    expect(result.headers.getSetCookie()).toHaveLength(1);
+    expect(result.headers.get('set-cookie')).toContain(`${originalName}=; Path=/api;`);
+    for (const name of [freshProof.name, replacement.name, replacementProof.name]) expect(result.headers.get('set-cookie')).not.toContain(name);
+  });
+
+  it('refuses nonempty bodies and exact-route/query/precondition/session/framing violations before dispatch', async () => {
+    const tag = mutationRequest('delete').headers['If-Match'];
+    const cases: Array<[Parameters<typeof invoke>[0], number]> = [
+      [{ body: ' ' }, 400], [{ body: '{}' }, 400], [{ body: '\r\n' }, 400], [{ body: new Uint8Array([0]) }, 400],
+      [{ path: `/api/backend/complaints/${complaintId}/delete` }, 404], [{ path: `/api/backend/complaints/%31${complaintId.slice(1)}` }, 404],
+      [{ query: `?dataScopeId=${complaintScope}&cascade=true` }, 400], [{ query: `?dataScopeId=${complaintScope}&dataScopeId=${complaintScope}` }, 400],
+      [{ query: '?dataScopeId=00000000-0000-0000-0000-000000000000' }, 400], [{ headers: { Origin: 'https://outside.example.test' } }, 403],
+      [{ remove: ['X-Kira-CSRF'] }, 403], [{ remove: [sessionGenerationHeader] }, 401],
+      [{ headers: { [sessionGenerationHeader]: createSessionFixture(session.token).generation } }, 401],
+      [{ remove: ['If-Match'] }, 428], [{ headers: { 'If-Match': `W/${tag}` } }, 412], [{ headers: { 'If-Match': '*' } }, 412],
+      [{ headers: { 'If-Match': `${tag}, ${tag}` } }, 412], [{ headers: { 'If-Match': `"complaint-${complaintId}-v9223372036854775808"` } }, 412],
+      [{ headers: { 'If-None-Match': '*' } }, 400], [{ headers: { 'X-Kira-Idempotency-Key': `${grantA}, ${grantB}` } }, 400],
+      [{ headers: { 'X-Kira-Complaint-Contract': '1, 1' } }, 400], [{ headers: { 'Content-Type': 'text/plain' } }, 415],
+      [{ headers: { 'Content-Encoding': 'gzip' } }, 415], [{ headers: { 'Content-Length': '1' } }, 400],
+      [{ headers: { 'Content-Length': '0', 'Transfer-Encoding': 'chunked' } }, 400], [{ headers: { 'Transfer-Encoding': 'gzip' } }, 400],
+    ];
+    for (const [options, status] of cases) expect((await invoke({ ...options, operation: 'delete' })).status).toBe(status);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('keeps receipted NOTICE/absent, stale-version and pending rejections as problems, not empty204', async () => {
+    for (const [code, status] of [['COMPLAINT_NOT_FOUND', 404], ['PRECONDITION_FAILED', 412], ['COMPLAINT_DELETION_PENDING', 409]] as const) {
+      fetchMock.mockResolvedValueOnce(problemResponse(code, status, { [consumedId]: grantA, 'X-Kira-Admin-Step-Up-Consumed': 'true' }));
+      const response = await invoke({ operation: 'delete' });
+      expect(response.status).toBe(status);
+      expect(await response.text()).toContain(code);
+      expect(response.headers.get('set-cookie')).toContain(proofA.name);
+      expect(response.headers.has(consumedId)).toBe(false);
+    }
+  });
+
+  it('withholds malformed204, ACK/202, illegal body bytes and malformed association without proof retirement', async () => {
+    for (const extra of [
+      { 'Content-Type': 'application/json' }, { ETag: mutationRequest('delete').headers['If-Match'] }, { Location: '/elsewhere' },
+      { 'Content-Length': '1' }, { 'Transfer-Encoding': 'chunked' }, { 'Content-Encoding': 'gzip' },
+      { 'X-Kira-Complaint-Contract': '1, 1' }, { 'X-Kira-Admin-Step-Up-Consumed': 'true, true' },
+      { [consumedId]: '' }, { [consumedId]: `${grantA}, ${grantA}` }, { [consumedId]: grantA.toUpperCase() },
+    ] as HeadersInit[]) {
+      const headers = new Headers({ [consumedId]: grantA });
+      for (const [name, value] of new Headers(extra)) headers.set(name, value);
+      fetchMock.mockResolvedValueOnce(deletedResponse(headers));
+      const response = await invoke({ operation: 'delete' });
+      expect(response.status).toBe(502);
+      expect(response.headers.getSetCookie()).toHaveLength(0);
+      expect(response.headers.has('X-Kira-Admin-Step-Up-Consumed')).toBe(false);
+    }
+    const illegalBody = new Response(new Uint8Array([32]), { headers: deletedResponse({ [consumedId]: grantA }).headers });
+    Object.defineProperty(illegalBody, 'status', { value: 204 }); // Synthetic acquisition seam; real Fetch normally suppresses it.
+    for (const upstream of [illegalBody, appliedResponse(undefined, { [consumedId]: grantA }), new Response(null, { status: 202, headers: deletedResponse({ [consumedId]: grantA }).headers })]) {
+      fetchMock.mockResolvedValueOnce(upstream);
+      const response = await invoke({ operation: 'delete' });
+      expect(response.status).toBe(502);
+      expect(response.headers.getSetCookie()).toHaveLength(0);
+    }
+  });
+
+  it('requires complete inbound EOF before dispatch and retains proofs on an apparent204 timeout or caller cancellation', async () => {
+    vi.useFakeTimers();
+    for (const stage of ['inbound', 'upstream', 'caller'] as const) {
+      let entered!: () => void;
+      const reading = new Promise<void>((resolve) => { entered = resolve; });
+      const cancel = vi.fn();
+      const stream = new ReadableStream<Uint8Array>({ pull() { entered(); return new Promise<void>(() => {}); }, cancel }, { highWaterMark: 0 });
+      if (stage !== 'inbound') {
+        const upstream = new Response(stream, { headers: deletedResponse({ [consumedId]: grantA }).headers });
+        Object.defineProperty(upstream, 'status', { value: 204 });
+        fetchMock.mockResolvedValueOnce(upstream);
+      }
+      const caller = new AbortController();
+      const pending = invoke({ operation: 'delete', ...(stage === 'inbound' ? { body: stream } : {}), signal: caller.signal });
+      await reading;
+      if (stage === 'caller') caller.abort();
+      else await vi.advanceTimersByTimeAsync(65_000);
+      const response = await pending;
+      expect(response.status).toBe(stage === 'caller' ? 502 : 504);
+      expect(response.headers.getSetCookie()).toHaveLength(0);
+      expect(cancel).toHaveBeenCalledOnce();
+      if (stage === 'inbound') expect(fetchMock).not.toHaveBeenCalled();
+      expect(vi.getTimerCount()).toBe(0);
+    }
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

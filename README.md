@@ -191,27 +191,34 @@ runtime secret and re-login; build/fixture success does not verify deployment or
 
 ### Ordinary complaint moderation connection (source only)
 
-The Complaints view connects known-ID or search-selected TEST detail to the existing content, status and closure
-preparation forms. NOTICE stays read-only. A loaded detail captures its TEST scope and G; later
+The Complaints view connects known-ID or search-selected TEST detail to content, status, closure and
+single-delete preparation. NOTICE stays read-only. A loaded detail captures its TEST scope and G; later
 input edits never replace an operation's target or scope. The backend remains the authority for
 current ADMIN access, TEST admission, transitions, normalization and receipt matching. Entering a
 scope, signing in, or approving a password **does not activate backend complaint APIs**. Disabled404
-and unavailable responses are not successful moderation. This connection adds no delete/batch
-actions, LIVE scope or deployment/activation setting. Search remains a read, not mutation approval.
+and unavailable responses are not successful moderation. Deletion is only one captured REPORT/REPLY,
+with no parent/child, installation or credential cascade. This connection adds no batch actions,
+LIVE scope or deployment/activation setting. Search remains a read, not mutation approval.
 
-The BFF admits only exact `PATCH /api/backend/complaints/<canonical UUID>/{content|status|closure}`
+The mutation BFF admits only exact `PATCH /api/backend/complaints/<canonical UUID>/{content|status|closure}`
+or `DELETE /api/backend/complaints/<canonical UUID>`
 with one canonical UUIDv4 `dataScopeId`, signed G, same-origin CSRF, a canonical idempotency key and
-the exact strong target If-Match. It collects the entire identity-encoded JSON request (16 KiB max)
+the exact strong target If-Match. It collects each entire identity-encoded PATCH JSON request (16 KiB max)
 before dispatch, validates the closed fields with the existing text rules without rewriting retained
 bytes, and bounds the fetch plus response body to 65 seconds and 32 KiB. Redirects, contradictory
 framing, malformed/partial/oversized responses and non-identity upstream encoding fail without
 forwarding a prefix. Only the finite contract headers and validated ACK/problem bytes reach the
-browser; backend tokens, origins, cookies and grant-identity headers do not.
+browser; backend tokens, origins, cookies and grant-identity headers do not. DELETE requires zero
+request bytes (not even JSON whitespace) and sends no body. Its inbound Content-Type may be absent
+or use the same JSON media grammar; conflicting framing still fails. A DELETE description's local
+empty string is an absence marker, never a serialized empty-string body.
 
 An attempt may omit proof P. A missing, expired or non-matching signed complaint proof is never
 replaced by another cookie: the upstream request is proofless. The backend can replay an existing
-receipt without fresh approval, or require step-up for new work. A valid200 ACK confirms the exact
-next numeric Long/ETag independently of proof retirement. A recognized business rejection is
+receipt without fresh approval, or require step-up for new work. A valid200 PATCH ACK confirms the exact
+next numeric Long/ETag independently of proof retirement. Only a complete empty204 confirms DELETE;
+it has no Content-Type, ETag, Location or Transfer-Encoding, and no downstream body is opened.
+A200 ACK,202,404 or authorized503 never substitutes for that confirmation. A recognized business rejection is
 terminal only with its historical receipt marker; bounded500/503 remain unknown even with it.
 The private `X-Kira-Admin-Step-Up-Consumed-Grant-Id` retires only a single matching authenticated
 G/session/scope/grant envelope from the original request's bounded cookie inventory, at `/api`.
@@ -227,6 +234,15 @@ after a real backend step-up-required response. A confirmed terminal rejection p
 Explicit reload shows reviewed current detail without overwriting it; a separately labeled new-intent
 action discards that draft and supplies a new key/base. Unknown or key-reused outcomes never silently
 start a replacement. A local KiraSession expiry returns to login; a backend Bearer denial is distinct.
+
+Single deletion uses the existing scoped password dialog and immutable G/key/tag capture. Once the
+backend authorizes deletion it cannot be canceled by leaving or editing later; an authorized503 may
+retire the original proof but still retains the unknown operation for explicit identical retry.
+After verified204, stale detail/editors are removed. **Review confirmed deletion**, then **Clear
+confirmed deletion and return to selection**, clears only that terminal operation under the current
+reviewed session lifetime. It neither reloads the now-deleted detail nor generates/replays a new intent.
+The terminal capture survives in-app view navigation; unmounted or stale-session responses cannot
+establish it, and a bare404 does not expose this exit.
 
 Logout and destructive tab navigation have best-effort unresolved-work warnings. Old-G operations
 remain retained and non-sendable across login, with their prose hidden, never silently rebound even

@@ -8,7 +8,30 @@ const key = 'd9439d39-0ef2-4d30-8eb6-324486a9d36e';
 const tag = (version: string) => `"complaint-${id}-v${version}"`;
 const target: ComplaintModerationTarget = { id, kind: 'REPORT', ownership: 'INSTALLATION', actionTag: tag('9007199254740992') };
 
-describe('dormant Admin status and closure request capture', () => {
+describe('Admin status, closure and single-delete request capture', () => {
+  it('captures REPORT/REPLY deletion without prose or a cascade, and rejects forged NOTICE/ownership/tag inputs', () => {
+    for (const kind of ['REPORT', 'REPLY'] as const) {
+      const original = { ...target, kind };
+      const request = prepareComplaintModerationRequest(original, { operation: 'delete' }, scope, key);
+      expect(request).toEqual({
+        method: 'DELETE', path: `/api/v1/admin/complaints/${id}?dataScopeId=${scope}`,
+        targetId: id, dataScopeId: scope, baseVersion: '9007199254740992', body: '',
+        headers: { 'Content-Type': 'application/json', 'X-Kira-Complaint-Contract': '1', 'X-Kira-Idempotency-Key': key, 'If-Match': target.actionTag },
+      });
+      original.actionTag = tag('2');
+      expect(request.headers['If-Match']).toBe(target.actionTag);
+      expect(Object.isFrozen(request)).toBe(true);
+      expect(Object.isFrozen(request.headers)).toBe(true);
+    }
+    for (const forged of [
+      { ...target, kind: 'NOTICE' }, { ...target, ownership: 'SYSTEM' }, { ...target, actionTag: '' },
+      { ...target, actionTag: '*' }, { ...target, actionTag: `${target.actionTag}, ${target.actionTag}` },
+      { ...target, actionTag: `W/${target.actionTag}` }, { ...target, actionTag: tag('9223372036854775808') },
+      { ...target, actionTag: tag('01') }, { ...target, actionTag: '"complaint-00000000-0000-0000-0000-000000000000-v1"' },
+    ]) expect(() => prepareComplaintModerationRequest(forged as ComplaintModerationTarget, { operation: 'delete' }, scope, key)).toThrow('INVALID_CAPTURE');
+    expect(prepareComplaintModerationRequest({ ...target, actionTag: tag('9223372036854775807') }, { operation: 'delete' }, scope, key).baseVersion).toBe('9223372036854775807');
+  });
+
   it('uses only the five mutable status targets and exact field-scoped bodies', () => {
     for (const status of ['OPEN', 'IN_PROGRESS', 'PLANNED', 'RESOLVED', 'NOT_PLANNED'] as const) {
       for (const kind of ['REPORT', 'REPLY'] as const) {

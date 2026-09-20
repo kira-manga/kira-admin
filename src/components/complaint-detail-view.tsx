@@ -40,7 +40,12 @@ function complaintText(value: string) {
 }
 
 function terminal(operation: ComplaintOperation | null | undefined) {
-  return operation?.outcome?.kind === 'applied' || operation?.outcome?.kind === 'rejected';
+  return operation?.outcome?.kind === 'applied' || operation?.outcome?.kind === 'rejected' || confirmedDeletion(operation);
+}
+
+function confirmedDeletion(operation: ComplaintOperation | null | undefined) {
+  return operation?.phase === 'settled' && operation.request.method === 'DELETE'
+    && operation.outcome?.kind === 'deleted' && operation.outcome.id === operation.request.targetId;
 }
 
 function operationMessage(operation: ComplaintOperation) {
@@ -48,6 +53,7 @@ function operationMessage(operation: ComplaintOperation) {
   if (operation.phase === 'sending') return 'Submitting the original operation. Leaving this view cannot cancel backend work.';
   switch (operation.outcome?.kind) {
     case 'applied': return 'Applied response verified. Reload the target before another intent.';
+    case 'deleted': return 'Deletion confirmed by an empty 204 response. Review this captured deletion before clearing it and returning to selection.';
     case 'rejected': return 'Terminal rejection verified. The original draft is retained; reload and review before a new intent.';
     case 'step-up-required': return 'The backend requires complaint password approval. The original operation is retained.';
     case 'key-reused': return 'The backend refused this key as reused. The original operation is retained; do not silently replace it.';
@@ -66,6 +72,7 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
   const [editorKey, setEditorKey] = useState('');
   const [editorRevision, setEditorRevision] = useState(0);
   const [reviewed, setReviewed] = useState<ComplaintOperation | null>(null);
+  const deletionReviewSession = useRef<ReturnType<typeof captureAdminSession> | null>(null);
   const [confirmation, setConfirmation] = useState<ComplaintOperation | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -106,6 +113,7 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
     setLoaded(null);
     setEditorBase(null);
     setReviewed(null);
+    deletionReviewSession.current = null;
     setError('');
     setLoading(false);
   }
@@ -180,6 +188,7 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
     try {
       const outcome = await sendComplaintMutation(sending, controller.signal, approval);
       if (ticket.isCurrent() && controls.changeOperation(sending, Object.freeze({ ...sending, phase: 'settled', outcome }))) {
+        if (outcome.kind === 'deleted') { invalidate(); setEditorKey(''); }
         if (outcome.kind === 'session-expired') controls.onSessionExpired();
       }
     } catch {
@@ -195,7 +204,7 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
   }
 
   function startReviewedIntent() {
-    if (!controls || !operation || !terminal(operation) || reviewed !== operation || !loaded
+    if (!controls || !operation || !terminal(operation) || confirmedDeletion(operation) || reviewed !== operation || !loaded
       || loaded.generation !== operation.generation || loaded.dataScopeId !== operation.request.dataScopeId
       || loaded.detail.item.id !== operation.request.targetId) return;
     if (controls.changeOperation(operation, null)) {
@@ -207,10 +216,42 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
     }
   }
 
-  const item = loaded && (!controls || loaded.generation === controls.generation) ? loaded.detail.item : undefined;
+  function reviewConfirmedDeletion() {
+    if (!controls || !operation || !confirmedDeletion(operation) || operation.generation !== controls.generation || mutationOwner.isLocked()) return;
+    try {
+      const session = captureAdminSession();
+      if (session.generation !== operation.generation) return;
+      deletionReviewSession.current = session;
+      setReviewed(operation); setError('');
+    } catch (caught) {
+      if (caught instanceof ApiError && caught.status === 401) controls.onSessionExpired();
+    }
+  }
+
+  function clearReviewedDeletion() {
+    if (!controls || !operation || !confirmedDeletion(operation) || reviewed !== operation || owner.isLocked() || mutationOwner.isLocked()) return;
+    try {
+      const session = captureAdminSession();
+      if (session.generation !== controls.generation || session.generation !== operation.generation) return;
+      if (!deletionReviewSession.current?.isCurrent()) {
+        deletionReviewSession.current = null; setReviewed(null);
+        setError('Your session changed. Review the confirmed deletion again before clearing it.');
+        return;
+      }
+      if (controls.changeOperation(operation, null)) {
+        selectionBlocked.current = false;
+        invalidate(); setId(''); setScope(operation.request.dataScopeId); setEditorKey(''); setConfirmation(null);
+        // No reload of the deleted resource, new key, new intent or replay on this local exit.
+      }
+    } catch (caught) {
+      if (caught instanceof ApiError && caught.status === 401) controls.onSessionExpired();
+    }
+  }
+
+  const item = !confirmedDeletion(operation) && loaded && (!controls || loaded.generation === controls.generation) ? loaded.detail.item : undefined;
   return (
     <div className="view-stack">
-      <section className="view-heading"><div><h2>Complaint detail</h2><p>{controls ? 'TEST search, detail and non-deleting moderation. ' : 'Read-only TEST lookup. '}Use the configured TEST scope and a known complaint ID{controls ? ', or search below' : ''}. The backend enforces availability and access; this screen does not activate complaint APIs.</p></div></section>
+      <section className="view-heading"><div><h2>Complaint detail</h2><p>{controls ? 'TEST search, detail and single-complaint moderation. ' : 'Read-only TEST lookup. '}Use the configured TEST scope and a known complaint ID{controls ? ', or search below' : ''}. The backend enforces availability and access; this screen does not activate complaint APIs.</p></div></section>
       <form className="panel" onSubmit={(event) => { void lookup(event); }}>
         <Field label="TEST data scope ID" hint="Canonical UUID v4 supplied by the TEST environment owner.">
           <Input name="dataScopeId" value={scope} required maxLength={36} disabled={Boolean(operation)} autoComplete="off" autoCapitalize="none" spellCheck={false} onChange={(event) => { if (!operation) { invalidate(); setScope(event.target.value); } }} />
@@ -238,6 +279,15 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
           ? 'An unsent preparation from a previous session is non-sendable and is not rebound to this login.'
           : 'An operation from a previous session is retained and non-sendable. It is not canceled or rebound to this login. Tab loss cannot recover it; do not assume non-execution.'}</p> : <>
           <p role="status">{operationMessage(operation)}</p>
+          {operation.request.method === 'DELETE' ? <>
+            <p className="notice notice-warning">Permanent single deletion only; no cascade. Authorization cannot be canceled by leaving this view or by a later edit.</p>
+            <dl aria-label="Captured deletion target">
+              <dt>Complaint ID</dt><dd>{operation.request.targetId}</dd>
+              <dt>TEST scope</dt><dd>{operation.request.dataScopeId}</dd>
+              <dt>Captured action tag</dt><dd>{operation.request.headers['If-Match']}</dd>
+              <dt>Original key</dt><dd>{operation.request.headers['X-Kira-Idempotency-Key']}</dd>
+            </dl>
+          </> : null}
           {operation.phase === 'prepared' ? <>
             <Button onClick={() => setConfirmation(operation)}>Confirm original operation</Button>
             <Button onClick={() => cancelPreparation(operation)}>Cancel unsent preparation</Button>
@@ -245,11 +295,17 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
             <Button onClick={() => { void send(operation); }}>Retry original operation without new proof</Button>
             {operation.outcome?.kind === 'step-up-required' ? <Button onClick={() => setConfirmation(operation)}>Approve original operation</Button> : null}
           </> : null}
-          {terminal(operation) ? <>
+          {confirmedDeletion(operation) ? <>
+            <Button onClick={reviewConfirmedDeletion}>Review confirmed deletion</Button>
+            {reviewed === operation ? <>
+              <p role="note">This verified deletion applies only to the captured target and scope above. Clearing it is local review, not another backend request.</p>
+              <Button onClick={clearReviewedDeletion}>Clear confirmed deletion and return to selection</Button>
+            </> : null}
+          </> : terminal(operation) ? <>
             <Button disabled={loading} onClick={() => { void load(operation.request.targetId, operation.request.dataScopeId, operation); }}>Reload target to review</Button>
             {reviewed === operation ? <Button onClick={startReviewedIntent}>Start new intent from reviewed detail (discard prior draft)</Button> : null}
           </> : null}
-          <details><summary>Inspect retained original body</summary><pre dir="auto" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', unicodeBidi: 'isolate' }}>{visibleComplaintText(operation.request.body)}</pre></details>
+          <details><summary>Inspect retained original body</summary><pre dir="auto" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', unicodeBidi: 'isolate' }}>{operation.request.method === 'DELETE' ? 'No request body (single DELETE).' : visibleComplaintText(operation.request.body)}</pre></details>
           <p>Retained only in this application&apos;s memory. Signing out or losing the tab does not establish an outcome; no cross-session or durable recovery is provided.</p>
         </>}
       </section> : null}
@@ -280,14 +336,14 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
           <h4>Body</h4><pre dir="auto" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', unicodeBidi: 'isolate' }}>{visibleComplaintText(item.body)}</pre>
           {item.closureReason !== null ? <><h4>Closure reason</h4><pre dir="auto" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', unicodeBidi: 'isolate' }}>{visibleComplaintText(item.closureReason)}</pre></> : null}
         </> : null}
-        {!controls || item.kind === 'NOTICE' ? <p>Read-only. Editing, status changes and closure are not available.</p> : null}
+        {!controls || item.kind === 'NOTICE' ? <p>Read-only. Editing, status changes, closure and deletion are not available.</p> : null}
       </article> : null}
-      {controls && editorBase?.generation === controls.generation && editorBase.detail.moderationTarget ? <fieldset key={editorRevision} disabled={Boolean(operation)} style={{ border: 0, padding: 0, minWidth: 0 }}>
+      {controls && !confirmedDeletion(operation) && editorBase?.generation === controls.generation && editorBase.detail.moderationTarget ? <fieldset key={editorRevision} disabled={Boolean(operation)} style={{ border: 0, padding: 0, minWidth: 0 }}>
         <ComplaintContentEditor snapshot={editorBase.detail.contentSnapshot} idempotencyKey={editorKey} onPrepared={(capture) => prepare(prepareComplaintContentRequest(capture, editorBase.dataScopeId))} />
         <ComplaintModerationEditor target={editorBase.detail.moderationTarget} dataScopeId={editorBase.dataScopeId} idempotencyKey={editorKey} onPrepared={prepare} />
       </fieldset> : null}
       {confirmation && ownsOperation && operation === confirmation ? <StepUpDialog key={confirmation.request.headers['X-Kira-Idempotency-Key']}
-        action="complaint moderation" scope="complaint-moderation-mutation" onCancel={() => cancelPreparation(confirmation)}
+        action={confirmation.request.method === 'DELETE' ? `permanent single deletion of complaint ${confirmation.request.targetId}` : 'complaint moderation'} scope="complaint-moderation-mutation" onCancel={() => cancelPreparation(confirmation)}
         onSessionExpired={controls?.onSessionExpired}
         onApproved={(approval) => send(confirmation, approval)} /> : null}
     </div>

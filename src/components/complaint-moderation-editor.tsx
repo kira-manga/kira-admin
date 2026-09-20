@@ -77,8 +77,10 @@ function ComplaintModerationEditorSession({ target, dataScopeId, idempotencyKey,
           return;
         }
         request = prepareComplaintModerationRequest(base, { operation, status }, dataScopeId, idempotencyKey);
-      } else {
+      } else if (operation === 'closure') {
         request = prepareComplaintModerationRequest(base, { operation, reason }, dataScopeId, idempotencyKey);
+      } else {
+        request = prepareComplaintModerationRequest(base, { operation }, dataScopeId, idempotencyKey);
       }
     } catch {
       // The shared helper validates the complete description; never expose raw inputs/errors.
@@ -102,6 +104,7 @@ function ComplaintModerationEditorSession({ target, dataScopeId, idempotencyKey,
   const hasDirectionalMarks = operation === 'closure' && Boolean(reason.match(directionalControls)?.length);
   const describedBy = [
     `${editorId}-help`, error ? `${editorId}-error` : null, hasDirectionalMarks ? `${editorId}-bidi-warning` : null,
+    operation === 'delete' ? `${editorId}-delete-warning` : null,
   ].filter(Boolean).join(' ');
 
   return (
@@ -120,6 +123,7 @@ function ComplaintModerationEditorSession({ target, dataScopeId, idempotencyKey,
             }}>
               <option value="status">Change status</option>
               <option value="closure">Close with reason</option>
+              <option value="delete">Permanently delete this one complaint</option>
             </select></Field>
             {operation === 'status' ? <Field label="Status target"><select className="input" name="status" value={status} aria-invalid={Boolean(error?.statusRequired)} aria-describedby={describedBy} onChange={(event) => {
               setStatus(event.currentTarget.value as ComplaintStatusTarget | '');
@@ -134,6 +138,10 @@ function ComplaintModerationEditorSession({ target, dataScopeId, idempotencyKey,
               }} />
             </Field> : null}
           </div>
+          {operation === 'delete' ? <p className="notice notice-warning" role="note" id={`${editorId}-delete-warning`}>
+            Permanently delete only this captured report or reply. No parent, replies, installation or credentials are deleted with it.
+            Once the backend authorizes deletion it cannot be canceled; an unknown response still requires the original operation.
+          </p> : null}
           {hasDirectionalMarks ? <pre className="preview-output" aria-label="Closure reason visible inspection" dir="auto" style={{ unicodeBidi: 'isolate', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{visibleComplaintText(reason)}</pre> : null}
           {hasDirectionalMarks ? <p className="notice notice-warning" role="note" id={`${editorId}-bidi-warning`}>
             Directional marks are present. Visual order can differ from stored order. They remain unchanged; prepared-body inspection escapes them as {'\\uXXXX'}.
@@ -142,14 +150,14 @@ function ComplaintModerationEditorSession({ target, dataScopeId, idempotencyKey,
           {keyConsumed ? <p className="notice" role="note" id={`${editorId}-key-help`}>
             This supplied key has already been used for a local handoff. Keep that original description on uncertainty; another key is not a retry. The local draft is retained.
           </p> : null}
-          <div><Button type="submit" tone="primary" disabled={keyConsumed} aria-describedby={keyConsumed ? `${editorId}-key-help` : undefined}>Prepare description</Button></div>
+          <div><Button type="submit" tone={operation === 'delete' ? 'danger' : 'primary'} disabled={keyConsumed} aria-describedby={keyConsumed ? `${editorId}-key-help` : undefined}>Prepare description</Button></div>
         </form>
         {prepared ? <section className="view-stack" aria-label="Last prepared moderation">
           <p className="notice" role="status">Prepared locally. Preparation itself sends nothing; the parent workflow reports any submission separately. Later draft edits do not change this description.</p>
           <details>
             <summary>Inspect last prepared body (local capture)</summary>
             <pre className="preview-output" aria-label="Last prepared body inspection" dir="ltr" style={{ unicodeBidi: 'isolate', overflowWrap: 'anywhere' }}>
-              {prepared.body.replace(directionalControls, (mark) => `\\u${mark.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')}`)}
+              {prepared.method === 'DELETE' ? 'No request body (single DELETE).' : prepared.body.replace(directionalControls, (mark) => `\\u${mark.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')}`)}
             </pre>
           </details>
         </section> : null}

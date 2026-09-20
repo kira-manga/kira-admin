@@ -20,7 +20,7 @@ export class ComplaintMutationWireError extends Error {
 
 /** A local request description, not a fetch command, credential or mutation authority. */
 export type ComplaintMutationRequest = Readonly<{
-  method: 'PATCH';
+  method: 'PATCH' | 'DELETE';
   path: string;
   targetId: string;
   dataScopeId: string;
@@ -31,12 +31,13 @@ export type ComplaintMutationRequest = Readonly<{
     'X-Kira-Idempotency-Key': string;
     'If-Match': string;
   }>;
+  /** DELETE uses exactly '' as a local absence marker, never a serialized request body. */
   body: string;
 }>;
 
 /** Build only a local immutable description; scope syntax is never mutation authority. */
 export function prepareComplaintMutationRequest(
-  operation: 'content' | 'status' | 'closure',
+  operation: ComplaintMutationOperation,
   targetId: string,
   dataScopeId: string,
   idempotencyKey: string,
@@ -44,14 +45,15 @@ export function prepareComplaintMutationRequest(
   body: string,
 ): ComplaintMutationRequest {
   const invalid = (): never => { throw new ComplaintMutationWireError('INVALID_CAPTURE'); };
-  if (operation !== 'content' && operation !== 'status' && operation !== 'closure') invalid();
+  if (operation !== 'content' && operation !== 'status' && operation !== 'closure' && operation !== 'delete') invalid();
   if (!isTestUuid(dataScopeId) || !isTestUuid(idempotencyKey) || !isUuid(targetId)) invalid();
   const tag = new RegExp(`^"complaint-${targetId}-v([1-9][0-9]{0,18})"$`).exec(actionTag);
   if (!tag || tag[0] !== actionTag || !isLong(tag[1])) return invalid();
-  if (new TextEncoder().encode(body).byteLength > 16_384) invalid();
+  if (new TextEncoder().encode(body).byteLength > 16_384 || operation === 'delete' && body !== '') invalid();
+  const suffix = operation === 'delete' ? '' : `/${operation}`;
   return Object.freeze({
-    method: 'PATCH',
-    path: `/api/v1/admin/complaints/${targetId}/${operation}?dataScopeId=${dataScopeId}`,
+    method: operation === 'delete' ? 'DELETE' : 'PATCH',
+    path: `/api/v1/admin/complaints/${targetId}${suffix}?dataScopeId=${dataScopeId}`,
     targetId, dataScopeId, baseVersion: tag[1],
     headers: Object.freeze({
       'Content-Type': 'application/json',
@@ -73,7 +75,7 @@ export function decodeComplaintMutationApplied(
   response: { status: number; contentType: string | null; contract: string | null; etag: string | null; body: Uint8Array },
 ): Readonly<{ id: string; version: string; actionTag: string }> {
   const unconfirmed = (): never => { throw new ComplaintMutationWireError('UNCONFIRMED_RESPONSE'); };
-  if (response.status !== 200 || response.contract !== '1' || response.body.byteLength > 256 ||
+  if (request.method !== 'PATCH' || response.status !== 200 || response.contract !== '1' || response.body.byteLength > 256 ||
       !response.contentType || response.contentType.length > 128 || /[\r\n]/.test(response.contentType) ||
       !/^application\/json(?:[ \t]*;[ \t]*charset=utf-8)?$/i.test(response.contentType)) unconfirmed();
   let raw: string;
@@ -108,7 +110,7 @@ function isTestUuid(value: string): boolean {
   return isUuid(value) && value[14] === '4' && '89ab'.includes(value[19]);
 }
 
-export type ComplaintMutationOperation = 'content' | 'status' | 'closure';
+export type ComplaintMutationOperation = 'content' | 'status' | 'closure' | 'delete';
 export const complaintReceiptHeader = 'X-Kira-Admin-Step-Up-Consumed';
 
 /** Strict flat string object. Duplicate decoded names, arrays, nested objects and numeric tokens fail. */
@@ -152,6 +154,10 @@ function mutationFields(raw: string): Record<string, string> {
 /** Validate without rewriting retained bytes; the real backend still authenticates/normalizes. */
 export function validateComplaintMutationBody(operation: ComplaintMutationOperation, body: string) {
   try {
+    if (operation === 'delete') {
+      if (body !== '') throw new Error();
+      return;
+    }
     const bytes = new TextEncoder().encode(body);
     if (bytes.length > 16_384 || new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes) !== body) throw new Error();
     const fields = mutationFields(body);
@@ -173,14 +179,14 @@ export function validateComplaintMutationBody(operation: ComplaintMutationOperat
 
 /** Reconstruct a fixed BFF destination; the descriptor's backend path is never a fetch URL. */
 export function complaintMutationDestination(request: ComplaintMutationRequest) {
-  if (request.method !== 'PATCH' || Object.keys(request.headers).sort().join(',') !== 'Content-Type,If-Match,X-Kira-Complaint-Contract,X-Kira-Idempotency-Key'
+  if (Object.keys(request.headers).sort().join(',') !== 'Content-Type,If-Match,X-Kira-Complaint-Contract,X-Kira-Idempotency-Key'
     || request.headers['Content-Type'] !== 'application/json' || request.headers['X-Kira-Complaint-Contract'] !== '1') throw new ComplaintMutationWireError('INVALID_CAPTURE');
-  const operation = (['content', 'status', 'closure'] as const).find((action) => request.path === `/api/v1/admin/complaints/${request.targetId}/${action}?dataScopeId=${request.dataScopeId}`);
+  const operation = (['content', 'status', 'closure', 'delete'] as const).find((action) => request.path === `/api/v1/admin/complaints/${request.targetId}${action === 'delete' ? '' : `/${action}`}?dataScopeId=${request.dataScopeId}`);
   if (!operation) throw new ComplaintMutationWireError('INVALID_CAPTURE');
   const checked = prepareComplaintMutationRequest(operation, request.targetId, request.dataScopeId, request.headers['X-Kira-Idempotency-Key'], request.headers['If-Match'], request.body);
-  if (checked.baseVersion !== request.baseVersion) throw new ComplaintMutationWireError('INVALID_CAPTURE');
+  if (checked.method !== request.method || checked.baseVersion !== request.baseVersion) throw new ComplaintMutationWireError('INVALID_CAPTURE');
   validateComplaintMutationBody(operation, request.body);
-  return `/api/backend/complaints/${request.targetId}/${operation}?dataScopeId=${request.dataScopeId}`;
+  return `/api/backend/complaints/${request.targetId}${operation === 'delete' ? '' : `/${operation}`}?dataScopeId=${request.dataScopeId}`;
 }
 
 const problemStatus = {
@@ -193,19 +199,24 @@ const titles: Record<number, string> = { 400: 'Bad Request', 401: 'Unauthorized'
 const terminalCodes = new Set(['COMPLAINT_NOT_FOUND', 'COMPLAINT_INVALID_TRANSITION', 'COMPLAINT_NO_CHANGE', 'COMPLAINT_DELETION_PENDING', 'PRECONDITION_FAILED']);
 export type ComplaintMutationOutcome = Readonly<
   | { kind: 'applied'; id: string; version: string; actionTag: string }
+  | { kind: 'deleted'; id: string }
   | { kind: 'rejected'; code: string }
   | { kind: 'step-up-required' | 'session-expired' | 'unauthorized' | 'forbidden' | 'key-reused' | 'in-progress' | 'unavailable' | 'unknown' | 'stale-session' }
 >;
 
 /** Only actual fixed backend encodings; unknown/extra/duplicate JSON is never a confirmed result. */
 export function decodeComplaintMutationOutcome(request: ComplaintMutationRequest, response: Parameters<typeof decodeComplaintMutationApplied>[1] & {
-  consumed: string | null; challenge: string | null; retryAfter: string | null;
+  consumed: string | null; challenge: string | null; retryAfter: string | null; location: string | null;
 }): ComplaintMutationOutcome {
   const invalid = (): never => { throw new ComplaintMutationWireError('UNCONFIRMED_RESPONSE'); };
   if (response.contract !== '1' || response.body.length > 32_768 || response.consumed !== null && response.consumed !== 'true'
     || response.retryAfter !== null && (!/^[1-9][0-9]{0,5}$/.test(response.retryAfter) || ![409, 429, 503].includes(response.status))) invalid();
   if (response.status === 401 ? response.challenge !== 'Bearer realm="kira-complaints"' : response.challenge !== null) invalid();
   if (response.status === 200) return Object.freeze({ kind: 'applied', ...decodeComplaintMutationApplied(request, response) });
+  if (response.status === 204) {
+    if (request.method !== 'DELETE' || response.body.length !== 0 || response.contentType !== null || response.etag !== null || response.location !== null) invalid();
+    return Object.freeze({ kind: 'deleted', id: request.targetId });
+  }
   if (response.etag !== null || !response.contentType || response.contentType.length > 128 || /[\r\n]/.test(response.contentType)
     || !/^application\/problem\+json(?:[ \t]*;[ \t]*charset=utf-8)?$/i.test(response.contentType)) invalid();
   let raw: string;
