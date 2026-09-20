@@ -111,7 +111,7 @@ describe('read-only complaint detail BFF connection', () => {
   });
 
   it.each([null, 'Bearer realm="kira-complaints"', 'KiraSession realm="kira-admin-bff"'])('strips upstream read401 challenge %s without retiring the authenticated G or either scoped P', async (challenge) => {
-    const sourceProof = issueAdminProof(session, 'B'.repeat(43), 'source-admin-mutation', new Date(Date.now() + 300_000).toISOString(), null);
+    const sourceProof = issueAdminProof(session, 'B'.repeat(42) + 'A', 'source-admin-mutation', new Date(Date.now() + 300_000).toISOString(), null);
     cookieBoundary.values.set(sourceProof.name, sourceProof.value);
     const before = [...cookieBoundary.values];
     const cancel = vi.fn();
