@@ -33,7 +33,8 @@ export function adminRouteAllowed(path: string[], method: string) {
   const joined = path.join('/');
   if (path[0] === 'complaints') return method === 'GET' && (isComplaintDetailPath(path) || isComplaintStatsPath(path))
     || method === 'POST' && isComplaintSearchPath(path)
-    || method === 'PATCH' && isComplaintMutationPath(path);
+    || method === 'PATCH' && isComplaintMutationPath(path)
+    || method === 'DELETE' && isComplaintDetailPath(path);
   if (['tutorials', 'tutorial-categories', 'tutorial-media'].includes(path[0] ?? '')) {
     return ['GET', 'POST', 'DELETE'].includes(method) && !(method === 'POST' && path[0] === 'tutorial-media');
   }

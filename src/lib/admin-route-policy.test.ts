@@ -46,7 +46,7 @@ describe('admin BFF route policy', () => {
     expect(adminRouteAllowed(['complaints', id], 'GET')).toBe(true);
     expect(routeNeedsStepUp(['complaints', id], 'GET')).toBe(false);
     expect(isComplaintDetailQuery(`?dataScopeId=${scope}`)).toBe(true);
-    for (const method of ['POST', 'PATCH', 'PUT', 'DELETE', 'HEAD']) {
+    for (const method of ['POST', 'PATCH', 'PUT', 'HEAD']) {
       expect(adminRouteAllowed(['complaints', id], method)).toBe(false);
     }
     for (const path of [['complaints'], ['complaints', 'search'], ['complaints', id, 'content'], ['complaints', id, 'status'],
@@ -57,6 +57,18 @@ describe('admin BFF route policy', () => {
       `?dataScopeId=${scope.toUpperCase()}`, `?dataScopeId=${scope}&dataScopeId=${scope}`, `?dataScopeId=${scope}&extra=1`,
       `?dataScopeId=%38${scope.slice(1)}`, `?dataScopeId=${scope}\n`]) {
       expect(isComplaintDetailQuery(query)).toBe(false);
+    }
+  });
+
+  it('admits only exact single DELETE with CSRF classification and no fresh/source-proof replay gate', () => {
+    const id = '12345678-1234-5234-8234-123456789abc';
+    expect(adminRouteAllowed(['complaints', id], 'DELETE')).toBe(true);
+    expect(isMutatingMethod('DELETE')).toBe(true);
+    expect(routeNeedsStepUp(['complaints', id], 'DELETE')).toBe(false);
+    for (const path of [['complaints'], ['complaints', 'batch'], ['complaints', 'stats'], ['complaints', 'search'],
+      ['complaints', id, 'delete'], ['complaints', id, 'content'], ['complaints', id, 'status'], ['complaints', id, 'closure'],
+      ['complaints', id, ''], ['complaints', id.toUpperCase()], ['complaints', `${id}\n`], ['complaints', `%31${id.slice(1)}`]]) {
+      expect(adminRouteAllowed(path, 'DELETE')).toBe(false);
     }
   });
 

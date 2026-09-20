@@ -44,7 +44,7 @@ export async function sendComplaintMutation(operation: ComplaintOperation, signa
       if (!isStepUpApproval(approval, 'complaint-moderation-mutation') || approval.generation !== operation.generation) return { kind: 'unknown' };
       headers.set(stepUpProofIdHeader, approval.proofId);
     }
-    response = await authenticatedFetch(url, { method: 'PATCH', headers, body: operation.request.body,
+    response = await authenticatedFetch(url, { method: operation.request.method, headers, body: operation.request.method === 'DELETE' ? undefined : operation.request.body,
       credentials: 'same-origin', cache: 'no-store', redirect: 'error', signal: controller.signal,
     });
     if (!session.isCurrent()) return lostSession();
@@ -52,13 +52,16 @@ export async function sendComplaintMutation(operation: ComplaintOperation, signa
     if (response.redirected || response.headers.has('X-Kira-Admin-Step-Up-Grant-Id') || response.headers.has('X-Kira-Admin-Step-Up-Consumed-Grant-Id')) return { kind: 'unknown' };
     const encoding = response.headers.get('content-encoding');
     const length = response.headers.get('content-length');
+    const transfer = response.headers.get('transfer-encoding');
     if (encoding !== null && encoding.toLowerCase() !== 'identity'
-      || length !== null && (!/^[0-9]{1,20}$/.test(length) || Number(length) > 32_768)) return { kind: 'unknown' };
+      || length !== null && (!/^[0-9]{1,20}$/.test(length) || Number(length) > 32_768)
+      || transfer !== null && (response.status === 204 || transfer.toLowerCase() !== 'chunked' || length !== null)) return { kind: 'unknown' };
+    const emptyDeletion = operation.request.method === 'DELETE' && response.status === 204;
     reader = response.body?.getReader();
-    if (!reader) return { kind: 'unknown' };
-    const bytes = new Uint8Array(32_768);
+    if (!reader && !emptyDeletion) return { kind: 'unknown' };
+    const bytes = new Uint8Array(emptyDeletion ? 0 : 32_768);
     let size = 0;
-    while (true) {
+    while (reader) {
       active();
       const next = await reader.read();
       active();
@@ -73,7 +76,7 @@ export async function sendComplaintMutation(operation: ComplaintOperation, signa
     return decodeComplaintMutationOutcome(operation.request, {
       status: response.status, contentType: response.headers.get('content-type'), contract: response.headers.get('X-Kira-Complaint-Contract'),
       etag: response.headers.get('etag'), consumed: response.headers.get(complaintReceiptHeader), challenge: response.headers.get('www-authenticate'),
-      retryAfter: response.headers.get('retry-after'), body: bytes.subarray(0, size),
+      retryAfter: response.headers.get('retry-after'), location: response.headers.get('location'), body: bytes.subarray(0, size),
     });
   } catch { return session.isCurrent() ? { kind: 'unknown' } : lostSession(); }
   finally {

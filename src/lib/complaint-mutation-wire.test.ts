@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { appliedResponse, complaintId, complaintScope, mutationRequest, problemResponse } from '@/test/complaint-mutation-fixture';
+import { appliedResponse, complaintId, complaintScope, deletedResponse, mutationRequest, problemResponse } from '@/test/complaint-mutation-fixture';
 import { complaintMutationDestination, complaintReceiptHeader, decodeComplaintMutationOutcome, validateComplaintMutationBody, type ComplaintMutationOperation, type ComplaintMutationRequest } from './complaint-mutation-wire';
 
 async function metadata(response: Response) {
   return { status: response.status, contentType: response.headers.get('content-type'), contract: response.headers.get('X-Kira-Complaint-Contract'),
     etag: response.headers.get('etag'), consumed: response.headers.get(complaintReceiptHeader), challenge: response.headers.get('www-authenticate'),
-    retryAfter: response.headers.get('retry-after'), body: new Uint8Array(await response.arrayBuffer()),
+    retryAfter: response.headers.get('retry-after'), location: response.headers.get('location'), body: new Uint8Array(await response.arrayBuffer()),
   };
 }
 
@@ -85,6 +85,53 @@ describe('ordinary complaint connection wire, beyond the existing request/Long m
     const inProgress = await metadata(problemResponse('IDEMPOTENCY_IN_PROGRESS', 409));
     for (const retryAfter of [null, '0', '2', '1, 1', '9999999']) {
       expect(() => decodeComplaintMutationOutcome(mutationRequest(), { ...inProgress, retryAfter })).toThrow('UNCONFIRMED_RESPONSE');
+    }
+  });
+});
+
+describe('single complaint DELETE wire', () => {
+  it('captures only a bodyless exact single-target DELETE and rejects method/path/body rewriting', () => {
+    const request = mutationRequest('delete');
+    expect(request.method).toBe('DELETE');
+    expect(request.body).toBe('');
+    expect(request.path).toBe(`/api/v1/admin/complaints/${complaintId}?dataScopeId=${complaintScope}`);
+    expect(complaintMutationDestination(request)).toBe(`/api/backend/complaints/${complaintId}?dataScopeId=${complaintScope}`);
+    expect(Object.isFrozen(request)).toBe(true);
+    expect(Object.isFrozen(request.headers)).toBe(true);
+    for (const wrong of [
+      { ...request, method: 'PATCH' }, { ...request, path: request.path.replace('?', '/delete?') },
+      { ...request, path: request.path.replace(complaintId, 'batch') }, { ...request, path: request.path + '&cascade=true' },
+      { ...request, baseVersion: '9007199254740993' }, { ...request, body: '{}' }, { ...request, body: ' ' },
+    ]) expect(() => complaintMutationDestination(wrong as ComplaintMutationRequest)).toThrow('INVALID_CAPTURE');
+    for (const body of [' ', '\r\n', '{}', 'null', '[]', '\uFEFF']) {
+      expect(() => mutationRequest('delete', body)).toThrow('INVALID_CAPTURE');
+      expect(() => validateComplaintMutationBody('delete', body)).toThrow('INVALID_CAPTURE');
+    }
+  });
+
+  it('confirms only an empty204 with no entity/location headers, never a PATCH ACK or an accepted202', async () => {
+    const request = mutationRequest('delete');
+    const valid = await metadata(deletedResponse());
+    for (const consumed of [null, 'true']) {
+      expect(decodeComplaintMutationOutcome(request, { ...valid, consumed })).toEqual({ kind: 'deleted', id: complaintId });
+    }
+    expect(() => decodeComplaintMutationOutcome(mutationRequest(), valid)).toThrow('UNCONFIRMED_RESPONSE');
+    expect(() => decodeComplaintMutationOutcome(request, { ...valid, status: 202 })).toThrow('UNCONFIRMED_RESPONSE');
+    const ack = await metadata(appliedResponse(request));
+    expect(() => decodeComplaintMutationOutcome(request, ack)).toThrow('UNCONFIRMED_RESPONSE');
+    for (const wrong of [
+      { ...valid, contentType: 'application/json' }, { ...valid, etag: request.headers['If-Match'] }, { ...valid, location: '/anywhere' },
+      { ...valid, body: new Uint8Array([32]) }, { ...valid, contract: null }, { ...valid, contract: '1, 1' },
+      { ...valid, consumed: 'true, true' }, { ...valid, challenge: 'Bearer realm="kira-complaints"' }, { ...valid, retryAfter: '1' },
+    ]) expect(() => decodeComplaintMutationOutcome(request, wrong)).toThrow('UNCONFIRMED_RESPONSE');
+  });
+
+  it('keeps authorized503 unknown and absent/NOTICE, stale-tag and pending rejections distinct from confirmed deletion', async () => {
+    const request = mutationRequest('delete');
+    expect(decodeComplaintMutationOutcome(request, await metadata(problemResponse('SERVICE_UNAVAILABLE', 503, { [complaintReceiptHeader]: 'true' })))).toEqual({ kind: 'unknown' });
+    for (const [code, status] of [['COMPLAINT_NOT_FOUND', 404], ['PRECONDITION_FAILED', 412], ['COMPLAINT_DELETION_PENDING', 409]] as const) {
+      expect(decodeComplaintMutationOutcome(request, await metadata(problemResponse(code, status)))).toEqual({ kind: 'unknown' });
+      expect(decodeComplaintMutationOutcome(request, await metadata(problemResponse(code, status, { [complaintReceiptHeader]: 'true' })))).toEqual({ kind: 'rejected', code });
     }
   });
 });

@@ -1,4 +1,4 @@
-import { prepareComplaintMutationRequest, type ComplaintMutationRequest } from '../lib/complaint-mutation-wire';
+import { prepareComplaintMutationRequest, type ComplaintMutationOperation, type ComplaintMutationRequest } from '../lib/complaint-mutation-wire';
 
 // Synthetic TEST identities and exact existing backend encodings; never an activated target/account.
 export const complaintId = '11111111-1111-4111-8111-111111111111';
@@ -7,8 +7,14 @@ export const complaintKey = '33333333-3333-4333-8333-333333333333';
 export const grantA = 'aaaaaaaa-1111-4111-8111-111111111111';
 export const grantB = 'bbbbbbbb-1111-4111-8111-111111111111';
 
-export function mutationRequest(operation: 'content' | 'status' | 'closure' = 'status', body = '{"status":"RESOLVED"}') {
+export function mutationRequest(operation: ComplaintMutationOperation = 'status', body = operation === 'delete' ? '' : '{"status":"RESOLVED"}') {
   return prepareComplaintMutationRequest(operation, complaintId, complaintScope, complaintKey, `"complaint-${complaintId}-v9007199254740992"`, body);
+}
+
+export function deletedResponse(extra: HeadersInit = {}) {
+  const headers = new Headers({ 'X-Kira-Complaint-Contract': '1', 'X-Kira-Admin-Step-Up-Consumed': 'true', 'Cache-Control': 'no-store, no-transform' });
+  for (const [name, value] of new Headers(extra)) headers.set(name, value);
+  return new Response(null, { status: 204, headers });
 }
 
 export function appliedResponse(request: ComplaintMutationRequest = mutationRequest(), extra: HeadersInit = {}) {

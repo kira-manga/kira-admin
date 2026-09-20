@@ -120,11 +120,11 @@ afterEach(async () => {
   }
 });
 
-describe('unmounted-by-product complaint moderation editor', () => {
+describe('local complaint moderation editor', () => {
   it('hands off the supplied status intent synchronously only after explicit selection and submission', async () => {
     const onPrepared = vi.fn<(request: ComplaintMutationRequest) => void>();
     await renderEditor(target(), onPrepared);
-    expect(Array.from(select('operation').options).map((option) => option.value)).toEqual(['status', 'closure']);
+    expect(Array.from(select('operation').options).map((option) => option.value)).toEqual(['status', 'closure', 'delete']);
     expect(select('status').value).toBe('');
     expect(container.querySelector('textarea')).toBeNull();
     expect(onPrepared).not.toHaveBeenCalled();
@@ -146,6 +146,29 @@ describe('unmounted-by-product complaint moderation editor', () => {
     expect(Object.isFrozen(captured.headers)).toBe(true);
     expect(container.querySelector('.notice-success')).toBeNull();
     expect(container.querySelector('[role="status"]')?.textContent).toContain('Preparation itself sends nothing; the parent workflow reports any submission separately.');
+  });
+
+  it('warns for single deletion, omits old closure prose and fences a reentrant same-key handoff', async () => {
+    const loaded = target('REPLY');
+    const onPrepared = vi.fn<(request: ComplaintMutationRequest) => void>().mockImplementationOnce(() => {
+      form().dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+    await renderEditor(loaded, onPrepared);
+    await choose('operation', 'closure');
+    await enterReason('Prior draft must not become a DELETE body');
+    await choose('operation', 'delete');
+    expect(container.querySelector('textarea, select[name="status"]')).toBeNull();
+    expect(container.textContent).toContain('No parent, replies, installation or credentials are deleted with it.');
+    expect(onPrepared).not.toHaveBeenCalled();
+    await prepare();
+    expect(onPrepared).toHaveBeenCalledOnce();
+    expect(onPrepared.mock.calls[0][0]).toEqual(prepareComplaintModerationRequest(target('REPLY'), { operation: 'delete' }, dataScopeId, idempotencyKey));
+    expect(preparedBody().textContent).toBe('No request body (single DELETE).');
+    Object.assign(loaded, { actionTag: `"complaint-${id}-v2"` });
+    await submitDirectly();
+    expect(onPrepared).toHaveBeenCalledOnce();
+    expect(onPrepared.mock.calls[0][0].headers['If-Match']).toBe(actionTag);
+    expect(prepareButton().disabled).toBe(true);
   });
 
   it('keeps raw closure editing and the detached original body, with safe directional/markup inspection only', async () => {

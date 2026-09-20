@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { captureAdminSession } from '@/lib/client-api';
 import { fixtureGeneration, fixtureProofId, otherGeneration, otherProofId, seedClientSession, sessionAcknowledgement, stepUpAcknowledgement } from '@/test/auth-fixture';
-import { appliedResponse, complaintId, complaintScope, mutationRequest, problemResponse } from '@/test/complaint-mutation-fixture';
+import { appliedResponse, complaintId, complaintScope, deletedResponse, mutationRequest, problemResponse } from '@/test/complaint-mutation-fixture';
 import { searchContent, searchCursor, searchPage, searchResponse } from '@/test/complaint-search-fixture';
 import { statsDocument, statsFixture, statsResponse, statsTotal } from '@/test/complaint-stats-fixture';
 import { AdminApp } from './admin-app';
@@ -59,6 +59,7 @@ function deferred<T>() {
   return { promise, resolve };
 }
 const patches = () => fetchMock.mock.calls.filter(([, init]) => init?.method === 'PATCH');
+const deletes = () => fetchMock.mock.calls.filter(([, init]) => init?.method === 'DELETE');
 const verifications = () => fetchMock.mock.calls.filter(([path]) => path === '/api/auth/step-up');
 const detailReads = () => fetchMock.mock.calls.filter(([path, init]) => init?.method === 'GET' && /^\/api\/backend\/complaints\/[0-9a-f-]{36}\?/.test(String(path)));
 const searches = () => fetchMock.mock.calls.filter(([path]) => path === '/api/backend/complaints/search');
@@ -101,6 +102,10 @@ async function prepareStatus() {
   await choose('status', 'RESOLVED');
   await act(async () => { submit(form('Complaint moderation editor')); });
 }
+async function prepareDelete() {
+  await choose('operation', 'delete');
+  await act(async () => { submit(form('Complaint moderation editor')); });
+}
 async function approve() {
   await enter('[role="dialog"] input[type="password"]', 'fixture-only-password');
   await act(async () => { submit(form('Confirm protected action')); });
@@ -124,7 +129,7 @@ beforeEach(async () => {
     if (path === '/api/auth/logout') return new Response(null, { status: 204 });
     if (path === '/api/auth/step-up') return Response.json(stepUpAcknowledgement('complaint-moderation-mutation', proofId, generation));
     if (path === '/api/backend/complaints/search') return searchReply();
-    if (init?.method === 'PATCH') return mutationReply(init);
+    if (init?.method === 'PATCH' || init?.method === 'DELETE') return mutationReply(init);
     if (init?.method === 'GET' && String(path).startsWith('/api/backend/complaints/stats?')) return statsReply();
     if (init?.method === 'GET' && String(path).startsWith('/api/backend/complaints/')) return detailReply();
     throw new Error('Unexpected fixture request.');
@@ -398,6 +403,8 @@ describe('bounded mounted Admin ordinary moderation connection', () => {
     expect(container.querySelector('[aria-label="Complaint content editor"]')).toBeNull();
     expect(container.querySelector('[aria-label="Complaint moderation editor"]')).toBeNull();
     expect(patches()).toHaveLength(0);
+    expect(deletes()).toHaveLength(0);
+    expect(container.querySelector('option[value="delete"]')).toBeNull();
   });
 
   it('returns to login on local expiry during complaint password verification without dispatching the prepared mutation', async () => {
@@ -785,5 +792,170 @@ describe('mounted Admin unfiltered scope statistics connection', () => {
     expect(container.querySelector('[aria-label="Retained complaint operation"] pre')!.textContent).toBe(retained);
     expect(patches()).toHaveLength(1); expect(patches()[0][1]).toBe(original); expect(verifications()).toHaveLength(1);
     expect(captureAdminSession().generation).toBe(fixtureGeneration); expect(logouts()).toHaveLength(0);
+  });
+});
+
+describe('mounted Admin single DELETE and confirmed-deletion exit', () => {
+  it('captures one destructive intent, sends no body only after scoped approval, then reviews/clears without reading a deleted target or making a new key', async () => {
+    mutationReply = () => deletedResponse();
+    await loadDetail();
+    await enter('textarea[name="body"]', 'Prior private edit must not become a DELETE body');
+    const keys = vi.spyOn(crypto, 'randomUUID');
+    await choose('operation', 'delete');
+    await act(async () => {
+      submit(form('Complaint moderation editor'));
+      submit(form('Complaint content editor'));
+      submit(form('Complaint moderation editor'));
+    });
+    expect(container.querySelectorAll('[role="dialog"]')).toHaveLength(1);
+    expect(container.querySelector('[role="dialog"] h3')?.textContent).toContain(`permanent single deletion of complaint ${complaintId}`);
+    expect(container.querySelector('[aria-label="Captured deletion target"]')?.textContent).toContain(complaintScope);
+    expect(deletes()).toHaveLength(0);
+    expect(patches()).toHaveLength(0);
+    await approve();
+    expect(deletes()).toHaveLength(1);
+    expect(patches()).toHaveLength(0);
+    expect(verifications()).toHaveLength(1);
+    expect(JSON.parse(verifications()[0][1]!.body as string).scope).toBe('complaint-moderation-mutation');
+    const [path, init] = deletes()[0];
+    expect(path).toBe(`/api/backend/complaints/${complaintId}?dataScopeId=${complaintScope}`);
+    expect(init?.body).toBeUndefined();
+    expect(new Headers(init?.headers).get('If-Match')).toBe(`"complaint-${complaintId}-v9007199254740992"`);
+    expect(new Headers(init?.headers).get('X-Kira-Session-Generation')).toBe(fixtureGeneration);
+    expect(new Headers(init?.headers).get('X-Kira-Step-Up-Proof-Id')).toBe(fixtureProofId);
+    expect(container.textContent).toContain('Deletion confirmed by an empty 204 response.');
+    expect(container.querySelector('article, fieldset, [role="dialog"]')).toBeNull();
+    expect(container.textContent).not.toContain('Prior private edit');
+    expect(container.textContent).not.toContain('Reload target to review');
+    expect(container.textContent).not.toContain('Retry original operation');
+    const done = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(done);
+    expect(done.defaultPrevented).toBe(false);
+    await click('Review confirmed deletion');
+    await navigate('Sources'); await navigate('Complaints');
+    expect(container.textContent).toContain('Deletion confirmed by an empty 204 response.');
+    expect(container.textContent).not.toContain('Clear confirmed deletion and return to selection');
+    await click('Review confirmed deletion');
+    const clear = [...container.querySelectorAll('button')].find((button) => button.textContent === 'Clear confirmed deletion and return to selection')!;
+    await act(async () => { clear.click(); clear.click(); });
+    expect(container.querySelector('[aria-label="Retained complaint operation"], article, fieldset:not([aria-label="Complaint search filters"])')).toBeNull();
+    expect(container.querySelector<HTMLInputElement>('input[name="complaintId"]')?.value).toBe('');
+    expect(container.querySelector<HTMLInputElement>('input[name="dataScopeId"]')?.value).toBe(complaintScope);
+    expect(container.querySelector<HTMLInputElement>('input[name="complaintId"]')?.disabled).toBe(false);
+    expect(container.querySelector('[aria-label="Complaint search"]')).not.toBeNull();
+    expect(container.querySelector('[aria-label="Complaint statistics"]')).not.toBeNull();
+    expect(keys).not.toHaveBeenCalled();
+    expect(detailReads()).toHaveLength(1);
+    expect(deletes()).toHaveLength(1);
+    expect(verifications()).toHaveLength(1);
+    expect(searches()).toHaveLength(0);
+    expect(statsReads()).toHaveLength(0);
+  });
+
+  it('retains an authorized503 as unknown across navigation and explicitly retries only its original operation without new proof', async () => {
+    mutationReply = () => problemResponse('SERVICE_UNAVAILABLE', 503, { 'X-Kira-Admin-Step-Up-Consumed': 'true' });
+    await loadDetail(); await prepareDelete(); await approve();
+    const original = deletes()[0];
+    expect(container.textContent).toContain('Outcome unknown or unavailable.');
+    expect(container.textContent).not.toContain('Review confirmed deletion');
+    const warning = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(warning);
+    expect(warning.defaultPrevented).toBe(true);
+    version = '9007199254740995'; detailBody = 'Later backend content is not a new intent';
+    await navigate('Sources'); await navigate('Complaints');
+    expect(deletes()).toHaveLength(1);
+    expect(container.querySelector('[aria-label="Complaint search"], [aria-label="Complaint statistics"]')).toBeNull();
+    mutationReply = () => deletedResponse();
+    await click('Retry original operation without new proof');
+    const retry = deletes()[1];
+    expect(retry[0]).toBe(original[0]);
+    expect(retry[1]?.body).toBeUndefined();
+    for (const name of ['If-Match', 'X-Kira-Idempotency-Key', 'X-Kira-Session-Generation']) expect(new Headers(retry[1]?.headers).get(name)).toBe(new Headers(original[1]?.headers).get(name));
+    expect(new Headers(retry[1]?.headers).has('X-Kira-Step-Up-Proof-Id')).toBe(false);
+    expect(verifications()).toHaveLength(1);
+    expect(detailReads()).toHaveLength(1);
+    expect(container.textContent).toContain('Deletion confirmed by an empty 204 response.');
+  });
+
+  it('keeps a timed-out DELETE and only reapproves the same key/tag after a real backend challenge', async () => {
+    const reading = deferred<void>();
+    const cancel = vi.fn();
+    mutationReply = () => new Response(new ReadableStream<Uint8Array>({
+      start(controller) { controller.enqueue(new TextEncoder().encode('{')); },
+      pull() { reading.resolve(); return new Promise<void>(() => {}); }, cancel,
+    }), { status: 503, headers: problemResponse('SERVICE_UNAVAILABLE', 503).headers });
+    await loadDetail(); await prepareDelete(); await approve(); await reading.promise;
+    await act(async () => { await vi.advanceTimersByTimeAsync(70_000); });
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(container.textContent).toContain('Outcome unknown or unavailable.');
+    expect(container.textContent).not.toContain('Approve original operation');
+    mutationReply = () => problemResponse('ADMIN_STEP_UP_REQUIRED', 401);
+    await click('Retry original operation without new proof');
+    expect(verifications()).toHaveLength(1);
+    proofId = otherProofId; mutationReply = () => deletedResponse();
+    await click('Approve original operation'); await approve();
+    expect(deletes()).toHaveLength(3);
+    expect(verifications()).toHaveLength(2);
+    for (const [path, init] of deletes()) {
+      expect(path).toBe(deletes()[0][0]); expect(init?.body).toBeUndefined();
+      for (const name of ['If-Match', 'X-Kira-Idempotency-Key', 'X-Kira-Session-Generation']) expect(new Headers(init?.headers).get(name)).toBe(new Headers(deletes()[0][1]?.headers).get(name));
+    }
+    expect(new Headers(deletes()[1][1]?.headers).has('X-Kira-Step-Up-Proof-Id')).toBe(false);
+    expect(new Headers(deletes()[2][1]?.headers).get('X-Kira-Step-Up-Proof-Id')).toBe(otherProofId);
+    expect(container.textContent).toContain('Deletion confirmed by an empty 204 response.');
+  });
+
+  it('does not adopt an unmounted attempt\'s late204 or expose a confirmed-clear path from it', async () => {
+    const reply = deferred<Response>(); mutationReply = () => reply.promise;
+    await loadDetail(); await prepareDelete(); await approve();
+    const original = deletes()[0][1]!;
+    await navigate('Sources'); await navigate('Complaints');
+    expect(original.signal?.aborted).toBe(true);
+    await act(async () => { reply.resolve(deletedResponse()); });
+    expect(container.textContent).toContain('Outcome unknown or unavailable.');
+    expect(container.textContent).not.toContain('Review confirmed deletion');
+    expect(container.textContent).not.toContain('Deletion confirmed by an empty 204 response.');
+    expect(deletes()).toHaveLength(1);
+    expect(detailReads()).toHaveLength(1);
+  });
+
+  it('warns before logout and keeps old-G deletion non-sendable after a new login even when the old attempt returns204', async () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const reply = deferred<Response>(); mutationReply = () => reply.promise;
+    await loadDetail(); await prepareDelete(); await approve();
+    await act(async () => { container.querySelector<HTMLButtonElement>('button[title="Sign out"]')!.click(); });
+    expect(confirm).toHaveBeenCalledOnce();
+    generation = otherGeneration;
+    await enter('input[type="email"]', 'synthetic@example.test'); await enter('input[type="password"]', 'fixture-only-password');
+    await act(async () => { submit(container.querySelector('form')!); });
+    await act(async () => { reply.resolve(deletedResponse()); });
+    expect(container.textContent).toContain('previous session is retained and non-sendable');
+    expect(container.textContent).not.toContain('Retry original operation');
+    expect(container.textContent).not.toContain('Review confirmed deletion');
+    expect(container.querySelector('article, fieldset, [aria-label="Captured deletion target"]')).toBeNull();
+    expect(deletes()).toHaveLength(1); expect(verifications()).toHaveLength(1);
+  });
+
+  it.each([false, true])('never equates a404 target rejection (historical receipt %s) with confirmed deletion', async (consumed) => {
+    mutationReply = () => problemResponse('COMPLAINT_NOT_FOUND', 404, consumed ? { 'X-Kira-Admin-Step-Up-Consumed': 'true' } : {});
+    await loadDetail(); await prepareDelete(); await approve();
+    expect(container.textContent).toContain(consumed ? 'Terminal rejection verified.' : 'Outcome unknown or unavailable.');
+    expect(container.textContent).not.toContain('Review confirmed deletion');
+    expect(container.textContent).not.toContain('Clear confirmed deletion');
+    expect(container.querySelector('[aria-label="Retained complaint operation"]')).not.toBeNull();
+    expect(deletes()).toHaveLength(1); expect(detailReads()).toHaveLength(1);
+  });
+
+  it('requires the reviewed current session lifetime to remain valid before clearing a confirmed deletion', async () => {
+    mutationReply = () => deletedResponse();
+    await loadDetail(); await prepareDelete(); await approve(); await click('Review confirmed deletion');
+    const keys = vi.spyOn(crypto, 'randomUUID');
+    await seedClientSession(); // Even an equal-G replacement invalidates the review's local lifetime.
+    await click('Clear confirmed deletion and return to selection');
+    expect(container.querySelector('[aria-label="Retained complaint operation"]')).not.toBeNull();
+    await click('Review confirmed deletion');
+    vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 3_600_001);
+    await click('Clear confirmed deletion and return to selection');
+    expect(container.querySelector('nav')).toBeNull();
+    expect(container.querySelector('input[type="email"]')).not.toBeNull();
+    expect(keys).not.toHaveBeenCalled(); expect(deletes()).toHaveLength(1); expect(detailReads()).toHaveLength(1);
   });
 });

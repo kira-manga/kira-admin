@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fixtureCsrf, fixtureGeneration, fixtureProofId, otherGeneration, seedClientSession, stepUpAcknowledgement } from '@/test/auth-fixture';
-import { appliedResponse, complaintId, complaintScope, mutationRequest, problemResponse } from '@/test/complaint-mutation-fixture';
+import { appliedResponse, complaintId, complaintScope, deletedResponse, mutationRequest, problemResponse } from '@/test/complaint-mutation-fixture';
 import { sendComplaintMutation, type ComplaintOperation } from './complaint-mutation-client';
 import { sessionGenerationHeader, stepUpProofIdHeader } from './session-contract';
 
@@ -22,6 +22,100 @@ beforeEach(async () => {
 });
 afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
+describe('one-attempt single DELETE client', () => {
+  const deletion = (): ComplaintOperation => Object.freeze({ ...operation(), request: mutationRequest('delete') });
+
+  it('retains the original on transport/authorized503 ambiguity and sends only an explicit identical bodyless replay', async () => {
+    const original = deletion();
+    const before = JSON.stringify(original);
+    fetchMock.mockRejectedValueOnce(new Error('private transport diagnostic'))
+      .mockResolvedValueOnce(problemResponse('SERVICE_UNAVAILABLE', 503, { 'X-Kira-Admin-Step-Up-Consumed': 'true' }))
+      .mockResolvedValueOnce(deletedResponse());
+    expect(await sendComplaintMutation(original, signal(), stepUpAcknowledgement('complaint-moderation-mutation'))).toEqual({ kind: 'unknown' });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(await sendComplaintMutation(original, signal())).toEqual({ kind: 'unknown' });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(await sendComplaintMutation(original, signal())).toEqual({ kind: 'deleted', id: complaintId });
+    for (const [index, [url, init]] of fetchMock.mock.calls.entries()) {
+      expect(url).toBe(`/api/backend/complaints/${complaintId}?dataScopeId=${complaintScope}`);
+      expect(init?.method).toBe('DELETE');
+      expect(init?.body).toBeUndefined();
+      const headers = new Headers(init?.headers);
+      expect(headers.get(sessionGenerationHeader)).toBe(fixtureGeneration);
+      expect(headers.get('X-Kira-CSRF')).toBe(fixtureCsrf);
+      expect(headers.get(stepUpProofIdHeader)).toBe(index === 0 ? fixtureProofId : null);
+      for (const name of ['If-Match', 'X-Kira-Idempotency-Key'] as const) expect(headers.get(name)).toBe(original.request.headers[name]);
+      for (const name of ['Authorization', 'Cookie', 'X-Kira-Admin-Step-Up']) expect(headers.has(name)).toBe(false);
+    }
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(JSON.stringify(original)).toBe(before);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('does not confirm an ACK/202, or a204 with body, framing, metadata or private grant ambiguity', async () => {
+    const original = deletion();
+    for (const response of [appliedResponse(original.request), new Response(null, { status: 202, headers: deletedResponse().headers })]) {
+      fetchMock.mockResolvedValueOnce(response);
+      expect(await sendComplaintMutation(original, signal())).toEqual({ kind: 'unknown' });
+    }
+    for (const extra of [
+      { 'Content-Type': 'application/json' }, { ETag: original.request.headers['If-Match'] }, { Location: '/not-a-deletion' },
+      { 'Content-Length': '1' }, { 'Transfer-Encoding': 'chunked' }, { 'Content-Encoding': 'gzip' },
+      { 'X-Kira-Complaint-Contract': '1, 1' }, { 'X-Kira-Admin-Step-Up-Consumed': 'true, true' },
+      { 'X-Kira-Admin-Step-Up-Consumed-Grant-Id': fixtureProofId }, { 'X-Kira-Admin-Step-Up-Grant-Id': fixtureProofId },
+    ] as HeadersInit[]) {
+      fetchMock.mockResolvedValueOnce(deletedResponse(extra));
+      expect(await sendComplaintMutation(original, signal())).toEqual({ kind: 'unknown' });
+    }
+    // Fetch normally suppresses a204 body. This synthetic response exercises the acquisition seam.
+    const cancel = vi.fn();
+    const illegalBody = new Response(new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(new Uint8Array([32])); }, cancel }), { headers: deletedResponse().headers });
+    Object.defineProperty(illegalBody, 'status', { value: 204 });
+    fetchMock.mockResolvedValueOnce(illegalBody);
+    expect(await sendComplaintMutation(original, signal())).toEqual({ kind: 'unknown' });
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('requires EOF under the same deadline even for an apparent empty204 and retains the operation on timeout', async () => {
+    const reading = deferred<void>();
+    const cancel = vi.fn();
+    const response = new Response(new ReadableStream<Uint8Array>({
+      pull() { reading.resolve(); return new Promise<void>(() => {}); }, cancel,
+    }, { highWaterMark: 0 }), { headers: deletedResponse().headers });
+    Object.defineProperty(response, 'status', { value: 204 });
+    fetchMock.mockResolvedValueOnce(response);
+    const original = deletion();
+    const pending = sendComplaintMutation(original, signal());
+    await reading.promise;
+    await vi.advanceTimersByTimeAsync(70_000);
+    expect(await pending).toEqual({ kind: 'unknown' });
+    expect(original.request.body).toBe('');
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('never dispatches with an obsolete G/P and cannot adopt a late204 after even an equal-G lifetime replacement', async () => {
+    const original = deletion();
+    expect(await sendComplaintMutation(original, signal(), stepUpAcknowledgement('source-admin-mutation'))).toEqual({ kind: 'unknown' });
+    expect(await sendComplaintMutation(original, signal(), stepUpAcknowledgement('complaint-moderation-mutation', fixtureProofId, otherGeneration))).toEqual({ kind: 'unknown' });
+    await seedClientSession(otherGeneration);
+    expect(await sendComplaintMutation(original, signal())).toEqual({ kind: 'stale-session' });
+    expect(fetchMock).not.toHaveBeenCalled();
+    for (const replacement of [otherGeneration, fixtureGeneration]) {
+      await seedClientSession();
+      const entered = deferred<void>();
+      const reply = deferred<Response>();
+      fetchMock.mockImplementationOnce(() => { entered.resolve(); return reply.promise; });
+      const pending = sendComplaintMutation(original, signal());
+      await entered.promise;
+      await seedClientSession(replacement);
+      reply.resolve(deletedResponse());
+      expect(await pending).toEqual({ kind: 'stale-session' });
+    }
+  });
+});
 describe('one-attempt complaint client transport with real session ownership', () => {
   it('sends the fixed BFF path with G/CSRF/optional P, and retries only explicitly with identical original bytes', async () => {
     const original = operation();

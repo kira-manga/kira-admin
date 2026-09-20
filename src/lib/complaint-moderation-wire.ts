@@ -15,10 +15,11 @@ export type ComplaintModerationTarget = Readonly<{
 
 export type ComplaintModerationChange =
   | Readonly<{ operation: 'status'; status: ComplaintStatusTarget }>
-  | Readonly<{ operation: 'closure'; reason: string }>;
+  | Readonly<{ operation: 'closure'; reason: string }>
+  | Readonly<{ operation: 'delete' }>;
 
 /**
- * Capture one status/closure intent. Keep the returned description on timeout or conflict:
+ * Capture one status/closure/single-delete intent. Keep the returned description on timeout or conflict:
  * no regenerated key, changed If-Match, or inferred step-up consumption. There is no fetch,
  * BFF registration, storage or credential handling here. Backend authorization stays mandatory.
  */
@@ -39,6 +40,9 @@ export function prepareComplaintModerationRequest(
         break;
       case 'closure':
         body = JSON.stringify({ reason: prepareComplaintClosureReason(change.reason) });
+        break;
+      case 'delete':
+        body = ''; // Local absence marker only. The transport must not serialize a DELETE body.
         break;
       default:
         return invalid();
