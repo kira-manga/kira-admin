@@ -14,6 +14,7 @@ import type { StepUpApproval } from '@/lib/step-up-contract';
 import { ComplaintContentEditor } from './complaint-content-editor';
 import { ComplaintModerationEditor } from './complaint-moderation-editor';
 import { ComplaintSearchView } from './complaint-search-view';
+import { ComplaintStatsView } from './complaint-stats-view';
 import { StepUpDialog } from './step-up-dialog';
 import { Button, Field, Input, Spinner, StatusBadge } from './ui';
 
@@ -226,6 +227,8 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
           invalidate(); setId(target.id); focusSelection.current = true;
           void load(target.id, target.dataScopeId);
         }} /> : null}
+      {controls && !operation ? <ComplaintStatsView key={`stats:${controls.generation}:${scope}`} generation={controls.generation} dataScopeId={scope}
+        disabled={loading} onSessionExpired={controls.onSessionExpired} /> : null}
       <div aria-live="polite" aria-atomic="true">
         {loading ? <Spinner label="Loading complaint detail" /> : null}
         {error ? <p role="alert" className="notice notice-error">{error}</p> : null}

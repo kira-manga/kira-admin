@@ -196,7 +196,7 @@ preparation forms. NOTICE stays read-only. A loaded detail captures its TEST sco
 input edits never replace an operation's target or scope. The backend remains the authority for
 current ADMIN access, TEST admission, transitions, normalization and receipt matching. Entering a
 scope, signing in, or approving a password **does not activate backend complaint APIs**. Disabled404
-and unavailable responses are not successful moderation. This connection adds no stats, delete/batch
+and unavailable responses are not successful moderation. This connection adds no delete/batch
 actions, LIVE scope or deployment/activation setting. Search remains a read, not mutation approval.
 
 The BFF admits only exact `PATCH /api/backend/complaints/<canonical UUID>/{content|status|closure}`
@@ -259,7 +259,7 @@ wrapped and direction-isolated, with visible bidi controls on display/copy; focu
 search results and selected detail. Actual browser/narrow-viewport/accessibility behavior still needs
 the separately authorized qualification, not just component fixtures.
 
-The BFF adds only `POST /api/backend/complaints/search`, with no query string. It requires the existing
+The search BFF path is `POST /api/backend/complaints/search`, with no query string. It requires the existing
 signed selected session, exact same-origin and CSRF checks, but no proof or idempotency key. Closed
 duplicate-aware JSON is validated against the existing backend parser, including TEST UUIDv4,
 Kotlin-compatible100-code-point/400-UTF-8-byte text normalization, finite filters and bounded canonical
@@ -269,8 +269,9 @@ bounded to2MiB and each item to32KiB before any downstream200. Numeric Long vers
 Upstream errors are canceled unread and replaced with fixed sub-32KiB problems. Upstream challenges,
 including spoofed local KiraSession, cookies and private metadata never retire or replace any G/P.
 
-One process-local search response owner admits at most eight exchanges and returns bounded503
-before upstream work for the ninth. Each slot holds its fixed bounded buffer through downstream EOF,
+One process-local response owner shared by search, scope statistics and detail admits at most eight
+exchanges in aggregate and returns bounded503 before upstream work for the ninth. Search/statistics
+responses allow2MiB; detail retains its32KiB bound. Each slot holds its fixed buffer through downstream EOF,
 cancellation or the absolute65-second exchange deadline—not merely until upstream completion.
 Downstream delivery is zero-prefetch in at-most16KiB detached chunks; paused readers remain admitted.
 The browser keeps its existing70-second read deadline. Raw owned response buffers total at most16MiB
@@ -279,8 +280,51 @@ distributed semaphore or Node24/Next16/container/ingress memory qualification.
 
 The backend search producer already exists but remains unregistered behind disabled/sourceOnly
 composition. This Admin consumer does not change it, activate TEST/LIVE, deploy anything, invent
-stats/delete/batch contracts or complete W09. Those product/composition and external qualification
+delete/batch contracts or complete W09. Those product/composition and external qualification
 requirements remain separate work.
+
+### TEST scope-wide complaint statistics (source only)
+
+**Load scope statistics** explicitly requests one unfiltered snapshot for the entered TEST scope.
+It does not count the current search page, inherit search filters, automatically load on navigation,
+or continuously update. Search-filter edits do not relabel or refetch this scope-wide snapshot.
+Changing scope, canceling a pending read, leaving the view or changing G revokes that read; stale
+completions cannot replace a later result or expire a later session. A current pending completion
+after local G expiry returns to login. Backend401 denial remains distinct from the exact local
+KiraSession expiry response. Unavailable, disabled404 and invalid replies are not zero totals.
+Statistics are removed while an operation is retained, without changing its target, draft or P.
+
+The fixed BFF request is `GET /api/backend/complaints/stats?dataScopeId=<canonical TEST UUIDv4>`
+with contract1 and the signed selected G. It admits no body, extra query/filter/cursor/limit,
+mutation tag or idempotency key. It forwards only the selected session's backend Bearer and fixed
+read headers, never a browser-supplied Bearer or proof. No password approval is requested or retired.
+The backend alone authorizes the same currently visible TEST relation as AdminRead: visible scoped
+resources, active TEST installation/credential pairs and SYSTEM notices, not hidden/deleted/foreign
+or LIVE rows. The returned scope echo is comparison data, not authorization.
+
+The entire closed DTO must validate before a200 body is forwarded or displayed. Total and bucket
+counts are JSON integer tokens in the nonnegative signed-Long range, retained as exact decimal
+strings; sum/order checks use BigInt, never JSON.parse/Number counts. All seven statuses, all six
+content types plus explicit type:null (NOTICE), and both ownership categories occur in fixed order
+even at zero. Each finite sum equals total, and type:null equals SYSTEM. A genuine empty snapshot
+contains every finite zero category, no observed version buckets and a zero remainder.
+
+At most50 positive appVersion buckets are ordered by count descending, then null first and UTF-8
+byte/C order for ties. Null is distinct from the literal strings `"null"`, `"unreported"` and `""`;
+it may fall into the remainder instead of being forced into an extra bucket. Other versions counts
+**rows**, not omitted groups. Version text is validated against the existing64-scalar/256-UTF-8-byte
+rules without normalizing or merging observed keys. Display/selection text is escaped, wrapped and
+direction-isolated, with bidi controls made visible; native browser clipboard behavior still needs
+manual qualification. Count and category rendering does not create moderation authority.
+
+Statistics reuse the shared eight-response owner and65-second BFF/70-second browser deadlines above.
+The success cap is2MiB, not32KiB:50 fully escaped valid version keys alone can exceed32KiB. Success
+uses no-store/no-transform and has no ETag/actionTag/cursor. Upstream error bodies/challenges/cookies
+and private grant metadata are discarded. No statistics enter browser persistence or URL prose.
+This bounded output does **not** establish bounded aggregate scan cost: populated backend SQL-plan
+and runtime review remain required. Actual browser/session, Node24/Next16/container/ingress behavior,
+backend host composition/activation, credentials, deployment and W09 remain separate owner-controlled
+qualification. Authored unit/component fixtures do not establish those results.
 
 ### Authentication client identity
 

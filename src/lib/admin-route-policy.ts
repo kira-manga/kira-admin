@@ -14,6 +14,10 @@ export function isComplaintSearchPath(path: readonly string[]) {
   return path.length === 2 && path[0] === 'complaints' && path[1] === 'search';
 }
 
+export function isComplaintStatsPath(path: readonly string[]) {
+  return path.length === 2 && path[0] === 'complaints' && path[1] === 'stats';
+}
+
 /** Exact raw query only. A TEST scope's syntax never establishes activation or authority. */
 export function isComplaintDetailQuery(search: string) {
   const scope = search.slice('?dataScopeId='.length);
@@ -27,7 +31,7 @@ export function isMutatingMethod(method: string) {
 
 export function adminRouteAllowed(path: string[], method: string) {
   const joined = path.join('/');
-  if (path[0] === 'complaints') return method === 'GET' && isComplaintDetailPath(path)
+  if (path[0] === 'complaints') return method === 'GET' && (isComplaintDetailPath(path) || isComplaintStatsPath(path))
     || method === 'POST' && isComplaintSearchPath(path)
     || method === 'PATCH' && isComplaintMutationPath(path);
   if (['tutorials', 'tutorial-categories', 'tutorial-media'].includes(path[0] ?? '')) {

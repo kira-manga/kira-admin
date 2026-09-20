@@ -51,7 +51,7 @@ export type PreparedComplaintContentEdit =
     content: Readonly<NoticeReplyContent>;
   }>;
 
-export type ComplaintContentField = 'TARGET' | 'TYPE' | 'SUBJECT' | 'BODY' | 'CLOSURE_REASON' | 'SEARCH' | 'IDEMPOTENCY_KEY';
+export type ComplaintContentField = 'TARGET' | 'TYPE' | 'SUBJECT' | 'BODY' | 'CLOSURE_REASON' | 'SEARCH' | 'APP_VERSION' | 'IDEMPOTENCY_KEY';
 export type ComplaintContentReason =
   | 'READ_ONLY'
   | 'VARIANT_MISMATCH'
@@ -184,7 +184,12 @@ export function prepareComplaintSearchText(value: string): string {
   return normalizeText(value, 'SEARCH', 100, 400, true);
 }
 
-function normalizeText(value: string, field: 'SUBJECT' | 'BODY' | 'CLOSURE_REASON' | 'SEARCH', maximum: number, maximumBytes: number, allowEmpty = false): string {
+/** Existing appVersion text rules; readers compare equality and never replace an observed version key. */
+export function prepareComplaintAppVersion(value: string): string {
+  return normalizeText(value, 'APP_VERSION', 64, 256, true);
+}
+
+function normalizeText(value: string, field: 'SUBJECT' | 'BODY' | 'CLOSURE_REASON' | 'SEARCH' | 'APP_VERSION', maximum: number, maximumBytes: number, allowEmpty = false): string {
   const lineNormalized = value.replace(/\r\n/g, '\n');
   // Match backend ComplaintTextRules: validation precedes trimming and UTF-8 measurement.
   for (let index = 0; index < lineNormalized.length; index++) {
