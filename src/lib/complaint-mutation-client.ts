@@ -1,12 +1,12 @@
 import { ApiError, authenticatedFetch, captureAdminSession } from './client-api';
-import { complaintBatchStatusDestination, decodeComplaintBatchStatusOutcome, isCompleteComplaintBatchStatusResult, type ComplaintBatchStatusOutcome, type ComplaintBatchStatusRequest } from './complaint-batch-status-wire';
+import { complaintBatchDestination, decodeComplaintBatchOutcome, isCompleteComplaintBatchDeleteResult, isCompleteComplaintBatchStatusResult, type ComplaintBatchOutcome, type ComplaintBatchRequest } from './complaint-batch-wire';
 import { complaintMutationDestination, complaintReceiptHeader, decodeComplaintMutationOutcome, type ComplaintMutationOutcome, type ComplaintMutationRequest } from './complaint-mutation-wire';
 import { sessionGenerationHeader, stepUpProofIdHeader } from './session-contract';
 import { isStepUpApproval, type StepUpApproval } from './step-up-contract';
 
 /** Memory-only, owned above navigation. It is not a durable journal or authority to cross sessions. */
-export type ComplaintOperationRequest = ComplaintMutationRequest | ComplaintBatchStatusRequest;
-export type ComplaintOperationOutcome = ComplaintMutationOutcome | ComplaintBatchStatusOutcome;
+export type ComplaintOperationRequest = ComplaintMutationRequest | ComplaintBatchRequest;
+export type ComplaintOperationOutcome = ComplaintMutationOutcome | ComplaintBatchOutcome;
 export type ComplaintOperation = Readonly<{
   generation: string;
   request: ComplaintOperationRequest;
@@ -18,8 +18,9 @@ export type ComplaintOperation = Readonly<{
 export function isTerminalComplaintOperation(operation: ComplaintOperation | null | undefined): boolean {
   if (operation?.phase !== 'settled' || !operation.outcome) return false;
   if (operation.outcome.kind === 'rejected') return true;
-  if (operation.request.method === 'POST') return operation.outcome.kind === 'batch-applied'
-    && isCompleteComplaintBatchStatusResult(operation.request, operation.outcome.items);
+  if (operation.request.method === 'POST') return operation.request.action === 'STATUS'
+    ? operation.outcome.kind === 'batch-applied' && isCompleteComplaintBatchStatusResult(operation.request, operation.outcome.items)
+    : operation.outcome.kind === 'batch-deleted' && isCompleteComplaintBatchDeleteResult(operation.request, operation.outcome.items);
   if (operation.request.method === 'DELETE') return operation.outcome.kind === 'deleted' && operation.outcome.id === operation.request.targetId;
   return operation.outcome.kind === 'applied' && operation.outcome.id === operation.request.targetId;
 }
@@ -49,7 +50,7 @@ export async function sendComplaintMutation(operation: ComplaintOperation, signa
   try {
     if (signal.aborted) abort();
     active();
-    const url = operation.request.method === 'POST' ? complaintBatchStatusDestination(operation.request) : complaintMutationDestination(operation.request);
+    const url = operation.request.method === 'POST' ? complaintBatchDestination(operation.request) : complaintMutationDestination(operation.request);
     const headers = new Headers(operation.request.headers);
     headers.set(sessionGenerationHeader, operation.generation);
     if (approval) {
@@ -91,7 +92,7 @@ export async function sendComplaintMutation(operation: ComplaintOperation, signa
       etag: response.headers.get('etag'), consumed: response.headers.get(complaintReceiptHeader), challenge: response.headers.get('www-authenticate'),
       retryAfter: response.headers.get('retry-after'), location: response.headers.get('location'), body: bytes.subarray(0, size),
     };
-    return operation.request.method === 'POST' ? decodeComplaintBatchStatusOutcome(operation.request, metadata) : decodeComplaintMutationOutcome(operation.request, metadata);
+    return operation.request.method === 'POST' ? decodeComplaintBatchOutcome(operation.request, metadata) : decodeComplaintMutationOutcome(operation.request, metadata);
   } catch { return session.isCurrent() ? { kind: 'unknown' } : lostSession(); }
   finally {
     clearTimeout(timer);

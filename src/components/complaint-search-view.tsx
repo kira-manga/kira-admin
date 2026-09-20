@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 
 import { useActionOwner, type ActionTicket } from '@/lib/action-owner';
 import { ApiError, captureAdminSession } from '@/lib/client-api';
-import { complaintBatchStatuses, prepareComplaintBatchStatusRequest, type ComplaintBatchStatusRequest } from '@/lib/complaint-batch-status-wire';
+import { complaintBatchStatuses, prepareComplaintBatchDeleteRequest, prepareComplaintBatchStatusRequest, type ComplaintBatchRequest } from '@/lib/complaint-batch-wire';
 import type { ComplaintStatusTarget } from '@/lib/complaint-moderation-wire';
 import { ComplaintReadClientError, fetchComplaintAdminSearch } from '@/lib/complaint-read-client';
 import type { ParsedComplaintAdminPage } from '@/lib/complaint-read-wire';
@@ -17,7 +17,7 @@ type LoadedPage = { value: ParsedComplaintAdminPage; query: ComplaintAdminSearch
 type Props = {
   generation: string; dataScopeId: string; disabled: boolean;
   onSelect: (target: { id: string; dataScopeId: string; generation: string }) => void;
-  onPrepareBatch?: (request: ComplaintBatchStatusRequest, generation: string) => boolean;
+  onPrepareBatch?: (request: ComplaintBatchRequest, generation: string) => boolean;
   onSessionExpired: () => void;
 };
 const messages = {
@@ -129,8 +129,7 @@ export function ComplaintSearchView({ generation, dataScopeId, disabled, onSelec
     selectedRef.current = next; setSelected(next);
   }
 
-  function prepareBatch(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function prepareBatch(action: ComplaintBatchRequest['action']) {
     const current = pageRef.current;
     if (disabled || captured.current || owner.isLocked() || !onPrepareBatch || !current || !current.isCurrent()) return;
     try {
@@ -139,10 +138,12 @@ export function ComplaintSearchView({ generation, dataScopeId, disabled, onSelec
         if (!item || item.kind === 'NOTICE') throw new Error();
         return { id: item.id, actionTag: item.actionTag, kind: item.kind, ownership: item.ownership };
       });
-      const request = prepareComplaintBatchStatusRequest(targets, batchStatusRef.current, current.query.dataScopeId, crypto.randomUUID());
+      const request = action === 'STATUS'
+        ? prepareComplaintBatchStatusRequest(targets, batchStatusRef.current, current.query.dataScopeId, crypto.randomUUID())
+        : prepareComplaintBatchDeleteRequest(targets, current.query.dataScopeId, crypto.randomUUID());
       // Synchronous parent CAS owns the complete immutable request above navigation before another event.
       if (onPrepareBatch(request, generation)) captured.current = true;
-    } catch { setError('Select 1–50 current-page complaints and a valid status before preparing one atomic batch.'); }
+    } catch { setError('Select 1–50 current-page complaints and a valid batch action before preparing one atomic batch.'); }
   }
 
   return <section className="panel" aria-label="Complaint search">
@@ -182,20 +183,24 @@ export function ComplaintSearchView({ generation, dataScopeId, disabled, onSelec
           <h4><bdi dir="auto" style={textStyle}>{visibleComplaintText(item.kind === 'NOTICE' ? 'System notice' : item.subject ?? 'Notice reply')}</bdi></h4>
           <StatusBadge status={item.status} /><p>{item.kind} · {item.ownership} · Version {item.version}</p>
           <p>Updated <time dateTime={item.updatedAt}>{item.updatedAt}</time></p>
-          {onPrepareBatch && item.kind !== 'NOTICE' ? <label style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-            <Input type="checkbox" style={{ width: 'auto' }} aria-label={`Select complaint ${item.id} for status batch`}
-              checked={selected.includes(item.id)} disabled={disabled || loading} onChange={(event) => selectBatch(item.id, event.target.checked)} />Select for status batch
+          {onPrepareBatch && item.kind !== 'NOTICE' && item.ownership === 'INSTALLATION' ? <label style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+            <Input type="checkbox" style={{ width: 'auto' }} aria-label={`Select complaint ${item.id} for atomic batch`}
+              checked={selected.includes(item.id)} disabled={disabled || loading} onChange={(event) => selectBatch(item.id, event.target.checked)} />Select for atomic batch
           </label> : null}
           <Button type="button" style={{ maxWidth: '100%', overflowWrap: 'anywhere' }} disabled={disabled || loading} onClick={() => select(item.id)}>Open detail for {item.id}</Button>
         </li>)}
       </ul>}
-      {onPrepareBatch && page.value.items.some((item) => item.kind !== 'NOTICE') ? <form aria-label="Atomic complaint status batch" onSubmit={prepareBatch} method="post" action="/api/backend/complaints/batch" autoComplete="off">
-        <p>{selected.length} selected on this page only. Changing filters, scope or page clears selection. One invalid, unchanged or stale target rejects the whole batch; no deletion or closure is included.</p>
+      {onPrepareBatch && page.value.items.some((item) => item.kind !== 'NOTICE' && item.ownership === 'INSTALLATION') ? <form aria-label="Atomic complaint batch"
+        onSubmit={(event) => { event.preventDefault(); prepareBatch('STATUS'); }} method="post" action="/api/backend/complaints/batch" autoComplete="off">
+        <p>{selected.length} selected on this page only. Changing filters, scope or page clears selection. Each action is one all-or-none batch, never separate per-target requests.</p>
         <Field label="Status for selected complaints"><select className="input" name="complaintBatchStatus" value={batchStatus} disabled={disabled || loading}
           onChange={(event) => { if (!disabled && !captured.current) { batchStatusRef.current = event.target.value as ComplaintStatusTarget; setBatchStatus(batchStatusRef.current); } }}>
           {complaintBatchStatuses.map((status) => <option key={status} value={status}>{status}</option>)}
         </select></Field>
+        <p>Status changes include no deletion or closure. One invalid, unchanged or stale target rejects the entire status batch.</p>
         <Button type="submit" tone="primary" disabled={disabled || loading || selected.length === 0}>Prepare atomic status batch</Button>
+        <p className="notice notice-warning">Permanent deletion applies only to selected reports/replies, never unselected children, installations or credentials. After authorization it cannot be undone or canceled. Review the complete capture before confirming.</p>
+        <Button type="button" tone="danger" disabled={disabled || loading || selected.length === 0} onClick={() => prepareBatch('DELETE')}>Prepare permanent delete batch</Button>
       </form> : null}
       <Button type="button" disabled={disabled || loading || page.value.nextCursor === null} onClick={nextPage}>Next page</Button>
       {page.value.nextCursor === null ? <p>End of this search. Search again to restart.</p> : null}
