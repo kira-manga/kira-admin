@@ -3,6 +3,18 @@ import { describe, expect, it } from 'vitest';
 import { adminRouteAllowed, isComplaintDetailQuery, isComplaintMutationPath, isMutatingMethod, routeNeedsStepUp } from './admin-route-policy';
 
 describe('admin BFF route policy', () => {
+  it('admits only literal read-only stats with the existing canonical TEST scope grammar and no approval requirement', () => {
+    const stats = ['complaints', 'stats'];
+    expect(adminRouteAllowed(stats, 'GET')).toBe(true);
+    expect(isMutatingMethod('GET')).toBe(false);
+    expect(routeNeedsStepUp(stats, 'GET')).toBe(false);
+    for (const method of ['POST', 'PUT', 'PATCH', 'DELETE', 'HEAD']) expect(adminRouteAllowed(stats, method)).toBe(false);
+    for (const path of [['complaints', 'Stats'], ['complaints', 'st%61ts'], ['complaints', 'stats', ''], ['complaints', 'stats', 'delete']]) {
+      expect(adminRouteAllowed(path, 'GET')).toBe(false);
+    }
+    expect(isComplaintDetailQuery('?dataScopeId=22222222-2222-4222-8222-222222222222')).toBe(true);
+    expect(isComplaintDetailQuery('?dataScopeId=22222222-2222-4222-8222-222222222222&limit=50')).toBe(false);
+  });
   it('admits only the literal POST search path, with CSRF classification but no proof requirement', () => {
     const search = ['complaints', 'search'];
     expect(adminRouteAllowed(search, 'POST')).toBe(true);

@@ -234,20 +234,9 @@ function readFlatDetail(raw: string): Map<string, string | null> {
     while (offset < raw.length && (raw[offset] === ' ' || raw[offset] === '\t' || raw[offset] === '\r' || raw[offset] === '\n')) offset++;
   };
   const string = (): string => {
-    const start = offset;
-    if (raw[offset++] !== '"') return invalid();
-    while (offset < raw.length) {
-      const code = raw.charCodeAt(offset++);
-      if (code === 0x22) {
-        const value: unknown = JSON.parse(raw.slice(start, offset)); // Strings only: version never enters JSON.parse.
-        if (typeof value !== 'string') return invalid();
-        requireWellFormed(value);
-        return value;
-      }
-      if (code === 0x5c) offset++; // Skip the escaped character; JSON.parse checks the complete escape.
-      else if (code <= 0x1f) return invalid();
-    }
-    return invalid();
+    const token = readComplaintJsonString(raw, offset);
+    offset = token.end;
+    return token.value;
   };
   whitespace();
   if (raw[offset++] !== '{') return invalid();
@@ -261,11 +250,9 @@ function readFlatDetail(raw: string): Map<string, string | null> {
       whitespace();
       let value: string | null;
       if (name === 'version') {
-        const start = offset;
-        while (offset < raw.length && raw[offset] >= '0' && raw[offset] <= '9') offset++;
-        value = raw.slice(start, offset);
-        if (!value || value[0] === '0' || value.length > maximumLong.length ||
-            value.length === maximumLong.length && value > maximumLong) return invalid();
+        const token = readComplaintLongToken(raw, offset);
+        value = token.value;
+        offset = token.end;
       } else if (raw.startsWith('null', offset)) {
         value = null;
         offset += 4;
@@ -319,6 +306,37 @@ function requireWellFormed(value: string): void {
       if (!(next >= 0xdc00 && next <= 0xdfff)) invalid();
     } else if (unit >= 0xdc00 && unit <= 0xdfff) invalid();
   }
+}
+
+/** Shared scalar reader only; callers own the closed schema, duplicate checks and bounded UTF-8 body. */
+export function readComplaintJsonString(raw: string, start: number, maximumLength = raw.length): { value: string; end: number } {
+  let offset = start;
+  if (raw[offset++] !== '"') return invalid();
+  while (offset < raw.length && offset - start < maximumLength) {
+    const code = raw.charCodeAt(offset++);
+    if (code === 0x22) {
+      const value: unknown = JSON.parse(raw.slice(start, offset)); // Strings only, never version/count tokens.
+      if (typeof value !== 'string') return invalid();
+      requireWellFormed(value);
+      return { value, end: offset };
+    }
+    if (code === 0x5c) offset++; // JSON.parse checks the complete escape, including surrogate pairs above.
+    else if (code <= 0x1f) return invalid();
+  }
+  return invalid();
+}
+
+/** Original Long digits, never Number/JSON.parse. Only stats' nonnegative fields permit literal zero. */
+export function readComplaintLongToken(raw: string, start: number, allowZero = false): { value: string; end: number } {
+  let end = start;
+  while (end < raw.length && raw[end] >= '0' && raw[end] <= '9') {
+    if (end - start >= maximumLong.length) return invalid();
+    end++;
+  }
+  const value = raw.slice(start, end);
+  if (!value || value[0] === '0' && (!allowZero || value !== '0') ||
+      value.length === maximumLong.length && value > maximumLong) return invalid();
+  return { value, end };
 }
 
 /** Backend Instant.toString UTC form at PostgreSQL microsecond precision; keep the original string. */
