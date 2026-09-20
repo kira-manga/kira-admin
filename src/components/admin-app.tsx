@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useActionOwner } from '@/lib/action-owner';
 import { logoutSession, sessionFetch } from '@/lib/client-api';
-import type { ComplaintOperation } from '@/lib/complaint-mutation-client';
+import { isTerminalComplaintOperation, type ComplaintOperation } from '@/lib/complaint-mutation-client';
 import type { AdminSession, NavView } from '@/lib/types';
 import { AdminShell } from './admin-shell';
 import { AuditView } from './audit-view';
@@ -36,7 +36,7 @@ export function AdminApp() {
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
       const pending = complaintOperationRef.current;
-      if (!pending || pending.phase === 'prepared' || pending.outcome?.kind === 'applied' || pending.outcome?.kind === 'rejected' || pending.outcome?.kind === 'deleted') return;
+      if (!pending || pending.phase === 'prepared' || isTerminalComplaintOperation(pending)) return;
       event.preventDefault(); event.returnValue = '';
     };
     window.addEventListener('beforeunload', warn);
@@ -62,8 +62,7 @@ export function AdminApp() {
 
   function logout(warn = true) {
     const pending = complaintOperationRef.current;
-    if (warn && pending && pending.phase !== 'prepared'
-      && pending.outcome?.kind !== 'applied' && pending.outcome?.kind !== 'rejected' && pending.outcome?.kind !== 'deleted'
+    if (warn && pending && pending.phase !== 'prepared' && !isTerminalComplaintOperation(pending)
       && !window.confirm('A complaint operation is retained. Signing out will make it non-sendable; it does not cancel or establish its outcome. Continue?')) return;
     const version = ++transition.current;
     const mounted = owner.captureLifetime();

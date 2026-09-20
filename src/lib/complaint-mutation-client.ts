@@ -1,18 +1,31 @@
 import { ApiError, authenticatedFetch, captureAdminSession } from './client-api';
+import { complaintBatchStatusDestination, decodeComplaintBatchStatusOutcome, isCompleteComplaintBatchStatusResult, type ComplaintBatchStatusOutcome, type ComplaintBatchStatusRequest } from './complaint-batch-status-wire';
 import { complaintMutationDestination, complaintReceiptHeader, decodeComplaintMutationOutcome, type ComplaintMutationOutcome, type ComplaintMutationRequest } from './complaint-mutation-wire';
 import { sessionGenerationHeader, stepUpProofIdHeader } from './session-contract';
 import { isStepUpApproval, type StepUpApproval } from './step-up-contract';
 
 /** Memory-only, owned above navigation. It is not a durable journal or authority to cross sessions. */
+export type ComplaintOperationRequest = ComplaintMutationRequest | ComplaintBatchStatusRequest;
+export type ComplaintOperationOutcome = ComplaintMutationOutcome | ComplaintBatchStatusOutcome;
 export type ComplaintOperation = Readonly<{
   generation: string;
-  request: ComplaintMutationRequest;
+  request: ComplaintOperationRequest;
   phase: 'prepared' | 'sending' | 'settled';
-  outcome?: ComplaintMutationOutcome;
+  outcome?: ComplaintOperationOutcome;
 }>;
 
+/** Navigation/clear controls never treat a partial batch result as a terminal operation. */
+export function isTerminalComplaintOperation(operation: ComplaintOperation | null | undefined): boolean {
+  if (operation?.phase !== 'settled' || !operation.outcome) return false;
+  if (operation.outcome.kind === 'rejected') return true;
+  if (operation.request.method === 'POST') return operation.outcome.kind === 'batch-applied'
+    && isCompleteComplaintBatchStatusResult(operation.request, operation.outcome.items);
+  if (operation.request.method === 'DELETE') return operation.outcome.kind === 'deleted' && operation.outcome.id === operation.request.targetId;
+  return operation.outcome.kind === 'applied' && operation.outcome.id === operation.request.targetId;
+}
+
 /** Exactly one explicit attempt. No retry, key/ETag repair, JSON-number conversion or credential storage. */
-export async function sendComplaintMutation(operation: ComplaintOperation, signal: AbortSignal, approval?: StepUpApproval): Promise<ComplaintMutationOutcome> {
+export async function sendComplaintMutation(operation: ComplaintOperation, signal: AbortSignal, approval?: StepUpApproval): Promise<ComplaintOperationOutcome> {
   let session;
   try { session = captureAdminSession(); } catch (error) { return { kind: error instanceof ApiError && error.status === 401 ? 'session-expired' : 'unknown' }; }
   if (operation.generation !== session.generation) return { kind: 'stale-session' };
@@ -36,7 +49,7 @@ export async function sendComplaintMutation(operation: ComplaintOperation, signa
   try {
     if (signal.aborted) abort();
     active();
-    const url = complaintMutationDestination(operation.request);
+    const url = operation.request.method === 'POST' ? complaintBatchStatusDestination(operation.request) : complaintMutationDestination(operation.request);
     const headers = new Headers(operation.request.headers);
     headers.set(sessionGenerationHeader, operation.generation);
     if (approval) {
@@ -73,11 +86,12 @@ export async function sendComplaintMutation(operation: ComplaintOperation, signa
     if (!session.isCurrent()) return lostSession();
     if (length !== null && Number(length) !== size) return { kind: 'unknown' };
     if (response.status === 401 && response.headers.get('www-authenticate') === 'KiraSession realm="kira-admin-bff"') return { kind: 'session-expired' };
-    return decodeComplaintMutationOutcome(operation.request, {
+    const metadata = {
       status: response.status, contentType: response.headers.get('content-type'), contract: response.headers.get('X-Kira-Complaint-Contract'),
       etag: response.headers.get('etag'), consumed: response.headers.get(complaintReceiptHeader), challenge: response.headers.get('www-authenticate'),
       retryAfter: response.headers.get('retry-after'), location: response.headers.get('location'), body: bytes.subarray(0, size),
-    });
+    };
+    return operation.request.method === 'POST' ? decodeComplaintBatchStatusOutcome(operation.request, metadata) : decodeComplaintMutationOutcome(operation.request, metadata);
   } catch { return session.isCurrent() ? { kind: 'unknown' } : lostSession(); }
   finally {
     clearTimeout(timer);

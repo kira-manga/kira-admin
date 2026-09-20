@@ -197,10 +197,11 @@ input edits never replace an operation's target or scope. The backend remains th
 current ADMIN access, TEST admission, transitions, normalization and receipt matching. Entering a
 scope, signing in, or approving a password **does not activate backend complaint APIs**. Disabled404
 and unavailable responses are not successful moderation. Deletion is only one captured REPORT/REPLY,
-with no parent/child, installation or credential cascade. This connection adds no batch actions,
-LIVE scope or deployment/activation setting. Search remains a read, not mutation approval.
+with no parent/child, installation or credential cascade. The separately described current-page
+STATUS batch is nondeleting; there is no destructive batch, LIVE scope or deployment/activation
+setting. Search remains a read, not mutation approval.
 
-The mutation BFF admits only exact `PATCH /api/backend/complaints/<canonical UUID>/{content|status|closure}`
+The single-item mutation BFF admits only exact `PATCH /api/backend/complaints/<canonical UUID>/{content|status|closure}`
 or `DELETE /api/backend/complaints/<canonical UUID>`
 with one canonical UUIDv4 `dataScopeId`, signed G, same-origin CSRF, a canonical idempotency key and
 the exact strong target If-Match. It collects each entire identity-encoded PATCH JSON request (16 KiB max)
@@ -257,6 +258,38 @@ key, real TEST credentials/capacity/retention authority, backend composition, or
 remain separate owner-controlled verification and rollout work; this source slice is not W09/live
 qualification or an App29 completion claim.
 
+### Atomic current-page STATUS batch (source only)
+
+The mounted search page permits selection of 1–50 distinct ordinary REPORT/REPLY rows from that
+page only, never NOTICE/SYSTEM or accumulated cross-page targets. Page, filter and scope changes
+clear selection. **Prepare atomic status batch** captures one detached, immutable sorted set of
+ID/actionTag pairs, status, TEST scope, key and G above navigation. It uses the existing
+`complaint-moderation-mutation` password approval. It sends one atomic operation, never N single-item
+mutations, and offers no deletion, closure or content changes; one invalid, unchanged or stale target rejects all.
+
+The only new BFF route is `POST /api/backend/complaints/batch?dataScopeId=<canonical TEST UUIDv4>`.
+Its closed body is `{"action":"STATUS","status":"RESOLVED","targets":[{"id":"<canonical UUID>","actionTag":"\"complaint-<same UUID>-v7\""}]}`,
+with status OPEN, IN_PROGRESS, PLANNED, RESOLVED or NOT_PLANNED and no aggregate If-Match. The BFF
+validates the entire duplicate-aware schema and retains original valid bytes, even if pair/field
+order or JSON whitespace differs. An absent actionTag is428, a malformed tag string is412, and
+non-string tags or other schema errors are400. It reuses the signed G, origin/CSRF, optional P,
+65-second exchange deadline and proof-retirement rules above, with32KiB request and response caps.
+
+Only a complete200 `{"items":[{"id":"<id>","version":8}]}` with the entire canonical ascending target
+set and **every exact predecessor+1 positive signed-Long** confirms success. Versions never pass
+through JavaScript Number. Extra, missing, reordered, duplicate or rounded members,207/partial
+success, aggregate ETag or Location fail closed before downstream success or proof retirement.
+Uncertain outcomes retain the complete original body/key/tags/scope/G through navigation; retries
+are explicit and identical, normally proofless, with reapproval only after a real backend challenge.
+Consumed503 may retire only its matching captured proof while the operation remains unknown.
+
+Verified success or a verified historical terminal rejection exposes **Review terminal status batch**,
+then **Clear reviewed batch and return to selection**, under the current reviewed session lifetime.
+Clearing is local: no request, new key, repaired target or automatic refresh; a new intent needs a
+fresh page. Unknown outcomes cannot clear this way. Old-G batches remain hidden and non-sendable
+after login, with the same memory-only/tab-loss limitations above. This source and authored fixtures
+do not establish a running atomic backend, TEST/LIVE activation, destructive-batch recovery or W09.
+
 ### TEST complaint search connection (source only)
 
 The mounted Complaints view now accepts body-only search text, status/type/ownership filters,
@@ -267,10 +300,12 @@ view or session changes revoke obsolete reads and discard page/cursor state. A f
 an empty page. Only one page is retained in memory; no text, cursor or complaint prose enters URLs,
 browser persistence, Next caches or temporary files. The existing non-secret G selector is unchanged.
 
-Selecting a row requests fresh detail through the existing checked ID/ETag decoder before creating
-an editor base. Search rows do not manufacture HTTP ETags, supply mutation authority or replace a
-retained operation. Search is removed while an operation is retained; a synchronous capture fence
-also blocks a same-turn alternate selection. NOTICE remains read-only. Loaded text is escaped,
+Opening a row's detail requests fresh detail through the existing checked ID/ETag decoder before
+creating a single-item editor base. Batch checkboxes instead capture the current validated page's
+ID/actionTag pairs as described above; list tags are not proof of current authority or freshness at
+commit. Search rows do not manufacture HTTP ETags or replace a retained operation. Search is
+removed while an operation is retained; a synchronous capture fence also blocks a same-turn
+alternate selection. NOTICE remains read-only. Loaded text is escaped,
 wrapped and direction-isolated, with visible bidi controls on display/copy; focus moves to completed
 search results and selected detail. Actual browser/narrow-viewport/accessibility behavior still needs
 the separately authorized qualification, not just component fixtures.
@@ -295,9 +330,9 @@ per process; runtime/decoding, transport and downstream overhead remain unmeasur
 distributed semaphore or Node24/Next16/container/ingress memory qualification.
 
 The backend search producer already exists but remains unregistered behind disabled/sourceOnly
-composition. This Admin consumer does not change it, activate TEST/LIVE, deploy anything, invent
-delete/batch contracts or complete W09. Those product/composition and external qualification
-requirements remain separate work.
+composition. This read consumer does not change it, activate TEST/LIVE, deploy anything or complete
+W09. The fixed nondeleting batch capture above does not waive those requirements. Product/composition
+and external qualification requirements remain separate work.
 
 ### TEST scope-wide complaint statistics (source only)
 

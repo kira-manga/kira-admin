@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { adminRouteAllowed, isMutatingMethod, routeNeedsStepUp } from '@/lib/admin-route-policy';
+import { adminRouteAllowed, isComplaintBatchPath, isMutatingMethod, routeNeedsStepUp } from '@/lib/admin-route-policy';
 import { proxyComplaintMutation } from '@/lib/server-complaint-mutation';
 import { proxyComplaintRead } from '@/lib/server-complaint-read';
 import { backendUrl } from '@/lib/server-config';
@@ -22,7 +22,7 @@ async function proxy(request: Request, context: { params: Promise<{ path: string
   if (!path.length || !adminRouteAllowed(path, request.method)) {
     return Response.json({ detail: 'Admin route is not allowed.' }, { status: 404 });
   }
-  if (path[0] === 'complaints' && ['PATCH', 'DELETE'].includes(request.method)) return proxyComplaintMutation(request, path);
+  if (path[0] === 'complaints' && (['PATCH', 'DELETE'].includes(request.method) || request.method === 'POST' && isComplaintBatchPath(path))) return proxyComplaintMutation(request, path);
   if (path[0] === 'complaints') return proxyComplaintRead(request, path);
   const incomingUrl = new URL(request.url);
   if (isMutatingMethod(request.method)) {

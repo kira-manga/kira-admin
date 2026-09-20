@@ -21,7 +21,17 @@ describe('admin BFF route policy', () => {
     expect(isMutatingMethod('POST')).toBe(true);
     expect(routeNeedsStepUp(search, 'POST')).toBe(false);
     for (const method of ['GET', 'PUT', 'PATCH', 'DELETE', 'HEAD']) expect(adminRouteAllowed(search, method)).toBe(false);
-    for (const path of [['complaints', 'stats'], ['complaints', 'batch'], ['complaints', 'search', ''], ['complaints', 'Search'], ['complaints', 'se%61rch']]) {
+    for (const path of [['complaints', 'stats'], ['complaints', 'search', ''], ['complaints', 'Search'], ['complaints', 'se%61rch']]) {
+      expect(adminRouteAllowed(path, 'POST')).toBe(false);
+    }
+  });
+  it('admits only literal POST batch through complaint CSRF/proof handling, never DELETE batch or a source-proof gate', () => {
+    const batch = ['complaints', 'batch'];
+    expect(adminRouteAllowed(batch, 'POST')).toBe(true);
+    expect(isMutatingMethod('POST')).toBe(true);
+    expect(routeNeedsStepUp(batch, 'POST')).toBe(false);
+    for (const method of ['GET', 'PUT', 'PATCH', 'DELETE', 'HEAD']) expect(adminRouteAllowed(batch, method)).toBe(false);
+    for (const path of [['complaints', 'Batch'], ['complaints', 'b%61tch'], ['complaints', 'batch', ''], ['complaints', 'batch', 'delete']]) {
       expect(adminRouteAllowed(path, 'POST')).toBe(false);
     }
   });
