@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { isComplaintBatchPath, isComplaintDetailPath, isComplaintDetailQuery, isComplaintMutationPath } from './admin-route-policy';
-import { captureComplaintBatchStatusRequest, ComplaintBatchStatusBodyError, decodeComplaintBatchStatusOutcome } from './complaint-batch-status-wire';
+import { captureComplaintBatchRequest, ComplaintBatchBodyError, decodeComplaintBatchOutcome } from './complaint-batch-wire';
 import { complaintReceiptHeader, decodeComplaintMutationOutcome, prepareComplaintMutationRequest, validateComplaintMutationBody, type ComplaintMutationOperation } from './complaint-mutation-wire';
 import { backendUrl } from './server-config';
 import { requireCsrf, requireSameOrigin } from './server-security';
@@ -112,7 +112,7 @@ export async function proxyComplaintMutation(request: Request, path: string[]) {
     const bytes = await read(request, deleting ? 0 : batching ? 32_768 : 16_384, deleting);
     const body = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
     if (!batching) validateComplaintMutationBody(operation, body);
-    const description = batching ? captureComplaintBatchStatusRequest(body, scope, key) : prepareComplaintMutationRequest(operation, path[1], scope, key, tag!, body);
+    const description = batching ? captureComplaintBatchRequest(body, scope, key) : prepareComplaintMutationRequest(operation, path[1], scope, key, tag!, body);
     const headers = new Headers({ ...description.headers,
       Authorization: `Bearer ${session.token}`, Accept: 'application/json, application/problem+json', 'Accept-Encoding': 'identity',
     });
@@ -139,7 +139,7 @@ export async function proxyComplaintMutation(request: Request, path: string[]) {
       retryAfter: upstream.headers.get('retry-after'), location: upstream.headers.get('location'), body: responseBytes,
     };
     // Complete exact single ACK or entire sorted batch ACK before downstream bytes or proof retirement.
-    if (description.method === 'POST') decodeComplaintBatchStatusOutcome(description, metadata);
+    if (description.method === 'POST') decodeComplaintBatchOutcome(description, metadata);
     else decodeComplaintMutationOutcome(description, metadata);
     active();
     const outputHeaders = new Headers({ [contractHeader]: '1',
@@ -157,7 +157,7 @@ export async function proxyComplaintMutation(request: Request, path: string[]) {
   } catch (error) {
     if (controller.signal.aborted) return failure(controller.signal.reason === timeout ? 504 : 502);
     if (error instanceof DOMException && error.name === 'TimeoutError') return failure(504);
-    return failure(dispatched ? 502 : error === tooLarge && !deleting ? 413 : error instanceof ComplaintBatchStatusBodyError ? error.status : 400);
+    return failure(dispatched ? 502 : error === tooLarge && !deleting ? 413 : error instanceof ComplaintBatchBodyError ? error.status : 400);
   } finally {
     clearTimeout(timer);
     request.signal.removeEventListener('abort', onAbort);

@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 
 import { useActionOwner, type ActionTicket } from '@/lib/action-owner';
 import { ApiError, captureAdminSession } from '@/lib/client-api';
-import type { ComplaintBatchStatusRequest } from '@/lib/complaint-batch-status-wire';
+import type { ComplaintBatchRequest } from '@/lib/complaint-batch-wire';
 import { prepareComplaintContentRequest } from '@/lib/complaint-content-wire';
 import { isTerminalComplaintOperation as terminal, sendComplaintMutation, type ComplaintOperation } from '@/lib/complaint-mutation-client';
 import type { ComplaintMutationRequest } from '@/lib/complaint-mutation-wire';
@@ -55,6 +55,7 @@ function operationMessage(operation: ComplaintOperation) {
   switch (operation.outcome?.kind) {
     case 'applied': return 'Applied response verified. Reload the target before another intent.';
     case 'batch-applied': return confirmedBatch(operation) ? 'Atomic status batch applied response verified for every captured target and exact next version. Review the batch before clearing it.' : 'Outcome unknown or unavailable. The complete original batch is retained.';
+    case 'batch-deleted': return confirmedBatch(operation) ? 'Atomic delete batch response verified for every captured target. Deletion is permanent; review the batch before clearing it.' : 'Outcome unknown or unavailable. The complete original batch is retained.';
     case 'deleted': return 'Deletion confirmed by an empty 204 response. Review this captured deletion before clearing it and returning to selection.';
     case 'rejected': return operation.request.method === 'POST' ? 'Terminal rejection verified. The complete original batch is retained; review it before clearing and selecting a fresh page.' : 'Terminal rejection verified. The original draft is retained; reload and review before a new intent.';
     case 'step-up-required': return 'The backend requires complaint password approval. The original operation is retained.';
@@ -178,7 +179,7 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
     }
   }
 
-  function prepareBatch(request: ComplaintBatchStatusRequest, generation: string): boolean {
+  function prepareBatch(request: ComplaintBatchRequest, generation: string): boolean {
     if (!controls || operation || selectionBlocked.current || owner.isLocked() || mutationOwner.isLocked()) return false;
     try {
       const session = captureAdminSession();
@@ -186,7 +187,9 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
       const captured: ComplaintOperation = Object.freeze({ generation: session.generation, request, phase: 'prepared' });
       if (!controls.changeOperation(null, captured)) return false;
       selectionBlocked.current = true;
-      invalidate(); setEditorKey(''); setConfirmation(captured);
+      invalidate(); setEditorKey('');
+      // DELETE requires a separate explicit review of the complete capture before password approval.
+      setConfirmation(request.action === 'STATUS' ? captured : null);
       return true;
     } catch (caught) {
       setError('Sign in again before preparing a complaint operation.');
@@ -207,7 +210,7 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
     try {
       const outcome = await sendComplaintMutation(sending, controller.signal, approval);
       if (ticket.isCurrent() && controls.changeOperation(sending, Object.freeze({ ...sending, phase: 'settled', outcome }))) {
-        if (outcome.kind === 'deleted' || outcome.kind === 'batch-applied') { invalidate(); setEditorKey(''); }
+        if (outcome.kind === 'deleted' || outcome.kind === 'batch-applied' || outcome.kind === 'batch-deleted') { invalidate(); setEditorKey(''); }
         if (outcome.kind === 'session-expired') controls.onSessionExpired();
       }
     } catch {
@@ -273,7 +276,7 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
   const item = operation?.request.method !== 'POST' && !confirmedDeletion(operation) && loaded && (!controls || loaded.generation === controls.generation) ? loaded.detail.item : undefined;
   return (
     <div className="view-stack">
-      <section className="view-heading"><div><h2>Complaint detail</h2><p>{controls ? 'TEST search, detail, single-complaint moderation and atomic status batches. ' : 'Read-only TEST lookup. '}Use the configured TEST scope and a known complaint ID{controls ? ', or search below' : ''}. The backend enforces availability and access; this screen does not activate complaint APIs.</p></div></section>
+      <section className="view-heading"><div><h2>Complaint detail</h2><p>{controls ? 'TEST search, detail, single-complaint moderation and atomic status/delete batches. ' : 'Read-only TEST lookup. '}Use the configured TEST scope and a known complaint ID{controls ? ', or search below' : ''}. The backend enforces availability and access; this screen does not activate complaint APIs.</p></div></section>
       <form className="panel" onSubmit={(event) => { void lookup(event); }}>
         <Field label="TEST data scope ID" hint="Canonical UUID v4 supplied by the TEST environment owner.">
           <Input name="dataScopeId" value={scope} required maxLength={36} disabled={Boolean(operation)} autoComplete="off" autoCapitalize="none" spellCheck={false} onChange={(event) => { if (!operation) { invalidate(); setScope(event.target.value); } }} />
@@ -302,15 +305,20 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
           : 'An operation from a previous session is retained and non-sendable. It is not canceled or rebound to this login. Tab loss cannot recover it; do not assume non-execution.'}</p> : <>
           <p role="status">{operationMessage(operation)}</p>
           {operation.request.method === 'POST' ? <>
-            <dl aria-label="Captured atomic status batch">
-              <dt>Action</dt><dd>STATUS → {operation.request.status} ({operation.request.targets.length} targets, all or none)</dd>
+            <dl aria-label={operation.request.action === 'STATUS' ? 'Captured atomic status batch' : 'Captured atomic delete batch'}>
+              <dt>Action</dt><dd>{operation.request.action === 'STATUS' ? `STATUS → ${operation.request.status}` : 'Permanent DELETE'} ({operation.request.targets.length} targets, all or none)</dd>
               <dt>TEST scope</dt><dd>{operation.request.dataScopeId}</dd>
               <dt>Original key</dt><dd>{operation.request.headers['X-Kira-Idempotency-Key']}</dd>
             </dl>
             <ol aria-label="Captured batch targets">{operation.request.targets.map((target) => <li key={target.id}>
               <bdi>{target.id}</bdi> — <code>{target.actionTag}</code>
             </li>)}</ol>
-            <p>No deletion or closure. Retry retains every original tag; no target is silently skipped or repaired.</p>
+            {operation.request.action === 'STATUS' ? <p>No deletion or closure. Retry retains every original tag; no target is silently skipped or repaired.</p>
+              : <p className="notice notice-warning">Permanently delete exactly these captured reports/replies. No unselected child, installation or credentials are deleted. After authorization this is irreversible and cannot be canceled. Unknown outcomes retain every original target, tag and key, never a repaired subset.</p>}
+            {operation.request.action === 'DELETE' && operation.phase === 'prepared' ? <>
+              <Button tone="danger" onClick={() => setConfirmation(operation)}>Confirm permanent deletion of all captured complaints</Button>
+              <Button onClick={() => cancelPreparation(operation)}>Cancel unsent delete batch</Button>
+            </> : null}
           </> : null}
           {operation.request.method === 'DELETE' ? <>
             <p className="notice notice-warning">Permanent single deletion only; no cascade. Authorization cannot be canceled by leaving this view or by a later edit.</p>
@@ -321,7 +329,7 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
               <dt>Original key</dt><dd>{operation.request.headers['X-Kira-Idempotency-Key']}</dd>
             </dl>
           </> : null}
-          {operation.phase === 'prepared' ? <>
+          {operation.phase === 'prepared' && !(operation.request.method === 'POST' && operation.request.action === 'DELETE') ? <>
             <Button onClick={() => setConfirmation(operation)}>Confirm original operation</Button>
             <Button onClick={() => cancelPreparation(operation)}>Cancel unsent preparation</Button>
           </> : operation.phase === 'settled' && !terminal(operation) ? <>
@@ -335,7 +343,7 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
               <Button onClick={clearReviewedSelection}>Clear confirmed deletion and return to selection</Button>
             </> : null}
           </> : confirmedBatch(operation) ? <>
-            <Button onClick={reviewTerminalSelection}>Review terminal status batch</Button>
+            <Button onClick={reviewTerminalSelection}>{operation.request.method === 'POST' && operation.request.action === 'DELETE' ? 'Review terminal delete batch' : 'Review terminal status batch'}</Button>
             {reviewed === operation ? <>
               <p role="note">Review the complete captured batch above. Clearing this verified terminal result is local only; any new intent must start from a fresh page.</p>
               <Button onClick={clearReviewedSelection}>Clear reviewed batch and return to selection</Button>
@@ -382,7 +390,9 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
         <ComplaintModerationEditor target={editorBase.detail.moderationTarget} dataScopeId={editorBase.dataScopeId} idempotencyKey={editorKey} onPrepared={prepare} />
       </fieldset> : null}
       {confirmation && ownsOperation && operation === confirmation ? <StepUpDialog key={confirmation.request.headers['X-Kira-Idempotency-Key']}
-        action={confirmation.request.method === 'POST' ? `atomic status ${confirmation.request.status} for ${confirmation.request.targets.length} selected complaints`
+        action={confirmation.request.method === 'POST' ? confirmation.request.action === 'STATUS'
+          ? `atomic status ${confirmation.request.status} for ${confirmation.request.targets.length} selected complaints`
+          : `permanent atomic deletion of all ${confirmation.request.targets.length} captured complaints (irreversible after authorization)`
           : confirmation.request.method === 'DELETE' ? `permanent single deletion of complaint ${confirmation.request.targetId}` : 'complaint moderation'} scope="complaint-moderation-mutation" onCancel={() => cancelPreparation(confirmation)}
         onSessionExpired={controls?.onSessionExpired}
         onApproved={(approval) => send(confirmation, approval)} /> : null}

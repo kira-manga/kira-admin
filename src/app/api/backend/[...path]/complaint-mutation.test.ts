@@ -6,7 +6,7 @@ import { prepareComplaintBatchStatusRequest } from '@/lib/complaint-batch-status
 import { sessionGenerationHeader, stepUpProofIdHeader } from '@/lib/session-contract';
 import { appliedResponse, complaintId, complaintScope, deletedResponse, grantA, grantB, mutationRequest, problemResponse } from '@/test/complaint-mutation-fixture';
 import { createSessionFixture, fixtureSigningSecret, signedRequestHeaders } from '@/test/server-session-fixture';
-import { batchAck, batchRequest, batchResponse, batchTarget } from '@/test/complaint-batch-status-fixture';
+import { batchAck, batchRequest, batchResponse, batchTarget, deleteBatchAck, deleteBatchRequest, deleteBatchResponse } from '@/test/complaint-batch-status-fixture';
 
 const origin = 'https://admin.example.test';
 const consumedId = 'X-Kira-Admin-Step-Up-Consumed-Grant-Id';
@@ -146,6 +146,79 @@ describe('actual atomic STATUS batch BFF connection', () => {
     expect(response.headers.get('set-cookie')).toContain(proofA.name); expect(response.headers.get('set-cookie')).not.toContain(proofB.name);
     expect(await response.text()).toContain('SERVICE_UNAVAILABLE');
     expect(response.headers.has(consumedId)).toBe(false);
+  });
+});
+
+describe('actual atomic DELETE batch BFF connection', () => {
+  it('preserves one original DELETE body across consumed503 and proofless replay, retiring only its matching captured proof', async () => {
+    const description = deleteBatchRequest();
+    const raw = ` \n${JSON.stringify({ targets: [...description.targets].reverse().map(({ id, actionTag }) => ({ actionTag, id })), action: 'DELETE' })}\t`;
+    fetchMock.mockResolvedValueOnce(problemResponse('SERVICE_UNAVAILABLE', 503, { 'X-Kira-Admin-Step-Up-Consumed': 'true', [consumedId]: grantA }))
+      .mockResolvedValueOnce(deleteBatchResponse(description, { [consumedId]: grantA, 'Set-Cookie': 'private=never' }));
+    const unknown = await invokeBatch({ body: raw });
+    expect(unknown.status).toBe(503); expect(await unknown.text()).toContain('SERVICE_UNAVAILABLE');
+    const completed = await invokeBatch({ body: raw, remove: [stepUpProofIdHeader] });
+    expect(completed.status).toBe(200); expect(await completed.text()).toBe(deleteBatchAck(description));
+    for (const response of [unknown, completed]) {
+      expect(response.headers.getSetCookie()).toHaveLength(1);
+      expect(response.headers.get('set-cookie')).toContain(`${proofA.name}=; Path=/api;`);
+      expect(response.headers.get('set-cookie')).not.toContain(proofB.name);
+      for (const name of ['etag', 'location', consumedId, 'X-Kira-Admin-Step-Up-Grant-Id', 'authorization']) expect(response.headers.has(name)).toBe(false);
+      expect(response.headers.get('cache-control')).toBe('no-store, no-transform');
+    }
+    for (const [index, [url, init]] of fetchMock.mock.calls.entries()) {
+      expect(url).toBe(`http://backend:8080/api/v1/admin/complaints/batch?dataScopeId=${complaintScope}`);
+      expect(init).toMatchObject({ method: 'POST', body: raw, redirect: 'manual', cache: 'no-store' });
+      const headers = new Headers(init?.headers);
+      expect(headers.get('Authorization')).toBe(`Bearer ${session.token}`);
+      expect(headers.get('X-Kira-Admin-Step-Up')).toBe(index === 0 ? proofB.token : null);
+      expect(headers.get('X-Kira-Idempotency-Key')).toBe(description.headers['X-Kira-Idempotency-Key']);
+      for (const name of ['If-Match', 'Cookie', sessionGenerationHeader, stepUpProofIdHeader]) expect(headers.has(name)).toBe(false);
+    }
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('rejects DELETE root widening and structural errors before tag errors without bypassing G, CSRF or the fixed POST route', async () => {
+    const description = deleteBatchRequest(), pair = { id: complaintId, actionTag: batchTarget().actionTag };
+    const body = (targets: unknown, extra: Record<string, unknown> = {}) => JSON.stringify({ action: 'DELETE', targets, ...extra });
+    const cases: [Parameters<typeof invokeBatch>[0], number][] = [
+      [{ body: description.body, headers: { Origin: 'https://other.example.test' } }, 403],
+      [{ body: description.body, remove: ['X-Kira-CSRF'] }, 403], [{ body: description.body, remove: [sessionGenerationHeader] }, 401],
+      [{ body: description.body, method: 'DELETE' }, 404], [{ body: description.body, headers: { 'If-Match': pair.actionTag } }, 400],
+      [{ body: body([{ id: complaintId }], { status: 'OPEN' }) }, 400], [{ body: body([{ id: complaintId }], { cascade: true }) }, 400],
+      [{ body: body([{ ...pair, actionTag: 'bad' }, { id: deleteBatchRequest().targets[1].id }]) }, 428],
+      [{ body: body([{ ...pair, actionTag: `W/${pair.actionTag}` }]) }, 412], [{ body: body([{ ...pair, actionTag: 7 }]) }, 400],
+      [{ body: body([pair, pair]) }, 400], [{ body: body([pair]) + '{}' }, 400],
+      [{ body: description.body.padEnd(32_769, ' ') }, 413],
+    ];
+    for (const [options, status] of cases) {
+      const response = await invokeBatch(options);
+      expect(response.status).toBe(status); expect(response.headers.getSetCookie()).toHaveLength(0);
+    }
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('never forwards a partial, extra, duplicate, reordered, STATUS-shaped, tagged or alternate-success ACK or retires proof for it', async () => {
+    const description = deleteBatchRequest(), raw = deleteBatchAck(description);
+    const first = `{"id":"${description.targets[0].id}"}`, second = `{"id":"${description.targets[1].id}"}`;
+    const headers = deleteBatchResponse(description, { [consumedId]: grantA }).headers;
+    const malformed = [`{"items":[${first}]}`, `{"items":[${first},${first}]}`, `{"items":[${second},${first}]}`,
+      `{"items":[${first},${second},${second}]}`, batchAck(), raw.slice(0, -1) + ',"partial":true}'];
+    for (const upstream of [
+      ...malformed.map((body) => new Response(body, { headers })),
+      deleteBatchResponse(description, { [consumedId]: grantA, ETag: '"aggregate"' }),
+      deleteBatchResponse(description, { [consumedId]: grantA, Location: '/partial' }),
+      new Response(raw, { status: 207, headers }), deletedResponse({ [consumedId]: grantA }),
+    ]) {
+      fetchMock.mockResolvedValueOnce(upstream);
+      const response = await invokeBatch({ body: description.body });
+      expect(response.status).toBe(502); expect(response.headers.getSetCookie()).toHaveLength(0);
+      expect(response.headers.has('X-Kira-Admin-Step-Up-Consumed')).toBe(false);
+      expect(await response.text()).not.toContain(complaintId);
+    }
+    fetchMock.mockResolvedValueOnce(deleteBatchResponse());
+    const statusRequest = await invokeBatch();
+    expect(statusRequest.status).toBe(502); expect(statusRequest.headers.getSetCookie()).toHaveLength(0);
   });
 });
 
