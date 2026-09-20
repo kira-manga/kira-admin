@@ -13,6 +13,7 @@ import type { ParsedComplaintAdminDetail } from '@/lib/complaint-read-wire';
 import type { StepUpApproval } from '@/lib/step-up-contract';
 import { ComplaintContentEditor } from './complaint-content-editor';
 import { ComplaintModerationEditor } from './complaint-moderation-editor';
+import { ComplaintSearchView } from './complaint-search-view';
 import { StepUpDialog } from './step-up-dialog';
 import { Button, Field, Input, Spinner, StatusBadge } from './ui';
 
@@ -74,6 +75,13 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
   const changeOperation = controls?.changeOperation;
   const operation = controls?.operation ?? null;
   const ownsOperation = operation !== null && operation.generation === controls?.generation;
+  const selectionBlocked = useRef(Boolean(operation));
+  const detailResult = useRef<HTMLElement>(null);
+  const focusSelection = useRef(false);
+
+  useLayoutEffect(() => {
+    if (loaded && focusSelection.current) { focusSelection.current = false; detailResult.current?.focus(); }
+  }, [loaded]);
 
   useLayoutEffect(() => () => {
     active.current?.controller.abort();
@@ -87,6 +95,7 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
   }, [changeOperation]);
 
   function invalidate() {
+    focusSelection.current = false;
     const pending = active.current;
     active.current = null;
     if (pending) {
@@ -102,7 +111,7 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
 
   async function lookup(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (operation) return;
+    if (operation || selectionBlocked.current) return;
     await load(id.trim(), scope.trim());
   }
 
@@ -130,6 +139,7 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
       }
     } catch (caught) {
       if (ticket.isCurrent()) {
+        focusSelection.current = false;
         const expired = caught instanceof ComplaintReadClientError && caught.reason === 'SESSION_EXPIRED' || caught instanceof ApiError && caught.status === 401;
         setError(messages[expired ? 'SESSION_EXPIRED' : caught instanceof ComplaintReadClientError ? caught.reason : 'NETWORK']);
         if (expired) controls?.onSessionExpired();
@@ -150,7 +160,7 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
       if (session.generation !== controls.generation || editorBase.generation !== session.generation
         || request.dataScopeId !== editorBase.dataScopeId || request.targetId !== editorBase.detail.item.id) return;
       const captured: ComplaintOperation = Object.freeze({ generation: session.generation, request, phase: 'prepared' });
-      if (controls.changeOperation(null, captured)) { setConfirmation(captured); setReviewed(null); }
+      if (controls.changeOperation(null, captured)) { selectionBlocked.current = true; setConfirmation(captured); setReviewed(null); }
     } catch (caught) {
       setError('Sign in again before preparing a complaint operation.');
       if (caught instanceof ApiError && caught.status === 401) controls.onSessionExpired();
@@ -179,7 +189,7 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
   }
 
   function cancelPreparation(captured: ComplaintOperation) {
-    if (captured.phase === 'prepared' && controls?.changeOperation(captured, null)) setEditorKey(crypto.randomUUID());
+    if (captured.phase === 'prepared' && controls?.changeOperation(captured, null)) { selectionBlocked.current = false; setEditorKey(crypto.randomUUID()); }
     setConfirmation(null);
   }
 
@@ -188,6 +198,7 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
       || loaded.generation !== operation.generation || loaded.dataScopeId !== operation.request.dataScopeId
       || loaded.detail.item.id !== operation.request.targetId) return;
     if (controls.changeOperation(operation, null)) {
+      selectionBlocked.current = false;
       setEditorBase(loaded);
       setEditorKey(crypto.randomUUID());
       setEditorRevision((value) => value + 1);
@@ -198,7 +209,7 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
   const item = loaded && (!controls || loaded.generation === controls.generation) ? loaded.detail.item : undefined;
   return (
     <div className="view-stack">
-      <section className="view-heading"><div><h2>Complaint detail</h2><p>{controls ? 'TEST detail and non-deleting moderation. ' : 'Read-only TEST lookup. '}Use the configured TEST scope and a known complaint ID. The backend enforces availability and access; this screen does not activate complaint APIs.</p></div></section>
+      <section className="view-heading"><div><h2>Complaint detail</h2><p>{controls ? 'TEST search, detail and non-deleting moderation. ' : 'Read-only TEST lookup. '}Use the configured TEST scope and a known complaint ID{controls ? ', or search below' : ''}. The backend enforces availability and access; this screen does not activate complaint APIs.</p></div></section>
       <form className="panel" onSubmit={(event) => { void lookup(event); }}>
         <Field label="TEST data scope ID" hint="Canonical UUID v4 supplied by the TEST environment owner.">
           <Input name="dataScopeId" value={scope} required maxLength={36} disabled={Boolean(operation)} autoComplete="off" autoCapitalize="none" spellCheck={false} onChange={(event) => { if (!operation) { invalidate(); setScope(event.target.value); } }} />
@@ -208,6 +219,13 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
         </Field>
         <Button type="submit" tone="primary" disabled={loading || Boolean(operation)}>Load detail</Button>
       </form>
+      {controls && !operation ? <ComplaintSearchView key={`${controls.generation}:${scope}`} generation={controls.generation} dataScopeId={scope}
+        disabled={loading} onSessionExpired={controls.onSessionExpired}
+        onSelect={(target) => {
+          if (selectionBlocked.current || owner.isLocked() || target.generation !== controls.generation || target.dataScopeId !== scope) return;
+          invalidate(); setId(target.id); focusSelection.current = true;
+          void load(target.id, target.dataScopeId);
+        }} /> : null}
       <div aria-live="polite" aria-atomic="true">
         {loading ? <Spinner label="Loading complaint detail" /> : null}
         {error ? <p role="alert" className="notice notice-error">{error}</p> : null}
@@ -232,7 +250,7 @@ export function ComplaintDetailView({ controls }: { controls?: ComplaintDetailCo
           <p>Retained only in this application&apos;s memory. Signing out or losing the tab does not establish an outcome; no cross-session or durable recovery is provided.</p>
         </>}
       </section> : null}
-      {item ? <article className="panel" aria-label="Complaint detail result">
+      {item ? <article className="panel" aria-label="Complaint detail result" tabIndex={-1} ref={detailResult}>
         <h3>{complaintText(item.kind === 'NOTICE' ? 'System notice' : item.subject ?? 'Notice reply')}</h3>
         <StatusBadge status={item.status} />
         <dl>
