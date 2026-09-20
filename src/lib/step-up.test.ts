@@ -2,6 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { createActionOwner } from './action-owner';
 import { verifyProtectedAction } from './step-up';
+import type { StepUpScope } from './step-up-contract';
+
+function approval(scope: StepUpScope = 'source-admin-mutation') {
+  return Response.json({ scope, expiresAt: new Date(Date.now() + 300_000).toISOString() });
+}
 
 function confirmation() {
   const owner = createActionOwner();
@@ -41,7 +46,7 @@ describe('protected-action verification', () => {
   it('does not verify an already-dismissed confirmation', async () => {
     const view = confirmation();
     view.owner.release(view.ticket);
-    const request = vi.fn(async () => new Response(null, { status: 204 }));
+    const request = vi.fn(async () => approval());
     await verifyProtectedAction(view.action, request);
     expect(request).not.toHaveBeenCalled();
     expect(view.onApproved).not.toHaveBeenCalled();
@@ -55,7 +60,7 @@ describe('protected-action verification', () => {
     expect(view.owner.acquire()).toBeNull();
     view.unmount();
     view.owner.mount();
-    resolve(new Response(null, { status: 204 }));
+    resolve(approval());
     await work;
     expect(view.clearPassword).not.toHaveBeenCalled();
     expect(view.onApproved).not.toHaveBeenCalled();
@@ -73,7 +78,7 @@ describe('protected-action verification', () => {
       started();
       await submitted;
     });
-    const request = vi.fn(async () => new Response(null, { status: 204 }));
+    const request = vi.fn(async () => approval());
     let finished = false;
     const work = verifyProtectedAction(view.action, request).then(() => { finished = true; });
     await entered;
@@ -93,7 +98,7 @@ describe('protected-action verification', () => {
     const entered = new Promise<void>((done) => { started = done; });
     const submitted = new Promise<void>((_, fail) => { reject = fail; });
     view.onApproved.mockImplementation(async () => { started(); await submitted; });
-    const request = vi.fn(async () => new Response(null, { status: 204 }));
+    const request = vi.fn(async () => approval());
     const work = verifyProtectedAction(view.action, request);
     await entered;
     view.unmount();
@@ -101,5 +106,71 @@ describe('protected-action verification', () => {
     reject(new Error('Protected request failed after dispatch.'));
     await failure;
     expect(view.onApproved).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([undefined, 'source-admin-mutation', 'complaint-moderation-mutation'] as const)
+  ('requires the exact scope acknowledgement for %s and never exposes a proof', async (scope) => {
+    const view = confirmation();
+    const selected = scope ?? 'source-admin-mutation';
+    const request = vi.fn(async () => approval(selected));
+    await verifyProtectedAction({ ...view.action, scope }, request);
+    expect(request).toHaveBeenCalledExactlyOnceWith('/api/auth/step-up', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: 'fixture-only', ...(selected === 'complaint-moderation-mutation' ? { scope: selected } : {}) }),
+    });
+    expect(view.clearPassword).toHaveBeenCalledOnce();
+    expect(view.onApproved).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    { scope: 'complaint-moderation-mutation' }, { scope: 'SOURCE_CONFIG_WRITE' }, { scope: undefined },
+    { expiresAt: '2000-01-01T00:00:00Z' }, { expiresAt: 'not-a-date' }, { expiresAt: undefined },
+    { token: 'must-never-reach-browser-approval' },
+  ])('does not approve invalid source acknowledgement %j', async (fields) => {
+    const view = confirmation();
+    const request = vi.fn(async () => Response.json({ scope: 'source-admin-mutation', expiresAt: new Date(Date.now() + 300_000).toISOString(), ...fields }));
+    await expect(verifyProtectedAction(view.action, request)).rejects.toThrow('Password verification could not be confirmed.');
+    expect(view.clearPassword).not.toHaveBeenCalled();
+    expect(view.onApproved).not.toHaveBeenCalled();
+  });
+
+  it('refuses an old source-only backend acknowledgement for a complaint confirmation', async () => {
+    const view = confirmation();
+    const request = vi.fn(async () => approval());
+    await expect(verifyProtectedAction({ ...view.action, scope: 'complaint-moderation-mutation' }, request)).rejects.toThrow('could not be confirmed');
+    expect(request).toHaveBeenCalledOnce();
+    expect(view.onApproved).not.toHaveBeenCalled();
+  });
+
+  it.each(['unknown', null])('refuses invalid runtime scope %s before requesting a password proof', async (scope) => {
+    const view = confirmation();
+    const request = vi.fn(async () => approval());
+    await expect(verifyProtectedAction({ ...view.action, scope: scope as StepUpScope }, request)).rejects.toThrow('Invalid password verification scope.');
+    expect(request).not.toHaveBeenCalled();
+    expect(view.onApproved).not.toHaveBeenCalled();
+  });
+
+  it('does not treat an empty 204 as password approval', async () => {
+    const view = confirmation();
+    const request = vi.fn(async () => new Response(null, { status: 204 }));
+    await expect(verifyProtectedAction(view.action, request)).rejects.toThrow('could not be confirmed');
+    expect(view.onApproved).not.toHaveBeenCalled();
+  });
+
+  it('rechecks ownership after asynchronous acknowledgement decoding', async () => {
+    const view = confirmation();
+    const response = approval();
+    let resolve!: (value: unknown) => void;
+    let entered!: () => void;
+    const started = new Promise<void>((done) => { entered = done; });
+    vi.spyOn(response, 'json').mockImplementation(() => { entered(); return new Promise((done) => { resolve = done; }); });
+    const work = verifyProtectedAction(view.action, vi.fn(async () => response));
+    await started;
+    view.unmount();
+    view.owner.mount();
+    resolve({ scope: 'source-admin-mutation', expiresAt: new Date(Date.now() + 300_000).toISOString() });
+    await work;
+    expect(view.onApproved).not.toHaveBeenCalled();
+    expect(view.clearPassword).not.toHaveBeenCalled();
   });
 });

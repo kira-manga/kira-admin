@@ -23,6 +23,7 @@ describe('server-only trusted ingress configuration', () => {
     expect(config.adminTokenCookie).toBe('kira_admin_session');
     expect(config.adminCsrfCookie).toBe('kira_admin_csrf');
     expect(config.adminStepUpCookie).toBe('kira_admin_step_up');
+    expect(config.adminComplaintStepUpCookie).toBe('kira_admin_complaint_step_up');
   });
 
   it.each([undefined, 'false'])('preserves a configurable backend URL with trust %s', async (setting) => {
