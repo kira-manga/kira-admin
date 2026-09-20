@@ -158,7 +158,10 @@ describe('visible source draft actions', () => {
     expectVisiblePut(view);
     view.action.api = 'Different source';
     view.action.current = { ...view.action.current, etag: '"draft-999"' };
-    const verify = vi.fn(async () => { view.events.push('verify'); return new Response(null, { status: 204 }); });
+    const verify = vi.fn(async () => {
+      view.events.push('verify');
+      return Response.json({ scope: 'source-admin-mutation', expiresAt: new Date(Date.now() + 300_000).toISOString() });
+    });
     let attempts = 0;
     const publish = vi.fn(async () => {
       view.events.push('publish');

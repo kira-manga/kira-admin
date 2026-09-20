@@ -4,9 +4,17 @@ import { FormEvent, useState } from 'react';
 
 import { useActionOwner } from '@/lib/action-owner';
 import { verifyProtectedAction } from '@/lib/step-up';
+import type { StepUpScope } from '@/lib/step-up-contract';
 import { Button, Field, Input } from './ui';
 
-export function StepUpDialog({ action, onCancel, onApproved }: { action: string; onCancel: () => void; onApproved: () => Promise<void> }) {
+type StepUpDialogProps = { action: string; scope?: StepUpScope; onCancel: () => void; onApproved: () => Promise<void> };
+
+export function StepUpDialog({ scope = 'source-admin-mutation', ...props }: StepUpDialogProps) {
+  // A changed scope retires the old confirmation/password and its pending continuation.
+  return <StepUpDialogSession key={scope} {...props} scope={scope} />;
+}
+
+function StepUpDialogSession({ action, scope, onCancel, onApproved }: StepUpDialogProps & { scope: StepUpScope }) {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -21,6 +29,7 @@ export function StepUpDialog({ action, onCancel, onApproved }: { action: string;
     try {
       await verifyProtectedAction({
         password,
+        scope,
         isCurrent: ticket.isCurrent,
         clearPassword: () => setPassword(''),
         onApproved,

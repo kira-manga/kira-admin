@@ -101,7 +101,10 @@ describe('visible changeset actions', () => {
     // An approval must not reread the previous editor/selection context.
     view.action.id = 'different-changeset';
     view.action.current = { ...view.action.current, etag: '"changeset-999"' };
-    const verify = vi.fn(async () => { view.events.push('verify'); return new Response(null, { status: 204 }); });
+    const verify = vi.fn(async () => {
+      view.events.push('verify');
+      return Response.json({ scope: 'source-admin-mutation', expiresAt: new Date(Date.now() + 300_000).toISOString() });
+    });
     let attempts = 0;
     const apply = vi.fn(async () => {
       view.events.push('apply');

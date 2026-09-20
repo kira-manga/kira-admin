@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { SourceCapabilities, SourceDraft, SourceHead, SourceRevision } from '@/lib/types';
 import { SourcesView } from './sources-view';
+import { StepUpDialog } from './step-up-dialog';
 
 // Real view, hooks, client metadata parsing and authoring helpers. Only fetch is
 // replaced; this emulated DOM does not claim browser/BFF cookie or layout proof.
@@ -203,6 +204,45 @@ beforeEach(() => {
   vi.stubGlobal('fetch', fetchMock);
 });
 
+describe('mounted step-up scope ownership', () => {
+  it('retires the previous scope/password and never lets its late acknowledgement approve or clear the new confirmation', async () => {
+    const sourceApproved = vi.fn(async () => {});
+    const complaintApproved = vi.fn(async () => {});
+    const onCancel = vi.fn();
+    root = createRoot(container);
+    await act(async () => {
+      root!.render(<StepUpDialog action="source change" onCancel={onCancel} onApproved={sourceApproved} />);
+    });
+    await enterPassword();
+    const source = plan('POST', '/api/auth/step-up');
+    await click(button('Verify and continue'));
+    expect(source.received?.init?.body).toBe(JSON.stringify({ password: 'fixture-only-password' }));
+
+    await act(async () => {
+      root!.render(<StepUpDialog action="complaint change" scope="complaint-moderation-mutation" onCancel={onCancel} onApproved={complaintApproved} />);
+    });
+    const input = container.querySelector<HTMLInputElement>('input[type="password"]')!;
+    expect(input.value).toBe('');
+    expect(input.disabled).toBe(false);
+    await enterPassword();
+    const complaint = plan('POST', '/api/auth/step-up');
+    await click(button('Verify and continue'));
+    expect(complaint.received?.init?.body).toBe(JSON.stringify({ password: 'fixture-only-password', scope: 'complaint-moderation-mutation' }));
+
+    await deliver(source, Response.json({ scope: 'source-admin-mutation', expiresAt: new Date(Date.now() + 300_000).toISOString() }));
+    expect(sourceApproved).not.toHaveBeenCalled();
+    expect(complaintApproved).not.toHaveBeenCalled();
+    expect(input.value).toBe('fixture-only-password');
+    expect(input.disabled).toBe(true);
+    await deliver(complaint, Response.json({ scope: 'complaint-moderation-mutation', expiresAt: new Date(Date.now() + 300_000).toISOString() }));
+    expect(complaintApproved).toHaveBeenCalledOnce();
+    expect(sourceApproved).not.toHaveBeenCalled();
+    expect(input.value).toBe('');
+    expect(input.disabled).toBe(false);
+    expect(onCancel).not.toHaveBeenCalled();
+  });
+});
+
 afterEach(async () => {
   try {
     await unmount();
@@ -390,7 +430,7 @@ describe('mounted SourcesView history windows', () => {
       const proof = plan('POST', '/api/auth/step-up');
       await click(button('Verify and continue'));
       expect(proof.received?.init?.body).toBe(JSON.stringify({ password: 'fixture-only-password' }));
-      await deliver(proof, new Response(null, { status: 204 }));
+      await deliver(proof, Response.json({ scope: 'source-admin-mutation', expiresAt: new Date(Date.now() + 300_000).toISOString() }));
     }
     expect(completed.received).not.toBeNull();
     if (action === 'operational mode') expect(completed.received?.init?.body).toBe(JSON.stringify({ mode: 'disabled' }));

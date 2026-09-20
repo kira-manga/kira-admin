@@ -3,7 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { NextResponse } from 'next/server';
 
 import { authenticationIdentityHeaders } from '@/lib/server-client-ip';
-import { adminCsrfCookie, adminTokenCookie, backendUrl } from '@/lib/server-config';
+import { adminComplaintStepUpCookie, adminCsrfCookie, adminStepUpCookie, adminTokenCookie, backendUrl } from '@/lib/server-config';
 import { requireSameOrigin } from '@/lib/server-security';
 
 type LoginResponse = { accessToken: string; expiresInSeconds: number; role: string };
@@ -45,5 +45,11 @@ export async function POST(request: Request) {
     path: '/',
     maxAge: login.expiresInSeconds,
   });
+  for (const name of [adminStepUpCookie, adminComplaintStepUpCookie]) {
+    response.cookies.set(name, '', {
+      httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production',
+      path: '/api/backend', expires: new Date(0), maxAge: 0,
+    });
+  }
   return response;
 }
