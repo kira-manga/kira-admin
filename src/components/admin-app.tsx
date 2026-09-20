@@ -8,6 +8,7 @@ import { AdminShell } from './admin-shell';
 import { AuditView } from './audit-view';
 import { CategoriesView } from './categories-view';
 import { ChangesetsView } from './changesets-view';
+import { ComplaintDetailView } from './complaint-detail-view';
 import { LoginScreen } from './login-screen';
 import { MediaView } from './media-view';
 import { OverviewView } from './overview-view';
@@ -43,6 +44,7 @@ export function AdminApp() {
       {view === 'tutorials' ? <TutorialsView /> : null}
       {view === 'categories' ? <CategoriesView /> : null}
       {view === 'media' ? <MediaView /> : null}
+      {view === 'complaints' ? <ComplaintDetailView /> : null}
     </AdminShell>
   );
 }

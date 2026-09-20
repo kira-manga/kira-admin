@@ -1,8 +1,28 @@
 import { describe, expect, it } from 'vitest';
 
-import { adminRouteAllowed, isMutatingMethod, routeNeedsStepUp } from './admin-route-policy';
+import { adminRouteAllowed, isComplaintDetailQuery, isMutatingMethod, routeNeedsStepUp } from './admin-route-policy';
 
 describe('admin BFF route policy', () => {
+  it('allows only a canonical complaint detail GET and one literal TEST scope query', () => {
+    const id = '12345678-1234-3234-8234-123456789abc';
+    const scope = '87654321-1234-4234-8234-123456789abc';
+    expect(adminRouteAllowed(['complaints', id], 'GET')).toBe(true);
+    expect(routeNeedsStepUp(['complaints', id])).toBe(false);
+    expect(isComplaintDetailQuery(`?dataScopeId=${scope}`)).toBe(true);
+    for (const method of ['POST', 'PATCH', 'PUT', 'DELETE', 'HEAD']) {
+      expect(adminRouteAllowed(['complaints', id], method)).toBe(false);
+    }
+    for (const path of [['complaints'], ['complaints', 'search'], ['complaints', id, 'content'], ['complaints', id, 'status'],
+      ['complaints', id, 'closure'], ['complaints', id, ''], ['complaints', id.toUpperCase()], ['complaints', `${id}\n`]]) {
+      expect(adminRouteAllowed(path, 'GET')).toBe(false);
+    }
+    for (const query of ['', `?dataScopeId=${id}`, '?dataScopeId=00000000-0000-0000-0000-000000000000',
+      `?dataScopeId=${scope.toUpperCase()}`, `?dataScopeId=${scope}&dataScopeId=${scope}`, `?dataScopeId=${scope}&extra=1`,
+      `?dataScopeId=%38${scope.slice(1)}`, `?dataScopeId=${scope}\n`]) {
+      expect(isComplaintDetailQuery(query)).toBe(false);
+    }
+  });
+
   it('allows the source editor and changeset workflow', () => {
     expect(adminRouteAllowed(['sources'], 'GET')).toBe(true);
     expect(adminRouteAllowed(['sources', 'Azora', 'editor-draft'], 'PUT')).toBe(true);
