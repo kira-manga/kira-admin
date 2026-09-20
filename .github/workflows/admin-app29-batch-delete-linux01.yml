@@ -1,0 +1,83 @@
+name: Admin App29 targeted atomic DELETE batch Linux verification
+
+on:
+  push:
+    branches: [remediation/admin-app29-batch-delete-linux-20260920-01]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: admin-app29-batch-delete-linux01
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+  PRIMARY_SOURCE_COMMIT: "3d1dc499d5e0f4c4830ad1b32449597b4fa43840"
+
+jobs:
+  remaining:
+    if: >-
+      github.repository == 'kira-manga/kira-admin' &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/remediation/admin-app29-batch-delete-linux-20260920-01' &&
+      github.run_attempt == '1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Measure capacity before checkout or dependency work
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, shutil
+          memory = next(int(line.split()[1])*1024 for line in pathlib.Path('/proc/meminfo').read_text().splitlines() if line.startswith('MemAvailable:'))
+          disk = shutil.disk_usage(os.environ['GITHUB_WORKSPACE']).free
+          print(json.dumps({'available_ram': memory, 'free_disk': disk}))
+          if memory <= 8*1024**3 or disk <= 8*1024**3:
+              raise SystemExit('8GiB resource floor; no execution admitted')
+          PY
+
+      - name: Check out this exact controls carrier separately
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.sha }}
+          path: controls
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Check out only the primary source checkpoint
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ env.PRIMARY_SOURCE_COMMIT }}
+          path: source
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Use the existing Node major without a shared dependency cache
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+
+      - name: Run focused atomic DELETE batch lint/typecheck/tests/build with owned cleanup
+        shell: bash
+        run: exec python3 "$GITHUB_WORKSPACE/controls/.github/verification/admin-app29-batch-delete-linux01/run.py"
+
+      - name: Retain small success or failure evidence, never a source or release archive
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: admin-app29-batch-delete-linux01-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            admin-app29-batch-delete-linux01-evidence/install.log
+            admin-app29-batch-delete-linux01-evidence/lint.log
+            admin-app29-batch-delete-linux01-evidence/typecheck.log
+            admin-app29-batch-delete-linux01-evidence/test.log
+            admin-app29-batch-delete-linux01-evidence/tests-full.json
+            admin-app29-batch-delete-linux01-evidence/build.log
+            admin-app29-batch-delete-linux01-evidence/source-before.json
+            admin-app29-batch-delete-linux01-evidence/resources.json
+            admin-app29-batch-delete-linux01-evidence/result.json
+          retention-days: 1
+          compression-level: 6
+          if-no-files-found: ignore
+          overwrite: false
