@@ -196,9 +196,10 @@ single-delete preparation. NOTICE stays read-only. A loaded detail captures its 
 input edits never replace an operation's target or scope. The backend remains the authority for
 current ADMIN access, TEST admission, transitions, normalization and receipt matching. Entering a
 scope, signing in, or approving a password **does not activate backend complaint APIs**. Disabled404
-and unavailable responses are not successful moderation. Deletion is only one captured REPORT/REPLY,
-with no parent/child, installation or credential cascade. The separately described current-page
-STATUS batch is nondeleting; there is no destructive batch, LIVE scope or deployment/activation
+and unavailable responses are not successful moderation. Single deletion targets one captured
+REPORT/REPLY, with no parent/child, installation or credential cascade. The separately described
+current-page batches offer nondeleting STATUS or explicitly confirmed permanent DELETE, never
+unselected children or owner/credential deletion. There is no LIVE scope or deployment/activation
 setting. Search remains a read, not mutation approval.
 
 The single-item mutation BFF admits only exact `PATCH /api/backend/complaints/<canonical UUID>/{content|status|closure}`
@@ -267,7 +268,7 @@ ID/actionTag pairs, status, TEST scope, key and G above navigation. It uses the 
 `complaint-moderation-mutation` password approval. It sends one atomic operation, never N single-item
 mutations, and offers no deletion, closure or content changes; one invalid, unchanged or stale target rejects all.
 
-The only new BFF route is `POST /api/backend/complaints/batch?dataScopeId=<canonical TEST UUIDv4>`.
+The shared batch BFF route is `POST /api/backend/complaints/batch?dataScopeId=<canonical TEST UUIDv4>`.
 Its closed body is `{"action":"STATUS","status":"RESOLVED","targets":[{"id":"<canonical UUID>","actionTag":"\"complaint-<same UUID>-v7\""}]}`,
 with status OPEN, IN_PROGRESS, PLANNED, RESOLVED or NOT_PLANNED and no aggregate If-Match. The BFF
 validates the entire duplicate-aware schema and retains original valid bytes, even if pair/field
@@ -289,6 +290,39 @@ Clearing is local: no request, new key, repaired target or automatic refresh; a 
 fresh page. Unknown outcomes cannot clear this way. Old-G batches remain hidden and non-sendable
 after login, with the same memory-only/tab-loss limitations above. This source and authored fixtures
 do not establish a running atomic backend, TEST/LIVE activation, destructive-batch recovery or W09.
+
+### Atomic current-page permanent DELETE batch (source only)
+
+The same 1–50 current-page REPORT/REPLY selection can **Prepare permanent delete batch**. Preparation
+captures one immutable sorted ID/actionTag set, original body, TEST scope, key and G above navigation;
+it sends nothing and first displays the complete capture. **Confirm permanent deletion of all
+captured complaints** then opens the existing `complaint-moderation-mutation` password dialog with
+an irreversible-after-authorization warning. An unsent capture may be canceled locally. Authorization
+cannot be canceled by leaving the view or editing later, and no unselected child, installation or
+credentials are deleted. This is one atomic operation, not N single deletes or a repaired subset.
+
+The same fixed POST route admits the separate closed body
+`{"action":"DELETE","targets":[{"id":"<canonical UUID>","actionTag":"\"complaint-<same UUID>-v7\""}]}`.
+DELETE forbids root `status`, closure, cascade, owner and unknown fields. Resource IDs use canonical
+UUID grammar, not a UUIDv4-only rule; scope and key remain UUIDv4. The shared duplicate-aware parser
+retains original valid bytes and applies complete structural400 before missing-tag428 before invalid
+tag412. A valid Long.MAX_VALUE tag is allowed because deletion never increments a version. The same
+origin/CSRF/G, optional proof association, bounded exchange and no-store rules apply.
+
+Only complete200 `{"items":[{"id":"<canonical UUID>"}]}` with the entire ascending captured ID set
+and **no version or other item fields** confirms the batch. Even one member remains POST/200;
+single DELETE's empty204, STATUS's versioned ACK,202/207, partial/reordered/duplicate IDs, aggregate
+ETag and Location cannot confirm it. Request action, not POST alone, determines the ACK grammar.
+Uncertainty, including consumed503, retains every original target/tag/body/key/scope/G; it is not
+success or non-execution. Retries are explicit and identical, normally proofless, with same-capture
+reapproval only after a real backend challenge. Matching captured-proof retirement is unchanged.
+
+Verified deletion or a historical receipt-backed terminal rejection exposes **Review terminal delete
+batch**, then **Clear reviewed batch and return to selection** under the current reviewed session
+lifetime. Clearing is local, without a request, fresh key or automatic refresh. Old-G captures stay
+hidden and non-sendable; memory-only/tab-loss limitations remain. These source paths and authored
+fixtures are **not compiled or run in this tranche**, do not qualify actual browser or backend atomic
+behavior, and do not establish backend completion, TEST/LIVE activation, deployment or W09 acceptance.
 
 ### TEST complaint search connection (source only)
 
@@ -331,7 +365,7 @@ distributed semaphore or Node24/Next16/container/ingress memory qualification.
 
 The backend search producer already exists but remains unregistered behind disabled/sourceOnly
 composition. This read consumer does not change it, activate TEST/LIVE, deploy anything or complete
-W09. The fixed nondeleting batch capture above does not waive those requirements. Product/composition
+W09. The fixed STATUS/DELETE batch capture above does not waive those requirements. Product/composition
 and external qualification requirements remain separate work.
 
 ### TEST scope-wide complaint statistics (source only)

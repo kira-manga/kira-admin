@@ -6,10 +6,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { captureAdminSession } from '@/lib/client-api';
 import { captureComplaintBatchStatusRequest } from '@/lib/complaint-batch-status-wire';
+import { captureComplaintBatchDeleteRequest } from '@/lib/complaint-batch-wire';
 import { fixtureCsrf, fixtureGeneration, fixtureProofId, otherGeneration, otherProofId, seedClientSession, sessionAcknowledgement, stepUpAcknowledgement } from '@/test/auth-fixture';
 import { appliedResponse, complaintId, complaintScope, deletedResponse, mutationRequest, problemResponse } from '@/test/complaint-mutation-fixture';
 import { searchContent, searchCursor, searchNotice, searchPage, searchResponse } from '@/test/complaint-search-fixture';
-import { batchResponse, batchSecondId } from '@/test/complaint-batch-status-fixture';
+import { batchResponse, batchSecondId, deleteBatchResponse } from '@/test/complaint-batch-status-fixture';
 import { statsDocument, statsFixture, statsResponse, statsTotal } from '@/test/complaint-stats-fixture';
 import { AdminApp } from './admin-app';
 
@@ -51,6 +52,10 @@ function acknowledgement(init: RequestInit) {
 
 function batchAcknowledgement(init: RequestInit) {
   return batchResponse(captureComplaintBatchStatusRequest(init.body as string, complaintScope, new Headers(init.headers).get('X-Kira-Idempotency-Key')!));
+}
+
+function deleteBatchAcknowledgement(init: RequestInit) {
+  return deleteBatchResponse(captureComplaintBatchDeleteRequest(init.body as string, complaintScope, new Headers(init.headers).get('X-Kira-Idempotency-Key')!));
 }
 
 function detailReadFailure(challenge: string | null) {
@@ -114,9 +119,13 @@ async function prepareDelete() {
   await act(async () => { submit(form('Complaint moderation editor')); });
 }
 async function selectBatch(id: string) {
-  const checkbox = container.querySelector<HTMLInputElement>(`input[aria-label="Select complaint ${id} for status batch"]`)!;
+  const checkbox = container.querySelector<HTMLInputElement>(`input[aria-label="Select complaint ${id} for atomic batch"]`)!;
   expect(checkbox).not.toBeNull();
   await act(async () => { checkbox.click(); });
+}
+async function openBatchApproval(action: 'STATUS' | 'DELETE') {
+  await click(action === 'STATUS' ? 'Prepare atomic status batch' : 'Prepare permanent delete batch');
+  if (action === 'DELETE') await click('Confirm permanent deletion of all captured complaints');
 }
 async function approve() {
   await enter('[role="dialog"] input[type="password"]', 'fixture-only-password');
@@ -612,7 +621,7 @@ describe('mounted Admin search into the existing detail/operation owner', () => 
   });
 });
 
-describe('mounted Admin atomic nondeleting STATUS batch', () => {
+describe('mounted Admin atomic batches and preserved STATUS behavior', () => {
   it('captures only current ordinary rows once, preserves sorted ID/tag pairs and clears a complete exact Long ACK only after local review', async () => {
     searchReply = () => searchResponse(searchPage([
       searchContent({ id: batchSecondId, version: '9223372036854775806' }), searchNotice(), searchContent(),
@@ -622,7 +631,7 @@ describe('mounted Admin atomic nondeleting STATUS batch', () => {
     const keys = vi.spyOn(crypto, 'randomUUID');
     expect(container.querySelectorAll('input[type="checkbox"]')).toHaveLength(2);
     await selectBatch(batchSecondId); await selectBatch(complaintId); await choose('complaintBatchStatus', 'PLANNED');
-    const batchForm = container.querySelector<HTMLFormElement>('form[aria-label="Atomic complaint status batch"]')!;
+    const batchForm = container.querySelector<HTMLFormElement>('form[aria-label="Atomic complaint batch"]')!;
     const alternate = [...container.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent === `Open detail for ${batchSecondId}`)!;
     const next = [...container.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent === 'Next page')!;
     await act(async () => { submit(batchForm); submit(batchForm); alternate.click(); next.click(); });
@@ -670,7 +679,7 @@ describe('mounted Admin atomic nondeleting STATUS batch', () => {
     expect(searches()).toHaveLength(1); expect(detailReads()).toHaveLength(1); expect(statsReads()).toHaveLength(0);
   });
 
-  it('discards selection on page, filter and scope changes and cannot capture a page from an obsolete equal-G lifetime', async () => {
+  it.each(['STATUS', 'DELETE'] as const)('discards selection on page, filter and scope changes and refuses %s capture from an obsolete equal-G lifetime', async (action) => {
     searchReply = () => searchResponse(searchPage([searchContent({ id: batchSecondId })], searchCursor));
     await mountSearch();
     const keys = vi.spyOn(crypto, 'randomUUID');
@@ -682,7 +691,7 @@ describe('mounted Admin atomic nondeleting STATUS batch', () => {
     expect(container.textContent).toContain('Page 2: 1 results');
     expect(container.textContent).toContain('0 selected on this page only.');
     expect(container.querySelector('input[type="checkbox"]:checked')).toBeNull();
-    expect(container.querySelector(`input[aria-label="Select complaint ${batchSecondId} for status batch"]`)).toBeNull();
+    expect(container.querySelector(`input[aria-label="Select complaint ${batchSecondId} for atomic batch"]`)).toBeNull();
     await selectBatch(complaintId); await enter('input[name="complaintSearchText"]', 'synthetic filter');
     expect(container.querySelector('[aria-label="Complaint search results"]')).toBeNull();
     await click('Search complaints');
@@ -696,7 +705,7 @@ describe('mounted Admin atomic nondeleting STATUS batch', () => {
     expect(container.textContent).toContain('0 selected on this page only.');
     await selectBatch(complaintId);
     await seedClientSession(); // Same selector, different local lifetime: this page is not current.
-    await click('Prepare atomic status batch');
+    await click(action === 'STATUS' ? 'Prepare atomic status batch' : 'Prepare permanent delete batch');
     expect(container.querySelector('[role="dialog"], [aria-label="Retained complaint operation"]')).toBeNull();
     expect(keys).not.toHaveBeenCalled(); expect(batches()).toHaveLength(0); expect(verifications()).toHaveLength(0);
     expect(detailReads()).toHaveLength(0); expect(patches()).toHaveLength(0); expect(deletes()).toHaveLength(0);
@@ -746,12 +755,12 @@ describe('mounted Admin atomic nondeleting STATUS batch', () => {
     expect(container.querySelector('[aria-label="Retained complaint operation"] pre')?.textContent).toBe(original.body);
   });
 
-  it('warns before logout and hides retained old-G targets/body under a later login without adopting the old full ACK', async () => {
+  it.each(['STATUS', 'DELETE'] as const)('warns before logout and hides retained old-G %s targets/body without adopting the old full ACK', async (action) => {
     const storage = vi.spyOn(Storage.prototype, 'setItem');
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
     const pending = deferred<Response>(); mutationReply = () => pending.promise;
     await mountSearch(); await click('Search complaints'); await selectBatch(complaintId);
-    await click('Prepare atomic status batch'); await approve();
+    await openBatchApproval(action); await approve();
     const original = batches()[0][1]!;
     await act(async () => { container.querySelector<HTMLButtonElement>('button[title="Sign out"]')!.click(); });
     expect(confirm).toHaveBeenCalledOnce(); expect(container.querySelector('nav')).not.toBeNull();
@@ -764,12 +773,14 @@ describe('mounted Admin atomic nondeleting STATUS batch', () => {
     await act(async () => { submit(container.querySelector('form')!); });
     const retained = container.querySelector('[aria-label="Retained complaint operation"]')!;
     expect(retained.textContent).toContain('previous session is retained and non-sendable');
-    expect(retained.querySelector('pre, [aria-label="Captured atomic status batch"], [aria-label="Captured batch targets"]')).toBeNull();
+    expect(retained.querySelector('pre, [aria-label="Captured atomic status batch"], [aria-label="Captured atomic delete batch"], [aria-label="Captured batch targets"]')).toBeNull();
     expect(container.querySelector('[aria-label="Complaint search"], [aria-label="Complaint statistics"]')).toBeNull();
-    await act(async () => { pending.resolve(batchAcknowledgement(original)); });
+    await act(async () => { pending.resolve(action === 'STATUS' ? batchAcknowledgement(original) : deleteBatchAcknowledgement(original)); });
     expect(container.textContent).not.toContain('Atomic status batch applied response verified');
+    expect(container.textContent).not.toContain('Atomic delete batch response verified');
     expect(container.textContent).not.toContain('Retry original operation');
     expect(container.textContent).not.toContain('Review terminal status batch');
+    expect(container.textContent).not.toContain('Review terminal delete batch');
     expect(batches()).toHaveLength(1); expect(verifications()).toHaveLength(1);
     for (const [key, value] of storage.mock.calls) { expect(key).toBe('kira-admin-session-generation'); expect([fixtureGeneration, otherGeneration]).toContain(value); }
     expect(localStorage.length).toBe(0); expect(sessionStorage.length).toBe(1);
@@ -803,12 +814,12 @@ describe('mounted Admin atomic nondeleting STATUS batch', () => {
     expect(searches()).toHaveLength(1); expect(detailReads()).toHaveLength(0);
   });
 
-  it('cancels an unsent preparation locally and requires a fresh page before another batch selection', async () => {
+  it.each(['STATUS', 'DELETE'] as const)('cancels unsent %s preparation locally and requires a fresh page before another batch selection', async (action) => {
     await mountSearch(); await click('Search complaints'); await selectBatch(complaintId);
-    await click('Prepare atomic status batch');
+    await click(action === 'STATUS' ? 'Prepare atomic status batch' : 'Prepare permanent delete batch');
     const keys = vi.spyOn(crypto, 'randomUUID');
     expect(container.textContent).toContain('Prepared only. No mutation has been sent.');
-    await click('Cancel');
+    await click(action === 'STATUS' ? 'Cancel' : 'Cancel unsent delete batch');
     expect(container.querySelector('[role="dialog"], [aria-label="Retained complaint operation"], [aria-label="Complaint search results"]')).toBeNull();
     expect(container.querySelector('[aria-label="Complaint search"]')).not.toBeNull();
     expect(keys).not.toHaveBeenCalled(); expect(batches()).toHaveLength(0); expect(verifications()).toHaveLength(0);
@@ -816,6 +827,131 @@ describe('mounted Admin atomic nondeleting STATUS batch', () => {
     await click('Search complaints');
     expect(container.textContent).toContain('0 selected on this page only.');
     expect(container.querySelector('input[type="checkbox"]:checked')).toBeNull();
+  });
+});
+
+describe('mounted Admin atomic permanent DELETE batch', () => {
+  it('retains one complete REPORT/REPLY capture across navigation, requires explicit irreversible confirmation, then clears only a reviewed full ID-only200', async () => {
+    searchReply = () => searchResponse(searchPage([
+      searchContent({ id: batchSecondId, kind: 'REPLY', replyToId: complaintId, version: '9223372036854775807' }), searchNotice(), searchContent(),
+    ], searchCursor));
+    mutationReply = deleteBatchAcknowledgement;
+    await loadDetail(); await click('Search complaints');
+    const keys = vi.spyOn(crypto, 'randomUUID');
+    expect(container.querySelectorAll('input[type="checkbox"]')).toHaveLength(2);
+    await selectBatch(batchSecondId); await selectBatch(complaintId);
+    const batchForm = container.querySelector<HTMLFormElement>('form[aria-label="Atomic complaint batch"]')!;
+    const preparation = [...container.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent === 'Prepare permanent delete batch')!;
+    const alternate = [...container.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent === `Open detail for ${batchSecondId}`)!;
+    const next = [...container.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent === 'Next page')!;
+    await act(async () => { preparation.click(); submit(batchForm); preparation.click(); alternate.click(); next.click(); });
+    expect(keys).toHaveBeenCalledOnce();
+    expect(batches()).toHaveLength(0); expect(verifications()).toHaveLength(0);
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(container.textContent).toContain('Prepared only. No mutation has been sent.');
+    expect(container.textContent).not.toContain('Confirm original operation');
+    const capturedBody = container.querySelector('[aria-label="Retained complaint operation"] pre')!.textContent!;
+    expect(capturedBody).toBe(JSON.stringify({ action: 'DELETE', targets: [
+      { id: complaintId, actionTag: `"complaint-${complaintId}-v9007199254740993"` },
+      { id: batchSecondId, actionTag: `"complaint-${batchSecondId}-v9223372036854775807"` },
+    ] }));
+    expect([...container.querySelectorAll('[aria-label="Captured batch targets"] li bdi')].map((item) => item.textContent)).toEqual([complaintId, batchSecondId]);
+    expect(container.querySelector('[aria-label="Captured atomic delete batch"]')?.textContent).toContain('Permanent DELETE (2 targets, all or none)');
+    expect(container.textContent).toContain('No unselected child, installation or credentials are deleted. After authorization this is irreversible and cannot be canceled.');
+    expect(container.querySelector('article, [aria-label="Complaint content editor"], [aria-label="Complaint moderation editor"], [aria-label="Complaint search"], [aria-label="Complaint statistics"]')).toBeNull();
+    keys.mockClear();
+    await navigate('Sources'); await navigate('Complaints');
+    expect(container.querySelector('[aria-label="Retained complaint operation"] pre')?.textContent).toBe(capturedBody);
+    expect(container.querySelector('[aria-label="Captured atomic delete batch"]')?.textContent).toContain(complaintScope);
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    await click('Confirm permanent deletion of all captured complaints');
+    expect(container.querySelectorAll('[role="dialog"]')).toHaveLength(1);
+    expect(container.querySelector('[role="dialog"] h3')?.textContent).toContain('permanent atomic deletion of all 2 captured complaints (irreversible after authorization)');
+    expect(batches()).toHaveLength(0); expect(verifications()).toHaveLength(0);
+    await approve();
+    expect(batches()).toHaveLength(1); expect(verifications()).toHaveLength(1);
+    const [path, init] = batches()[0];
+    expect(path).toBe(`/api/backend/complaints/batch?dataScopeId=${complaintScope}`);
+    expect(init?.method).toBe('POST'); expect(init?.body).toBe(capturedBody);
+    const headers = new Headers(init?.headers);
+    expect(headers.get('X-Kira-Session-Generation')).toBe(fixtureGeneration);
+    expect(headers.get('X-Kira-CSRF')).toBe(fixtureCsrf);
+    expect(headers.get('X-Kira-Step-Up-Proof-Id')).toBe(fixtureProofId);
+    expect(headers.has('If-Match')).toBe(false);
+    expect(JSON.parse(verifications()[0][1]!.body as string).scope).toBe('complaint-moderation-mutation');
+    expect(container.textContent).toContain('Atomic delete batch response verified for every captured target. Deletion is permanent; review the batch before clearing it.');
+    expect(container.textContent).not.toContain('Atomic status batch applied response verified');
+    expect(container.textContent).not.toContain('Deletion confirmed by an empty 204 response');
+    expect(container.textContent).not.toContain('Reload target to review');
+    expect(container.textContent).not.toContain('Retry original operation');
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    const done = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(done);
+    expect(done.defaultPrevented).toBe(false);
+    await click('Review terminal delete batch'); await navigate('Sources'); await navigate('Complaints');
+    expect(container.textContent).not.toContain('Clear reviewed batch and return to selection');
+    await click('Review terminal delete batch');
+    await seedClientSession();
+    await click('Clear reviewed batch and return to selection');
+    expect(container.textContent).toContain('Your session changed. Review the terminal batch again before clearing it.');
+    expect(container.querySelector('[aria-label="Retained complaint operation"] pre')?.textContent).toBe(capturedBody);
+    await click('Review terminal delete batch');
+    const clear = [...container.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent === 'Clear reviewed batch and return to selection')!;
+    await act(async () => { clear.click(); clear.click(); });
+    expect(container.querySelector('[aria-label="Retained complaint operation"], article, [aria-label="Complaint search results"], [role="alert"]')).toBeNull();
+    expect(container.querySelector('[aria-label="Complaint search"]')).not.toBeNull();
+    expect(container.querySelector('[aria-label="Complaint statistics"]')).not.toBeNull();
+    expect(container.querySelector<HTMLInputElement>('input[name="dataScopeId"]')?.value).toBe(complaintScope);
+    expect(container.querySelector<HTMLInputElement>('input[name="complaintId"]')?.value).toBe('');
+    expect(keys).not.toHaveBeenCalled();
+    expect(batches()).toHaveLength(1); expect(patches()).toHaveLength(0); expect(deletes()).toHaveLength(0);
+    expect(searches()).toHaveLength(1); expect(detailReads()).toHaveLength(1); expect(statsReads()).toHaveLength(0);
+  });
+
+  it('retains every target through partial, STATUS-shaped and consumed503 uncertainty and sends only explicit identical proofless retries', async () => {
+    searchReply = () => searchResponse(searchPage([searchContent({ id: batchSecondId }), searchContent()]));
+    mutationReply = (init) => new Response(`{"items":[{"id":"${complaintId}"}]}`, { headers: deleteBatchAcknowledgement(init).headers });
+    await mountSearch(); await click('Search complaints'); await selectBatch(batchSecondId); await selectBatch(complaintId);
+    await openBatchApproval('DELETE'); await approve();
+    const original = batches()[0][1]!;
+    const keys = vi.spyOn(crypto, 'randomUUID');
+    const replies = [
+      () => new Response(`{"items":[{"id":"${complaintId}","version":9007199254740994},{"id":"${batchSecondId}","version":9007199254740994}]}`, { headers: deleteBatchAcknowledgement(original).headers }),
+      () => problemResponse('SERVICE_UNAVAILABLE', 503, { 'X-Kira-Admin-Step-Up-Consumed': 'true' }),
+    ];
+    for (const [index, reply] of replies.entries()) {
+      expect(container.textContent).toContain('Outcome unknown or unavailable.');
+      expect(container.textContent).not.toContain('Approve original operation');
+      expect(container.textContent).not.toContain('Review terminal delete batch');
+      expect(container.textContent).not.toContain('Atomic delete batch response verified');
+      expect(container.querySelector('[aria-label="Retained complaint operation"] pre')?.textContent).toBe(original.body);
+      expect([...container.querySelectorAll('[aria-label="Captured batch targets"] li bdi')].map((item) => item.textContent)).toEqual([complaintId, batchSecondId]);
+      await act(async () => { await vi.advanceTimersByTimeAsync(1_000); });
+      expect(batches()).toHaveLength(index + 1);
+      mutationReply = reply;
+      await click('Retry original operation without new proof');
+    }
+    expect(container.textContent).toContain('Outcome unknown or unavailable.');
+    expect(container.textContent).not.toContain('Review terminal delete batch');
+    const warning = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(warning);
+    expect(warning.defaultPrevented).toBe(true);
+    await navigate('Sources'); await navigate('Complaints');
+    expect(container.querySelector('[aria-label="Retained complaint operation"] pre')?.textContent).toBe(original.body);
+    expect(container.querySelector('[aria-label="Complaint search"], [aria-label="Complaint statistics"]')).toBeNull();
+    mutationReply = deleteBatchAcknowledgement;
+    await click('Retry original operation without new proof');
+    expect(batches()).toHaveLength(4); expect(verifications()).toHaveLength(1);
+    for (const [index, [path, init]] of batches().entries()) {
+      expect(path).toBe(batches()[0][0]); expect(init?.method).toBe('POST'); expect(init?.body).toBe(original.body);
+      for (const name of ['X-Kira-Idempotency-Key', 'X-Kira-Session-Generation', 'X-Kira-CSRF']) expect(new Headers(init?.headers).get(name)).toBe(new Headers(original.headers).get(name));
+      expect(new Headers(init?.headers).get('X-Kira-Step-Up-Proof-Id')).toBe(index === 0 ? fixtureProofId : null);
+      expect(new Headers(init?.headers).has('If-Match')).toBe(false);
+    }
+    expect(container.textContent).toContain('Atomic delete batch response verified');
+    expect(container.textContent).toContain('Review terminal delete batch');
+    expect(container.textContent).not.toContain('Review terminal status batch');
+    expect(container.textContent).not.toContain('Review confirmed deletion');
+    expect(keys).not.toHaveBeenCalled(); expect(searches()).toHaveLength(1); expect(detailReads()).toHaveLength(0);
+    expect(patches()).toHaveLength(0); expect(deletes()).toHaveLength(0);
   });
 });
 

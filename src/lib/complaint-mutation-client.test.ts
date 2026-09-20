@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fixtureCsrf, fixtureGeneration, fixtureProofId, otherGeneration, seedClientSession, stepUpAcknowledgement } from '@/test/auth-fixture';
 import { appliedResponse, complaintId, complaintScope, deletedResponse, mutationRequest, problemResponse } from '@/test/complaint-mutation-fixture';
-import { batchRequest, batchResponse } from '@/test/complaint-batch-status-fixture';
+import { batchRequest, batchResponse, deleteBatchRequest, deleteBatchResponse } from '@/test/complaint-batch-status-fixture';
 import { isTerminalComplaintOperation, sendComplaintMutation, type ComplaintOperation } from './complaint-mutation-client';
 import { sessionGenerationHeader, stepUpProofIdHeader } from './session-contract';
 
@@ -55,6 +55,54 @@ describe('one-attempt atomic STATUS batch client', () => {
     fetchMock.mockImplementationOnce(() => { entered.resolve(); return reply.promise; });
     const pending = sendComplaintMutation(original, signal()); await entered.promise;
     await seedClientSession(); reply.resolve(batchResponse());
+    expect(await pending).toEqual({ kind: 'stale-session' });
+    await seedClientSession(otherGeneration);
+    expect(await sendComplaintMutation(original, signal())).toEqual({ kind: 'stale-session' });
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+});
+
+describe('one-attempt atomic DELETE batch client', () => {
+  it('keeps partial, STATUS-shaped and consumed503 replies unknown until an explicit identical POST receives the full ID-only ACK', async () => {
+    const original = Object.freeze({ generation: fixtureGeneration, request: deleteBatchRequest(), phase: 'prepared' as const });
+    const before = JSON.stringify(original);
+    fetchMock.mockResolvedValueOnce(new Response(`{"items":[{"id":"${complaintId}"}]}`, { headers: deleteBatchResponse().headers }))
+      .mockResolvedValueOnce(batchResponse())
+      .mockResolvedValueOnce(problemResponse('SERVICE_UNAVAILABLE', 503, { 'X-Kira-Admin-Step-Up-Consumed': 'true' }))
+      .mockResolvedValueOnce(deleteBatchResponse());
+    for (let attempt = 0; attempt < 3; attempt++) {
+      expect(await sendComplaintMutation(original, signal(), attempt === 0 ? stepUpAcknowledgement('complaint-moderation-mutation') : undefined)).toEqual({ kind: 'unknown' });
+      expect(fetchMock).toHaveBeenCalledTimes(attempt + 1); // Each invocation is explicit; the client never retries or fans out.
+    }
+    const outcome = await sendComplaintMutation(original, signal());
+    expect(outcome.kind).toBe('batch-deleted');
+    expect(isTerminalComplaintOperation({ ...original, phase: 'settled', outcome })).toBe(true);
+    expect(isTerminalComplaintOperation({ ...original, phase: 'settled', outcome: { kind: 'batch-deleted', items: [] } })).toBe(false);
+    const statusItems = original.request.targets.map(({ id, baseVersion }) => ({ id, version: baseVersion }));
+    expect(isTerminalComplaintOperation({ ...original, phase: 'settled', outcome: { kind: 'batch-deleted', items: statusItems } })).toBe(false);
+    expect(isTerminalComplaintOperation({ ...original, phase: 'settled', outcome: { kind: 'batch-applied', items: statusItems } })).toBe(false);
+    expect(isTerminalComplaintOperation({ ...original, request: batchRequest(), phase: 'settled', outcome })).toBe(false);
+    for (const [index, [url, init]] of fetchMock.mock.calls.entries()) {
+      expect(url).toBe(`/api/backend/complaints/batch?dataScopeId=${complaintScope}`);
+      expect(init).toMatchObject({ method: 'POST', body: original.request.body, credentials: 'same-origin', redirect: 'error', cache: 'no-store' });
+      const headers = new Headers(init?.headers);
+      expect(headers.get('X-Kira-Idempotency-Key')).toBe(original.request.headers['X-Kira-Idempotency-Key']);
+      expect(headers.get(sessionGenerationHeader)).toBe(fixtureGeneration); expect(headers.get('X-Kira-CSRF')).toBe(fixtureCsrf);
+      expect(headers.get(stepUpProofIdHeader)).toBe(index === 0 ? fixtureProofId : null);
+      for (const name of ['If-Match', 'Authorization', 'Cookie', 'X-Kira-Admin-Step-Up']) expect(headers.has(name)).toBe(false);
+    }
+    expect(fetchMock).toHaveBeenCalledTimes(4); expect(JSON.stringify(original)).toBe(before); expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('refuses body/action substitution before dispatch and cannot adopt a late complete DELETE ACK after lifetime or G replacement', async () => {
+    const original: ComplaintOperation = Object.freeze({ generation: fixtureGeneration, request: deleteBatchRequest(), phase: 'prepared' });
+    expect(await sendComplaintMutation({ ...original, request: { ...deleteBatchRequest(), body: batchRequest().body } }, signal())).toEqual({ kind: 'unknown' });
+    expect(await sendComplaintMutation({ ...original, request: { ...batchRequest(), body: deleteBatchRequest().body } }, signal())).toEqual({ kind: 'unknown' });
+    expect(fetchMock).not.toHaveBeenCalled();
+    const entered = deferred<void>(), reply = deferred<Response>();
+    fetchMock.mockImplementationOnce(() => { entered.resolve(); return reply.promise; });
+    const pending = sendComplaintMutation(original, signal()); await entered.promise;
+    await seedClientSession(); reply.resolve(deleteBatchResponse());
     expect(await pending).toEqual({ kind: 'stale-session' });
     await seedClientSession(otherGeneration);
     expect(await sendComplaintMutation(original, signal())).toEqual({ kind: 'stale-session' });
