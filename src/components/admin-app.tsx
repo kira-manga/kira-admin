@@ -36,7 +36,7 @@ export function AdminApp() {
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
       const pending = complaintOperationRef.current;
-      if (!pending || pending.phase === 'prepared' || pending.outcome?.kind === 'applied' || pending.outcome?.kind === 'rejected') return;
+      if (!pending || pending.phase === 'prepared' || pending.outcome?.kind === 'applied' || pending.outcome?.kind === 'rejected' || pending.outcome?.kind === 'deleted') return;
       event.preventDefault(); event.returnValue = '';
     };
     window.addEventListener('beforeunload', warn);
@@ -63,7 +63,7 @@ export function AdminApp() {
   function logout(warn = true) {
     const pending = complaintOperationRef.current;
     if (warn && pending && pending.phase !== 'prepared'
-      && pending.outcome?.kind !== 'applied' && pending.outcome?.kind !== 'rejected'
+      && pending.outcome?.kind !== 'applied' && pending.outcome?.kind !== 'rejected' && pending.outcome?.kind !== 'deleted'
       && !window.confirm('A complaint operation is retained. Signing out will make it non-sendable; it does not cancel or establish its outcome. Continue?')) return;
     const version = ++transition.current;
     const mounted = owner.captureLifetime();

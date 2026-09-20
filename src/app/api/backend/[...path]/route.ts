@@ -22,7 +22,7 @@ async function proxy(request: Request, context: { params: Promise<{ path: string
   if (!path.length || !adminRouteAllowed(path, request.method)) {
     return Response.json({ detail: 'Admin route is not allowed.' }, { status: 404 });
   }
-  if (path[0] === 'complaints' && request.method === 'PATCH') return proxyComplaintMutation(request, path);
+  if (path[0] === 'complaints' && ['PATCH', 'DELETE'].includes(request.method)) return proxyComplaintMutation(request, path);
   if (path[0] === 'complaints') return proxyComplaintRead(request, path);
   const incomingUrl = new URL(request.url);
   if (isMutatingMethod(request.method)) {
