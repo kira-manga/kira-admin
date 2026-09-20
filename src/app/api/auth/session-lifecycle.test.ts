@@ -4,6 +4,7 @@ import { isSessionAcknowledgement, sessionGenerationHeader, stepUpProofIdHeader,
 import { issueAdminProof, readAdminProof, readAdminSession, type AdminSessionCookie } from '@/lib/server-session';
 import { isStepUpApproval, type StepUpApproval, type StepUpScope } from '@/lib/step-up-contract';
 import { createSessionFixture, fixtureSigningSecret, signedRequestHeaders } from '@/test/server-session-fixture';
+import { appliedResponse, complaintId, complaintScope, grantA, grantB, mutationRequest } from '@/test/complaint-mutation-fixture';
 
 const origin = 'https://admin.example.test';
 const jwt = 'same-second-fixture-jwt';
@@ -60,13 +61,13 @@ async function login(jar: CookieJar) {
   jar.receive(response);
   return session as SessionAcknowledgement;
 }
-async function stepUp(jar: CookieJar, session: SessionAcknowledgement) {
-  fetchMock.mockResolvedValueOnce(upstreamProof());
+async function stepUp(jar: CookieJar, session: SessionAcknowledgement, scope: StepUpScope = 'source-admin-mutation', association: string | null = null) {
+  fetchMock.mockResolvedValueOnce(upstreamProof(scope, association ? { 'X-Kira-Admin-Step-Up-Grant-Id': association } : {}));
   const { POST } = await import('./step-up/route');
-  const response = await POST(jar.request('/api/auth/step-up', session, 'POST', {}, '{"password":"fixture"}'));
+  const response = await POST(jar.request('/api/auth/step-up', session, 'POST', {}, JSON.stringify({ password: 'fixture', ...(scope === 'complaint-moderation-mutation' ? { scope } : {}) })));
   expect(response.status).toBe(200);
   const approval = await response.json();
-  expect(isStepUpApproval(approval, 'source-admin-mutation')).toBe(true);
+  expect(isStepUpApproval(approval, scope)).toBe(true);
   jar.receive(response);
   return approval as StepUpApproval;
 }
@@ -272,7 +273,7 @@ describe('exact mounted source-consumption recognition', () => {
     expect(response.status).toBe(outcome === 'timeout' ? 504 : outcome === 'network' ? 502 : 200);
   });
 
-  it('forwards no proof and retires no P on an allowed non-action shape, and keeps complaint writes closed', async () => {
+  it('forwards no proof on source non-action shapes, and keeps unsupported complaint methods closed', async () => {
     const session = createSessionFixture();
     const proof = issueAdminProof(session, proofToken, 'source-admin-mutation', new Date(Date.now() + 300_000).toISOString(), null);
     const handlers = await import('../backend/[...path]/route');
@@ -287,12 +288,38 @@ describe('exact mounted source-consumption recognition', () => {
       const path = ['complaints', grantId, 'status'];
       expect((await handlers[method](new Request(origin + '/api/backend/' + path.join('/'), { method, headers: signedRequestHeaders(session, [proof]) }), { params: Promise.resolve({ path }) })).status).toBe(404);
     }
-    expect(handlers).not.toHaveProperty('PATCH');
+    expect(handlers).toHaveProperty('PATCH');
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
 
 describe('server-owned complaint association and runtime availability', () => {
+  it.each(['same-session', 'new-session', 'uncaptured-association'] as const)('never retires a later issuance on a delayed complaint response (%s)', async (ordering) => {
+    const jar = new CookieJar();
+    const firstSession = await login(jar);
+    const first = await stepUp(jar, firstSession, 'complaint-moderation-mutation', grantA);
+    const description = mutationRequest();
+    const path = ['complaints', complaintId, 'status'];
+    const url = '/api/backend/' + path.join('/') + `?dataScopeId=${complaintScope}`;
+    const entered = deferred<void>();
+    const upstream = deferred<Response>();
+    fetchMock.mockImplementationOnce(() => { entered.resolve(); return upstream.promise; });
+    const { PATCH } = await import('../backend/[...path]/route');
+    const pending = PATCH(jar.request(url, firstSession, 'PATCH', { ...description.headers, [stepUpProofIdHeader]: first.proofId }, description.body), { params: Promise.resolve({ path }) });
+    await entered.promise;
+    const currentSession = ordering === 'new-session' ? await login(jar) : firstSession;
+    const later = await stepUp(jar, currentSession, 'complaint-moderation-mutation', grantB);
+    upstream.resolve(appliedResponse(description, { 'X-Kira-Admin-Step-Up-Consumed-Grant-Id': ordering === 'uncaptured-association' ? grantB : grantA }));
+    const response = await pending;
+    expect(response.status).toBe(200);
+    expect(response.headers.getSetCookie()).toHaveLength(ordering === 'uncaptured-association' ? 0 : 1);
+    expect(response.headers.get('set-cookie') ?? '').not.toContain(later.proofId);
+    jar.receive(response);
+    const headers = jar.request(url, currentSession, 'PATCH', { [stepUpProofIdHeader]: later.proofId }).headers;
+    expect(readAdminProof(headers, readAdminSession(headers), 'complaint-moderation-mutation')).toMatchObject({ proofId: later.proofId, grantId: grantB });
+    expect(response.headers.has('X-Kira-Admin-Step-Up-Consumed-Grant-Id')).toBe(false);
+  });
+
   it.each([null, grantId])('keeps issuance association %s server-side and separate from browser P', async (association) => {
     const session = createSessionFixture();
     const headers = signedRequestHeaders(session);

@@ -3,11 +3,12 @@ import { authenticatedFetch } from './client-api';
 import { ComplaintReadWireError, decodeComplaintAdminDetail, type ParsedComplaintAdminDetail } from './complaint-read-wire';
 
 export type ComplaintAdminDetailRequest = Readonly<{ id: string; dataScopeId: string; signal: AbortSignal }>;
-export type ComplaintReadClientReason = 'UNAVAILABLE' | 'SESSION_EXPIRED' | 'FORBIDDEN' | 'INVALID_RESPONSE' | 'NETWORK';
+export type ComplaintReadClientReason = 'UNAVAILABLE' | 'SESSION_EXPIRED' | 'UNAUTHORIZED' | 'FORBIDDEN' | 'INVALID_RESPONSE' | 'NETWORK';
 
 const messages: Record<ComplaintReadClientReason, string> = {
   UNAVAILABLE: 'Complaint detail is unavailable or not found.',
   SESSION_EXPIRED: 'Your admin session has expired.',
+  UNAUTHORIZED: 'Complaint detail was not authorized.',
   FORBIDDEN: 'Administrator access is required.',
   INVALID_RESPONSE: 'Complaint detail could not be validated.',
   NETWORK: 'Complaint detail could not be reached.',
@@ -37,7 +38,11 @@ export async function fetchComplaintAdminDetail({ id, dataScopeId, signal }: Com
     });
     if (deadline.signal.aborted) throw new ComplaintReadClientError('NETWORK');
     if (response.redirected) throw new ComplaintReadClientError('INVALID_RESPONSE');
-    if (response.status === 401) throw new ComplaintReadClientError('SESSION_EXPIRED');
+    if (response.status === 401) {
+      // The GET BFF strips upstream challenges; only its exact local boundary declares expiry.
+      const localExpiry = response.headers.get('www-authenticate') === 'KiraSession realm="kira-admin-bff"';
+      throw new ComplaintReadClientError(localExpiry ? 'SESSION_EXPIRED' : 'UNAUTHORIZED');
+    }
     if (response.status === 403) throw new ComplaintReadClientError('FORBIDDEN');
     if (response.status === 502 || response.status === 504) throw new ComplaintReadClientError('NETWORK');
     if (response.status === 404 || response.status === 429 || response.status >= 500) throw new ComplaintReadClientError('UNAVAILABLE');

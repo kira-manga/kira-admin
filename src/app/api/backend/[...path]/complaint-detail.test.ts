@@ -90,9 +90,12 @@ describe('read-only complaint detail BFF connection', () => {
       { query: '?dataScopeId=00000000-0000-0000-0000-000000000000' }, { query: `?dataScopeId=%38${scope.slice(1)}` },
     ]) expect((await proxy(options)).status).toBeGreaterThanOrEqual(400);
     cookieBoundary.values.delete(session.name);
-    expect((await proxy()).status).toBe(401);
+    const localFailure = await proxy();
+    expect(localFailure.status).toBe(401);
+    expect(localFailure.headers.get('WWW-Authenticate')).toBe('KiraSession realm="kira-admin-bff"');
+    expect(localFailure.headers.getSetCookie()).toHaveLength(0);
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(await import('./route')).not.toHaveProperty('PATCH');
+    expect(await import('./route')).toHaveProperty('PATCH'); // Only the separately bounded three-action connection.
   });
 
   it('keeps unavailable/auth statuses but discards private error bodies and redirects without claiming activation', async () => {
@@ -105,6 +108,29 @@ describe('read-only complaint detail BFF connection', () => {
       expect(Object.fromEntries(response.headers)).toEqual({ 'cache-control': 'no-store', 'content-type': 'application/json' });
       expect(cancel).toHaveBeenCalledOnce();
     }
+  });
+
+  it.each([null, 'Bearer realm="kira-complaints"', 'KiraSession realm="kira-admin-bff"'])('strips upstream read401 challenge %s without retiring the authenticated G or either scoped P', async (challenge) => {
+    const sourceProof = issueAdminProof(session, 'B'.repeat(43), 'source-admin-mutation', new Date(Date.now() + 300_000).toISOString(), null);
+    cookieBoundary.values.set(sourceProof.name, sourceProof.value);
+    const before = [...cookieBoundary.values];
+    const cancel = vi.fn();
+    const denied = upstream(new ReadableStream({ start(controller) { controller.enqueue(bytes('private upstream read failure')); }, cancel }), 401);
+    if (challenge !== null) denied.headers.set('WWW-Authenticate', challenge);
+    fetchMock.mockResolvedValueOnce(denied);
+    const response = await proxy();
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({ detail: 'Complaint detail could not be loaded.' });
+    expect(Object.fromEntries(response.headers)).toEqual({ 'cache-control': 'no-store', 'content-type': 'application/json' });
+    expect(response.headers.get('WWW-Authenticate')).toBeNull();
+    expect(response.headers.getSetCookie()).toHaveLength(0);
+    expect([...cookieBoundary.values]).toEqual(before);
+    expect(cookieBoundary.values.get(session.name)).toBe(session.value);
+    expect(cookieBoundary.values.get(proof.name)).toBe(proof.value);
+    expect(cookieBoundary.values.get(sourceProof.name)).toBe(sourceProof.value);
+    expect(new Headers(fetchMock.mock.calls[0][1]?.headers).get('Authorization')).toBe('Bearer fixture-only-session');
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(cancel).toHaveBeenCalledOnce();
   });
 
   it('bounds actual streamed bytes including the exact ceiling, and refuses empty or invalid-header successes', async () => {

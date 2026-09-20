@@ -105,17 +105,22 @@ export function prepareComplaintContentEdit(
   validateIdempotencyKey(idempotencyKey);
   if (draft.variant === 'ordinary') {
     const base = copyOrdinarySnapshot(draft.base);
-    validateType(draft.content.type);
-    const content = Object.freeze({
-      type: draft.content.type,
-      subject: normalizeText(draft.content.subject, 'SUBJECT', 200, 800),
-      body: normalizeText(draft.content.body, 'BODY', 1_000, 4_000),
-    });
+    const content = Object.freeze(prepareComplaintOrdinaryContent(draft.content));
     return Object.freeze({ operation: 'content' as const, variant: 'ordinary' as const, base, idempotencyKey, content });
   }
   const base = copyNoticeReplySnapshot(draft.base);
-  const content = Object.freeze({ body: normalizeText(draft.content.body, 'BODY', 1_000, 4_000) });
+  const content = Object.freeze({ body: prepareComplaintEditedBody(draft.content.body) });
   return Object.freeze({ operation: 'content' as const, variant: 'notice-reply' as const, base, idempotencyKey, content });
+}
+
+/** Shared text validation without an invented snapshot, actor or request identity. */
+export function prepareComplaintOrdinaryContent(content: OrdinaryContent): OrdinaryContent {
+  validateType(content.type);
+  return { type: content.type, subject: normalizeText(content.subject, 'SUBJECT', 200, 800), body: prepareComplaintEditedBody(content.body) };
+}
+
+export function prepareComplaintEditedBody(body: string) {
+  return normalizeText(body, 'BODY', 1_000, 4_000);
 }
 
 function copyOrdinarySnapshot(snapshot: OrdinarySnapshot): OrdinarySnapshot {

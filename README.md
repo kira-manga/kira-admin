@@ -170,7 +170,8 @@ cannot delete a newer G/P they never received. Source proof P is retired at its 
 only on a direct, non-redirected HTTP 200 from the exact changeset-apply, draft-publish or operational-mode
 handler. Transport failures, redirects, 4xx/5xx and ambiguous outcomes retain it. Backend expiry and
 one-time consumption remain authoritative: retention is **not** permission to reuse a consumed grant.
-Complaint mutations remain closed; historical complaint-consumed metadata never clears another proof.
+Complaint proof retirement uses the separate captured grant association described below; historical
+complaint-consumed metadata alone never clears another proof.
 
 Processing is bounded to 16 KiB of raw Cookie headers, 128 cookie fields, four session cookies and
 eight proof cookies; issuance refuses at capacity. Each signed envelope is at most 3,800 characters.
@@ -187,6 +188,58 @@ Legacy fixed-name cookies are not authenticated generations and require re-login
 `/api/backend` are no longer read or upgraded; inaccessible legacy cookies expire naturally. Successful
 login removes only captured legacy root session/CSRF names. Production rollout must coordinate the
 runtime secret and re-login; build/fixture success does not verify deployment or browser operation.
+
+### Ordinary complaint moderation connection (source only)
+
+The Complaints view connects known-ID TEST detail to the existing content, status and closure
+preparation forms. NOTICE stays read-only. A loaded detail captures its TEST scope and G; later
+input edits never replace an operation's target or scope. The backend remains the authority for
+current ADMIN access, TEST admission, transitions, normalization and receipt matching. Entering a
+scope, signing in, or approving a password **does not activate backend complaint APIs**. Disabled404
+and unavailable responses are not successful moderation. This connection adds no search, stats,
+delete/batch actions, LIVE scope or deployment/activation setting.
+
+The BFF admits only exact `PATCH /api/backend/complaints/<canonical UUID>/{content|status|closure}`
+with one canonical UUIDv4 `dataScopeId`, signed G, same-origin CSRF, a canonical idempotency key and
+the exact strong target If-Match. It collects the entire identity-encoded JSON request (16 KiB max)
+before dispatch, validates the closed fields with the existing text rules without rewriting retained
+bytes, and bounds the fetch plus response body to 65 seconds and 32 KiB. Redirects, contradictory
+framing, malformed/partial/oversized responses and non-identity upstream encoding fail without
+forwarding a prefix. Only the finite contract headers and validated ACK/problem bytes reach the
+browser; backend tokens, origins, cookies and grant-identity headers do not.
+
+An attempt may omit proof P. A missing, expired or non-matching signed complaint proof is never
+replaced by another cookie: the upstream request is proofless. The backend can replay an existing
+receipt without fresh approval, or require step-up for new work. A valid200 ACK confirms the exact
+next numeric Long/ETag independently of proof retirement. A recognized business rejection is
+terminal only with its historical receipt marker; bounded500/503 remain unknown even with it.
+The private `X-Kira-Admin-Step-Up-Consumed-Grant-Id` retires only a single matching authenticated
+G/session/scope/grant envelope from the original request's bounded cookie inventory, at `/api`.
+Thus replay of A with selected fresh B can retire A but not B, and a later issuance not captured in
+the request cannot be deleted by its delayed response. NULL/absent/unmatched associations do not
+retire anything; malformed or uncertain responses retain proofs. Retention does not authorize reuse.
+
+The parent holds one immutable operation in memory above view navigation, separate from any P:
+G, scope, target, operation, key, tag and body never change on retry. Preparation can be canceled
+before dispatch; after dispatch, cancellation/timeout/navigation is unknown, not non-execution.
+Retries are explicit and identical, normally proofless; same-descriptor reapproval is offered only
+after a real backend step-up-required response. A confirmed terminal rejection preserves the draft.
+Explicit reload shows reviewed current detail without overwriting it; a separately labeled new-intent
+action discards that draft and supplies a new key/base. Unknown or key-reused outcomes never silently
+start a replacement. A local KiraSession expiry returns to login; a backend Bearer denial is distinct.
+
+Logout and destructive tab navigation have best-effort unresolved-work warnings. Old-G operations
+remain retained and non-sendable across login, with their prose hidden, never silently rebound even
+to an apparently identical account. **Hard reload/tab/process loss destroys this memory-only record;
+there is no durable tab-loss or cross-session recovery.** Neither loss nor receipt expiry proves
+non-execution. Complaint prose, passwords, backend JWTs/proofs and grant IDs are never put in browser
+persistence. Displayed complaint text is escaped, wrapped and direction-isolated; bidi-format controls
+are visible tokens on display/copy while raw editor drafts and retained payloads are unchanged.
+
+Unit/component fixtures do not qualify actual browser/session/ingress behavior, an installed signing
+key, real TEST credentials/capacity/retention authority, backend composition, or deployment. Those
+remain separate owner-controlled verification and rollout work; this source slice is not W09/live
+qualification or an App29 completion claim.
 
 ### Authentication client identity
 

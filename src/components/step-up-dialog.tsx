@@ -3,18 +3,19 @@
 import { FormEvent, useState } from 'react';
 
 import { useActionOwner } from '@/lib/action-owner';
+import { ApiError } from '@/lib/client-api';
 import { verifyProtectedAction } from '@/lib/step-up';
 import type { StepUpApproval, StepUpScope } from '@/lib/step-up-contract';
 import { Button, Field, Input } from './ui';
 
-type StepUpDialogProps = { action: string; scope?: StepUpScope; onCancel: () => void; onApproved: (approval: StepUpApproval) => Promise<void> };
+type StepUpDialogProps = { action: string; scope?: StepUpScope; onCancel: () => void; onApproved: (approval: StepUpApproval) => Promise<void>; onSessionExpired?: () => void };
 
 export function StepUpDialog({ scope = 'source-admin-mutation', ...props }: StepUpDialogProps) {
   // A changed scope retires the old confirmation/password and its pending continuation.
   return <StepUpDialogSession key={scope} {...props} scope={scope} />;
 }
 
-function StepUpDialogSession({ action, scope, onCancel, onApproved }: StepUpDialogProps & { scope: StepUpScope }) {
+function StepUpDialogSession({ action, scope, onCancel, onApproved, onSessionExpired }: StepUpDialogProps & { scope: StepUpScope }) {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -35,7 +36,10 @@ function StepUpDialogSession({ action, scope, onCancel, onApproved }: StepUpDial
         onApproved,
       });
     } catch (caught) {
-      if (ticket.isCurrent()) setError(caught instanceof Error ? caught.message : 'The protected action failed.');
+      if (ticket.isCurrent()) {
+        if (caught instanceof ApiError && caught.status === 401 && onSessionExpired) onSessionExpired();
+        else setError(caught instanceof Error ? caught.message : 'The protected action failed.');
+      }
     } finally {
       if (owner.release(ticket)) {
         setPassword('');

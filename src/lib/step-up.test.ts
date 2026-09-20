@@ -39,6 +39,19 @@ describe('protected-action verification', () => {
     expect(view.onApproved).not.toHaveBeenCalled();
   });
 
+  it('keeps the local KiraSession expiry distinct from backend verification refusal without reading its body', async () => {
+    const view = confirmation();
+    const cancel = vi.fn();
+    const response = new Response(new ReadableStream({ start(controller) { controller.enqueue(new TextEncoder().encode('ignored body')); }, cancel }), {
+      status: 401, headers: { 'WWW-Authenticate': 'KiraSession realm="kira-admin-bff"' },
+    });
+    const json = vi.spyOn(response, 'json');
+    await expect(verifyProtectedAction({ ...view.action, scope: 'complaint-moderation-mutation' }, vi.fn(async () => response))).rejects.toMatchObject({ status: 401, message: 'Your admin session has expired. Sign in again.' });
+    expect(json).not.toHaveBeenCalled();
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(view.onApproved).not.toHaveBeenCalled();
+  });
+
   it('uses the existing fallback for unreadable verification problems', async () => {
     const view = confirmation();
     const request = vi.fn(async () => new Response('not JSON', { status: 401 }));
