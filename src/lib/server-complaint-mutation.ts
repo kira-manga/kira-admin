@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { isComplaintDetailPath, isComplaintDetailQuery, isComplaintMutationPath } from './admin-route-policy';
+import { isComplaintBatchPath, isComplaintDetailPath, isComplaintDetailQuery, isComplaintMutationPath } from './admin-route-policy';
+import { captureComplaintBatchStatusRequest, ComplaintBatchStatusBodyError, decodeComplaintBatchStatusOutcome } from './complaint-batch-status-wire';
 import { complaintReceiptHeader, decodeComplaintMutationOutcome, prepareComplaintMutationRequest, validateComplaintMutationBody, type ComplaintMutationOperation } from './complaint-mutation-wire';
 import { backendUrl } from './server-config';
 import { requireCsrf, requireSameOrigin } from './server-security';
@@ -21,7 +22,8 @@ function failure(status: number) {
 export async function proxyComplaintMutation(request: Request, path: string[]) {
   const url = new URL(request.url);
   const deleting = request.method === 'DELETE' && isComplaintDetailPath(path);
-  if (!(deleting || request.method === 'PATCH' && isComplaintMutationPath(path)) || url.pathname !== `/api/backend/${path.join('/')}`) return failure(404);
+  const batching = request.method === 'POST' && isComplaintBatchPath(path);
+  if (!(deleting || batching || request.method === 'PATCH' && isComplaintMutationPath(path)) || url.pathname !== `/api/backend/${path.join('/')}`) return failure(404);
   if (!isComplaintDetailQuery(url.search)) return failure(400);
   const originFailure = await requireSameOrigin(request);
   if (originFailure) return originFailure;
@@ -100,14 +102,17 @@ export async function proxyComplaintMutation(request: Request, path: string[]) {
     const key = request.headers.get('X-Kira-Idempotency-Key');
     if (!isSessionSelector(key)) return failure(400);
     const tag = request.headers.get('if-match');
-    if (tag === null) return failure(428);
+    if (batching && tag !== null) return failure(400); // A batch never has an aggregate conditional tag.
+    if (!batching && tag === null) return failure(428);
     const operation: ComplaintMutationOperation = deleting ? 'delete' : path[2] as ComplaintMutationOperation;
     const scope = url.search.slice('?dataScopeId='.length);
-    try { prepareComplaintMutationRequest(operation, path[1], scope, key, tag, deleting ? '' : '{}'); } catch { return failure(412); }
-    const bytes = await read(request, deleting ? 0 : 16_384, deleting);
+    if (!batching) {
+      try { prepareComplaintMutationRequest(operation, path[1], scope, key, tag!, deleting ? '' : '{}'); } catch { return failure(412); }
+    }
+    const bytes = await read(request, deleting ? 0 : batching ? 32_768 : 16_384, deleting);
     const body = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
-    validateComplaintMutationBody(operation, body);
-    const description = prepareComplaintMutationRequest(operation, path[1], scope, key, tag, body);
+    if (!batching) validateComplaintMutationBody(operation, body);
+    const description = batching ? captureComplaintBatchStatusRequest(body, scope, key) : prepareComplaintMutationRequest(operation, path[1], scope, key, tag!, body);
     const headers = new Headers({ ...description.headers,
       Authorization: `Bearer ${session.token}`, Accept: 'application/json, application/problem+json', 'Accept-Encoding': 'identity',
     });
@@ -133,7 +138,9 @@ export async function proxyComplaintMutation(request: Request, path: string[]) {
       etag: upstream.headers.get('etag'), consumed, challenge: upstream.headers.get('www-authenticate'),
       retryAfter: upstream.headers.get('retry-after'), location: upstream.headers.get('location'), body: responseBytes,
     };
-    decodeComplaintMutationOutcome(description, metadata); // Complete validation before any downstream headers/bytes.
+    // Complete exact single ACK or entire sorted batch ACK before downstream bytes or proof retirement.
+    if (description.method === 'POST') decodeComplaintBatchStatusOutcome(description, metadata);
+    else decodeComplaintMutationOutcome(description, metadata);
     active();
     const outputHeaders = new Headers({ [contractHeader]: '1',
       'Cache-Control': 'no-store, no-transform', 'X-Content-Type-Options': 'nosniff',
@@ -150,7 +157,7 @@ export async function proxyComplaintMutation(request: Request, path: string[]) {
   } catch (error) {
     if (controller.signal.aborted) return failure(controller.signal.reason === timeout ? 504 : 502);
     if (error instanceof DOMException && error.name === 'TimeoutError') return failure(504);
-    return failure(dispatched ? 502 : error === tooLarge && !deleting ? 413 : 400);
+    return failure(dispatched ? 502 : error === tooLarge && !deleting ? 413 : error instanceof ComplaintBatchStatusBodyError ? error.status : 400);
   } finally {
     clearTimeout(timer);
     request.signal.removeEventListener('abort', onAbort);

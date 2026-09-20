@@ -4,6 +4,8 @@ import { useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 
 import { useActionOwner, type ActionTicket } from '@/lib/action-owner';
 import { ApiError, captureAdminSession } from '@/lib/client-api';
+import { complaintBatchStatuses, prepareComplaintBatchStatusRequest, type ComplaintBatchStatusRequest } from '@/lib/complaint-batch-status-wire';
+import type { ComplaintStatusTarget } from '@/lib/complaint-moderation-wire';
 import { ComplaintReadClientError, fetchComplaintAdminSearch } from '@/lib/complaint-read-client';
 import type { ParsedComplaintAdminPage } from '@/lib/complaint-read-wire';
 import { complaintSearchStatuses, complaintSearchTypes, prepareComplaintAdminSearch, type ComplaintAdminSearchQuery } from '@/lib/complaint-search-wire';
@@ -15,6 +17,7 @@ type LoadedPage = { value: ParsedComplaintAdminPage; query: ComplaintAdminSearch
 type Props = {
   generation: string; dataScopeId: string; disabled: boolean;
   onSelect: (target: { id: string; dataScopeId: string; generation: string }) => void;
+  onPrepareBatch?: (request: ComplaintBatchStatusRequest, generation: string) => boolean;
   onSessionExpired: () => void;
 };
 const messages = {
@@ -28,7 +31,7 @@ const messages = {
 const textStyle = { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', unicodeBidi: 'isolate' } as const;
 
 /** One in-memory page, one active read. The parent keys this owner by G/scope and removes it for retained operations. */
-export function ComplaintSearchView({ generation, dataScopeId, disabled, onSelect, onSessionExpired }: Props) {
+export function ComplaintSearchView({ generation, dataScopeId, disabled, onSelect, onPrepareBatch, onSessionExpired }: Props) {
   const [filters, setFilters] = useState<Filters>({ text: '', status: '', type: '', ownership: '', updatedFrom: '', updatedBefore: '', limit: '50' });
   const filterRef = useRef(filters);
   const [page, setPage] = useState<LoadedPage | null>(null);
@@ -38,6 +41,11 @@ export function ComplaintSearchView({ generation, dataScopeId, disabled, onSelec
   const resultHeading = useRef<HTMLHeadingElement>(null);
   const owner = useActionOwner();
   const active = useRef<{ ticket: ActionTicket; controller: AbortController } | null>(null);
+  const [selected, setSelected] = useState<readonly string[]>([]);
+  const selectedRef = useRef<readonly string[]>([]);
+  const [batchStatus, setBatchStatus] = useState<ComplaintStatusTarget>('RESOLVED');
+  const batchStatusRef = useRef<ComplaintStatusTarget>('RESOLVED');
+  const captured = useRef(false);
 
   useLayoutEffect(() => () => { active.current?.controller.abort(); active.current = null; }, []);
   useLayoutEffect(() => { if (page) resultHeading.current?.focus(); }, [page]);
@@ -46,22 +54,24 @@ export function ComplaintSearchView({ generation, dataScopeId, disabled, onSelec
     const pending = active.current;
     active.current = null;
     if (pending) { owner.release(pending.ticket); pending.controller.abort(); }
+    selectedRef.current = []; setSelected([]);
     pageRef.current = null; setPage(null); setError(''); setLoading(false);
   }
 
   function change(change: Partial<Filters>) {
-    if (disabled) return;
+    if (disabled || captured.current) return;
     invalidate();
     filterRef.current = { ...filterRef.current, ...change };
     setFilters(filterRef.current);
   }
 
   async function load(query: ComplaintAdminSearchQuery, index: number) {
-    if (disabled) return;
+    if (disabled || captured.current) return;
     const ticket = owner.acquire();
     if (!ticket) return;
     const controller = new AbortController();
     active.current = { ticket, controller };
+    selectedRef.current = []; setSelected([]);
     pageRef.current = null; setPage(null); setError(''); setLoading(true);
     let session: ReturnType<typeof captureAdminSession> | undefined;
     try {
@@ -85,7 +95,7 @@ export function ComplaintSearchView({ generation, dataScopeId, disabled, onSelec
 
   function search(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (disabled || owner.isLocked()) return;
+    if (disabled || captured.current || owner.isLocked()) return;
     try {
       const value = filterRef.current;
       const query = prepareComplaintAdminSearch({ dataScopeId, text: value.text,
@@ -100,14 +110,39 @@ export function ComplaintSearchView({ generation, dataScopeId, disabled, onSelec
 
   function nextPage() {
     const current = pageRef.current;
-    if (disabled || !current || !current.isCurrent() || !current.value.nextCursor) return;
+    if (disabled || captured.current || !current || !current.isCurrent() || !current.value.nextCursor) return;
     void load(Object.freeze({ ...current.query, cursor: current.value.nextCursor }), current.index + 1);
   }
 
   function select(id: string) {
     const current = pageRef.current;
-    if (disabled || owner.isLocked() || !current || !current.isCurrent() || !current.value.items.some((item) => item.id === id)) return;
+    if (disabled || captured.current || owner.isLocked() || !current || !current.isCurrent() || !current.value.items.some((item) => item.id === id)) return;
     onSelect({ id, dataScopeId: current.query.dataScopeId, generation }); // Captured page scope, not later edited inputs.
+  }
+
+  function selectBatch(id: string, checked: boolean) {
+    const current = pageRef.current;
+    if (disabled || captured.current || owner.isLocked() || !current || !current.isCurrent()
+      || !current.value.items.some((item) => item.id === id && item.kind !== 'NOTICE' && item.ownership === 'INSTALLATION')) return;
+    const next = checked ? [...new Set([...selectedRef.current, id])] : selectedRef.current.filter((value) => value !== id);
+    if (next.length > 50) return;
+    selectedRef.current = next; setSelected(next);
+  }
+
+  function prepareBatch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const current = pageRef.current;
+    if (disabled || captured.current || owner.isLocked() || !onPrepareBatch || !current || !current.isCurrent()) return;
+    try {
+      const targets = selectedRef.current.map((id) => {
+        const item = current.value.items.find((item) => item.id === id);
+        if (!item || item.kind === 'NOTICE') throw new Error();
+        return { id: item.id, actionTag: item.actionTag, kind: item.kind, ownership: item.ownership };
+      });
+      const request = prepareComplaintBatchStatusRequest(targets, batchStatusRef.current, current.query.dataScopeId, crypto.randomUUID());
+      // Synchronous parent CAS owns the complete immutable request above navigation before another event.
+      if (onPrepareBatch(request, generation)) captured.current = true;
+    } catch { setError('Select 1–50 current-page complaints and a valid status before preparing one atomic batch.'); }
   }
 
   return <section className="panel" aria-label="Complaint search">
@@ -147,9 +182,21 @@ export function ComplaintSearchView({ generation, dataScopeId, disabled, onSelec
           <h4><bdi dir="auto" style={textStyle}>{visibleComplaintText(item.kind === 'NOTICE' ? 'System notice' : item.subject ?? 'Notice reply')}</bdi></h4>
           <StatusBadge status={item.status} /><p>{item.kind} · {item.ownership} · Version {item.version}</p>
           <p>Updated <time dateTime={item.updatedAt}>{item.updatedAt}</time></p>
+          {onPrepareBatch && item.kind !== 'NOTICE' ? <label style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+            <Input type="checkbox" style={{ width: 'auto' }} aria-label={`Select complaint ${item.id} for status batch`}
+              checked={selected.includes(item.id)} disabled={disabled || loading} onChange={(event) => selectBatch(item.id, event.target.checked)} />Select for status batch
+          </label> : null}
           <Button type="button" style={{ maxWidth: '100%', overflowWrap: 'anywhere' }} disabled={disabled || loading} onClick={() => select(item.id)}>Open detail for {item.id}</Button>
         </li>)}
       </ul>}
+      {onPrepareBatch && page.value.items.some((item) => item.kind !== 'NOTICE') ? <form aria-label="Atomic complaint status batch" onSubmit={prepareBatch} method="post" action="/api/backend/complaints/batch" autoComplete="off">
+        <p>{selected.length} selected on this page only. Changing filters, scope or page clears selection. One invalid, unchanged or stale target rejects the whole batch; no deletion or closure is included.</p>
+        <Field label="Status for selected complaints"><select className="input" name="complaintBatchStatus" value={batchStatus} disabled={disabled || loading}
+          onChange={(event) => { if (!disabled && !captured.current) { batchStatusRef.current = event.target.value as ComplaintStatusTarget; setBatchStatus(batchStatusRef.current); } }}>
+          {complaintBatchStatuses.map((status) => <option key={status} value={status}>{status}</option>)}
+        </select></Field>
+        <Button type="submit" tone="primary" disabled={disabled || loading || selected.length === 0}>Prepare atomic status batch</Button>
+      </form> : null}
       <Button type="button" disabled={disabled || loading || page.value.nextCursor === null} onClick={nextPage}>Next page</Button>
       {page.value.nextCursor === null ? <p>End of this search. Search again to restart.</p> : null}
     </section> : null}

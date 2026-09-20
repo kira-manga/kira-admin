@@ -2,11 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fixtureCsrf, fixtureGeneration, fixtureProofId, otherGeneration, seedClientSession, stepUpAcknowledgement } from '@/test/auth-fixture';
 import { appliedResponse, complaintId, complaintScope, deletedResponse, mutationRequest, problemResponse } from '@/test/complaint-mutation-fixture';
-import { sendComplaintMutation, type ComplaintOperation } from './complaint-mutation-client';
+import { batchRequest, batchResponse } from '@/test/complaint-batch-status-fixture';
+import { isTerminalComplaintOperation, sendComplaintMutation, type ComplaintOperation } from './complaint-mutation-client';
 import { sessionGenerationHeader, stepUpProofIdHeader } from './session-contract';
 
 const fetchMock = vi.fn<typeof fetch>();
-const operation = (): ComplaintOperation => Object.freeze({ generation: fixtureGeneration, request: mutationRequest(), phase: 'prepared' });
+const operation = () => Object.freeze({ generation: fixtureGeneration, request: mutationRequest(), phase: 'prepared' as const, outcome: undefined }) satisfies ComplaintOperation;
 const signal = () => new AbortController().signal;
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -22,8 +23,47 @@ beforeEach(async () => {
 });
 afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
+describe('one-attempt atomic STATUS batch client', () => {
+  it('keeps a partial ACK unknown and explicitly retries one identical captured POST with G/CSRF and no repaired key or tags', async () => {
+    const original = Object.freeze({ generation: fixtureGeneration, request: batchRequest(), phase: 'prepared' as const });
+    const before = JSON.stringify(original);
+    const partial = new Response(`{"items":[{"id":"${complaintId}","version":9007199254740993}]}`, { headers: batchResponse().headers });
+    fetchMock.mockResolvedValueOnce(partial).mockResolvedValueOnce(batchResponse());
+    expect(await sendComplaintMutation(original, signal(), stepUpAcknowledgement('complaint-moderation-mutation'))).toEqual({ kind: 'unknown' });
+    expect(fetchMock).toHaveBeenCalledOnce();
+    const outcome = await sendComplaintMutation(original, signal());
+    expect(outcome.kind).toBe('batch-applied');
+    expect(isTerminalComplaintOperation({ ...original, phase: 'settled', outcome })).toBe(true);
+    expect(isTerminalComplaintOperation({ ...original, phase: 'settled', outcome: { kind: 'batch-applied', items: [] } })).toBe(false);
+    for (const [index, [url, init]] of fetchMock.mock.calls.entries()) {
+      expect(url).toBe(`/api/backend/complaints/batch?dataScopeId=${complaintScope}`);
+      expect(init).toMatchObject({ method: 'POST', body: original.request.body, credentials: 'same-origin', redirect: 'error', cache: 'no-store' });
+      const headers = new Headers(init?.headers);
+      expect(headers.get(sessionGenerationHeader)).toBe(fixtureGeneration); expect(headers.get('X-Kira-CSRF')).toBe(fixtureCsrf);
+      expect(headers.get(stepUpProofIdHeader)).toBe(index === 0 ? fixtureProofId : null);
+      expect(headers.get('X-Kira-Idempotency-Key')).toBe(original.request.headers['X-Kira-Idempotency-Key']);
+      for (const name of ['If-Match', 'Authorization', 'Cookie', 'X-Kira-Admin-Step-Up']) expect(headers.has(name)).toBe(false);
+    }
+    expect(fetchMock).toHaveBeenCalledTimes(2); expect(JSON.stringify(original)).toBe(before); expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('rejects a forged batch destination or stale G and cannot adopt a complete late ACK after equal-G lifetime replacement', async () => {
+    const original: ComplaintOperation = Object.freeze({ generation: fixtureGeneration, request: batchRequest(), phase: 'prepared' });
+    expect(await sendComplaintMutation({ ...original, request: { ...batchRequest(), path: 'https://outside.example.test/' } }, signal())).toEqual({ kind: 'unknown' });
+    expect(fetchMock).not.toHaveBeenCalled();
+    const entered = deferred<void>(), reply = deferred<Response>();
+    fetchMock.mockImplementationOnce(() => { entered.resolve(); return reply.promise; });
+    const pending = sendComplaintMutation(original, signal()); await entered.promise;
+    await seedClientSession(); reply.resolve(batchResponse());
+    expect(await pending).toEqual({ kind: 'stale-session' });
+    await seedClientSession(otherGeneration);
+    expect(await sendComplaintMutation(original, signal())).toEqual({ kind: 'stale-session' });
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+});
+
 describe('one-attempt single DELETE client', () => {
-  const deletion = (): ComplaintOperation => Object.freeze({ ...operation(), request: mutationRequest('delete') });
+  const deletion = () => Object.freeze({ ...operation(), request: mutationRequest('delete') }) satisfies ComplaintOperation;
 
   it('retains the original on transport/authorized503 ambiguity and sends only an explicit identical bodyless replay', async () => {
     const original = deletion();

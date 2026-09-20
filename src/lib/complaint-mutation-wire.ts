@@ -47,14 +47,13 @@ export function prepareComplaintMutationRequest(
   const invalid = (): never => { throw new ComplaintMutationWireError('INVALID_CAPTURE'); };
   if (operation !== 'content' && operation !== 'status' && operation !== 'closure' && operation !== 'delete') invalid();
   if (!isTestUuid(dataScopeId) || !isTestUuid(idempotencyKey) || !isUuid(targetId)) invalid();
-  const tag = new RegExp(`^"complaint-${targetId}-v([1-9][0-9]{0,18})"$`).exec(actionTag);
-  if (!tag || tag[0] !== actionTag || !isLong(tag[1])) return invalid();
+  const baseVersion = complaintActionVersion(targetId, actionTag);
   if (new TextEncoder().encode(body).byteLength > 16_384 || operation === 'delete' && body !== '') invalid();
   const suffix = operation === 'delete' ? '' : `/${operation}`;
   return Object.freeze({
     method: operation === 'delete' ? 'DELETE' : 'PATCH',
     path: `/api/v1/admin/complaints/${targetId}${suffix}?dataScopeId=${dataScopeId}`,
-    targetId, dataScopeId, baseVersion: tag[1],
+    targetId, dataScopeId, baseVersion,
     headers: Object.freeze({
       'Content-Type': 'application/json',
       'X-Kira-Complaint-Contract': '1',
@@ -63,6 +62,14 @@ export function prepareComplaintMutationRequest(
     }),
     body,
   });
+}
+
+/** Shared scalar validation only: an action tag is not current authorization or a fresh read. */
+export function complaintActionVersion(targetId: string, actionTag: string): string {
+  if (!isUuid(targetId)) throw new ComplaintMutationWireError('INVALID_CAPTURE');
+  const tag = new RegExp(`^"complaint-${targetId}-v([1-9][0-9]{0,18})"$`).exec(actionTag);
+  if (!tag || tag[0] !== actionTag || !isLong(tag[1])) throw new ComplaintMutationWireError('INVALID_CAPTURE');
+  return tag[1];
 }
 
 /**
@@ -204,19 +211,34 @@ export type ComplaintMutationOutcome = Readonly<
   | { kind: 'step-up-required' | 'session-expired' | 'unauthorized' | 'forbidden' | 'key-reused' | 'in-progress' | 'unavailable' | 'unknown' | 'stale-session' }
 >;
 
-/** Only actual fixed backend encodings; unknown/extra/duplicate JSON is never a confirmed result. */
-export function decodeComplaintMutationOutcome(request: ComplaintMutationRequest, response: Parameters<typeof decodeComplaintMutationApplied>[1] & {
+export type ComplaintMutationResponse = Parameters<typeof decodeComplaintMutationApplied>[1] & {
   consumed: string | null; challenge: string | null; retryAfter: string | null; location: string | null;
-}): ComplaintMutationOutcome {
+};
+
+/** Shared response metadata, never proof retirement or a success/receipt assertion by itself. */
+export function validateComplaintMutationResponse(response: ComplaintMutationResponse): void {
   const invalid = (): never => { throw new ComplaintMutationWireError('UNCONFIRMED_RESPONSE'); };
   if (response.contract !== '1' || response.body.length > 32_768 || response.consumed !== null && response.consumed !== 'true'
     || response.retryAfter !== null && (!/^[1-9][0-9]{0,5}$/.test(response.retryAfter) || ![409, 429, 503].includes(response.status))) invalid();
   if (response.status === 401 ? response.challenge !== 'Bearer realm="kira-complaints"' : response.challenge !== null) invalid();
+}
+
+/** Only actual fixed backend encodings; unknown/extra/duplicate JSON is never a confirmed result. */
+export function decodeComplaintMutationOutcome(request: ComplaintMutationRequest, response: ComplaintMutationResponse): ComplaintMutationOutcome {
+  const invalid = (): never => { throw new ComplaintMutationWireError('UNCONFIRMED_RESPONSE'); };
+  validateComplaintMutationResponse(response);
   if (response.status === 200) return Object.freeze({ kind: 'applied', ...decodeComplaintMutationApplied(request, response) });
   if (response.status === 204) {
     if (request.method !== 'DELETE' || response.body.length !== 0 || response.contentType !== null || response.etag !== null || response.location !== null) invalid();
     return Object.freeze({ kind: 'deleted', id: request.targetId });
   }
+  return decodeComplaintMutationProblem(response);
+}
+
+/** Single and atomic status batch share only the existing closed refusal/receipt vocabulary. */
+export function decodeComplaintMutationProblem(response: ComplaintMutationResponse): Exclude<ComplaintMutationOutcome, { kind: 'applied' | 'deleted' }> {
+  const invalid = (): never => { throw new ComplaintMutationWireError('UNCONFIRMED_RESPONSE'); };
+  validateComplaintMutationResponse(response);
   if (response.etag !== null || !response.contentType || response.contentType.length > 128 || /[\r\n]/.test(response.contentType)
     || !/^application\/problem\+json(?:[ \t]*;[ \t]*charset=utf-8)?$/i.test(response.contentType)) invalid();
   let raw: string;
