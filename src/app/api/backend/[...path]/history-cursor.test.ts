@@ -1,22 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Only Next's request-cookie boundary and the upstream transport are mocked.
-// Route policy, CSRF/origin checks, header filtering and NextResponse are real.
-const cookieBoundary = vi.hoisted(() => {
-  const values = new Map<string, string>();
-  const get = vi.fn((name: string) => {
-    const value = values.get(name);
-    return value === undefined ? undefined : { name, value };
-  });
-  return { values, get, cookies: vi.fn(async () => ({ get })) };
-});
+import { issueAdminProof, type AdminSessionCookie, type AdminProofCookie } from '@/lib/server-session';
+import { sessionGenerationHeader, stepUpProofIdHeader } from '@/lib/session-contract';
+import { createSessionFixture, fixtureSigningSecret } from '@/test/server-session-fixture';
 
-vi.mock('next/headers', () => ({ cookies: cookieBoundary.cookies }));
+// Real raw Cookie header parsing/authentication and proxy; only upstream fetch is mocked.
+const cookieBoundary = { values: new Map<string, string>() };
+let session: AdminSessionCookie;
+let proof: AdminProofCookie;
 
 const adminOrigin = 'https://admin.example.test';
 const sessionToken = 'fixture-only-session';
-const csrfToken = 'fixture-only-csrf';
-const proofToken = 'fixture-only-proof';
+let csrfToken: string;
+const proofToken = 'A'.repeat(43);
 const cursorHeader = 'X-Kira-History-Next-Before';
 const sourcePath = ['sources', 'Azora', 'revisions'];
 const rawHistory = '[{"revisionNumber":14,"status":"draft"},{"revisionNumber":20,"valid":false}]';
@@ -28,6 +24,9 @@ function requestHeaders() {
     'Sec-Fetch-Site': 'same-origin',
     'Content-Type': 'application/json',
     'X-Kira-CSRF': csrfToken,
+    [sessionGenerationHeader]: session.generation,
+    [stepUpProofIdHeader]: proof.proofId,
+    Cookie: [...cookieBoundary.values].map(([name, value]) => `${name}=${value}`).join('; '),
     Authorization: 'Bearer attacker-selected-token',
     'X-Kira-Admin-Step-Up': 'attacker-selected-proof',
     'X-Arbitrary': 'must-not-reach-backend',
@@ -67,10 +66,11 @@ beforeEach(() => {
   vi.stubEnv('KIRA_BACKEND_URL', 'http://backend:8080');
   vi.stubEnv('KIRA_ADMIN_ORIGIN', adminOrigin);
   cookieBoundary.values.clear();
-  cookieBoundary.values.set('kira_admin_session', sessionToken);
-  cookieBoundary.values.set('kira_admin_csrf', csrfToken);
-  cookieBoundary.get.mockClear();
-  cookieBoundary.cookies.mockClear();
+  vi.stubEnv('KIRA_ADMIN_SESSION_SECRET', fixtureSigningSecret);
+  session = createSessionFixture(sessionToken);
+  csrfToken = session.csrfToken;
+  proof = issueAdminProof(session, proofToken, 'source-admin-mutation', new Date(Date.now() + 300_000).toISOString(), null);
+  cookieBoundary.values.set(session.name, session.value);
   fetchMock.mockReset();
   vi.stubGlobal('fetch', fetchMock);
 });
@@ -186,9 +186,9 @@ describe('real history BFF response boundary', () => {
   });
 });
 
-describe('unchanged real authorization and protected mutation boundaries', () => {
+describe('real authorization and captured protected mutation boundaries', () => {
   it('does not use caller Authorization in place of the session cookie', async () => {
-    cookieBoundary.values.delete('kira_admin_session');
+    cookieBoundary.values.delete(session.name);
     const response = await proxy(sourcePath);
     expect(response.status).toBe(401);
     expect(fetchMock).not.toHaveBeenCalled();
@@ -201,18 +201,16 @@ describe('unchanged real authorization and protected mutation boundaries', () =>
     const response = await proxy(sourcePath, { method: 'POST', headers });
     expect(response.status).toBe(403);
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(cookieBoundary.get).not.toHaveBeenCalledWith('kira_admin_session');
   });
 
   it('still denies a nonallowlisted document mutation before cookies or transport', async () => {
     const response = await proxy(['documents', 'republish'], { method: 'POST' });
     expect(response.status).toBe(404);
-    expect(cookieBoundary.cookies).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it.each([200, 409])('keeps protected proof/ETag forwarding and proof consumption at upstream status %i', async (status) => {
-    cookieBoundary.values.set('kira_admin_step_up', proofToken);
+  it.each([200, 409])('keeps proof/ETag forwarding but retires P only on positive source consumption (%i)', async (status) => {
+    cookieBoundary.values.set(proof.name, proof.value);
     const headers = requestHeaders();
     headers.set('If-Match', '"draft-4"');
     fetchMock.mockResolvedValue(historyResponse('14', status));
@@ -228,8 +226,11 @@ describe('unchanged real authorization and protected mutation boundaries', () =>
     expect(response.headers.get('x-kira-admin-step-up')).toBeNull();
     expect(response.headers.get('link')).toBeNull();
     expect(response.headers.get('location')).toBeNull();
-    expect(response.headers.getSetCookie()).toHaveLength(1);
-    expect(response.headers.getSetCookie()[0]).toMatch(/^kira_admin_step_up=;/);
-    expect(response.headers.getSetCookie()[0]).toContain('Expires=Thu, 01 Jan 1970');
+    expect(response.headers.getSetCookie()).toHaveLength(status === 200 ? 1 : 0);
+    if (status === 200) {
+      expect(response.headers.getSetCookie()[0]).toContain(`${proof.name}=;`);
+      expect(response.headers.getSetCookie()[0]).toContain('Expires=Thu, 01 Jan 1970');
+      expect(response.headers.getSetCookie()[0]).toContain('Path=/api;');
+    }
   });
 });

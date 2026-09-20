@@ -1,12 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Keep the GET handler and server config real; mock only request cookies and upstream fetch.
-const cookieBoundary = vi.hoisted(() => {
-  const get = vi.fn<(name: string) => { name: string; value: string } | undefined>();
-  return { get, cookies: vi.fn(async () => ({ get })) };
-});
+import type { AdminSessionCookie } from '@/lib/server-session';
+import { sessionGenerationHeader } from '@/lib/session-contract';
+import { createSessionFixture, fixtureSigningSecret, signedRequestHeaders } from '@/test/server-session-fixture';
 
-vi.mock('next/headers', () => ({ cookies: cookieBoundary.cookies }));
+// Real signed-cookie/session and GET cache boundary; only upstream fetch is replaced.
+let session: AdminSessionCookie;
 
 const mediaId = 'b6d2ae21-1fab-4db6-9abf-7fb9a5e50cf1';
 const sessionToken = 'fixture-only-media-session-jwt';
@@ -18,11 +17,8 @@ beforeEach(() => {
   vi.resetModules();
   vi.stubEnv('KIRA_BACKEND_URL', 'http://backend:8080');
   vi.stubEnv('KIRA_ADMIN_TRUSTED_INGRESS', 'false');
-  cookieBoundary.get.mockReset();
-  cookieBoundary.get.mockImplementation((name) => (
-    name === 'kira_admin_session' ? { name, value: sessionToken } : undefined
-  ));
-  cookieBoundary.cookies.mockClear();
+  vi.stubEnv('KIRA_ADMIN_SESSION_SECRET', fixtureSigningSecret);
+  session = createSessionFixture(sessionToken);
   fetchMock.mockReset();
   vi.stubGlobal('fetch', fetchMock);
 });
@@ -31,13 +27,37 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
   vi.restoreAllMocks();
-  cookieBoundary.get.mockReset();
-  cookieBoundary.cookies.mockClear();
   fetchMock.mockReset();
   vi.resetModules();
 });
 
 describe('real media GET cache-policy passthrough', () => {
+  it('supports an image GET with only a non-secret explicit query selector plus its signed cookie', async () => {
+    const headers = signedRequestHeaders(session);
+    headers.delete(sessionGenerationHeader);
+    fetchMock.mockResolvedValue(new Response(mediaBytes, { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'private, no-store' } }));
+    const { GET } = await import('./route');
+    const response = await GET(new Request(`https://admin.example.test/api/media/${mediaId}?sessionGeneration=${session.generation}`, { headers }), { params: Promise.resolve({ id: mediaId }) });
+    expect(response.status).toBe(200);
+    expect(new Headers(fetchMock.mock.calls[0][1]?.headers).get('Authorization')).toBe(`Bearer ${sessionToken}`);
+    expect(response.headers.get('Cache-Control')).toBe('private, no-store');
+  });
+
+  it.each(['missing selector', 'missing signed cookie', 'duplicate query', 'mismatched header'])('refuses %s rather than falling back to another media session', async (failure) => {
+    const headers = signedRequestHeaders(session);
+    headers.delete(sessionGenerationHeader);
+    let query = `?sessionGeneration=${session.generation}`;
+    if (failure === 'missing selector') query = '';
+    if (failure === 'missing signed cookie') headers.delete('cookie');
+    if (failure === 'duplicate query') query += `&sessionGeneration=${session.generation}`;
+    if (failure === 'mismatched header') headers.set(sessionGenerationHeader, '12345678-1234-4234-8234-123456789abc');
+    const { GET } = await import('./route');
+    const response = await GET(new Request(`https://admin.example.test/api/media/${mediaId}${query}`, { headers }), { params: Promise.resolve({ id: mediaId }) });
+    expect(response.status).toBeGreaterThanOrEqual(400);
+    expect(response.headers.getSetCookie()).toHaveLength(0);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it.each([
     { label: 'unpublished ADMIN media', policy: 'private, no-store' },
     { label: 'published media', policy: 'public, max-age=31536000, immutable' },
@@ -55,16 +75,14 @@ describe('real media GET cache-policy passthrough', () => {
       },
     }));
     const { GET } = await import('./route');
-    const response = await GET(new Request('https://admin.example.test/api/media/' + mediaId, {
-      headers: { Authorization: 'Bearer caller-must-not-be-forwarded' },
+    const response = await GET(new Request('https://admin.example.test/api/media/' + mediaId + '?sessionGeneration=' + session.generation, {
+      headers: signedRequestHeaders(session, [], { Authorization: 'Bearer caller-must-not-be-forwarded' }),
     }), { params: Promise.resolve({ id: mediaId }) });
 
-    expect(cookieBoundary.cookies).toHaveBeenCalledOnce();
-    expect(cookieBoundary.get.mock.calls).toEqual([['kira_admin_session']]);
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(fetchMock).toHaveBeenCalledWith('http://backend:8080/api/v1/tutorial-media/' + mediaId, {
       headers: { Authorization: 'Bearer ' + sessionToken },
-      cache: 'no-store',
+      cache: 'no-store', redirect: 'manual',
     });
     expect(response.status).toBe(200);
     expect(response.headers.get('cache-control')).toBe(policy);

@@ -1,12 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// The real proxy/policy is exercised; only request cookies and upstream transport are replaced.
-const cookieBoundary = vi.hoisted(() => {
-  const values = new Map<string, string>();
-  const get = vi.fn((name: string) => values.has(name) ? { name, value: values.get(name) } : undefined);
-  return { values, get, cookies: vi.fn(async () => ({ get })) };
-});
-vi.mock('next/headers', () => ({ cookies: cookieBoundary.cookies }));
+import { issueAdminProof, type AdminSessionCookie, type AdminProofCookie } from '@/lib/server-session';
+import { sessionGenerationHeader } from '@/lib/session-contract';
+import { createSessionFixture, fixtureSigningSecret } from '@/test/server-session-fixture';
+
+// Real policy, signed cookies and proxy; only the upstream transport is replaced.
+const cookieBoundary = { values: new Map<string, string>() };
+let session: AdminSessionCookie;
+let proof: AdminProofCookie;
 
 const origin = 'https://admin.example.test';
 const id = '12345678-1234-4234-8234-123456789abc';
@@ -21,7 +22,7 @@ function upstream(body: BodyInit | null = raw, status = 200) {
     'Content-Type': 'application/json;charset=UTF-8', ETag: tag, 'X-Kira-Complaint-Contract': '1',
     'Cache-Control': 'public, max-age=3600', 'Set-Cookie': 'private-cookie=fixture',
     Authorization: 'private-upstream-token', 'X-Kira-Admin-Step-Up': 'private-upstream-proof',
-    'X-Kira-Admin-Step-Up-Consumed': 'true', 'X-Arbitrary': 'private-metadata', Location: 'https://outside.example.test',
+    'X-Kira-Admin-Step-Up-Consumed': 'true', 'X-Kira-Admin-Step-Up-Consumed-Grant-Id': scope, 'X-Arbitrary': 'private-metadata', Location: 'https://outside.example.test',
   } });
 }
 
@@ -31,7 +32,9 @@ async function proxy(options: { path?: string[]; query?: string; method?: 'GET' 
   const method = options.method ?? 'GET';
   return handlers[method](new Request(`${origin}/api/backend/${path.join('/')}${options.query ?? `?dataScopeId=${scope}`}`, {
     method, signal: options.signal, headers: {
-      Origin: origin, 'Sec-Fetch-Site': 'same-origin', 'X-Kira-CSRF': 'fixture-csrf',
+      Origin: origin, 'Sec-Fetch-Site': 'same-origin', 'X-Kira-CSRF': session.csrfToken,
+      [sessionGenerationHeader]: session.generation,
+      Cookie: [...cookieBoundary.values].map(([name, value]) => `${name}=${value}`).join('; '),
       Authorization: 'Bearer caller-selected-token', 'X-Kira-Admin-Step-Up': 'caller-selected-proof',
       'X-Kira-Idempotency-Key': scope, 'If-Match': tag, 'Content-Type': 'application/problem+json',
     },
@@ -43,11 +46,10 @@ beforeEach(() => {
   vi.stubEnv('KIRA_BACKEND_URL', 'http://backend:8080');
   vi.stubEnv('KIRA_ADMIN_ORIGIN', origin);
   cookieBoundary.values.clear();
-  cookieBoundary.values.set('kira_admin_session', 'fixture-only-session');
-  cookieBoundary.values.set('kira_admin_csrf', 'fixture-csrf');
-  cookieBoundary.values.set('kira_admin_step_up', 'fixture-only-proof');
-  cookieBoundary.get.mockClear();
-  cookieBoundary.cookies.mockClear();
+  vi.stubEnv('KIRA_ADMIN_SESSION_SECRET', fixtureSigningSecret);
+  session = createSessionFixture('fixture-only-session');
+  proof = issueAdminProof(session, 'A'.repeat(43), 'complaint-moderation-mutation', new Date(Date.now() + 300_000).toISOString(), null);
+  for (const cookie of [session, proof]) cookieBoundary.values.set(cookie.name, cookie.value);
   fetchMock.mockReset();
   vi.stubGlobal('fetch', fetchMock);
 });
@@ -76,8 +78,8 @@ describe('read-only complaint detail BFF connection', () => {
     expect(Object.fromEntries(new Headers(init?.headers))).toEqual({
       authorization: 'Bearer fixture-only-session', accept: 'application/json, application/problem+json', 'x-kira-complaint-contract': '1',
     });
-    expect(cookieBoundary.get.mock.calls).toEqual([['kira_admin_session']]);
-    expect(cookieBoundary.values.get('kira_admin_step_up')).toBe('fixture-only-proof');
+    expect(cookieBoundary.values.get(proof.name)).toBe(proof.value);
+    expect(response.headers.getSetCookie()).toHaveLength(0);
   });
 
   it('refuses non-detail routes, mutations, nonliteral/duplicate scopes and missing sessions before upstream work', async () => {
@@ -87,8 +89,7 @@ describe('read-only complaint detail BFF connection', () => {
       { method: 'DELETE' as const }, { query: '' }, { query: `?dataScopeId=${scope}&dataScopeId=${scope}` },
       { query: '?dataScopeId=00000000-0000-0000-0000-000000000000' }, { query: `?dataScopeId=%38${scope.slice(1)}` },
     ]) expect((await proxy(options)).status).toBeGreaterThanOrEqual(400);
-    expect(cookieBoundary.cookies).not.toHaveBeenCalled();
-    cookieBoundary.values.delete('kira_admin_session');
+    cookieBoundary.values.delete(session.name);
     expect((await proxy()).status).toBe(401);
     expect(fetchMock).not.toHaveBeenCalled();
     expect(await import('./route')).not.toHaveProperty('PATCH');

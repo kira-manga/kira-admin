@@ -1,9 +1,7 @@
 import { timingSafeEqual } from 'node:crypto';
 
-import { cookies } from 'next/headers';
-
-import { adminCsrfCookie } from './server-config';
 import { adminOrigin } from './server-config';
+import type { AdminSessionCookie } from './server-session';
 
 const csrfHeader = 'x-kira-csrf';
 
@@ -16,10 +14,10 @@ export async function requireSameOrigin(request: Request) {
   return null;
 }
 
-export async function requireCsrf(request: Request) {
+export async function requireCsrf(request: Request, session: AdminSessionCookie) {
   const originFailure = await requireSameOrigin(request);
   if (originFailure) return originFailure;
-  const expected = (await cookies()).get(adminCsrfCookie)?.value;
+  const expected = session.csrfToken;
   const supplied = request.headers.get(csrfHeader);
   if (!expected || !supplied || !constantTimeEqual(expected, supplied)) {
     return Response.json({ detail: 'Invalid request token.' }, { status: 403 });
@@ -28,6 +26,7 @@ export async function requireCsrf(request: Request) {
 }
 
 function constantTimeEqual(left: string, right: string) {
+  if (left.length !== right.length) return false;
   const a = Buffer.from(left);
   const b = Buffer.from(right);
   return a.length === b.length && timingSafeEqual(a, b);

@@ -2,35 +2,32 @@
 
 import { FormEvent, useState } from 'react';
 
-import { ApiError } from '@/lib/client-api';
+import { useActionOwner } from '@/lib/action-owner';
+import { loginSession } from '@/lib/client-api';
 import { Icon } from './icons';
 import { Button, Field, Input } from './ui';
 
-export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
+export function LoginScreen({ onSuccess, notice }: { onSuccess: () => void | Promise<void>; notice?: string }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const owner = useActionOwner();
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    const ticket = owner.acquire();
+    if (!ticket) return;
     setBusy(true);
     setError('');
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      if (!response.ok) {
-        const payload = await response.json().catch(() => ({})) as { detail?: string };
-        throw new ApiError(payload.detail ?? 'Sign in failed.', response.status);
-      }
-      onSuccess();
+      if (!await loginSession({ email, password }, ticket.isCurrent) || !ticket.isCurrent()) return;
+      setPassword('');
+      await onSuccess();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Sign in failed.');
+      if (ticket.isCurrent()) setError(caught instanceof Error ? caught.message : 'Sign in failed.');
     } finally {
-      setBusy(false);
+      if (owner.release(ticket)) { setPassword(''); setBusy(false); }
     }
   }
 
@@ -47,9 +44,9 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
         </div>
         <form onSubmit={submit} className="login-form">
           <div className="login-form-heading"><h2>Welcome back</h2><p>Use your Kira administrator account.</p></div>
-          <Field label="Email address"><Input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="admin@kiramanga.me" autoComplete="username" required /></Field>
-          <Field label="Password"><Input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Your password" autoComplete="current-password" required /></Field>
-          {error ? <p className="form-error" role="alert">{error}</p> : null}
+          <Field label="Email address"><Input type="email" value={email} disabled={busy} onChange={(event) => setEmail(event.target.value)} placeholder="admin@kiramanga.me" autoComplete="username" required /></Field>
+          <Field label="Password"><Input type="password" value={password} disabled={busy} onChange={(event) => setPassword(event.target.value)} placeholder="Your password" autoComplete="current-password" required /></Field>
+          {error || notice ? <p className="form-error" role="alert">{error || notice}</p> : null}
           <Button tone="primary" type="submit" disabled={busy} icon="arrow">{busy ? 'Signing in…' : 'Open studio'}</Button>
         </form>
         <p className="login-footnote"><i /> Secure server session · credentials are never stored in the browser</p>

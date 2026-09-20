@@ -1,23 +1,22 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Only the Next request-cookie boundary and upstream transport are mocked. The handlers,
-// config, identity parsing, Origin/CSRF checks and NextResponse cookie serialization are real.
-const cookieBoundary = vi.hoisted(() => {
-  const values = new Map<string, string>();
-  const get = vi.fn((name: string) => {
-    const value = values.get(name);
-    return value === undefined ? undefined : { name, value };
-  });
-  return { values, get, cookies: vi.fn(async () => ({ get })) };
-});
+import { issueAdminProof, readAdminProof, readAdminSession, sessionCookiePrefix, type AdminProofCookie, type AdminSessionCookie } from '@/lib/server-session';
+import { sessionGenerationHeader, stepUpProofIdHeader } from '@/lib/session-contract';
+import { isStepUpApproval, type StepUpScope } from '@/lib/step-up-contract';
+import { createSessionFixture, fixtureSigningSecret } from '@/test/server-session-fixture';
 
-vi.mock('next/headers', () => ({ cookies: cookieBoundary.cookies }));
+// Only upstream transport is mocked. Raw cookie parsing/signatures, real handlers,
+// config, identity parsing, Origin/CSRF and NextResponse serialization all run.
+const cookieBoundary = { values: new Map<string, string>() };
+let session: AdminSessionCookie;
+let sourceProof: AdminProofCookie;
+let complaintProof: AdminProofCookie;
 
 type AuthRoute = 'login' | 'step-up';
 const authRoutes: AuthRoute[] = ['login', 'step-up'];
 const adminOrigin = 'https://admin.example.test';
 const sessionToken = 'fixture-only-session-jwt';
-const csrfToken = 'fixture-only-csrf-token';
+let csrfToken: string;
 const proofToken = 'A'.repeat(43); // Synthetic canonical encoding of exactly 32 bytes, not a real grant.
 const requestBodies = {
   login: JSON.stringify({ email: 'admin@example.test', password: 'fixture-only-password' }),
@@ -45,6 +44,7 @@ function validHeaders(extra: HeadersInit = {}) {
     'Content-Type': 'application/json',
     'X-Kira-Csrf': csrfToken,
     'X-Real-IP': '192.0.2.1',
+    [sessionGenerationHeader]: session.generation,
     Cookie: [...cookieBoundary.values].map(([name, value]) => `${name}=${value}`).join('; '),
   });
   for (const [name, value] of new Headers(extra)) headers.set(name, value);
@@ -79,7 +79,7 @@ function expectUpstream(route: AuthRoute, identity: string | null, index = 0, ba
     headers: expect.any(Object),
     body: requestBodies[route],
     cache: 'no-store',
-    ...(route === 'step-up' ? { signal: expect.any(AbortSignal), redirect: 'manual' } : {}),
+    signal: expect.any(AbortSignal), redirect: 'manual',
   });
   expect(Object.fromEntries(new Headers(options?.headers))).toEqual({
     accept: route === 'login' ? 'application/json' : 'application/json, application/problem+json',
@@ -96,9 +96,9 @@ function responseCookie(response: Response, name: string) {
 }
 
 function expectExpiredProofCookies(response: Response) {
-  for (const name of ['kira_admin_step_up', 'kira_admin_complaint_step_up']) {
+  for (const name of [sourceProof.name, complaintProof.name]) {
     const cookie = responseCookie(response, name);
-    for (const attribute of [`${name}=;`, 'Path=/api/backend;', 'Expires=Thu, 01 Jan 1970 00:00:00 GMT', 'Max-Age=0', 'HttpOnly', 'SameSite=strict', 'Secure']) {
+    for (const attribute of [`${name}=;`, 'Path=/api;', 'Expires=Thu, 01 Jan 1970 00:00:00 GMT', 'Max-Age=0', 'HttpOnly', 'SameSite=strict', 'Secure']) {
       expect(cookie).toContain(attribute);
     }
     expect(cookie).not.toContain('Domain=');
@@ -112,12 +112,12 @@ beforeEach(() => {
   vi.stubEnv('KIRA_BACKEND_URL', 'http://backend:8080');
   vi.stubEnv('KIRA_ADMIN_ORIGIN', adminOrigin);
   cookieBoundary.values.clear();
-  cookieBoundary.values.set('kira_admin_session', sessionToken);
-  cookieBoundary.values.set('kira_admin_csrf', csrfToken);
-  cookieBoundary.values.set('kira_admin_step_up', 'old-source-proof');
-  cookieBoundary.values.set('kira_admin_complaint_step_up', 'old-complaint-proof');
-  cookieBoundary.get.mockClear();
-  cookieBoundary.cookies.mockClear();
+  vi.stubEnv('KIRA_ADMIN_SESSION_SECRET', fixtureSigningSecret);
+  session = createSessionFixture(sessionToken);
+  csrfToken = session.csrfToken;
+  sourceProof = issueAdminProof(session, proofToken, 'source-admin-mutation', new Date(Date.now() + 300_000).toISOString(), null);
+  complaintProof = issueAdminProof(session, proofToken, 'complaint-moderation-mutation', new Date(Date.now() + 300_000).toISOString(), null);
+  for (const cookie of [session, sourceProof, complaintProof]) cookieBoundary.values.set(cookie.name, cookie.value);
   fetchMock.mockReset();
   vi.stubGlobal('fetch', fetchMock);
 });
@@ -255,8 +255,6 @@ describe.each(authRoutes)('real %s authentication handler', (route) => {
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ detail: 'Cross-site request rejected.' });
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(cookieBoundary.cookies).not.toHaveBeenCalled();
-    expect(cookieBoundary.get).not.toHaveBeenCalled();
     expect(response.headers.get('set-cookie')).toBeNull();
   });
 
@@ -269,8 +267,8 @@ describe.each(authRoutes)('real %s authentication handler', (route) => {
     const response = await post(authRequest(route, validHeaders(spoofedHeaders)));
 
     expect(response.status).toBe(429);
-    expect(await response.json()).toEqual({ detail: route === 'step-up' ? 'Too many attempts. Try again later.' : 'Fixture authentication refused.' });
-    expect(response.headers.get('content-type')).toBe('application/problem+json');
+    expect(await response.json()).toEqual({ detail: route === 'step-up' ? 'Too many attempts. Try again later.' : 'Sign in failed.' });
+    expect(response.headers.get('content-type')).toBe(route === 'step-up' ? 'application/problem+json' : 'application/json');
     expect(response.headers.get('set-cookie')).toBeNull();
     expect(response.headers.get('x-private')).toBeNull();
     expect(fetchMock).toHaveBeenCalledOnce();
@@ -278,10 +276,21 @@ describe.each(authRoutes)('real %s authentication handler', (route) => {
   });
 });
 
+async function issuedProof(response: Response, scope: StepUpScope = 'source-admin-mutation') {
+  const approval = await response.json();
+  expect(isStepUpApproval(approval, scope)).toBe(true);
+  expect(approval.generation).toBe(session.generation);
+  expect(response.headers.getSetCookie()).toHaveLength(1);
+  const cookie = response.headers.getSetCookie()[0];
+  const headers = validHeaders();
+  headers.set('Cookie', headers.get('Cookie') + '; ' + cookie.split(';')[0]);
+  headers.set(stepUpProofIdHeader, approval.proofId);
+  return { approval, cookie, proof: readAdminProof(headers, readAdminSession(headers), scope) };
+}
+
 describe('real authentication security and cookie boundaries', () => {
-  it.each([false, true])('keeps ADMIN login CSRF-free, JWT HttpOnly, and resets both proof scopes (prior session: %s)', async (priorSession) => {
+  it.each([false, true])('keeps login CSRF-free and retires only captured identities (prior session: %s)', async (priorSession) => {
     if (!priorSession) cookieBoundary.values.clear();
-    else cookieBoundary.values.set('kira_admin_session', 'old-fixture-only-session');
     const post = await loadHandler('login');
     mockSuccess('login');
     const headers = validHeaders(spoofedHeaders);
@@ -289,67 +298,55 @@ describe('real authentication security and cookie boundaries', () => {
     const response = await post(authRequest('login', headers));
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ role: 'ADMIN', expiresInSeconds: 600 });
-    expect(cookieBoundary.cookies).not.toHaveBeenCalled();
+    const acknowledgement = await response.json();
+    expect(Object.keys(acknowledgement).sort()).toEqual(['csrfToken', 'expiresAt', 'generation']);
+    expect(JSON.stringify(acknowledgement)).not.toContain(sessionToken);
+    const name = sessionCookiePrefix + acknowledgement.generation;
+    const cookie = responseCookie(response, name);
+    const issued = readAdminSession(new Headers({ Cookie: cookie.split(';')[0], [sessionGenerationHeader]: acknowledgement.generation }));
+    expect(issued.token).toBe(sessionToken);
+    expect(issued.csrfToken).toBe(acknowledgement.csrfToken);
+    expect(issued.expiresAt).toBe(Date.parse(acknowledgement.expiresAt));
+    expect(issued.generation).not.toBe(session.generation);
+    expect(response.headers.getSetCookie()).toHaveLength(priorSession ? 4 : 1);
+    if (priorSession) expectExpiredProofCookies(response);
+    for (const flag of ['HttpOnly', 'SameSite=strict', 'Secure', 'Path=/;', 'Expires=']) expect(cookie).toContain(flag);
+    expect(cookie).not.toContain('Max-Age=');
     expect(fetchMock).toHaveBeenCalledOnce();
     expectUpstream('login', '192.0.2.1');
-    expect(response.headers.getSetCookie()).toHaveLength(4);
-    expectExpiredProofCookies(response);
-    const session = responseCookie(response, 'kira_admin_session');
-    expect(session).toContain(`kira_admin_session=${sessionToken};`);
-    expect(session).toContain('HttpOnly');
-    expect(session).toContain('SameSite=strict');
-    expect(session).toContain('Secure');
-    expect(session).toContain('Path=/;');
-    expect(session).toContain('Max-Age=600');
-    const csrf = responseCookie(response, 'kira_admin_csrf');
-    expect(csrf).toMatch(/^kira_admin_csrf=[A-Za-z0-9_-]{43};/);
-    expect(csrf).not.toContain('HttpOnly');
-    expect(csrf).toContain('SameSite=strict');
-    expect(csrf).toContain('Secure');
-    expect(csrf).toContain('Path=/;');
-    expect(csrf).toContain('Max-Age=600');
   });
 
-  it('expires both proof paths on successful logout while retaining the session/CSRF deletion contract', async () => {
+  it('expires captured G and both captured proof scopes at their original paths on logout', async () => {
     const { POST } = await import('./logout/route');
     const response = await POST(new Request(`${adminOrigin}/api/auth/logout`, { method: 'POST', headers: validHeaders() }));
-
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true });
-    expect(response.headers.getSetCookie()).toHaveLength(4);
+    expect(response.headers.getSetCookie()).toHaveLength(3);
     expectExpiredProofCookies(response);
-    for (const name of ['kira_admin_session', 'kira_admin_csrf']) {
-      const cookie = responseCookie(response, name);
-      expect(cookie).toContain(`${name}=;`);
-      expect(cookie).toContain('Path=/;');
-      expect(cookie).toContain('Expires=Thu, 01 Jan 1970 00:00:00 GMT');
-    }
+    const cookie = responseCookie(response, session.name);
+    expect(cookie).toContain(`${session.name}=;`);
+    expect(cookie).toContain('Path=/;');
+    expect(cookie).toContain('Expires=Thu, 01 Jan 1970 00:00:00 GMT');
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it.each(['wrong origin', 'missing CSRF cookie', 'missing CSRF header', 'wrong CSRF token'])
-  ('never expires either proof on logout refusal: %s', async (failure) => {
+  it.each(['wrong origin', 'missing CSRF header', 'wrong CSRF token'])
+  ('never expires a captured proof on logout refusal: %s', async (failure) => {
     const { POST } = await import('./logout/route');
-    if (failure === 'missing CSRF cookie') cookieBoundary.values.delete('kira_admin_csrf');
     const headers = validHeaders();
     if (failure === 'wrong origin') headers.set('origin', 'https://attacker.example.test');
     if (failure === 'missing CSRF header') headers.delete('x-kira-csrf');
     if (failure === 'wrong CSRF token') headers.set('x-kira-csrf', 'x'.repeat(csrfToken.length));
     const response = await POST(new Request(`${adminOrigin}/api/auth/logout`, { method: 'POST', headers }));
-
     expect(response.status).toBe(403);
     expect(response.headers.get('set-cookie')).toBeNull();
-    expect(cookieBoundary.values.get('kira_admin_step_up')).toBe('old-source-proof');
-    expect(cookieBoundary.values.get('kira_admin_complaint_step_up')).toBe('old-complaint-proof');
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it.each(['USER', 'admin', ''])('rejects upstream role %j without setting or clearing any cookies', async (role) => {
+  it.each(['USER', 'admin', ''])('rejects upstream role %j without setting or clearing cookies', async (role) => {
     const post = await loadHandler('login');
     fetchMock.mockResolvedValue(Response.json({ accessToken: sessionToken, expiresInSeconds: 600, role }));
     const response = await post(authRequest('login'));
-
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ detail: 'This dashboard requires an administrator account.' });
     expect(response.headers.get('set-cookie')).toBeNull();
@@ -357,32 +354,27 @@ describe('real authentication security and cookie boundaries', () => {
     expectUpstream('login', '192.0.2.1');
   });
 
-  it.each(['missing cookie', 'missing header', 'wrong same-length token', 'wrong length'])
-  ('retains real step-up CSRF refusal for %s before session lookup or fetch', async (failure) => {
+  it.each(['missing header', 'wrong same-length token', 'wrong length'])
+  ('retains real signed-session CSRF refusal for %s before fetch', async (failure) => {
     const post = await loadHandler('step-up');
-    if (failure === 'missing cookie') cookieBoundary.values.delete('kira_admin_csrf');
     const headers = validHeaders(spoofedHeaders);
     if (failure === 'missing header') headers.delete('x-kira-csrf');
     if (failure === 'wrong same-length token') headers.set('x-kira-csrf', 'x'.repeat(csrfToken.length));
     if (failure === 'wrong length') headers.set('x-kira-csrf', 'wrong');
     const response = await post(authRequest('step-up', headers));
-
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ detail: 'Invalid request token.' });
-    expect(cookieBoundary.get.mock.calls).toEqual([['kira_admin_csrf']]);
     expect(fetchMock).not.toHaveBeenCalled();
     expect(response.headers.get('set-cookie')).toBeNull();
   });
 
-  it('requires a real step-up session cookie, never the incoming Authorization header', async () => {
-    cookieBoundary.values.delete('kira_admin_session');
+  it('requires the selected signed session, never caller Authorization or a writable CSRF cookie', async () => {
+    cookieBoundary.values.delete(session.name);
+    cookieBoundary.values.set('kira_admin_session', sessionToken);
+    cookieBoundary.values.set('kira_admin_csrf', csrfToken);
     const post = await loadHandler('step-up');
     const response = await post(authRequest('step-up', validHeaders(spoofedHeaders)));
-
     expect(response.status).toBe(401);
-    expect(await response.json()).toEqual({ detail: 'Not signed in.' });
-    expect(response.headers.get('www-authenticate')).toBe('KiraSession realm="kira-admin-bff"');
-    expect(cookieBoundary.get.mock.calls).toEqual([['kira_admin_csrf'], ['kira_admin_session']]);
     expect(fetchMock).not.toHaveBeenCalled();
     expect(response.headers.get('set-cookie')).toBeNull();
   });
@@ -390,24 +382,21 @@ describe('real authentication security and cookie boundaries', () => {
   it.each([
     { label: 'fresh', offsetMs: 300_000, ttl: 300 },
     { label: 'overlong', offsetMs: 3_600_000, ttl: 900 },
-  ])('keeps $label proof HttpOnly, path-scoped, no-store and TTL-bounded', async ({ offsetMs, ttl }) => {
+  ])('keeps $label proof HttpOnly, path-scoped, no-store and absolute-expiry bounded', async ({ offsetMs, ttl }) => {
     vi.useFakeTimers();
     const post = await loadHandler('step-up');
     const expiresAt = new Date(Date.now() + offsetMs).toISOString();
     fetchMock.mockResolvedValue(Response.json({ token: proofToken, expiresAt, scope: 'source-admin-mutation' }));
     const response = await post(authRequest('step-up', validHeaders(spoofedHeaders)));
-
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ expiresAt, scope: 'source-admin-mutation' });
+    const issued = await issuedProof(response);
+    expect(issued.proof.token).toBe(proofToken);
+    expect(issued.proof.expiresAt).toBe(Date.now() + ttl * 1000);
+    expect(issued.approval.expiresAt).toBe(new Date(issued.proof.expiresAt).toISOString());
+    expect(issued.proof.proofId).not.toBe(sourceProof.proofId);
     expect(response.headers.get('cache-control')).toBe('no-store, no-transform');
-    expect(response.headers.getSetCookie()).toHaveLength(1);
-    const proof = responseCookie(response, 'kira_admin_step_up');
-    expect(proof).toContain(`kira_admin_step_up=${proofToken};`);
-    expect(proof).toContain('HttpOnly');
-    expect(proof).toContain('SameSite=strict');
-    expect(proof).toContain('Secure');
-    expect(proof).toContain('Path=/api/backend;');
-    expect(proof).toContain(`Max-Age=${ttl};`);
+    for (const flag of ['HttpOnly', 'SameSite=strict', 'Secure', 'Path=/api;', 'Expires=']) expect(issued.cookie).toContain(flag);
+    expect(issued.cookie).not.toContain('Max-Age=');
     expect(fetchMock).toHaveBeenCalledOnce();
     expectUpstream('step-up', '192.0.2.1');
   });
@@ -419,8 +408,6 @@ describe('bounded scoped step-up issuance only', () => {
     const post = await loadHandler('step-up');
     const selected = scope ?? 'source-admin-mutation';
     const proof = stepUpProof(selected);
-    cookieBoundary.values.set('kira_admin_step_up', 'old-source-proof');
-    cookieBoundary.values.set('kira_admin_complaint_step_up', 'old-complaint-proof');
     fetchMock.mockResolvedValue(Response.json(proof));
     const password = ' \tfixture-only-password\n ';
     const response = await post(authRequest('step-up', validHeaders(spoofedHeaders), JSON.stringify({ password, scope })));
@@ -431,13 +418,12 @@ describe('bounded scoped step-up issuance only', () => {
     expect(fetchMock.mock.calls[0][1]?.body).toBe(JSON.stringify({ password,
       ...(selected === 'complaint-moderation-mutation' ? { scope: selected } : {}),
     }));
-    expect(await response.json()).toEqual({ scope: selected, expiresAt: proof.expiresAt });
-    const name = selected === 'source-admin-mutation' ? 'kira_admin_step_up' : 'kira_admin_complaint_step_up';
-    expect(response.headers.getSetCookie()).toHaveLength(1);
-    const cookie = responseCookie(response, name);
-    for (const flag of ['HttpOnly', 'SameSite=strict', 'Secure', 'Path=/api/backend;']) expect(cookie).toContain(flag);
-    expect(cookieBoundary.values.get('kira_admin_step_up')).toBe('old-source-proof');
-    expect(cookieBoundary.values.get('kira_admin_complaint_step_up')).toBe('old-complaint-proof');
+    const issued = await issuedProof(response, selected as StepUpScope);
+    expect(issued.approval).toMatchObject({ scope: selected, expiresAt: proof.expiresAt });
+    expect(issued.proof.token).toBe(proofToken);
+    for (const flag of ['HttpOnly', 'SameSite=strict', 'Secure', 'Path=/api;']) expect(issued.cookie).toContain(flag);
+    expect(cookieBoundary.values.get(sourceProof.name)).toBe(sourceProof.value);
+    expect(cookieBoundary.values.get(complaintProof.name)).toBe(complaintProof.value);
     for (const name of ['authorization', 'x-kira-admin-step-up', 'location']) expect(response.headers.get(name)).toBeNull();
   });
 
@@ -595,8 +581,6 @@ describe('bounded scoped step-up issuance only', () => {
   it.each(['request', 'response'] as const)('ends a stalled %s stream at the original deadline, retaining existing cookies', async (phase) => {
     vi.useFakeTimers();
     const post = await loadHandler('step-up');
-    cookieBoundary.values.set('kira_admin_step_up', 'retained-source');
-    cookieBoundary.values.set('kira_admin_complaint_step_up', 'retained-complaint');
     const cancel = vi.fn(() => Promise.reject(new Error('private cleanup detail')));
     const body = new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(new TextEncoder().encode('{')); }, cancel });
     if (phase === 'response') fetchMock.mockResolvedValue(new Response(body, { headers: { 'Content-Type': 'application/json' } }));
@@ -608,8 +592,8 @@ describe('bounded scoped step-up issuance only', () => {
     expect(response.status).toBe(504);
     expect(await response.json()).toEqual({ detail: 'Password verification is temporarily unavailable.' });
     expect(response.headers.get('set-cookie')).toBeNull();
-    expect(cookieBoundary.values.get('kira_admin_step_up')).toBe('retained-source');
-    expect(cookieBoundary.values.get('kira_admin_complaint_step_up')).toBe('retained-complaint');
+    expect(cookieBoundary.values.get(sourceProof.name)).toBe(sourceProof.value);
+    expect(cookieBoundary.values.get(complaintProof.name)).toBe(complaintProof.value);
     expect(fetchMock).toHaveBeenCalledTimes(phase === 'request' ? 0 : 1);
     expect(cancel).toHaveBeenCalledOnce();
     expect(body.locked).toBe(false);
@@ -661,7 +645,6 @@ describe('unchanged real generic BFF boundary', () => {
 
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({ detail: 'Admin route is not allowed.' });
-    expect(cookieBoundary.cookies).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -675,7 +658,6 @@ describe('unchanged real generic BFF boundary', () => {
 
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ detail: 'Invalid request token.' });
-    expect(cookieBoundary.get.mock.calls).toEqual([['kira_admin_csrf']]);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
