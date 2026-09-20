@@ -152,7 +152,7 @@ describe('unmounted-by-product complaint content editor', () => {
     });
     expect(Object.keys(onPrepared.mock.calls[0][0].content).sort()).toEqual(['body', 'subject', 'type']);
     expect(container.querySelector('.notice-success')).toBeNull();
-    expect(container.querySelector('[role="status"]')?.textContent).toContain('Prepared locally. Nothing was sent or saved.');
+    expect(container.querySelector('[role="status"]')?.textContent).toContain('Preparation itself sends nothing; the parent workflow reports any submission separately.');
   });
 
   it('offers only body for a notice-thread reply, ignoring unrelated loaded metadata', async () => {
@@ -477,7 +477,7 @@ describe('unmounted-by-product complaint content editor', () => {
     }
   });
 
-  it('warns and escapes directional controls only in isolated inspection while preserving raw text, payload and native copy events', async () => {
+  it('warns and escapes directional controls in isolated inspection/copy while preserving raw drafts and payloads', async () => {
     const controls = ['\u061c', '\u200e', '\u200f', '\u202a', '\u202b', '\u202c', '\u202d', '\u202e', '\u2066', '\u2067', '\u2068', '\u2069', '\u206a', '\u206b', '\u206c', '\u206d', '\u206e', '\u206f'];
     const body = `<img src="fixture" onerror="fixture"> العربية literal \\u202E; actual \u202E; ${controls.join('x')} end`;
     const subject = 'مرحبا\u202E<strong id="untrusted">subject</strong>\u202C';
@@ -504,9 +504,18 @@ describe('unmounted-by-product complaint content editor', () => {
     expect(preview.style.overflowWrap).toBe('anywhere');
     expect(textarea('body').dir).toBe('auto');
     expect(textarea('body').style.unicodeBidi).toBe('isolate');
-    const copy = new Event('copy', { bubbles: true, cancelable: true });
-    textarea('body').dispatchEvent(copy);
-    expect(copy.defaultPrevented).toBe(false);
+    for (const field of ['subject', 'body'] as const) {
+      const input = textarea(field);
+      input.setSelectionRange(0, input.value.length);
+      const setData = vi.fn();
+      const copy = new Event('copy', { bubbles: true, cancelable: true });
+      Object.defineProperty(copy, 'clipboardData', { value: { setData } });
+      input.dispatchEvent(copy);
+      expect(copy.defaultPrevented).toBe(true);
+      expect(setData).toHaveBeenCalledWith('text/plain', expect.stringContaining('[U+202E]'));
+      expect(setData.mock.calls[0][1]).not.toContain('\u202E');
+      expect(input.value).toBe(field === 'subject' ? subject : body);
+    }
     expect(Array.from(container.querySelectorAll('button')).map((button) => button.textContent)).toEqual(['Prepare edit']);
 
     await prepare();
@@ -516,6 +525,10 @@ describe('unmounted-by-product complaint content editor', () => {
     expect(inspection('Prepared body').textContent).toBe(preview.textContent);
     await enter('subject', 'Plain subject');
     await enter('body', 'Plain body');
+    textarea('body').setSelectionRange(0, 10);
+    const plainCopy = new Event('copy', { bubbles: true, cancelable: true });
+    textarea('body').dispatchEvent(plainCopy);
+    expect(plainCopy.defaultPrevented).toBe(false);
     expect(container.querySelector('.notice-warning')).toBeNull();
     expect(inspection('Prepared body').textContent).toContain('actual \\u202E');
     expect(onPrepared).toHaveBeenCalledTimes(1);

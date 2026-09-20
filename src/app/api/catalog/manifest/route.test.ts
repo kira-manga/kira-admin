@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { GET } from './route';
@@ -118,7 +119,10 @@ describe('fixed public live catalog route', () => {
     }));
     const response = await GET(new Request(requestUrl));
     expect(response.status).toBe(200);
-    expect(new Uint8Array(await response.arrayBuffer())).toEqual(bytes);
+    const actual = Buffer.from(await response.arrayBuffer());
+    expect(actual.byteLength).toBe(maximumBodyBytes);
+    // Keep exact byte equality without a million-element deep-equality assertion.
+    expect(actual.equals(bytes)).toBe(true);
     expect(response.headers.get('content-length')).toBeNull();
     expect(response.headers.get('content-encoding')).toBeNull();
   });

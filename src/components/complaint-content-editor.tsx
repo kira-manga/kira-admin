@@ -13,6 +13,7 @@ import {
   type ComplaintContentType,
   type PreparedComplaintContentEdit,
 } from '@/lib/complaint-content-editor';
+import { copyComplaintSelection } from '@/lib/complaint-text';
 import { Button, Field, Textarea } from './ui';
 
 export type ComplaintContentEditorProps = Readonly<{
@@ -43,7 +44,7 @@ const reasonMessages: Record<ComplaintContentReason, string> = {
 type PreparationError = { key: string; field: ComplaintContentField | null; message: string };
 
 /**
- * Deliberately unmounted. Snapshots are verified local inputs, not wire DTOs.
+ * Local preparation; the mounted parent owns confirmation/transport. Snapshots are not authority.
  * A different target/kind/tag starts a fresh draft/capture, but never releases a
  * consumed key. Key-only rotation preserves editing and re-arms only an unused
  * key. This fence lasts until the whole outer editor is destroyed, not beyond it.
@@ -170,16 +171,16 @@ function ComplaintContentEditorSession({ snapshot, idempotencyKey, onPrepared, k
                 {contentTypes.map((type) => <option key={type} value={type}>{type}</option>)}
               </select></Field>
               <Field label="Subject" hint="1–200 code points; at most 800 UTF-8 bytes after normalization. Newlines are allowed.">
-                <Textarea name="subject" rows={2} dir="auto" style={{ unicodeBidi: 'isolate' }} value={draft.content.subject} aria-invalid={error?.field === 'SUBJECT'} aria-describedby={describedBy('SUBJECT')} onChange={(event) => updateSubject(event.currentTarget.value)} />
+                <Textarea name="subject" rows={2} dir="auto" style={{ unicodeBidi: 'isolate' }} value={draft.content.subject} onCopy={copyComplaintSelection} aria-invalid={error?.field === 'SUBJECT'} aria-describedby={describedBy('SUBJECT')} onChange={(event) => updateSubject(event.currentTarget.value)} />
               </Field>
             </> : null}
             <Field label="Body" hint="1–1,000 code points; at most 4,000 UTF-8 bytes after normalization." wide>
-              <Textarea name="body" rows={8} dir="auto" style={{ unicodeBidi: 'isolate' }} value={draft.content.body} aria-invalid={error?.field === 'BODY'} aria-describedby={describedBy('BODY')} onChange={(event) => updateBody(event.currentTarget.value)} />
+              <Textarea name="body" rows={8} dir="auto" style={{ unicodeBidi: 'isolate' }} value={draft.content.body} onCopy={copyComplaintSelection} aria-invalid={error?.field === 'BODY'} aria-describedby={describedBy('BODY')} onChange={(event) => updateBody(event.currentTarget.value)} />
             </Field>
           </div>
           {error ? <p className="notice notice-error" role="alert" id={`${editorId}-error`}>{error.message}</p> : null}
           {keyConsumed ? <p className="notice" role="note" id={`${editorId}-key-help`}>
-            This supplied key has already been used for a local handoff. Another capture requires a new unused key; the draft remains editable.
+            This supplied key has already been used for a local handoff. Another capture requires a new unused key; the local draft is retained.
           </p> : null}
           <div><Button type="submit" tone="primary" disabled={keyConsumed} aria-describedby={keyConsumed ? `${editorId}-key-help` : undefined}>Prepare edit</Button></div>
         </form>
@@ -191,7 +192,7 @@ function ComplaintContentEditorSession({ snapshot, idempotencyKey, onPrepared, k
           <TextInspection label="Draft body" value={draft.content.body} />
         </section>
         {prepared ? <section className="view-stack" aria-label="Last prepared content">
-          <p className="notice" role="status">Prepared locally. Nothing was sent or saved. This detached capture does not change when you edit the draft.</p>
+          <p className="notice" role="status">Prepared locally. Preparation itself sends nothing; the parent workflow reports any submission separately. This detached capture does not change when you edit the draft.</p>
           <details>
             <summary>Inspect last prepared content (not a request)</summary>
             <div className="view-stack">

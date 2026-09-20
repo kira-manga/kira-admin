@@ -13,7 +13,7 @@ const navigation: Array<{ id: NavView; label: string; detail: string; icon: Icon
   { id: 'tutorials', label: 'Tutorials', detail: 'Guides & revisions', icon: 'tutorials' },
   { id: 'categories', label: 'Categories', detail: 'Library structure', icon: 'categories' },
   { id: 'media', label: 'Media', detail: 'Screenshots & assets', icon: 'media' },
-  { id: 'complaints', label: 'Complaints', detail: 'Read-only TEST lookup', icon: 'audit' },
+  { id: 'complaints', label: 'Complaints', detail: 'TEST detail & moderation', icon: 'audit' },
 ];
 
 export function AdminShell({ session, view, onView, onLogout, children }: { session: AdminSession; view: NavView; onView: (view: NavView) => void; onLogout: () => void; children: ReactNode }) {

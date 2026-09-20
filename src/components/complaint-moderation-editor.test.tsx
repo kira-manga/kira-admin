@@ -145,7 +145,7 @@ describe('unmounted-by-product complaint moderation editor', () => {
     expect(Object.isFrozen(captured)).toBe(true);
     expect(Object.isFrozen(captured.headers)).toBe(true);
     expect(container.querySelector('.notice-success')).toBeNull();
-    expect(container.querySelector('[role="status"]')?.textContent).toContain('Prepared locally. Nothing was sent or saved.');
+    expect(container.querySelector('[role="status"]')?.textContent).toContain('Preparation itself sends nothing; the parent workflow reports any submission separately.');
   });
 
   it('keeps raw closure editing and the detached original body, with safe directional/markup inspection only', async () => {
@@ -171,6 +171,18 @@ describe('unmounted-by-product complaint moderation editor', () => {
     expect(preparedBody().dir).toBe('ltr');
     expect(preparedBody().style.unicodeBidi).toBe('isolate');
     expect(container.querySelector('img, script, a, iframe')).toBeNull();
+    const visible = container.querySelector<HTMLPreElement>('[aria-label="Closure reason visible inspection"]')!;
+    expect(visible.textContent).toContain('[U+202E]');
+    expect(visible.textContent).not.toContain('\u202E');
+    expect(visible.style.overflowWrap).toBe('anywhere');
+    reasonInput().setSelectionRange(0, raw.length);
+    const setData = vi.fn();
+    const copy = new Event('copy', { bubbles: true, cancelable: true });
+    Object.defineProperty(copy, 'clipboardData', { value: { setData } });
+    reasonInput().dispatchEvent(copy);
+    expect(copy.defaultPrevented).toBe(true);
+    expect(setData).toHaveBeenCalledWith('text/plain', raw.replace('\u202E', '[U+202E]'));
+    expect(reasonInput().value).toBe(raw);
     await enterReason('Later draft');
     Object.assign(loaded, { actionTag: `"complaint-${id}-v2"` });
     expect(captured).toEqual(expected);

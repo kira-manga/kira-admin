@@ -94,6 +94,7 @@ describe('mounted read-only complaint lookup', () => {
   it.each([
     ['UNAVAILABLE', 'unavailable or not found'],
     ['SESSION_EXPIRED', 'session has expired'],
+    ['UNAUTHORIZED', 'does not confirm local session expiry'],
     ['FORBIDDEN', 'do not have permission'],
     ['INVALID_RESPONSE', 'request or response is invalid'],
     ['NETWORK', 'could not be loaded'],
@@ -166,5 +167,27 @@ describe('mounted read-only complaint lookup', () => {
     expect(container.querySelector('article')?.textContent).toContain('privacy.notice');
     expect(container.querySelector('article pre')).toBeNull();
     expect(container.querySelector('article button')).toBeNull();
+  });
+
+  it('renders prose and diagnostic values as isolated wrapped text with visible bidi tokens and no executable elements', async () => {
+    const loaded = detail();
+    if (loaded.item.kind === 'NOTICE') throw new Error('Wrong fixture kind.');
+    fetchDetail.mockResolvedValue({ ...loaded, item: { ...loaded.item,
+      subject: 'العربية\u202E<script>not markup</script>', body: 'עברית\u2066https://outside.example.test/\u2069\n<img src=x>',
+      manufacturer: 'Example\u200Fmanufacturer', osVersion: '16\u061C', deviceModel: 'Model\u202B',
+    } });
+    await mount(); await submit();
+    const article = container.querySelector('article')!;
+    expect(article.textContent).toContain('العربية[U+202E]<script>not markup</script>');
+    expect(article.textContent).toContain('עברית[U+2066]https://outside.example.test/[U+2069]');
+    expect(article.textContent).not.toMatch(/[\u061c\u200f\u202b\u202e\u2066\u2069]/);
+    expect(article.querySelector('a, img, script, iframe')).toBeNull();
+    for (const text of article.querySelectorAll<HTMLElement>('bdi, pre')) {
+      expect(text.dir).toBe('auto');
+      expect(text.style.unicodeBidi).toBe('isolate');
+      expect(text.style.whiteSpace).toBe('pre-wrap');
+      expect(text.style.overflowWrap).toBe('anywhere');
+    }
+    expect(article.querySelector('h3')?.tabIndex).toBe(-1); // Untrusted text creates no new focus target.
   });
 });

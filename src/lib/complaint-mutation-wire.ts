@@ -1,3 +1,5 @@
+import { prepareComplaintClosureReason, prepareComplaintEditedBody, prepareComplaintOrdinaryContent, type ComplaintContentType } from './complaint-content-editor';
+
 const uuid = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 const canonicalUuid = new RegExp(`^${uuid}$`);
 const maximumLong = '9223372036854775807';
@@ -104,4 +106,121 @@ function isLong(value: string): boolean {
 
 function isTestUuid(value: string): boolean {
   return isUuid(value) && value[14] === '4' && '89ab'.includes(value[19]);
+}
+
+export type ComplaintMutationOperation = 'content' | 'status' | 'closure';
+export const complaintReceiptHeader = 'X-Kira-Admin-Step-Up-Consumed';
+
+/** Strict flat string object. Duplicate decoded names, arrays, nested objects and numeric tokens fail. */
+function mutationFields(raw: string): Record<string, string> {
+  const invalid = (): never => { throw new ComplaintMutationWireError('INVALID_CAPTURE'); };
+  const fields: Record<string, string> = Object.create(null);
+  let offset = 0;
+  const space = () => { while (offset < raw.length && /[ \t\r\n]/.test(raw[offset])) offset++; };
+  const string = (): string => {
+    const start = offset;
+    if (raw[offset++] !== '"') return invalid();
+    while (offset < raw.length) {
+      const next = raw[offset++];
+      if (next === '\\') offset++;
+      else if (next === '"') return JSON.parse(raw.slice(start, offset)) as string;
+    }
+    return invalid();
+  };
+  space();
+  if (raw[offset++] !== '{') invalid();
+  space();
+  while (raw[offset] !== '}') {
+    const name = string();
+    if (Object.hasOwn(fields, name) || Object.keys(fields).length >= 3) invalid();
+    space();
+    if (raw[offset++] !== ':') invalid();
+    space();
+    fields[name] = string();
+    space();
+    if (raw[offset] !== ',') break;
+    offset++;
+    space();
+    if (raw[offset] === '}') invalid();
+  }
+  if (raw[offset++] !== '}') invalid();
+  space();
+  if (offset !== raw.length) invalid();
+  return fields;
+}
+
+/** Validate without rewriting retained bytes; the real backend still authenticates/normalizes. */
+export function validateComplaintMutationBody(operation: ComplaintMutationOperation, body: string) {
+  try {
+    const bytes = new TextEncoder().encode(body);
+    if (bytes.length > 16_384 || new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes) !== body) throw new Error();
+    const fields = mutationFields(body);
+    const keys = Object.keys(fields).sort().join(',');
+    if (operation === 'status') {
+      if (keys !== 'status' || !['OPEN', 'IN_PROGRESS', 'PLANNED', 'RESOLVED', 'NOT_PLANNED'].includes(fields.status)) throw new Error();
+    } else if (operation === 'closure') {
+      if (keys !== 'reason') throw new Error();
+      prepareComplaintClosureReason(fields.reason);
+    } else if (operation === 'content') {
+      if (keys === 'body') {
+        prepareComplaintEditedBody(fields.body);
+      } else if (keys === 'body,subject,type') {
+        prepareComplaintOrdinaryContent({ type: fields.type as ComplaintContentType, subject: fields.subject, body: fields.body });
+      } else throw new Error();
+    } else throw new Error();
+  } catch { throw new ComplaintMutationWireError('INVALID_CAPTURE'); }
+}
+
+/** Reconstruct a fixed BFF destination; the descriptor's backend path is never a fetch URL. */
+export function complaintMutationDestination(request: ComplaintMutationRequest) {
+  if (request.method !== 'PATCH' || Object.keys(request.headers).sort().join(',') !== 'Content-Type,If-Match,X-Kira-Complaint-Contract,X-Kira-Idempotency-Key'
+    || request.headers['Content-Type'] !== 'application/json' || request.headers['X-Kira-Complaint-Contract'] !== '1') throw new ComplaintMutationWireError('INVALID_CAPTURE');
+  const operation = (['content', 'status', 'closure'] as const).find((action) => request.path === `/api/v1/admin/complaints/${request.targetId}/${action}?dataScopeId=${request.dataScopeId}`);
+  if (!operation) throw new ComplaintMutationWireError('INVALID_CAPTURE');
+  const checked = prepareComplaintMutationRequest(operation, request.targetId, request.dataScopeId, request.headers['X-Kira-Idempotency-Key'], request.headers['If-Match'], request.body);
+  if (checked.baseVersion !== request.baseVersion) throw new ComplaintMutationWireError('INVALID_CAPTURE');
+  validateComplaintMutationBody(operation, request.body);
+  return `/api/backend/complaints/${request.targetId}/${operation}?dataScopeId=${request.dataScopeId}`;
+}
+
+const problemStatus = {
+  VALIDATION_FAILED: 400, UNAUTHORIZED: 401, ADMIN_STEP_UP_REQUIRED: 401, FORBIDDEN: 403, NOT_FOUND: 404,
+  IDEMPOTENCY_KEY_REUSED: 409, IDEMPOTENCY_IN_PROGRESS: 409, PRECONDITION_FAILED: 412, PAYLOAD_TOO_LARGE: 413,
+  UNSUPPORTED_MEDIA_TYPE: 415, PRECONDITION_REQUIRED: 428, RATE_LIMITED: 429, SERVICE_UNAVAILABLE: 503, INTERNAL_ERROR: 500,
+  COMPLAINT_NOT_FOUND: 404, COMPLAINT_INVALID_TRANSITION: 409, COMPLAINT_NO_CHANGE: 409, COMPLAINT_DELETION_PENDING: 409,
+} as const;
+const titles: Record<number, string> = { 400: 'Bad Request', 401: 'Unauthorized', 403: 'Forbidden', 404: 'Not Found', 409: 'Conflict', 412: 'Precondition Failed', 413: 'Payload Too Large', 415: 'Unsupported Media Type', 428: 'Precondition Required', 429: 'Too Many Requests', 500: 'Internal Server Error', 503: 'Service Unavailable' };
+const terminalCodes = new Set(['COMPLAINT_NOT_FOUND', 'COMPLAINT_INVALID_TRANSITION', 'COMPLAINT_NO_CHANGE', 'COMPLAINT_DELETION_PENDING', 'PRECONDITION_FAILED']);
+export type ComplaintMutationOutcome = Readonly<
+  | { kind: 'applied'; id: string; version: string; actionTag: string }
+  | { kind: 'rejected'; code: string }
+  | { kind: 'step-up-required' | 'session-expired' | 'unauthorized' | 'forbidden' | 'key-reused' | 'in-progress' | 'unavailable' | 'unknown' | 'stale-session' }
+>;
+
+/** Only actual fixed backend encodings; unknown/extra/duplicate JSON is never a confirmed result. */
+export function decodeComplaintMutationOutcome(request: ComplaintMutationRequest, response: Parameters<typeof decodeComplaintMutationApplied>[1] & {
+  consumed: string | null; challenge: string | null; retryAfter: string | null;
+}): ComplaintMutationOutcome {
+  const invalid = (): never => { throw new ComplaintMutationWireError('UNCONFIRMED_RESPONSE'); };
+  if (response.contract !== '1' || response.body.length > 32_768 || response.consumed !== null && response.consumed !== 'true'
+    || response.retryAfter !== null && (!/^[1-9][0-9]{0,5}$/.test(response.retryAfter) || ![409, 429, 503].includes(response.status))) invalid();
+  if (response.status === 401 ? response.challenge !== 'Bearer realm="kira-complaints"' : response.challenge !== null) invalid();
+  if (response.status === 200) return Object.freeze({ kind: 'applied', ...decodeComplaintMutationApplied(request, response) });
+  if (response.etag !== null || !response.contentType || response.contentType.length > 128 || /[\r\n]/.test(response.contentType)
+    || !/^application\/problem\+json(?:[ \t]*;[ \t]*charset=utf-8)?$/i.test(response.contentType)) invalid();
+  let raw: string;
+  try { raw = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(response.body); } catch { return invalid(); }
+  if (response.status === 404 && raw === '{"type":"about:blank","title":"Not Found","status":404,"detail":"Not found."}' && response.consumed === null) return { kind: 'unavailable' };
+  const code = Object.entries(problemStatus).find(([code, status]) => status === response.status && raw === JSON.stringify({
+    type: 'about:blank', title: titles[status], status, errors: [{ code, message: 'Complaint request refused.' }],
+  }))?.[0];
+  if (!code || response.consumed === 'true' && !terminalCodes.has(code) && ![500, 503].includes(response.status)) return invalid();
+  if (code === 'IDEMPOTENCY_IN_PROGRESS' && response.retryAfter !== '1') invalid();
+  if (terminalCodes.has(code) && response.consumed === 'true') return { kind: 'rejected', code };
+  if (code === 'ADMIN_STEP_UP_REQUIRED') return { kind: 'step-up-required' };
+  if (code === 'UNAUTHORIZED') return { kind: 'unauthorized' };
+  if (code === 'FORBIDDEN') return { kind: 'forbidden' };
+  if (code === 'IDEMPOTENCY_KEY_REUSED') return { kind: 'key-reused' };
+  if (code === 'IDEMPOTENCY_IN_PROGRESS') return { kind: 'in-progress' };
+  return { kind: 'unknown' };
 }

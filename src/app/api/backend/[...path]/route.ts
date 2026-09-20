@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { adminRouteAllowed, isComplaintDetailQuery, isMutatingMethod, routeNeedsStepUp } from '@/lib/admin-route-policy';
+import { proxyComplaintMutation } from '@/lib/server-complaint-mutation';
 import { backendUrl } from '@/lib/server-config';
 import { requireCsrf, requireSameOrigin } from '@/lib/server-security';
 import { readAdminProof, readAdminSession, retireProofCookie, sessionFailure, type AdminProofCookie } from '@/lib/server-session';
@@ -8,6 +9,7 @@ import { readAdminProof, readAdminSession, retireProofCookie, sessionFailure, ty
 const upstreamTimeoutMs = 65_000;
 const historyCursorHeader = 'X-Kira-History-Next-Before';
 const complaintContractHeader = 'X-Kira-Complaint-Contract';
+export const dynamic = 'force-dynamic';
 
 function complaintFailure(status: number) {
   return Response.json({ detail: 'Complaint detail could not be loaded.' }, { status, headers: { 'Cache-Control': 'no-store' } });
@@ -69,6 +71,7 @@ async function proxy(request: Request, context: { params: Promise<{ path: string
   if (!path.length || !adminRouteAllowed(path, request.method)) {
     return Response.json({ detail: 'Admin route is not allowed.' }, { status: 404 });
   }
+  if (path[0] === 'complaints' && request.method === 'PATCH') return proxyComplaintMutation(request, path);
   const complaintDetail = path[0] === 'complaints';
   const incomingUrl = new URL(request.url);
   if (complaintDetail && (!isComplaintDetailQuery(incomingUrl.search) || request.body !== null)) return complaintFailure(400);
@@ -153,4 +156,5 @@ async function proxy(request: Request, context: { params: Promise<{ path: string
 export const GET = proxy;
 export const POST = proxy;
 export const PUT = proxy;
+export const PATCH = proxy;
 export const DELETE = proxy;
