@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { sessionFetch } from './client-api';
+import { fixtureCsrf, fixtureGeneration, seedClientSession } from '@/test/auth-fixture';
 import { ComplaintReadClientError, fetchComplaintAdminDetail, type ComplaintAdminDetailRequest, type ComplaintReadClientReason } from './complaint-read-client';
 
 const id = '12345678-1234-4234-8234-123456789abc';
@@ -30,8 +30,7 @@ beforeEach(async () => {
   vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
   fetchMock.mockReset();
   vi.stubGlobal('fetch', fetchMock);
-  fetchMock.mockResolvedValueOnce(Response.json({ csrfToken: 'fixture-only-csrf' }));
-  await sessionFetch();
+  await seedClientSession();
   fetchMock.mockReset();
 });
 
@@ -61,7 +60,8 @@ describe('same-origin complaint detail client', () => {
     expect(init).toMatchObject({ method: 'GET', credentials: 'same-origin', redirect: 'error', cache: 'no-store', signal: expect.any(AbortSignal) });
     expect(init?.body).toBeUndefined();
     expect(Object.fromEntries(new Headers(init?.headers))).toEqual({
-      accept: 'application/json, application/problem+json', 'x-kira-complaint-contract': '1', 'x-kira-csrf': 'fixture-only-csrf',
+      accept: 'application/json, application/problem+json', 'x-kira-complaint-contract': '1',
+      'x-kira-csrf': fixtureCsrf, 'x-kira-session-generation': fixtureGeneration,
     });
     caller.abort();
     expect(init?.signal?.aborted).toBe(false); // The completed read removed its caller listener.

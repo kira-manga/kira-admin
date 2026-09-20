@@ -39,7 +39,9 @@ export function adminRouteAllowed(path: string[], method: string) {
   return false;
 }
 
-export function routeNeedsStepUp(path: string[]) {
-  const joined = path.join('/');
-  return joined.endsWith('/apply') || joined.endsWith('/editor-draft/publish') || /^sources\/[^/]+\/operational-mode$/.test(joined);
+export function routeNeedsStepUp(path: string[], method: string) {
+  if (method === 'POST' && path.length === 3 && path[0] === 'source-changesets' && path[1].length === 36 && canonicalUuid.test(path[1]) && path[2] === 'apply') return true;
+  if (path[0] !== 'sources' || !path[1] || path[1].includes('/')) return false;
+  return method === 'POST' && path.length === 4 && path[2] === 'editor-draft' && path[3] === 'publish'
+    || method === 'PUT' && path.length === 3 && path[2] === 'operational-mode';
 }

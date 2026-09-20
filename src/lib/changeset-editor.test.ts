@@ -1,5 +1,6 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { seedClientSession, stepUpAcknowledgement } from '@/test/auth-fixture';
 import { createActionOwner } from './action-owner';
 import { applySavedChangeset, parseOperations, prepareChangesetApply, saveAndAdoptChangeset, validateChangeset, type ChangesetEditorAction, type ChangesetEditorSnapshot } from './changeset-editor';
 import { ApiError } from './client-api';
@@ -12,6 +13,8 @@ const changeset: SourceChangeset = {
   appliedDocumentRevision: null, createdBy: 'admin-id', updatedBy: 'admin-id',
   createdAt: '2026-09-09T00:00:00Z', updatedAt: '2026-09-09T00:00:00Z', appliedAt: null,
 };
+
+beforeEach(async () => { await seedClientSession(); });
 const visibleOperations: SourceChange[] = [{ type: 'enable', api: 'Beta' }];
 const operationsText = JSON.stringify(visibleOperations, null, 2);
 const savedEtag = '"changeset-9"';
@@ -103,7 +106,7 @@ describe('visible changeset actions', () => {
     view.action.current = { ...view.action.current, etag: '"changeset-999"' };
     const verify = vi.fn(async () => {
       view.events.push('verify');
-      return Response.json({ scope: 'source-admin-mutation', expiresAt: new Date(Date.now() + 300_000).toISOString() });
+      return Response.json(stepUpAcknowledgement());
     });
     let attempts = 0;
     const apply = vi.fn(async () => {

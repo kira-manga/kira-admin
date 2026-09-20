@@ -1,19 +1,17 @@
 import { NextResponse } from 'next/server';
 
-import { adminComplaintStepUpCookie, adminCsrfCookie, adminStepUpCookie, adminTokenCookie } from '@/lib/server-config';
-import { requireCsrf } from '@/lib/server-security';
+import { requireCsrf, requireSameOrigin } from '@/lib/server-security';
+import { readAdminSession, retireCapturedCookies, sessionFailure } from '@/lib/server-session';
 
 export async function POST(request: Request) {
-  const rejected = await requireCsrf(request);
-  if (rejected) return rejected;
-  const response = NextResponse.json({ ok: true });
-  response.cookies.delete(adminTokenCookie);
-  response.cookies.delete(adminCsrfCookie);
-  for (const name of [adminStepUpCookie, adminComplaintStepUpCookie]) {
-    response.cookies.set(name, '', {
-      httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production',
-      path: '/api/backend', expires: new Date(0), maxAge: 0,
-    });
-  }
-  return response;
+  const originFailure = await requireSameOrigin(request);
+  if (originFailure) return originFailure;
+  try {
+    const session = readAdminSession(request.headers);
+    const rejected = await requireCsrf(request, session);
+    if (rejected) return rejected;
+    const response = NextResponse.json({ ok: true }, { headers: { 'Cache-Control': 'no-store, no-transform' } });
+    retireCapturedCookies(response, session.cookies, session.generation);
+    return response;
+  } catch (error) { return sessionFailure(error); }
 }

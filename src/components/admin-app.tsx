@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { authenticatedFetch, sessionFetch } from '@/lib/client-api';
+import { useActionOwner } from '@/lib/action-owner';
+import { logoutSession, sessionFetch } from '@/lib/client-api';
 import type { AdminSession, NavView } from '@/lib/types';
 import { AdminShell } from './admin-shell';
 import { AuditView } from './audit-view';
@@ -19,24 +20,43 @@ import { Spinner } from './ui';
 export function AdminApp() {
   const [session, setSession] = useState<AdminSession | null | undefined>(undefined);
   const [view, setView] = useState<NavView>('overview');
+  const [notice, setNotice] = useState('');
+  const owner = useActionOwner();
+  const transition = useRef(0);
 
-  const refreshSession = useCallback(async () => setSession(await sessionFetch()), []);
+  const refreshSession = useCallback(async () => {
+    const version = ++transition.current;
+    const mounted = owner.captureLifetime();
+    const current = () => mounted() && version === transition.current;
+    try {
+      const result = await sessionFetch(current);
+      if (current() && result !== undefined) { setSession(result); setNotice(''); }
+    } catch (error) {
+      if (current()) { setSession(null); setNotice(error instanceof Error ? error.message : 'Session check failed.'); }
+    }
+  }, [owner]);
   useEffect(() => {
     // The state update happens after the external session request resolves.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void refreshSession();
   }, [refreshSession]);
 
-  async function logout() {
-    await authenticatedFetch('/api/auth/logout', { method: 'POST' });
+  function logout() {
+    const version = ++transition.current;
+    const mounted = owner.captureLifetime();
+    const work = logoutSession();
     setSession(null);
+    setNotice('');
+    void work.catch(() => {
+      if (mounted() && transition.current === version) setNotice('Signed out locally; server sign-out could not be confirmed.');
+    });
   }
 
   if (session === undefined) return <main className="boot-screen"><div className="brand-mark">K</div><Spinner label="Opening Admin Studio" /></main>;
-  if (!session) return <LoginScreen onSuccess={refreshSession} />;
+  if (!session) return <LoginScreen onSuccess={refreshSession} notice={notice} />;
 
   return (
-    <AdminShell session={session} view={view} onView={setView} onLogout={logout}>
+    <AdminShell key={session.generation} session={session} view={view} onView={setView} onLogout={logout}>
       {view === 'overview' ? <OverviewView onNavigate={setView} /> : null}
       {view === 'sources' ? <SourcesView /> : null}
       {view === 'changesets' ? <ChangesetsView /> : null}

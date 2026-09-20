@@ -3,7 +3,7 @@
 import { ChangeEvent, DragEvent, useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 
-import { apiFetch, apiUpload, type UploadProgress } from '@/lib/client-api';
+import { adminMediaUrl, apiFetch, apiUpload, type UploadProgress } from '@/lib/client-api';
 import type { TutorialMedia } from '@/lib/types';
 import { Icon } from './icons';
 import { Button, EmptyState, Spinner, formatDate } from './ui';
@@ -68,7 +68,7 @@ export function MediaView() {
         <div className="panel-heading"><div><span>{media.length} ASSETS</span><h3>Screenshot library</h3></div><p>{media.filter((item) => item.published).length} currently published</p></div>
         {loading ? <Spinner label="Loading media" /> : media.length ? <div className="media-grid">{media.map((item) => (
           <article key={item.id} className="media-card">
-            <div className="media-preview"><Image src={`/api/media/${item.id}`} alt="Tutorial media preview" width={item.width} height={item.height} unoptimized /><span className={item.published ? 'media-live' : 'media-draft'}>{item.published ? 'IN USE' : 'AVAILABLE'}</span></div>
+            <div className="media-preview"><Image src={adminMediaUrl(item.id)} alt="Tutorial media preview" width={item.width} height={item.height} unoptimized /><span className={item.published ? 'media-live' : 'media-draft'}>{item.published ? 'IN USE' : 'AVAILABLE'}</span></div>
             <div className="media-info"><div><strong>{item.width} × {item.height}</strong><span>{item.contentType.replace('image/', '').toUpperCase()} · {(item.byteSize / 1024).toFixed(0)} KB</span></div><code title={item.id}>{item.id.slice(0, 8)}</code></div>
             <div className="media-foot"><small>{formatDate(item.createdAt)}</small><button type="button" onClick={() => void remove(item)} title="Delete media"><Icon name="trash" /></button></div>
           </article>

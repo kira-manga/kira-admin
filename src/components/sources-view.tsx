@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useActionOwner, type ActionTicket } from '@/lib/action-owner';
-import { apiFetch, apiFetchWithMeta } from '@/lib/client-api';
+import { apiFetch, apiFetchWithMeta, sourceApprovalInit } from '@/lib/client-api';
 import { editorDraftSnapshot, finalizeEditorDraft, prepareDraftPublish, publishSavedEditorDraft, saveAndAdoptEditorDraft, validateEditorDraft, type DraftEditorAction, type PreparedDraftPublish, type SourceDraftEditorSnapshot } from '@/lib/source-draft-publish';
+import type { StepUpApproval } from '@/lib/step-up-contract';
 import type { SourceCapabilities, SourceDraft, SourceHead, SourceOperationalMode, SourceOperationalModeResult, SourceRevision, ValidationResult } from '@/lib/types';
 import { Icon } from './icons';
 import { StepUpDialog } from './step-up-dialog';
@@ -251,7 +252,7 @@ export function SourcesView() {
     }
   }
 
-  async function publishDraft() {
+  async function publishDraft(approval: StepUpApproval) {
     const pending = pendingPublish;
     if (!pending || !pending.ticket.isCurrent()) throw new Error('This publication confirmation is no longer current.');
     let completed = false;
@@ -262,7 +263,7 @@ export function SourcesView() {
       const publication = await publishSavedEditorDraft(pending, {
         isCurrent: pending.ticket.isCurrent,
         adopt: (saved) => setEditor({ ...saved, target: pending.target, validation: null }),
-      });
+      }, (path, init) => apiFetchWithMeta(path, sourceApprovalInit(approval, init)));
       if (!publication || !pending.ticket.isCurrent()) return;
       completed = true;
       setPendingPublish(null);
@@ -284,7 +285,7 @@ export function SourcesView() {
     setPendingMode({ target: { api: selected.api, displayName: selected.displayName }, mode, ticket });
   }
 
-  async function applyOperationalMode() {
+  async function applyOperationalMode(approval: StepUpApproval) {
     const pending = pendingMode;
     if (!pending || !pending.ticket.isCurrent()) throw new Error('This source mode confirmation is no longer current.');
     let completed = false;
@@ -294,7 +295,7 @@ export function SourcesView() {
     try {
       const result = await apiFetch<SourceOperationalModeResult>(
         `sources/${encodeURIComponent(pending.target.api)}/operational-mode`,
-        { method: 'PUT', body: JSON.stringify({ mode: pending.mode }) },
+        sourceApprovalInit(approval, { method: 'PUT', body: JSON.stringify({ mode: pending.mode }) }),
       );
       if (!pending.ticket.isCurrent()) return;
       setMessage(result.noOp

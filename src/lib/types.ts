@@ -6,6 +6,8 @@ export type AdminSession = {
   role: 'ADMIN';
   createdAt: string;
   csrfToken: string;
+  generation: string;
+  expiresAt: string;
 };
 
 export type AdminCategory = {

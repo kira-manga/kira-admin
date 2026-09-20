@@ -12,7 +12,3 @@ if (adminTrustedIngress && configuredBackendUrl !== 'http://backend:8080') {
 
 export const backendUrl = configuredBackendUrl.replace(/\/$/, '');
 export const adminOrigin = process.env.KIRA_ADMIN_ORIGIN?.replace(/\/$/, '') ?? '';
-export const adminTokenCookie = 'kira_admin_session';
-export const adminCsrfCookie = 'kira_admin_csrf';
-export const adminStepUpCookie = 'kira_admin_step_up';
-export const adminComplaintStepUpCookie = 'kira_admin_complaint_step_up';
