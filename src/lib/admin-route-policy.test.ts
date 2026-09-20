@@ -1,8 +1,23 @@
 import { describe, expect, it } from 'vitest';
 
-import { adminRouteAllowed, isComplaintDetailQuery, isMutatingMethod, routeNeedsStepUp } from './admin-route-policy';
+import { adminRouteAllowed, isComplaintDetailQuery, isComplaintMutationPath, isMutatingMethod, routeNeedsStepUp } from './admin-route-policy';
 
 describe('admin BFF route policy', () => {
+  it('admits only the three non-deleting complaint PATCH shapes, classified for CSRF but not source proof', () => {
+    const id = '12345678-1234-4234-8234-123456789abc';
+    expect(isMutatingMethod('PATCH')).toBe(true);
+    for (const action of ['content', 'status', 'closure']) {
+      const path = ['complaints', id, action];
+      expect(isComplaintMutationPath(path)).toBe(true);
+      expect(adminRouteAllowed(path, 'PATCH')).toBe(true);
+      expect(routeNeedsStepUp(path, 'PATCH')).toBe(false);
+      for (const method of ['POST', 'PUT', 'DELETE', 'GET']) expect(adminRouteAllowed(path, method)).toBe(false);
+    }
+    for (const path of [['complaints', id], ['complaints', id, 'delete'], ['complaints', 'batch'],
+      ['complaints', id.toUpperCase(), 'content'], ['complaints', id, 'content', ''], ['complaints', id + '\n', 'status']]) {
+      expect(adminRouteAllowed(path, 'PATCH')).toBe(false);
+    }
+  });
   it('allows only a canonical complaint detail GET and one literal TEST scope query', () => {
     const id = '12345678-1234-3234-8234-123456789abc';
     const scope = '87654321-1234-4234-8234-123456789abc';

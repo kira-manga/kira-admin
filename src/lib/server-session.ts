@@ -180,15 +180,46 @@ export function issueAdminProof(session: AdminSessionCookie, token: string, scop
 export function readAdminProof(headers: Headers, session: AdminSessionCookie, scope: StepUpScope): AdminProofCookie {
   const proofId = headers.get(stepUpProofIdHeader);
   if (!isSessionSelector(proofId)) throw new SessionBoundaryError(403, 'Verify your password again for this action.');
+  const proof = proofForSession(session, scope, proofId);
+  if (!proof) throw new SessionBoundaryError(403, 'Verify your password again for this action.');
+  return proof;
+}
+
+function proofForSession(session: AdminSessionCookie, scope: StepUpScope, proofId: string): AdminProofCookie | undefined {
   const name = proofName(session.generation, scope, proofId);
   const value = session.cookies.values.get(name);
   const fields = unseal('proof', value);
   if (!fields || fields.length !== 7 || fields[0] !== session.generation || fields[1] !== proofId || fields[2] !== scope
     || !isExpiry(fields[3], proofLifetimeMs) || fields[3] > session.expiresAt || !isCsrfToken(fields[4]) || fields[5] !== sessionBinding(session)
     || fields[6] !== null && (!isSessionSelector(fields[6]) || scope !== 'complaint-moderation-mutation')) {
-    throw new SessionBoundaryError(403, 'Verify your password again for this action.');
+    return undefined;
   }
   return { generation: session.generation, proofId, scope, expiresAt: fields[3], token: fields[4], grantId: fields[6], name, value: value! };
+}
+
+/** Missing/stale proof is not a replay gate. Only the backend can admit a new complaint operation. */
+export function readOptionalComplaintProof(headers: Headers, session: AdminSessionCookie) {
+  const proofId = headers.get(stepUpProofIdHeader);
+  if (proofId === null) return undefined;
+  if (!isSessionSelector(proofId)) throw new SessionBoundaryError(400, 'Invalid approval selector.');
+  return proofForSession(session, 'complaint-moderation-mutation', proofId);
+}
+
+/** Inventory is the original request's captured cookies, never a later jar or selected fresh proof. */
+export function capturedComplaintProofs(session: AdminSessionCookie): readonly AdminProofCookie[] {
+  return session.cookies.identities.flatMap((identity) => {
+    if (identity.kind !== 'proof' || identity.generation !== session.generation) return [];
+    const parts = identity.name.slice(proofCookiePrefix.length).split('_');
+    if (parts[1] !== 'c') return [];
+    const proof = proofForSession(session, 'complaint-moderation-mutation', parts[2]);
+    return proof ? [proof] : [];
+  });
+}
+
+export function retireConsumedComplaintProof(response: NextResponse, captured: readonly AdminProofCookie[], grantId: string | null) {
+  if (!isSessionSelector(grantId)) return;
+  const matches = captured.filter((proof) => proof.scope === 'complaint-moderation-mutation' && proof.grantId === grantId);
+  if (matches.length === 1) retireProofCookie(response, matches[0]);
 }
 
 export function setAuthenticationCookie(response: NextResponse, cookie: AdminSessionCookie | AdminProofCookie) {

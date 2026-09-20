@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useActionOwner } from '@/lib/action-owner';
 import { logoutSession, sessionFetch } from '@/lib/client-api';
+import type { ComplaintOperation } from '@/lib/complaint-mutation-client';
 import type { AdminSession, NavView } from '@/lib/types';
 import { AdminShell } from './admin-shell';
 import { AuditView } from './audit-view';
@@ -23,6 +24,24 @@ export function AdminApp() {
   const [notice, setNotice] = useState('');
   const owner = useActionOwner();
   const transition = useRef(0);
+  const [complaintOperation, setComplaintOperation] = useState<ComplaintOperation | null>(null);
+  const complaintOperationRef = useRef<ComplaintOperation | null>(null);
+  const changeComplaintOperation = useCallback((expected: ComplaintOperation | null, next: ComplaintOperation | null) => {
+    if (!owner.captureLifetime()() || complaintOperationRef.current !== expected) return false;
+    complaintOperationRef.current = next;
+    setComplaintOperation(next);
+    return true;
+  }, [owner]);
+
+  useEffect(() => {
+    const warn = (event: BeforeUnloadEvent) => {
+      const pending = complaintOperationRef.current;
+      if (!pending || pending.phase === 'prepared' || pending.outcome?.kind === 'applied' || pending.outcome?.kind === 'rejected') return;
+      event.preventDefault(); event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, []);
 
   const refreshSession = useCallback(async () => {
     const version = ++transition.current;
@@ -41,7 +60,11 @@ export function AdminApp() {
     void refreshSession();
   }, [refreshSession]);
 
-  function logout() {
+  function logout(warn = true) {
+    const pending = complaintOperationRef.current;
+    if (warn && pending && pending.phase !== 'prepared'
+      && pending.outcome?.kind !== 'applied' && pending.outcome?.kind !== 'rejected'
+      && !window.confirm('A complaint operation is retained. Signing out will make it non-sendable; it does not cancel or establish its outcome. Continue?')) return;
     const version = ++transition.current;
     const mounted = owner.captureLifetime();
     const work = logoutSession();
@@ -56,7 +79,7 @@ export function AdminApp() {
   if (!session) return <LoginScreen onSuccess={refreshSession} notice={notice} />;
 
   return (
-    <AdminShell key={session.generation} session={session} view={view} onView={setView} onLogout={logout}>
+    <AdminShell key={session.generation} session={session} view={view} onView={setView} onLogout={() => logout()}>
       {view === 'overview' ? <OverviewView onNavigate={setView} /> : null}
       {view === 'sources' ? <SourcesView /> : null}
       {view === 'changesets' ? <ChangesetsView /> : null}
@@ -64,7 +87,8 @@ export function AdminApp() {
       {view === 'tutorials' ? <TutorialsView /> : null}
       {view === 'categories' ? <CategoriesView /> : null}
       {view === 'media' ? <MediaView /> : null}
-      {view === 'complaints' ? <ComplaintDetailView /> : null}
+      {view === 'complaints' ? <ComplaintDetailView controls={{ generation: session.generation, operation: complaintOperation,
+        changeOperation: changeComplaintOperation, onSessionExpired: () => logout(false) }} /> : null}
     </AdminShell>
   );
 }

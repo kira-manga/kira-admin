@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createSessionFixture, fixtureSigningSecret, signedRequestHeaders } from '@/test/server-session-fixture';
 import { otherGeneration, otherProofId } from '@/test/auth-fixture';
 import { sessionGenerationHeader, stepUpProofIdHeader } from './session-contract';
-import { captureSessionCookies, cookieHeaderLimit, issueAdminProof, issueAdminSession, proofCookieLimit, readAdminProof, readAdminSession, requireCookieCapacity,
+import { capturedComplaintProofs, captureSessionCookies, cookieHeaderLimit, issueAdminProof, issueAdminSession, proofCookieLimit, readAdminProof, readAdminSession, readOptionalComplaintProof, requireCookieCapacity,
   retireCapturedCookies, retireProofCookie, sessionCookieLimit, sessionCookiePrefix, setAuthenticationCookie, type AdminSessionCookie } from './server-session';
 
 const proofToken = 'A'.repeat(43);
@@ -90,6 +90,27 @@ describe('stateless authenticated G/P envelopes', () => {
     const headers = signedRequestHeaders(first, [proof]);
     headers.set('cookie', `${first.name}=${changed}; ${proof.name}=${proof.value}`);
     expect(() => readAdminProof(headers, readAdminSession(headers), 'source-admin-mutation')).toThrow('Verify your password');
+  });
+
+  it('authenticates optional complaint forwarding and captured association against the exact signed session too', () => {
+    const session = createSessionFixture();
+    const complaint = issueAdminProof(session, proofToken, 'complaint-moderation-mutation', expiry(), otherGeneration);
+    const source = proofFor(session);
+    const headers = signedRequestHeaders(session, [complaint, source]);
+    let selected = readAdminSession(headers);
+    expect(readOptionalComplaintProof(headers, selected)?.grantId).toBe(otherGeneration);
+    expect(capturedComplaintProofs(selected)).toEqual([complaint]);
+    headers.delete(stepUpProofIdHeader);
+    expect(readOptionalComplaintProof(headers, selected)).toBeUndefined();
+    expect(capturedComplaintProofs(selected)).toEqual([complaint]); // Proofless replay still has a bounded captured inventory.
+    headers.set(stepUpProofIdHeader, `${complaint.proofId}, ${complaint.proofId}`);
+    expect(() => readOptionalComplaintProof(headers, selected)).toThrow('Invalid approval selector');
+    headers.set(stepUpProofIdHeader, complaint.proofId);
+    const replacement = replaceEnvelope(session.value, (fields) => { fields[2] = 'E'.repeat(42) + 'A'; });
+    headers.set('cookie', `${session.name}=${replacement}; ${complaint.name}=${complaint.value}`);
+    selected = readAdminSession(headers);
+    expect(readOptionalComplaintProof(headers, selected)).toBeUndefined();
+    expect(capturedComplaintProofs(selected)).toEqual([]);
   });
 
   it('binds scope and P, and refuses ambiguous selectors or a missing selected proof rather than selecting another', () => {

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fixtureCsrf, fixtureGeneration, seedClientSession } from '@/test/auth-fixture';
+import { captureAdminSession } from './client-api';
 import { ComplaintReadClientError, fetchComplaintAdminDetail, type ComplaintAdminDetailRequest, type ComplaintReadClientReason } from './complaint-read-client';
 
 const id = '12345678-1234-4234-8234-123456789abc';
@@ -68,9 +69,9 @@ describe('same-origin complaint detail client', () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  it('maps unavailable/session/forbidden/gateway statuses statically and never reads private problem bodies', async () => {
+  it('maps unavailable/denied/forbidden/gateway statuses statically and never reads private problem bodies', async () => {
     const cases: Array<[number, ComplaintReadClientReason]> = [
-      [404, 'UNAVAILABLE'], [503, 'UNAVAILABLE'], [401, 'SESSION_EXPIRED'], [403, 'FORBIDDEN'],
+      [404, 'UNAVAILABLE'], [503, 'UNAVAILABLE'], [401, 'UNAUTHORIZED'], [403, 'FORBIDDEN'],
       [502, 'NETWORK'], [204, 'INVALID_RESPONSE'], [302, 'INVALID_RESPONSE'],
     ];
     for (const [status, reason] of cases) {
@@ -83,6 +84,32 @@ describe('same-origin complaint detail client', () => {
       if (status !== 204) expect(cancel).toHaveBeenCalledOnce();
       expect(vi.getTimerCount()).toBe(0);
     }
+  });
+
+  it.each([
+    [null, 'UNAUTHORIZED'],
+    ['Bearer realm="kira-complaints"', 'UNAUTHORIZED'],
+    ['KiraSession realm="other"', 'UNAUTHORIZED'],
+    ['kirasession realm="kira-admin-bff"', 'UNAUTHORIZED'],
+    ['KiraSession realm="kira-admin-bff", Bearer realm="kira-complaints"', 'UNAUTHORIZED'],
+    ['KiraSession realm="kira-admin-bff"', 'SESSION_EXPIRED'],
+  ] as const)('classifies a read401 challenge %s as %s without reading its body or retiring client selection', async (challenge, reason) => {
+    const session = captureAdminSession();
+    const cancel = vi.fn();
+    const denied = response(new ReadableStream({ start(controller) { controller.enqueue(bytes('private upstream read failure')); }, cancel }), 401);
+    if (challenge !== null) denied.headers.set('WWW-Authenticate', challenge);
+    const json = vi.spyOn(denied, 'json');
+    const getReader = vi.spyOn(denied.body!, 'getReader');
+    fetchMock.mockResolvedValueOnce(denied);
+    await refusal(reason, fetchComplaintAdminDetail(request()));
+    expect(json).not.toHaveBeenCalled();
+    expect(getReader).not.toHaveBeenCalled();
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(session.isCurrent()).toBe(true); // Only the mounted caller handles an exact local-expiry result.
+    expect(captureAdminSession().generation).toBe(fixtureGeneration);
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(fetchMock.mock.calls[0][0]).toBe(`/api/backend/complaints/${id}?dataScopeId=${scope}`);
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it('refuses bad local scope/ID before fetch and delegates success integrity to the existing decoder', async () => {

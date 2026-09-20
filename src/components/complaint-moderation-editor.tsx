@@ -9,6 +9,7 @@ import {
   type ComplaintStatusTarget,
 } from '@/lib/complaint-moderation-wire';
 import type { ComplaintMutationRequest } from '@/lib/complaint-mutation-wire';
+import { copyComplaintSelection, visibleComplaintText } from '@/lib/complaint-text';
 import { Button, Field, Textarea } from './ui';
 
 export type ComplaintModerationEditorProps = Readonly<{
@@ -27,7 +28,7 @@ const directionalControls = /[\u061c\u200e\u200f\u202a-\u202e\u2066-\u206f]/g;
 type PreparationError = { key: string; statusRequired?: boolean; message: string };
 
 /**
- * Deliberately unmounted. Target/tag/scope changes retire the draft and last capture,
+ * The mounted parent owns confirmation/transport. Target/tag/scope changes retire the draft and last capture,
  * not consumed keys. An unused key alone preserves editing; it is never a retry.
  * This event-time fence is local to the outer editor, not durable recovery state.
  */
@@ -81,7 +82,7 @@ function ComplaintModerationEditorSession({ target, dataScopeId, idempotencyKey,
       }
     } catch {
       // The shared helper validates the complete description; never expose raw inputs/errors.
-      setError({ key: idempotencyKey, message: 'The supplied target, TEST scope, key or change is invalid. Nothing was sent or saved.' });
+      setError({ key: idempotencyKey, message: 'The supplied target, TEST scope, key or change is invalid. This preparation sent nothing; the parent workflow reports submissions separately.' });
       return;
     }
     if (!consumeKey(request.headers['X-Kira-Idempotency-Key'])) return;
@@ -127,25 +128,26 @@ function ComplaintModerationEditorSession({ target, dataScopeId, idempotencyKey,
               <option value="" disabled>Choose a status target</option>
               {statusTargets.map((value) => <option key={value} value={value}>{value}</option>)}
             </select></Field> : operation === 'closure' ? <Field label="Closure reason" hint="1–500 code points; at most 2,000 UTF-8 bytes after normalization. Your visible draft is not rewritten." wide>
-              <Textarea name="reason" rows={5} dir="auto" style={{ unicodeBidi: 'isolate' }} value={reason} aria-describedby={describedBy} onChange={(event) => {
+              <Textarea name="reason" rows={5} dir="auto" style={{ unicodeBidi: 'isolate' }} value={reason} onCopy={copyComplaintSelection} aria-describedby={describedBy} onChange={(event) => {
                 setReason(event.currentTarget.value);
                 setError(null);
               }} />
             </Field> : null}
           </div>
+          {hasDirectionalMarks ? <pre className="preview-output" aria-label="Closure reason visible inspection" dir="auto" style={{ unicodeBidi: 'isolate', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{visibleComplaintText(reason)}</pre> : null}
           {hasDirectionalMarks ? <p className="notice notice-warning" role="note" id={`${editorId}-bidi-warning`}>
             Directional marks are present. Visual order can differ from stored order. They remain unchanged; prepared-body inspection escapes them as {'\\uXXXX'}.
           </p> : null}
           {error ? <p className="notice notice-error" role="alert" id={`${editorId}-error`}>{error.message}</p> : null}
           {keyConsumed ? <p className="notice" role="note" id={`${editorId}-key-help`}>
-            This supplied key has already been used for a local handoff. Keep that original description on uncertainty; another key is not a retry. The draft remains editable.
+            This supplied key has already been used for a local handoff. Keep that original description on uncertainty; another key is not a retry. The local draft is retained.
           </p> : null}
           <div><Button type="submit" tone="primary" disabled={keyConsumed} aria-describedby={keyConsumed ? `${editorId}-key-help` : undefined}>Prepare description</Button></div>
         </form>
         {prepared ? <section className="view-stack" aria-label="Last prepared moderation">
-          <p className="notice" role="status">Prepared locally. Nothing was sent or saved. Later draft edits do not change this description.</p>
+          <p className="notice" role="status">Prepared locally. Preparation itself sends nothing; the parent workflow reports any submission separately. Later draft edits do not change this description.</p>
           <details>
-            <summary>Inspect last prepared body (not sent)</summary>
+            <summary>Inspect last prepared body (local capture)</summary>
             <pre className="preview-output" aria-label="Last prepared body inspection" dir="ltr" style={{ unicodeBidi: 'isolate', overflowWrap: 'anywhere' }}>
               {prepared.body.replace(directionalControls, (mark) => `\\u${mark.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')}`)}
             </pre>
