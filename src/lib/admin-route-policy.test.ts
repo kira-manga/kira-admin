@@ -3,6 +3,16 @@ import { describe, expect, it } from 'vitest';
 import { adminRouteAllowed, isComplaintDetailQuery, isComplaintMutationPath, isMutatingMethod, routeNeedsStepUp } from './admin-route-policy';
 
 describe('admin BFF route policy', () => {
+  it('admits only the literal POST search path, with CSRF classification but no proof requirement', () => {
+    const search = ['complaints', 'search'];
+    expect(adminRouteAllowed(search, 'POST')).toBe(true);
+    expect(isMutatingMethod('POST')).toBe(true);
+    expect(routeNeedsStepUp(search, 'POST')).toBe(false);
+    for (const method of ['GET', 'PUT', 'PATCH', 'DELETE', 'HEAD']) expect(adminRouteAllowed(search, method)).toBe(false);
+    for (const path of [['complaints', 'stats'], ['complaints', 'batch'], ['complaints', 'search', ''], ['complaints', 'Search'], ['complaints', 'se%61rch']]) {
+      expect(adminRouteAllowed(path, 'POST')).toBe(false);
+    }
+  });
   it('admits only the three non-deleting complaint PATCH shapes, classified for CSRF but not source proof', () => {
     const id = '12345678-1234-4234-8234-123456789abc';
     expect(isMutatingMethod('PATCH')).toBe(true);

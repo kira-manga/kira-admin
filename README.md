@@ -191,13 +191,13 @@ runtime secret and re-login; build/fixture success does not verify deployment or
 
 ### Ordinary complaint moderation connection (source only)
 
-The Complaints view connects known-ID TEST detail to the existing content, status and closure
+The Complaints view connects known-ID or search-selected TEST detail to the existing content, status and closure
 preparation forms. NOTICE stays read-only. A loaded detail captures its TEST scope and G; later
 input edits never replace an operation's target or scope. The backend remains the authority for
 current ADMIN access, TEST admission, transitions, normalization and receipt matching. Entering a
 scope, signing in, or approving a password **does not activate backend complaint APIs**. Disabled404
-and unavailable responses are not successful moderation. This connection adds no search, stats,
-delete/batch actions, LIVE scope or deployment/activation setting.
+and unavailable responses are not successful moderation. This connection adds no stats, delete/batch
+actions, LIVE scope or deployment/activation setting. Search remains a read, not mutation approval.
 
 The BFF admits only exact `PATCH /api/backend/complaints/<canonical UUID>/{content|status|closure}`
 with one canonical UUIDv4 `dataScopeId`, signed G, same-origin CSRF, a canonical idempotency key and
@@ -240,6 +240,47 @@ Unit/component fixtures do not qualify actual browser/session/ingress behavior, 
 key, real TEST credentials/capacity/retention authority, backend composition, or deployment. Those
 remain separate owner-controlled verification and rollout work; this source slice is not W09/live
 qualification or an App29 completion claim.
+
+### TEST complaint search connection (source only)
+
+The mounted Complaints view now accepts body-only search text, status/type/ownership filters,
+bounded UTC update dates and page size1–50. It uses the existing backend `UPDATED_DESC` cursor
+contract, not client-side collection loading or page-derived statistics. Each explicit search starts
+at page one; Next sends the same captured filters with the returned opaque cursor. Filter, TEST scope,
+view or session changes revoke obsolete reads and discard page/cursor state. A failed request is not
+an empty page. Only one page is retained in memory; no text, cursor or complaint prose enters URLs,
+browser persistence, Next caches or temporary files. The existing non-secret G selector is unchanged.
+
+Selecting a row requests fresh detail through the existing checked ID/ETag decoder before creating
+an editor base. Search rows do not manufacture HTTP ETags, supply mutation authority or replace a
+retained operation. Search is removed while an operation is retained; a synchronous capture fence
+also blocks a same-turn alternate selection. NOTICE remains read-only. Loaded text is escaped,
+wrapped and direction-isolated, with visible bidi controls on display/copy; focus moves to completed
+search results and selected detail. Actual browser/narrow-viewport/accessibility behavior still needs
+the separately authorized qualification, not just component fixtures.
+
+The BFF adds only `POST /api/backend/complaints/search`, with no query string. It requires the existing
+signed selected session, exact same-origin and CSRF checks, but no proof or idempotency key. Closed
+duplicate-aware JSON is validated against the existing backend parser, including TEST UUIDv4,
+Kotlin-compatible100-code-point/400-UTF-8-byte text normalization, finite filters and bounded canonical
+cursor syntax. The backend alone verifies cursor MAC, actor/filter binding, current ADMIN and TEST
+admission. Incoming bodies are fully bounded to32KiB before fetch; complete success envelopes are
+bounded to2MiB and each item to32KiB before any downstream200. Numeric Long versions stay lossless.
+Upstream errors are canceled unread and replaced with fixed sub-32KiB problems. Upstream challenges,
+including spoofed local KiraSession, cookies and private metadata never retire or replace any G/P.
+
+One process-local search response owner admits at most eight exchanges and returns bounded503
+before upstream work for the ninth. Each slot holds its fixed bounded buffer through downstream EOF,
+cancellation or the absolute65-second exchange deadline—not merely until upstream completion.
+Downstream delivery is zero-prefetch in at-most16KiB detached chunks; paused readers remain admitted.
+The browser keeps its existing70-second read deadline. Raw owned response buffers total at most16MiB
+per process; runtime/decoding, transport and downstream overhead remain unmeasured. This is not a
+distributed semaphore or Node24/Next16/container/ingress memory qualification.
+
+The backend search producer already exists but remains unregistered behind disabled/sourceOnly
+composition. This Admin consumer does not change it, activate TEST/LIVE, deploy anything, invent
+stats/delete/batch contracts or complete W09. Those product/composition and external qualification
+requirements remain separate work.
 
 ### Authentication client identity
 

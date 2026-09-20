@@ -5,8 +5,9 @@ export function visibleComplaintText(value: string) {
   return value.replace(directionalControls, (mark) => `[U+${mark.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')}]`);
 }
 
-export function copyComplaintSelection(event: { currentTarget: HTMLTextAreaElement; clipboardData: DataTransfer; preventDefault: () => void }) {
+export function copyComplaintSelection(event: { currentTarget: HTMLTextAreaElement | HTMLInputElement; clipboardData: DataTransfer; preventDefault: () => void }) {
   const input = event.currentTarget;
+  if (input.selectionStart === null || input.selectionEnd === null) return;
   const selected = input.value.slice(input.selectionStart, input.selectionEnd);
   const visible = visibleComplaintText(selected);
   if (visible === selected) return;

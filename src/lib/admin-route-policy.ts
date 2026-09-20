@@ -10,6 +10,10 @@ export function isComplaintMutationPath(path: readonly string[]) {
   return path.length === 3 && isComplaintDetailPath(path.slice(0, 2)) && ['content', 'status', 'closure'].includes(path[2]);
 }
 
+export function isComplaintSearchPath(path: readonly string[]) {
+  return path.length === 2 && path[0] === 'complaints' && path[1] === 'search';
+}
+
 /** Exact raw query only. A TEST scope's syntax never establishes activation or authority. */
 export function isComplaintDetailQuery(search: string) {
   const scope = search.slice('?dataScopeId='.length);
@@ -24,6 +28,7 @@ export function isMutatingMethod(method: string) {
 export function adminRouteAllowed(path: string[], method: string) {
   const joined = path.join('/');
   if (path[0] === 'complaints') return method === 'GET' && isComplaintDetailPath(path)
+    || method === 'POST' && isComplaintSearchPath(path)
     || method === 'PATCH' && isComplaintMutationPath(path);
   if (['tutorials', 'tutorial-categories', 'tutorial-media'].includes(path[0] ?? '')) {
     return ['GET', 'POST', 'DELETE'].includes(method) && !(method === 'POST' && path[0] === 'tutorial-media');

@@ -1,6 +1,7 @@
 import { isComplaintDetailPath, isComplaintDetailQuery } from './admin-route-policy';
 import { authenticatedFetch } from './client-api';
-import { ComplaintReadWireError, decodeComplaintAdminDetail, type ParsedComplaintAdminDetail } from './complaint-read-wire';
+import { ComplaintReadWireError, decodeComplaintAdminDetail, decodeComplaintAdminPage, type ParsedComplaintAdminDetail, type ParsedComplaintAdminPage } from './complaint-read-wire';
+import { prepareComplaintAdminSearch, type ComplaintAdminSearchInput, type ComplaintAdminSearchQuery } from './complaint-search-wire';
 
 export type ComplaintAdminDetailRequest = Readonly<{ id: string; dataScopeId: string; signal: AbortSignal }>;
 export type ComplaintReadClientReason = 'UNAVAILABLE' | 'SESSION_EXPIRED' | 'UNAUTHORIZED' | 'FORBIDDEN' | 'INVALID_RESPONSE' | 'NETWORK';
@@ -26,20 +27,35 @@ export async function fetchComplaintAdminDetail({ id, dataScopeId, signal }: Com
   if (signal.aborted) throw cancelled();
   const query = `?dataScopeId=${dataScopeId}`;
   if (!isComplaintDetailPath(['complaints', id]) || !isComplaintDetailQuery(query)) throw new ComplaintReadClientError('INVALID_RESPONSE');
+  return fetchComplaintRead(signal, `/api/backend/complaints/${id}${query}`, undefined, 32_768, (response) => decodeComplaintAdminDetail(id, response));
+}
+
+/** The only added destination is body-only POST search, through the same selected session/CSRF boundary. */
+export async function fetchComplaintAdminSearch(input: ComplaintAdminSearchInput, signal: AbortSignal): Promise<ParsedComplaintAdminPage> {
+  if (signal.aborted) throw cancelled();
+  let query: ComplaintAdminSearchQuery;
+  try { query = prepareComplaintAdminSearch(input); } catch { throw new ComplaintReadClientError('INVALID_RESPONSE'); }
+  return fetchComplaintRead(signal, '/api/backend/complaints/search', JSON.stringify(query), 2_097_152, (response) => decodeComplaintAdminPage(query.limit, response));
+}
+
+type ReadResponse = { status: number; contentType: string | null; contract: string | null; etag: string | null; body: Uint8Array };
+
+/** Acquisition shared only by the two fixed complaint read callers above; never a public arbitrary proxy. */
+async function fetchComplaintRead<T>(signal: AbortSignal, path: string, body: string | undefined, maximum: number, decode: (response: ReadResponse) => T): Promise<T> {
   const deadline = new AbortController();
   const abort = () => deadline.abort();
   signal.addEventListener('abort', abort, { once: true });
   const timer = setTimeout(abort, 70_000);
   let response: Response | undefined;
   try {
-    response = await authenticatedFetch(`/api/backend/complaints/${id}${query}`, {
-      method: 'GET', credentials: 'same-origin', redirect: 'error', signal: deadline.signal,
-      headers: { Accept: 'application/json, application/problem+json', 'X-Kira-Complaint-Contract': '1' },
+    response = await authenticatedFetch(path, {
+      method: body === undefined ? 'GET' : 'POST', body, credentials: 'same-origin', redirect: 'error', signal: deadline.signal,
+      headers: { Accept: 'application/json, application/problem+json', 'X-Kira-Complaint-Contract': '1', ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
     });
     if (deadline.signal.aborted) throw new ComplaintReadClientError('NETWORK');
     if (response.redirected) throw new ComplaintReadClientError('INVALID_RESPONSE');
     if (response.status === 401) {
-      // The GET BFF strips upstream challenges; only its exact local boundary declares expiry.
+      // Both read BFF paths strip upstream challenges; only the exact local boundary declares expiry.
       const localExpiry = response.headers.get('www-authenticate') === 'KiraSession realm="kira-admin-bff"';
       throw new ComplaintReadClientError(localExpiry ? 'SESSION_EXPIRED' : 'UNAUTHORIZED');
     }
@@ -47,11 +63,11 @@ export async function fetchComplaintAdminDetail({ id, dataScopeId, signal }: Com
     if (response.status === 502 || response.status === 504) throw new ComplaintReadClientError('NETWORK');
     if (response.status === 404 || response.status === 429 || response.status >= 500) throw new ComplaintReadClientError('UNAVAILABLE');
     if (response.status !== 200) throw new ComplaintReadClientError('INVALID_RESPONSE');
-    const body = await readDetailBytes(response, deadline.signal);
+    const bytes = await readComplaintBytes(response, deadline.signal, maximum);
     if (deadline.signal.aborted) throw new ComplaintReadClientError('NETWORK');
-    return decodeComplaintAdminDetail(id, {
+    return decode({
       status: response.status, contentType: response.headers.get('content-type'),
-      contract: response.headers.get('X-Kira-Complaint-Contract'), etag: response.headers.get('etag'), body,
+      contract: response.headers.get('X-Kira-Complaint-Contract'), etag: response.headers.get('etag'), body: bytes,
     });
   } catch (error) {
     if (signal.aborted) throw cancelled();
@@ -67,13 +83,13 @@ export async function fetchComplaintAdminDetail({ id, dataScopeId, signal }: Com
   }
 }
 
-async function readDetailBytes(response: Response, signal: AbortSignal): Promise<Uint8Array> {
+async function readComplaintBytes(response: Response, signal: AbortSignal, maximum: number): Promise<Uint8Array> {
   const reader = response.body?.getReader();
   if (!reader) throw new ComplaintReadClientError('INVALID_RESPONSE');
   const cancel = () => { void reader.cancel().catch(() => {}); };
   signal.addEventListener('abort', cancel, { once: true });
   try {
-    const body = new Uint8Array(32_768);
+    const body = new Uint8Array(maximum);
     let length = 0;
     while (true) {
       if (signal.aborted) throw new ComplaintReadClientError('NETWORK');

@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { captureAdminSession } from '@/lib/client-api';
 import { fixtureGeneration, fixtureProofId, otherGeneration, otherProofId, seedClientSession, sessionAcknowledgement, stepUpAcknowledgement } from '@/test/auth-fixture';
 import { appliedResponse, complaintId, complaintScope, mutationRequest, problemResponse } from '@/test/complaint-mutation-fixture';
+import { searchContent, searchCursor, searchPage, searchResponse } from '@/test/complaint-search-fixture';
 import { AdminApp } from './admin-app';
 
 // Only unrelated view effects are suppressed. Shell, login, detail decoder, both existing editors,
@@ -23,6 +24,7 @@ let version: string;
 let detailBody: string;
 let notice: boolean;
 let detailReply: () => Response | Promise<Response>;
+let searchReply: () => Response | Promise<Response>;
 let mutationReply: (init: RequestInit) => Response | Promise<Response>;
 
 function detailResponse() {
@@ -57,6 +59,7 @@ function deferred<T>() {
 const patches = () => fetchMock.mock.calls.filter(([, init]) => init?.method === 'PATCH');
 const verifications = () => fetchMock.mock.calls.filter(([path]) => path === '/api/auth/step-up');
 const detailReads = () => fetchMock.mock.calls.filter(([path, init]) => init?.method === 'GET' && String(path).startsWith('/api/backend/complaints/'));
+const searches = () => fetchMock.mock.calls.filter(([path]) => path === '/api/backend/complaints/search');
 const logouts = () => fetchMock.mock.calls.filter(([path]) => path === '/api/auth/logout');
 function form(label: string) { return container.querySelector<HTMLFormElement>(`[aria-label="${label}"] form`)!; }
 function submit(element: HTMLFormElement) { element.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); }
@@ -86,6 +89,11 @@ async function loadDetail() {
   await enter('input[name="complaintId"]', complaintId);
   await click('Load detail');
 }
+async function mountSearch() {
+  await act(async () => { root.render(<StrictMode><AdminApp /></StrictMode>); });
+  await navigate('Complaints');
+  await enter('input[name="dataScopeId"]', complaintScope);
+}
 async function prepareStatus() {
   await choose('status', 'RESOLVED');
   await act(async () => { submit(form('Complaint moderation editor')); });
@@ -103,6 +111,7 @@ beforeEach(async () => {
   generation = fixtureGeneration; proofId = fixtureProofId; version = '9007199254740992';
   detailBody = 'Synthetic original body'; notice = false;
   detailReply = detailResponse;
+  searchReply = () => searchResponse();
   mutationReply = acknowledgement;
   fetchMock.mockReset();
   fetchMock.mockImplementation(async (path, init) => {
@@ -110,6 +119,7 @@ beforeEach(async () => {
     if (path === '/api/auth/login') return Response.json(sessionAcknowledgement(generation));
     if (path === '/api/auth/logout') return new Response(null, { status: 204 });
     if (path === '/api/auth/step-up') return Response.json(stepUpAcknowledgement('complaint-moderation-mutation', proofId, generation));
+    if (path === '/api/backend/complaints/search') return searchReply();
     if (init?.method === 'PATCH') return mutationReply(init);
     if (init?.method === 'GET' && String(path).startsWith('/api/backend/complaints/')) return detailReply();
     throw new Error('Unexpected fixture request.');
@@ -379,7 +389,7 @@ describe('bounded mounted Admin ordinary moderation connection', () => {
     notice = true;
     await loadDetail();
     expect(container.querySelector('article')?.textContent).toContain('privacy.notice');
-    expect(container.querySelector('fieldset, [role="dialog"]')).toBeNull();
+    expect(container.querySelector('fieldset:not([aria-label="Complaint search filters"]), [role="dialog"]')).toBeNull();
     expect(container.querySelector('[aria-label="Complaint content editor"]')).toBeNull();
     expect(container.querySelector('[aria-label="Complaint moderation editor"]')).toBeNull();
     expect(patches()).toHaveLength(0);
@@ -393,5 +403,186 @@ describe('bounded mounted Admin ordinary moderation connection', () => {
     expect(container.querySelector('input[type="email"]')).not.toBeNull();
     expect(patches()).toHaveLength(0);
     expect(container.textContent).not.toContain('Synthetic original body');
+  });
+});
+
+describe('mounted Admin search into the existing detail/operation owner', () => {
+  it('renders safe selectable rows, then loads fresh detail before allowing the existing scoped moderation flow', async () => {
+    const storage = vi.spyOn(Storage.prototype, 'setItem');
+    const history = vi.spyOn(window.history, 'pushState');
+    searchReply = () => searchResponse(searchPage([searchContent({ subject: '<img src=x onerror=alert(1)> العربية\u202e' })]));
+    await mountSearch();
+    expect(searches()).toHaveLength(0);
+    expect(form('Complaint search').method).toBe('post'); // A non-script fallback never serializes prose into a GET URL.
+    expect(new URL(form('Complaint search').action).pathname).toBe('/api/backend/complaints/search');
+    await enter('input[name="complaintSearchText"]', 'private\u202e query');
+    const input = container.querySelector<HTMLInputElement>('input[name="complaintSearchText"]')!;
+    input.setSelectionRange(0, input.value.length);
+    const setData = vi.fn(), copy = new Event('copy', { bubbles: true, cancelable: true });
+    Object.defineProperty(copy, 'clipboardData', { value: { setData } });
+    await act(async () => { input.dispatchEvent(copy); });
+    expect(copy.defaultPrevented).toBe(true);
+    expect(setData).toHaveBeenCalledWith('text/plain', 'private[U+202E] query');
+    await click('Search complaints');
+    expect(searches()).toHaveLength(1);
+    const result = container.querySelector<HTMLElement>('[aria-label="Complaint search results"]')!;
+    expect(result.textContent).toContain('<img src=x onerror=alert(1)> العربية[U+202E]');
+    expect(result.querySelector('img, a, iframe, script')).toBeNull();
+    const prose = result.querySelector<HTMLElement>('li bdi')!;
+    expect(prose.dir).toBe('auto'); expect(prose.style.unicodeBidi).toBe('isolate'); expect(prose.style.overflowWrap).toBe('anywhere');
+    expect(document.activeElement).toBe(result.querySelector('h4'));
+    expect(container.querySelector('article, [aria-label="Complaint content editor"], [aria-label="Complaint moderation editor"]')).toBeNull();
+    expect(detailReads()).toHaveLength(0);
+    await click(`Open detail for ${complaintId}`);
+    expect(detailReads()).toHaveLength(1);
+    expect(detailReads()[0][0]).toBe(`/api/backend/complaints/${complaintId}?dataScopeId=${complaintScope}`);
+    expect(container.querySelector('article')?.textContent).toContain('Synthetic original subject');
+    expect(document.activeElement).toBe(container.querySelector('article'));
+    await prepareStatus(); await approve();
+    expect(patches()).toHaveLength(1);
+    expect(new Headers(patches()[0][1]?.headers).get('If-Match')).toBe(`"complaint-${complaintId}-v9007199254740992"`); // Fresh detail, not list version9007199254740993.
+    expect(new Headers(patches()[0][1]?.headers).get('X-Kira-Step-Up-Proof-Id')).toBe(fixtureProofId);
+    expect(container.textContent).toContain('Applied response verified.');
+    expect(history).not.toHaveBeenCalled();
+    for (const [key, value] of storage.mock.calls) { expect(key).toBe('kira-admin-session-generation'); expect(value).toBe(fixtureGeneration); }
+    expect(localStorage.length).toBe(0); expect(sessionStorage.length).toBe(1);
+    for (const [path] of fetchMock.mock.calls) expect(String(path)).not.toMatch(/private|query|v1\.AA/);
+  });
+
+  it('binds next-page POSTs to captured filters and resets cursor on edit, distinguishing failure from genuine empty', async () => {
+    const otherId = '33333333-3333-4333-8333-333333333333';
+    let count = 0;
+    searchReply = () => searchResponse(count++ === 0 ? searchPage([searchContent({ id: otherId }), searchContent()], searchCursor) : searchPage([]));
+    await mountSearch();
+    await enter('input[name="complaintSearchText"]', '  synthetic search  ');
+    await choose('complaintSearchStatus', 'OPEN'); await choose('complaintSearchType', 'TECHNICAL'); await choose('complaintSearchOwnership', 'INSTALLATION');
+    await enter('input[name="complaintSearchFrom"]', '2026-09-20T00:00:00Z');
+    await enter('input[name="complaintSearchBefore"]', '2026-09-21T00:00:00Z');
+    await enter('input[name="complaintSearchLimit"]', '2');
+    await click('Search complaints');
+    const first = JSON.parse(searches()[0][1]?.body as string);
+    expect(first).toEqual({ dataScopeId: complaintScope, text: 'synthetic search', status: 'OPEN', type: 'TECHNICAL', ownership: 'INSTALLATION',
+      updatedFrom: '2026-09-20T00:00:00Z', updatedBefore: '2026-09-21T00:00:00Z', sort: 'UPDATED_DESC', limit: 2, cursor: null });
+    expect(container.textContent).toContain('Page 1: 2 results (not a total)');
+    await click('Next page');
+    expect(JSON.parse(searches()[1][1]?.body as string)).toEqual({ ...first, cursor: searchCursor });
+    expect(container.textContent).toContain('Page 2: 0 results (not a total)');
+    expect(container.textContent).not.toContain(searchCursor);
+    await choose('complaintSearchStatus', 'CLOSED');
+    expect(container.querySelector('[aria-label="Complaint search results"]')).toBeNull();
+    expect(searches()).toHaveLength(2); // Editing never executes a search.
+    searchReply = () => searchResponse('private problem', 503);
+    await click('Search complaints');
+    expect(JSON.parse(searches()[2][1]?.body as string)).toEqual({ ...first, status: 'CLOSED', cursor: null });
+    expect(container.textContent).toContain('Search is unavailable');
+    expect(container.textContent).not.toContain('No complaints match');
+    expect(container.textContent).not.toContain('private problem');
+    searchReply = () => searchResponse(searchPage([]));
+    await click('Search complaints');
+    expect(container.textContent).toContain('No complaints match these filters.');
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  it.each(['filter', 'scope', 'navigation'] as const)('fences same-turn duplicate search and a late local401 after %s invalidation', async (change) => {
+    const old = deferred<Response>(); searchReply = () => old.promise;
+    await mountSearch();
+    await enter('input[name="complaintSearchText"]', 'original private query');
+    await act(async () => { submit(form('Complaint search')); submit(form('Complaint search')); });
+    expect(searches()).toHaveLength(1);
+    const signal = searches()[0][1]?.signal;
+    if (change === 'filter') await enter('input[name="complaintSearchText"]', 'replacement query');
+    else if (change === 'scope') await enter('input[name="dataScopeId"]', '44444444-4444-4444-8444-444444444444');
+    else { await navigate('Sources'); await navigate('Complaints'); await enter('input[name="dataScopeId"]', complaintScope); }
+    expect(signal?.aborted).toBe(true);
+    expect(container.querySelector('[aria-label="Complaint search results"]')).toBeNull();
+    searchReply = () => searchResponse(searchPage([searchContent({ subject: 'Replacement result' })]));
+    await click('Search complaints');
+    const replacement = JSON.parse(searches()[1][1]?.body as string);
+    expect(replacement.cursor).toBeNull();
+    expect(replacement.dataScopeId).toBe(change === 'scope' ? '44444444-4444-4444-8444-444444444444' : complaintScope);
+    await act(async () => { old.resolve(detailReadFailure('KiraSession realm="kira-admin-bff"')); });
+    expect(container.querySelector('[aria-label="Complaint search results"]')?.textContent).toContain('Replacement result');
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+    expect(logouts()).toHaveLength(0);
+    expect(captureAdminSession().generation).toBe(fixtureGeneration);
+  });
+
+  it.each([200, 401])('never adopts an old-G search response%s under a later login and never stores query/cursor/prose', async (status) => {
+    const storage = vi.spyOn(Storage.prototype, 'setItem');
+    const old = deferred<Response>(); searchReply = () => old.promise;
+    await mountSearch(); await enter('input[name="complaintSearchText"]', 'old private query'); await click('Search complaints');
+    const original = searches()[0][1]!;
+    await act(async () => { container.querySelector<HTMLButtonElement>('button[title="Sign out"]')!.click(); });
+    expect(original.signal?.aborted).toBe(true);
+    generation = otherGeneration;
+    await enter('input[type="email"]', 'synthetic@example.test'); await enter('input[type="password"]', 'fixture-only-password');
+    await act(async () => { submit(container.querySelector('form')!); });
+    await enter('input[name="dataScopeId"]', complaintScope);
+    expect(container.querySelector<HTMLInputElement>('input[name="complaintSearchText"]')!.value).toBe('');
+    searchReply = () => searchResponse(searchPage([searchContent({ subject: 'Current-G search result' })]));
+    await click('Search complaints');
+    await act(async () => { old.resolve(status === 200 ? searchResponse(searchPage([searchContent({ subject: 'Old-G private result' })], searchCursor)) : detailReadFailure('KiraSession realm="kira-admin-bff"')); });
+    expect(container.textContent).toContain('Current-G search result');
+    expect(container.textContent).not.toContain('Old-G private result');
+    expect(new Headers(searches()[1][1]?.headers).get('X-Kira-Session-Generation')).toBe(otherGeneration);
+    expect(logouts()).toHaveLength(1);
+    for (const [key, value] of storage.mock.calls) { expect(key).toBe('kira-admin-session-generation'); expect([fixtureGeneration, otherGeneration]).toContain(value); }
+    expect(localStorage.length).toBe(0); expect(sessionStorage.length).toBe(1);
+  });
+
+  it('distinguishes current search401 denial from the exact local-expiry challenge without proof or mutation effects', async () => {
+    await mountSearch();
+    for (const challenge of [null, 'Bearer realm="kira-complaints"']) {
+      searchReply = () => detailReadFailure(challenge);
+      await click('Search complaints');
+      expect(container.textContent).toContain('does not confirm local session expiry');
+      expect(container.querySelector('nav')).not.toBeNull();
+      expect(logouts()).toHaveLength(0);
+      expect(captureAdminSession().generation).toBe(fixtureGeneration);
+    }
+    searchReply = () => detailReadFailure('KiraSession realm="kira-admin-bff"');
+    await click('Search complaints');
+    expect(container.querySelector('nav, [aria-label="Complaint search"]')).toBeNull();
+    expect(container.querySelector('input[type="email"]')).not.toBeNull();
+    expect(logouts()).toHaveLength(1);
+    expect(patches()).toHaveLength(0); expect(verifications()).toHaveLength(0);
+    expect(container.textContent).not.toContain('private upstream read failure');
+  });
+
+  it.each([200, 401])('expires the same mounted session when pending search response%s arrives after its local expiry', async (status) => {
+    const old = deferred<Response>(); searchReply = () => old.promise;
+    await mountSearch(); await click('Search complaints');
+    expect(searches()).toHaveLength(1);
+    const expiredTime = Date.now() + 3_600_001;
+    vi.spyOn(Date, 'now').mockReturnValue(expiredTime);
+    await act(async () => { old.resolve(status === 200
+      ? searchResponse(searchPage([searchContent({ subject: 'Expired-session private result' })]))
+      : detailReadFailure('KiraSession realm="kira-admin-bff"')); });
+    expect(container.querySelector('nav, [aria-label="Complaint search"]')).toBeNull();
+    expect(container.querySelector('input[type="email"]')).not.toBeNull();
+    expect(container.textContent).not.toContain('Expired-session private result');
+    expect(logouts()).toHaveLength(0); // Expired credentials cannot authorize a server logout.
+    expect(patches()).toHaveLength(0); expect(verifications()).toHaveLength(0);
+    expect(() => captureAdminSession()).toThrow();
+  });
+
+  it('blocks a same-turn alternate selection once an operation is captured and removes search during retained unknown work', async () => {
+    const otherId = '33333333-3333-4333-8333-333333333333';
+    searchReply = () => searchResponse(searchPage([searchContent({ id: otherId }), searchContent()]));
+    const pending = deferred<Response>(); mutationReply = () => pending.promise;
+    await mountSearch(); await click('Search complaints'); await click(`Open detail for ${complaintId}`);
+    const alternative = [...container.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent === `Open detail for ${otherId}`)!;
+    await choose('status', 'RESOLVED');
+    await act(async () => { submit(form('Complaint moderation editor')); alternative.click(); });
+    expect(detailReads()).toHaveLength(1);
+    expect(container.querySelector('[aria-label="Complaint search"]')).toBeNull();
+    await approve();
+    const attempt = patches()[0][1]!;
+    await navigate('Sources'); await navigate('Complaints');
+    expect(container.textContent).toContain('Outcome unknown or unavailable.');
+    expect(container.querySelector('[aria-label="Complaint search"]')).toBeNull();
+    expect(searches()).toHaveLength(1);
+    await act(async () => { pending.resolve(acknowledgement(attempt)); });
+    expect(container.textContent).not.toContain('Applied response verified.');
   });
 });
