@@ -76,7 +76,7 @@ describe('actual bounded complaint POST search connection', () => {
 
   it('rejects path/query aliases, origin/session/CSRF, contradictory framing and mutation headers before upstream work', async () => {
     const cases: Array<[Parameters<typeof invoke>[0], number]> = [
-      [{ pathname: '/api/backend/complaints/se%61rch' }, 404], [{ path: ['complaints', 'stats'] }, 404], [{ path: ['complaints', 'batch'] }, 400], // Exact batch exists, but this search request has no required batch scope query.
+      [{ pathname: '/api/backend/complaints/se%61rch' }, 404], [{ path: ['complaints', 'stats'] }, 404], [{ path: ['complaints', 'batch'] }, 404], // Route params cannot alias the unchanged raw search pathname.
       [{ query: '?' }, 400], [{ query: '?text=private' }, 400], [{ query: `?dataScopeId=${complaintScope}` }, 400],
       [{ headers: { Origin: 'https://outside.example' } }, 403], [{ remove: ['X-Kira-CSRF'] }, 403], [{ remove: [sessionGenerationHeader] }, 401],
       [{ headers: { 'Content-Type': 'application/json, application/json' } }, 415], [{ headers: { 'Content-Encoding': 'gzip' } }, 415],
