@@ -85,7 +85,7 @@ export type TutorialMedia = {
   createdAt: string;
 };
 
-export type NavView = 'overview' | 'sources' | 'changesets' | 'audit' | 'tutorials' | 'categories' | 'media';
+export type NavView = 'overview' | 'sources' | 'changesets' | 'audit' | 'tutorials' | 'categories' | 'media' | 'complaints';
 
 export type SourceHead = {
   api: string;
