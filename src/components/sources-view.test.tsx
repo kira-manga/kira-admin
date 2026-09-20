@@ -5,6 +5,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { SourceCapabilities, SourceDraft, SourceHead, SourceRevision } from '@/lib/types';
+import { fixtureGeneration, fixtureProofId, seedClientSession, stepUpAcknowledgement } from '@/test/auth-fixture';
 import { SourcesView } from './sources-view';
 import { StepUpDialog } from './step-up-dialog';
 
@@ -177,7 +178,8 @@ async function enterPassword() {
   });
 }
 
-beforeEach(() => {
+beforeEach(async () => {
+  await seedClientSession();
   container = document.createElement('div');
   document.body.append(container);
   root = null;
@@ -229,12 +231,12 @@ describe('mounted step-up scope ownership', () => {
     await click(button('Verify and continue'));
     expect(complaint.received?.init?.body).toBe(JSON.stringify({ password: 'fixture-only-password', scope: 'complaint-moderation-mutation' }));
 
-    await deliver(source, Response.json({ scope: 'source-admin-mutation', expiresAt: new Date(Date.now() + 300_000).toISOString() }));
+    await deliver(source, Response.json(stepUpAcknowledgement()));
     expect(sourceApproved).not.toHaveBeenCalled();
     expect(complaintApproved).not.toHaveBeenCalled();
     expect(input.value).toBe('fixture-only-password');
     expect(input.disabled).toBe(true);
-    await deliver(complaint, Response.json({ scope: 'complaint-moderation-mutation', expiresAt: new Date(Date.now() + 300_000).toISOString() }));
+    await deliver(complaint, Response.json(stepUpAcknowledgement('complaint-moderation-mutation')));
     expect(complaintApproved).toHaveBeenCalledOnce();
     expect(sourceApproved).not.toHaveBeenCalled();
     expect(input.value).toBe('');
@@ -430,9 +432,14 @@ describe('mounted SourcesView history windows', () => {
       const proof = plan('POST', '/api/auth/step-up');
       await click(button('Verify and continue'));
       expect(proof.received?.init?.body).toBe(JSON.stringify({ password: 'fixture-only-password' }));
-      await deliver(proof, Response.json({ scope: 'source-admin-mutation', expiresAt: new Date(Date.now() + 300_000).toISOString() }));
+      await deliver(proof, Response.json(stepUpAcknowledgement()));
     }
     expect(completed.received).not.toBeNull();
+    if (action !== 'finalize') {
+      const headers = new Headers(completed.received?.init?.headers);
+      expect(headers.get('X-Kira-Session-Generation')).toBe(fixtureGeneration);
+      expect(headers.get('X-Kira-Step-Up-Proof-Id')).toBe(fixtureProofId);
+    }
     if (action === 'operational mode') expect(completed.received?.init?.body).toBe(JSON.stringify({ mode: 'disabled' }));
     else expect(new Headers(completed.received?.init?.headers).get('If-Match')).toBe('"draft-5"');
     expect(sourceButton(sourceB).disabled).toBe(true);

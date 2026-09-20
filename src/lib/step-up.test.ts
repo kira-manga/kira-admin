@@ -1,12 +1,15 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { fixtureGeneration, seedClientSession, stepUpAcknowledgement } from '@/test/auth-fixture';
 import { createActionOwner } from './action-owner';
 import { verifyProtectedAction } from './step-up';
 import type { StepUpScope } from './step-up-contract';
 
 function approval(scope: StepUpScope = 'source-admin-mutation') {
-  return Response.json({ scope, expiresAt: new Date(Date.now() + 300_000).toISOString() });
+  return Response.json(stepUpAcknowledgement(scope));
 }
+
+beforeEach(async () => { await seedClientSession(); });
 
 function confirmation() {
   const owner = createActionOwner();
@@ -24,7 +27,7 @@ describe('protected-action verification', () => {
     const request = vi.fn(async () => new Response(JSON.stringify({ detail: 'Verify again.' }), { status }));
     await expect(verifyProtectedAction(view.action, request)).rejects.toThrow('Verify again.');
     expect(request).toHaveBeenCalledExactlyOnceWith('/api/auth/step-up', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: 'fixture-only' }),
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Kira-Session-Generation': fixtureGeneration }, body: JSON.stringify({ password: 'fixture-only' }),
     });
     expect(view.onApproved).not.toHaveBeenCalled();
   });
@@ -115,7 +118,7 @@ describe('protected-action verification', () => {
     const request = vi.fn(async () => approval(selected));
     await verifyProtectedAction({ ...view.action, scope }, request);
     expect(request).toHaveBeenCalledExactlyOnceWith('/api/auth/step-up', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Kira-Session-Generation': fixtureGeneration },
       body: JSON.stringify({ password: 'fixture-only', ...(selected === 'complaint-moderation-mutation' ? { scope: selected } : {}) }),
     });
     expect(view.clearPassword).toHaveBeenCalledOnce();
@@ -125,10 +128,11 @@ describe('protected-action verification', () => {
   it.each([
     { scope: 'complaint-moderation-mutation' }, { scope: 'SOURCE_CONFIG_WRITE' }, { scope: undefined },
     { expiresAt: '2000-01-01T00:00:00Z' }, { expiresAt: 'not-a-date' }, { expiresAt: undefined },
-    { token: 'must-never-reach-browser-approval' },
+    { token: 'must-never-reach-browser-approval' }, { generation: undefined }, { proofId: undefined },
+    { proofId: 'not-an-identity' }, { generation: '87654321-1234-4234-8234-123456789abc' },
   ])('does not approve invalid source acknowledgement %j', async (fields) => {
     const view = confirmation();
-    const request = vi.fn(async () => Response.json({ scope: 'source-admin-mutation', expiresAt: new Date(Date.now() + 300_000).toISOString(), ...fields }));
+    const request = vi.fn(async () => Response.json({ ...stepUpAcknowledgement(), ...fields }));
     await expect(verifyProtectedAction(view.action, request)).rejects.toThrow('Password verification could not be confirmed.');
     expect(view.clearPassword).not.toHaveBeenCalled();
     expect(view.onApproved).not.toHaveBeenCalled();
@@ -159,16 +163,18 @@ describe('protected-action verification', () => {
 
   it('rechecks ownership after asynchronous acknowledgement decoding', async () => {
     const view = confirmation();
-    const response = approval();
     let resolve!: (value: unknown) => void;
     let entered!: () => void;
     const started = new Promise<void>((done) => { entered = done; });
-    vi.spyOn(response, 'json').mockImplementation(() => { entered(); return new Promise((done) => { resolve = done; }); });
+    const response = new Response(new ReadableStream({
+      start(controller) { resolve = (value) => { controller.enqueue(new TextEncoder().encode(JSON.stringify(value))); controller.close(); }; },
+      pull() { entered(); return new Promise<void>(() => {}); },
+    }, { highWaterMark: 0 }));
     const work = verifyProtectedAction(view.action, vi.fn(async () => response));
     await started;
     view.unmount();
     view.owner.mount();
-    resolve({ scope: 'source-admin-mutation', expiresAt: new Date(Date.now() + 300_000).toISOString() });
+    resolve(stepUpAcknowledgement());
     await work;
     expect(view.onApproved).not.toHaveBeenCalled();
     expect(view.clearPassword).not.toHaveBeenCalled();

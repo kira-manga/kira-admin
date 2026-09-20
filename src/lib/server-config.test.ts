@@ -20,10 +20,7 @@ describe('server-only trusted ingress configuration', () => {
     expect(config.adminTrustedIngress).toBe(false);
     expect(config.backendUrl).toBe('https://api.kiramanga.me');
     expect(config.adminOrigin).toBe('https://admin.example.test');
-    expect(config.adminTokenCookie).toBe('kira_admin_session');
-    expect(config.adminCsrfCookie).toBe('kira_admin_csrf');
-    expect(config.adminStepUpCookie).toBe('kira_admin_step_up');
-    expect(config.adminComplaintStepUpCookie).toBe('kira_admin_complaint_step_up');
+    expect(config).not.toHaveProperty('adminTokenCookie'); // Legacy fixed-name cookies are not authority.
   });
 
   it.each([undefined, 'false'])('preserves a configurable backend URL with trust %s', async (setting) => {

@@ -1,9 +1,9 @@
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 import { adminRouteAllowed, isComplaintDetailQuery, isMutatingMethod, routeNeedsStepUp } from '@/lib/admin-route-policy';
-import { adminStepUpCookie, adminTokenCookie, backendUrl } from '@/lib/server-config';
-import { requireCsrf } from '@/lib/server-security';
+import { backendUrl } from '@/lib/server-config';
+import { requireCsrf, requireSameOrigin } from '@/lib/server-security';
+import { readAdminProof, readAdminSession, retireProofCookie, sessionFailure, type AdminProofCookie } from '@/lib/server-session';
 
 const upstreamTimeoutMs = 65_000;
 const historyCursorHeader = 'X-Kira-History-Next-Before';
@@ -73,16 +73,24 @@ async function proxy(request: Request, context: { params: Promise<{ path: string
   const incomingUrl = new URL(request.url);
   if (complaintDetail && (!isComplaintDetailQuery(incomingUrl.search) || request.body !== null)) return complaintFailure(400);
   if (isMutatingMethod(request.method)) {
-    const rejected = await requireCsrf(request);
+    const rejected = await requireSameOrigin(request);
     if (rejected) return rejected;
   }
-  const cookieStore = await cookies();
-  const token = cookieStore.get(adminTokenCookie)?.value;
-  if (!token) return complaintDetail ? complaintFailure(401) : Response.json({ detail: 'Not signed in.' }, { status: 401 });
+  let session;
+  let proof: AdminProofCookie | undefined;
+  const sourceMutation = routeNeedsStepUp(path, request.method);
+  try {
+    session = readAdminSession(request.headers);
+    if (isMutatingMethod(request.method)) {
+      const rejected = await requireCsrf(request, session);
+      if (rejected) return rejected;
+    }
+    if (sourceMutation) proof = readAdminProof(request.headers, session, 'source-admin-mutation');
+  } catch (error) { return sessionFailure(error); }
 
   const upstreamUrl = `${backendUrl}/api/v1/admin/${path.map(encodeURIComponent).join('/')}${incomingUrl.search}`;
   const headers = new Headers({
-    Authorization: `Bearer ${token}`,
+    Authorization: `Bearer ${session.token}`,
     Accept: 'application/json, application/problem+json',
   });
   for (const name of complaintDetail ? [] : ['content-type', 'if-match']) {
@@ -90,10 +98,7 @@ async function proxy(request: Request, context: { params: Promise<{ path: string
     if (value) headers.set(name, value);
   }
   if (complaintDetail) headers.set(complaintContractHeader, '1');
-  if (routeNeedsStepUp(path)) {
-    const proof = cookieStore.get(adminStepUpCookie)?.value;
-    if (proof) headers.set('X-Kira-Admin-Step-Up', proof);
-  }
+  if (proof) headers.set('X-Kira-Admin-Step-Up', proof.token);
 
   let upstream: Response;
   const complaintSignal = complaintDetail ? AbortSignal.any([request.signal, AbortSignal.timeout(upstreamTimeoutMs)]) : undefined;
@@ -104,7 +109,7 @@ async function proxy(request: Request, context: { params: Promise<{ path: string
       body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.arrayBuffer(),
       cache: 'no-store',
       signal: complaintSignal ?? AbortSignal.any([request.signal, AbortSignal.timeout(upstreamTimeoutMs)]),
-      ...(complaintDetail ? { redirect: 'manual' as const } : {}),
+      redirect: 'manual',
     });
   } catch (error) {
     const timedOut = error instanceof DOMException && error.name === 'TimeoutError';
@@ -138,7 +143,10 @@ async function proxy(request: Request, context: { params: Promise<{ path: string
     }
   }
   const response = new NextResponse(upstream.body, { status: upstream.status, headers: responseHeaders });
-  if (routeNeedsStepUp(path)) response.cookies.delete(adminStepUpCookie);
+  // These exact backend handlers consume source approval before a direct 200. All other
+  // outcomes (including ambiguous post-consumption failures) retain only the captured P.
+  // Complaint historical consumed metadata is deliberately not a source-consumption signal.
+  if (sourceMutation && proof && upstream.status === 200 && !upstream.redirected) retireProofCookie(response, proof);
   return response;
 }
 

@@ -1,9 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fixtureCsrf, fixtureGeneration } from '@/test/auth-fixture';
 
 const fetchMock = vi.fn<typeof fetch>();
 
-beforeEach(() => {
+beforeEach(async () => {
   vi.resetModules();
+  await (await import('@/test/auth-fixture')).seedClientSession();
   fetchMock.mockReset();
   vi.stubGlobal('fetch', fetchMock);
 });
@@ -48,20 +50,18 @@ describe('apiFetchWithMeta additive history metadata', () => {
   });
 
   it('preserves session CSRF, JSON content type, If-Match and caller abort signal on mutations', async () => {
-    const { apiFetchWithMeta, sessionFetch } = await import('./client-api');
-    fetchMock.mockResolvedValueOnce(Response.json({ csrfToken: 'fixture-only-csrf' }));
-    await sessionFetch();
+    const { apiFetchWithMeta } = await import('./client-api');
     fetchMock.mockResolvedValueOnce(Response.json({ id: 'draft' }, { headers: { ETag: '"draft-5"' } }));
     const controller = new AbortController();
     const body = JSON.stringify({ content: '{"api":"Azora"}' });
     await apiFetchWithMeta('/sources/Azora/editor-draft', {
       method: 'PUT', body, headers: { 'If-Match': '"draft-4"' }, signal: controller.signal,
     });
-    const [url, init] = fetchMock.mock.calls[1];
+    const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('/api/backend/sources/Azora/editor-draft');
     expect(init).toMatchObject({ method: 'PUT', body, cache: 'no-store', signal: controller.signal });
     expect(Object.fromEntries(new Headers(init?.headers))).toEqual({
-      'content-type': 'application/json', 'if-match': '"draft-4"', 'x-kira-csrf': 'fixture-only-csrf',
+      'content-type': 'application/json', 'if-match': '"draft-4"', 'x-kira-csrf': fixtureCsrf, 'x-kira-session-generation': fixtureGeneration,
     });
   });
 

@@ -8,6 +8,7 @@ changesets, lifecycle/order management, immutable revision history, and safe aud
 
 1. Copy `.env.example` to `.env.local`. Set `KIRA_BACKEND_URL` to the API and
    `KIRA_ADMIN_ORIGIN` to the exact browser origin (for example `http://localhost:3100` locally).
+   Set `KIRA_ADMIN_SESSION_SECRET` to an independently generated secret as described below.
 2. Run `npm install`.
 3. Run `npm run dev` and open the configured admin origin.
 4. Sign in with an existing Kira `ADMIN` account.
@@ -132,11 +133,60 @@ stays on server3 in `/opt/kira/admin.env`:
 ```text
 KIRA_BACKEND_URL=http://backend:8080
 KIRA_ADMIN_ORIGIN=https://admin.kiramanga.me
+KIRA_ADMIN_SESSION_SECRET=<BYO random secret; never commit>
 ```
 
 No ADMIN password or backend JWT is deployed with the dashboard. Operators authenticate through the
 existing backend login; the BFF keeps the resulting short-lived credentials in secure HTTP-only
 cookies.
+
+### Admin session and approval identity
+
+`KIRA_ADMIN_SESSION_SECRET` is required **at runtime**: 32–64 independently random bytes, encoded as
+64–128 lowercase hexadecimal characters (an even length). Generate it privately, for example with
+`openssl rand -hex 32`. Use the same value on every Admin replica and after restarts, and different
+keys for independent deployments. Missing or
+malformed configuration returns a generic authentication HTTP 503; there is no generated per-process
+key, bearer-derived signing key, in-memory security registry, or build-time secret. Rotation requires
+all operators to sign in again. Installing this BYO runtime secret remains an owner/deployment step.
+
+Each login creates a random **G**, even if the backend happens to issue an identical JWT twice in one
+second. A domain-separated HMAC binds G, JWT, CSRF and absolute expiry in a uniquely named HttpOnly
+session cookie (`Path=/`). Each password verification creates a random **P** and an independently
+named HttpOnly proof cookie (`Path=/api`, shared by issuer, logout and backend proxy). Its signed
+envelope binds G, the exact signed session, scope, P and absolute expiry. Backend complaint grant IDs,
+when supplied, stay inside that envelope; they are not browser approval selectors.
+
+The browser stores **only the opaque G selector** in per-tab `sessionStorage`, sends it explicitly on
+API/upload requests and in same-origin image URLs, and holds CSRF in memory. If storage is unavailable,
+selection is memory-only and a reload requires login. No cookie scanning, newest-cookie guessing or
+fallback session is allowed. G and P alone authenticate nothing. The non-secret approval ACK is exactly
+`{scope, expiresAt, generation, proofId}` and belongs to the captured action/session; no global latest
+proof pointer exists. Login/logout and obsolete UI completions cannot adopt a different session.
+
+New responses set only their own immutable names. Login retires the identities captured in that login
+request; logout/session rejection retires only captured names for the selected G. Delayed responses
+cannot delete a newer G/P they never received. Source proof P is retired at its original `/api` path
+only on a direct, non-redirected HTTP 200 from the exact changeset-apply, draft-publish or operational-mode
+handler. Transport failures, redirects, 4xx/5xx and ambiguous outcomes retain it. Backend expiry and
+one-time consumption remain authoritative: retention is **not** permission to reuse a consumed grant.
+Complaint mutations remain closed; historical complaint-consumed metadata never clears another proof.
+
+Processing is bounded to 16 KiB of raw Cookie headers, 128 cookie fields, four session cookies and
+eight proof cookies; issuance refuses at capacity. Each signed envelope is at most 3,800 characters.
+Sessions last at most 24 hours, proofs at most 15 minutes and never beyond the selected session.
+Both signed expiry and cookie `Expires` are absolute; delayed delivery never renews them. Concurrent
+issuances across tabs/replicas may exceed an observed admission count; this is not a distributed slot
+reservation. The next over-bound request fails closed. Sign out before reaching the bound, wait for
+expiry, or deliberately clear this site's cookies to recover; there is no automatic alternative selection.
+An issuance arriving after logout can leave an unselected cookie until expiry, but cannot restore client
+ownership. Stateless logout is local cookie retirement, not backend JWT revocation of a copied token.
+Actual browser/ingress header limits may be stricter and are not verified by these fixture bounds.
+
+Legacy fixed-name cookies are not authenticated generations and require re-login. Old proof names at
+`/api/backend` are no longer read or upgraded; inaccessible legacy cookies expire naturally. Successful
+login removes only captured legacy root session/CSRF names. Production rollout must coordinate the
+runtime secret and re-login; build/fixture success does not verify deployment or browser operation.
 
 ### Authentication client identity
 

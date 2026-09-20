@@ -5,7 +5,9 @@ import { TLSSocket } from 'node:tls';
 
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { adminCsrfCookie, adminOrigin, adminTokenCookie, backendUrl } from '@/lib/server-config';
+import { adminOrigin, backendUrl } from '@/lib/server-config';
+import { readAdminSession, SessionBoundaryError } from '@/lib/server-session';
+import { sessionGenerationHeader } from '@/lib/session-contract';
 
 const maxRequestBytes = 5 * 1024 * 1024;
 const upstreamTimeoutMs = 65_000;
@@ -27,21 +29,33 @@ export default function handler(request: NextApiRequest, response: NextApiRespon
   const protocol = request.headers['x-forwarded-proto'] ?? (request.socket instanceof TLSSocket ? 'https' : 'http');
   const expectedOrigin = adminOrigin || (host ? `${protocol}://${host}` : '');
   const origin = request.headers.origin;
-  const expectedCsrf = request.cookies[adminCsrfCookie];
-  const suppliedCsrf = request.headers['x-kira-csrf'];
   if (
     !origin || origin !== expectedOrigin ||
-    request.headers['sec-fetch-site'] === 'cross-site' ||
-    !expectedCsrf || typeof suppliedCsrf !== 'string' ||
-    !constantTimeEqual(expectedCsrf, suppliedCsrf)
+    request.headers['sec-fetch-site'] === 'cross-site'
   ) {
     response.status(403).json({ detail: 'Invalid cross-site request token.' });
     return;
   }
 
-  const token = request.cookies[adminTokenCookie];
-  if (!token) {
-    response.status(401).json({ detail: 'Not signed in.' });
+  let session;
+  try {
+    const headers = new Headers();
+    // Keep duplicate-valued fields ambiguous instead of trusting the Pages cookie map.
+    for (const name of ['cookie', sessionGenerationHeader.toLowerCase()]) {
+      const value = request.headers[name];
+      if (Array.isArray(value)) value.forEach((part) => headers.append(name, part));
+      else if (value !== undefined) headers.set(name, value);
+    }
+    session = readAdminSession(headers);
+  } catch (error) {
+    response.status(error instanceof SessionBoundaryError ? error.status : 503).json({
+      detail: error instanceof SessionBoundaryError ? error.message : 'Admin authentication is temporarily unavailable.',
+    });
+    return;
+  }
+  const suppliedCsrf = request.headers['x-kira-csrf'];
+  if (typeof suppliedCsrf !== 'string' || !constantTimeEqual(session.csrfToken, suppliedCsrf)) {
+    response.status(403).json({ detail: 'Invalid cross-site request token.' });
     return;
   }
 
@@ -78,7 +92,7 @@ export default function handler(request: NextApiRequest, response: NextApiRespon
       method: 'POST',
       headers: {
         Accept: 'application/json, application/problem+json',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${session.token}`,
         'Content-Type': contentType,
         'Content-Length': contentLength,
       },
@@ -111,6 +125,7 @@ export default function handler(request: NextApiRequest, response: NextApiRespon
 }
 
 function constantTimeEqual(left: string, right: string) {
+  if (left.length !== right.length) return false;
   const a = Buffer.from(left);
   const b = Buffer.from(right);
   return a.length === b.length && timingSafeEqual(a, b);

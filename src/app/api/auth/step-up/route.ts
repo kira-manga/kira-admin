@@ -1,10 +1,11 @@
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 import { authenticationIdentityHeaders } from '@/lib/server-client-ip';
-import { adminComplaintStepUpCookie, adminStepUpCookie, adminTokenCookie, backendUrl } from '@/lib/server-config';
-import { requireCsrf } from '@/lib/server-security';
-import { isStepUpApproval, isStepUpScope } from '@/lib/step-up-contract';
+import { backendUrl } from '@/lib/server-config';
+import { requireCsrf, requireSameOrigin } from '@/lib/server-security';
+import { issueAdminProof, readAdminSession, requireCookieCapacity, sessionFailure, setAuthenticationCookie } from '@/lib/server-session';
+import { isFutureExpiry, isSessionSelector } from '@/lib/session-contract';
+import { isStepUpScope } from '@/lib/step-up-contract';
 
 export const dynamic = 'force-dynamic';
 const timeoutMs = 15_000;
@@ -60,10 +61,15 @@ function stepUpFields(bytes: Uint8Array): Record<string, string> {
 }
 
 export async function POST(request: Request) {
-  const rejected = await requireCsrf(request);
+  const originFailure = await requireSameOrigin(request);
+  if (originFailure) return originFailure;
+  let session;
+  try {
+    session = readAdminSession(request.headers);
+    requireCookieCapacity(session.cookies, 'proof');
+  } catch (error) { return sessionFailure(error); }
+  const rejected = await requireCsrf(request, session);
   if (rejected) return rejected;
-  const token = (await cookies()).get(adminTokenCookie)?.value;
-  if (!token) return failure(401, 'Not signed in.', 'KiraSession realm="kira-admin-bff"');
 
   const controller = new AbortController();
   const timeout = new DOMException('Password verification deadline exceeded.', 'TimeoutError');
@@ -133,7 +139,7 @@ export async function POST(request: Request) {
     upstream = await fetch(`${backendUrl}/api/v1/admin/step-up`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${token}`, 'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.token}`, 'Content-Type': 'application/json',
         Accept: 'application/json, application/problem+json', 'Accept-Encoding': 'identity',
         ...authenticationIdentityHeaders(request),
       },
@@ -158,16 +164,16 @@ export async function POST(request: Request) {
     const upstreamMedia = upstream.headers.get('content-type');
     if (upstream.status !== 200 || !upstreamMedia || upstreamMedia.length > 128 || /[\r\n]/.test(upstreamMedia) || !jsonMedia.test(upstreamMedia)) return failure(502);
     const proof = stepUpFields(bytes);
-    const approval = { expiresAt: proof.expiresAt, scope: proof.scope };
     if (Object.keys(proof).length !== 3 || typeof proof.token !== 'string' || proof.token.length !== 43 || !opaqueProof.test(proof.token)
-      || !isStepUpApproval(approval, scope)) return failure(502);
+      || proof.scope !== scope || !isFutureExpiry(proof.expiresAt)) return failure(502);
+    const grantId = upstream.headers.get('X-Kira-Admin-Step-Up-Grant-Id');
+    // Association stays HttpOnly. Missing complaint association is unknown, never invented.
+    if (grantId !== null && (scope !== 'complaint-moderation-mutation' || !isSessionSelector(grantId))) return failure(502);
     checkActive();
-    const ttl = Math.min(900, Math.floor((Date.parse(approval.expiresAt) - Date.now()) / 1000));
-    if (ttl < 1) return failure(502); // Never extend an expired/near-expired grant to a new one-second cookie.
+    const issued = issueAdminProof(session, proof.token, scope, proof.expiresAt, grantId);
+    const approval = { expiresAt: new Date(issued.expiresAt).toISOString(), scope, generation: issued.generation, proofId: issued.proofId };
     const response = NextResponse.json(approval, { headers: { 'Cache-Control': 'no-store, no-transform' } });
-    response.cookies.set(scope === 'source-admin-mutation' ? adminStepUpCookie : adminComplaintStepUpCookie, proof.token, {
-      httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production', path: '/api/backend', maxAge: ttl,
-    });
+    setAuthenticationCookie(response, issued);
     accepted = true;
     return response;
   } catch (error) {

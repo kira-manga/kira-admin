@@ -1,5 +1,6 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { seedClientSession, stepUpAcknowledgement } from '@/test/auth-fixture';
 import { createActionOwner } from './action-owner';
 import { ApiError } from './client-api';
 import type { SourceDraft, ValidationResult } from './types';
@@ -16,6 +17,8 @@ const draft: SourceDraft = {
   createdAt: '2026-07-24T00:00:00Z',
   updatedAt: '2026-07-24T00:00:00Z',
 };
+
+beforeEach(async () => { await seedClientSession(); });
 
 describe('persistEditorDraft', () => {
   it('saves the visible editor content and returns the new optimistic ETag', async () => {
@@ -160,7 +163,7 @@ describe('visible source draft actions', () => {
     view.action.current = { ...view.action.current, etag: '"draft-999"' };
     const verify = vi.fn(async () => {
       view.events.push('verify');
-      return Response.json({ scope: 'source-admin-mutation', expiresAt: new Date(Date.now() + 300_000).toISOString() });
+      return Response.json(stepUpAcknowledgement());
     });
     let attempts = 0;
     const publish = vi.fn(async () => {

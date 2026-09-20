@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 
+import { adminMediaUrl } from '@/lib/client-api';
 import type { MediaSlot, TutorialMedia } from '@/lib/types';
 import { Field, Input } from './ui';
 
@@ -19,7 +20,7 @@ export function MediaSlotEditor({ value, media, onChange, compact = false }: { v
   return (
     <div className={`media-slot-editor${compact ? ' compact' : ''}`}>
       <div className="slot-default">
-        <div className="slot-preview">{selected ? <Image src={`/api/media/${selected.id}`} alt="Selected screenshot" width={selected.width} height={selected.height} unoptimized /> : <span>No media selected</span>}</div>
+        <div className="slot-preview">{selected ? <Image src={adminMediaUrl(selected.id)} alt="Selected screenshot" width={selected.width} height={selected.height} unoptimized /> : <span>No media selected</span>}</div>
         <Field label="Default screenshot" hint="Used whenever a language/theme-specific image is empty.">
           <select className="input" value={value.defaultMediaId} required onChange={(event) => update({ defaultMediaId: event.target.value })}>
             <option value="">Choose media…</option>

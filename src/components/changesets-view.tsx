@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useActionOwner, type ActionTicket } from '@/lib/action-owner';
 import { applySavedChangeset, parseOperations, prepareChangesetApply, saveAndAdoptChangeset, validateChangeset, type ChangesetEditorAction, type ChangesetEditorSnapshot, type PreparedChangesetApply } from '@/lib/changeset-editor';
-import { apiFetch, apiFetchWithMeta } from '@/lib/client-api';
+import { apiFetch, apiFetchWithMeta, sourceApprovalInit } from '@/lib/client-api';
+import type { StepUpApproval } from '@/lib/step-up-contract';
 import type { SourceChange, SourceChangeset, SourceHead } from '@/lib/types';
 import { Icon } from './icons';
 import { StepUpDialog } from './step-up-dialog';
@@ -145,7 +146,7 @@ export function ChangesetsView() {
     }
   }
 
-  async function apply() {
+  async function apply(approval: StepUpApproval) {
     const pending = pendingApply;
     if (!pending || !pending.ticket.isCurrent()) throw new Error('This changeset confirmation is no longer current.');
     let completed = false;
@@ -153,7 +154,8 @@ export function ChangesetsView() {
     setError('');
     setMessage('');
     try {
-      const result = await applySavedChangeset(pending, pending.ticket.isCurrent);
+      const result = await applySavedChangeset(pending, pending.ticket.isCurrent,
+        (path, init) => apiFetch(path, sourceApprovalInit(approval, init)));
       if (!result || !pending.ticket.isCurrent()) return;
       completed = true;
       setPendingApply(null);
