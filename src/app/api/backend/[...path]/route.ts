@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { adminRouteAllowed, isComplaintDetailQuery, isMutatingMethod, routeNeedsStepUp } from '@/lib/admin-route-policy';
 import { proxyComplaintMutation } from '@/lib/server-complaint-mutation';
+import { proxyComplaintSearch } from '@/lib/server-complaint-search';
 import { backendUrl } from '@/lib/server-config';
 import { requireCsrf, requireSameOrigin } from '@/lib/server-security';
 import { readAdminProof, readAdminSession, retireProofCookie, sessionFailure, type AdminProofCookie } from '@/lib/server-session';
@@ -72,6 +73,7 @@ async function proxy(request: Request, context: { params: Promise<{ path: string
     return Response.json({ detail: 'Admin route is not allowed.' }, { status: 404 });
   }
   if (path[0] === 'complaints' && request.method === 'PATCH') return proxyComplaintMutation(request, path);
+  if (path[0] === 'complaints' && request.method === 'POST') return proxyComplaintSearch(request, path);
   const complaintDetail = path[0] === 'complaints';
   const incomingUrl = new URL(request.url);
   if (complaintDetail && (!isComplaintDetailQuery(incomingUrl.search) || request.body !== null)) return complaintFailure(400);

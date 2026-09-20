@@ -1,5 +1,6 @@
 import type { ComplaintContentSnapshot, ComplaintContentType } from './complaint-content-editor';
 import type { ComplaintModerationTarget, ComplaintStatusTarget } from './complaint-moderation-wire';
+import { isComplaintSearchCursor } from './complaint-search-wire';
 
 type ReadStatus = ComplaintStatusTarget | 'CLOSED' | 'PINNED';
 type CommonItem = Readonly<{ id: string; version: string; createdAt: string; updatedAt: string }>;
@@ -22,6 +23,8 @@ export type ParsedComplaintAdminDetail = Readonly<{
   contentSnapshot: ComplaintContentSnapshot;
   moderationTarget: ComplaintModerationTarget | null;
 }>;
+
+export type ParsedComplaintAdminPage = Readonly<{ items: readonly ParsedComplaintAdminItem[]; nextCursor: string | null }>;
 
 export class ComplaintReadWireError extends Error {
   readonly reason = 'INVALID_RESPONSE';
@@ -60,76 +63,167 @@ export function decodeComplaintAdminDetail(
         response.etag !== null && (response.etag.length > 69 || /[\r\n]/.test(response.etag))) invalid();
     // Preserve a leading BOM so the closed JSON reader rejects it instead of stripping it.
     const raw = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(response.body);
-    const fields = readFlatDetail(raw);
-    const id = stringField(fields, 'id');
-    if (id !== expectedId) invalid();
-    const kind = stringField(fields, 'kind');
-    const version = stringField(fields, 'version'); // Original numeric token, never Number/JSON.parse.
-    const createdAt = stringField(fields, 'createdAt');
-    const updatedAt = stringField(fields, 'updatedAt');
-    if (timeKey(createdAt) > timeKey(updatedAt)) invalid();
-    const common = { id, version, createdAt, updatedAt };
-
-    if (kind === 'NOTICE') {
-      requireFields(fields, [...commonFields, 'noticeKey']);
-      if (stringField(fields, 'ownership') !== 'SYSTEM' || stringField(fields, 'status') !== 'PINNED' ||
-          nullableField(fields, 'ownerReference') !== null || response.etag !== null) invalid();
-      const noticeKey = stringField(fields, 'noticeKey');
-      requireNoticeKey(noticeKey);
-      return Object.freeze({
-        item: Object.freeze({ ...common, kind: 'NOTICE' as const, status: 'PINNED' as const, ownership: 'SYSTEM' as const, ownerReference: null, noticeKey }),
-        contentSnapshot: Object.freeze({ variant: 'notice' as const, kind: 'NOTICE' as const, id }),
-        moderationTarget: null, // NOTICE has no actionTag: never manufacture one from its version.
-      });
-    }
-
-    if (kind !== 'REPORT' && kind !== 'REPLY') return invalid();
-    requireFields(fields, fields.has('noticeKey') ? [...contentFields, 'noticeKey'] : contentFields);
-    if (!isV4(id) || stringField(fields, 'ownership') !== 'INSTALLATION') invalid();
-    const ownerReference = stringField(fields, 'ownerReference');
-    if (!isV4(ownerReference)) invalid();
-    const type = stringField(fields, 'type') as ComplaintContentType;
-    const status = stringField(fields, 'status') as ReadStatus;
-    if (!types.includes(type) || !statuses.includes(status)) invalid();
-    const actionTag = stringField(fields, 'actionTag');
-    if (actionTag !== `"complaint-${id}-v${version}"` || response.etag !== actionTag) invalid();
-    const subject = nullableField(fields, 'subject');
-    const body = stringField(fields, 'body');
-    const replyToId = nullableField(fields, 'replyToId');
-    if ((kind === 'REPLY') !== (replyToId !== null) || replyToId === id || replyToId !== null && !isUuid(replyToId)) invalid();
-    const noticeKey = fields.has('noticeKey') ? stringField(fields, 'noticeKey') : undefined;
-    if (noticeKey !== undefined) {
-      requireNoticeKey(noticeKey);
-      if (kind !== 'REPLY' || type !== 'CUSTOM' || subject !== null) invalid();
-    } else if (subject === null) invalid();
-
-    const closureReason = nullableField(fields, 'closureReason');
-    const closedAt = nullableField(fields, 'closedAt');
-    const closureProvenance = nullableField(fields, 'closureProvenance');
-    const closureActorId = nullableField(fields, 'closureActorId');
-    if (status === 'CLOSED') {
-      if (closureReason === null || closedAt === null || closureProvenance !== 'ADMIN' || closureActorId === null || !isUuid(closureActorId)) return invalid();
-      timeKey(closedAt);
-    } else if (closureReason !== null || closedAt !== null || closureProvenance !== null || closureActorId !== null) invalid();
-    const platform = stringField(fields, 'platform');
-    if (platform !== 'ANDROID' && platform !== 'IOS') return invalid();
-    const item: ParsedComplaintAdminItem = Object.freeze({
-      ...common, kind, status, ownership: 'INSTALLATION', ownerReference, type, subject, body, actionTag,
-      appVersion: nullableField(fields, 'appVersion'), platform, osVersion: stringField(fields, 'osVersion'),
-      manufacturer: stringField(fields, 'manufacturer'), deviceModel: stringField(fields, 'deviceModel'),
-      closureReason, replyToId, closedAt, closureProvenance: status === 'CLOSED' ? 'ADMIN' : null, closureActorId,
-      ...(noticeKey === undefined ? {} : { noticeKey }),
+    const item = readAdminItem(readFlatDetail(raw), { id: expectedId, etag: response.etag });
+    if (item.kind === 'NOTICE') return Object.freeze({
+      item, contentSnapshot: Object.freeze({ variant: 'notice' as const, kind: 'NOTICE' as const, id: item.id }),
+      moderationTarget: null, // NOTICE has no actionTag: never manufacture one from its version.
     });
-    const contentSnapshot: ComplaintContentSnapshot = noticeKey === undefined
-      ? Object.freeze({ variant: 'ordinary' as const, kind, id, actionTag, content: Object.freeze({ type, subject: stringField(fields, 'subject'), body }) })
+    const { id, kind, type, subject, body, actionTag } = item;
+    const contentSnapshot: ComplaintContentSnapshot = item.noticeKey === undefined
+      ? Object.freeze({ variant: 'ordinary' as const, kind, id, actionTag, content: Object.freeze({ type, subject: subject!, body }) })
       : Object.freeze({ variant: 'notice-reply' as const, kind: 'REPLY' as const, id, actionTag, content: Object.freeze({ body }) });
-    return Object.freeze({
-      item, contentSnapshot, moderationTarget: Object.freeze({ id, kind, ownership: 'INSTALLATION' as const, actionTag }),
-    });
+    return Object.freeze({ item, contentSnapshot, moderationTarget: Object.freeze({ id, kind, ownership: 'INSTALLATION' as const, actionTag }) });
   } catch {
     // Never expose parser diagnostics, original bytes, identifiers or any nested cause.
     return invalid();
   }
+}
+
+/** Backend's exact search envelope. Parsed rows/cursor have no independent scope/freshness authority. */
+export function decodeComplaintAdminPage(
+  limit: number,
+  response: { status: number; contentType: string | null; contract: string | null; etag: string | null; body: Uint8Array },
+): ParsedComplaintAdminPage {
+  try {
+    if (!Number.isInteger(limit) || limit < 1 || limit > 50 || response.status !== 200 || response.contract !== '1'
+      || response.etag !== null || response.body.byteLength < 1 || response.body.byteLength > 2_097_152
+      || !response.contentType || response.contentType.length > 128 || /[\r\n]/.test(response.contentType)
+      || !/^application\/json(?:[ \t]*;[ \t]*charset=utf-8)?$/i.test(response.contentType)) return invalid();
+    const raw = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(response.body);
+    let offset = 0;
+    const names = new Set<string>();
+    const items: ParsedComplaintAdminItem[] = [];
+    let nextCursor: string | null = null;
+    const space = () => { while (offset < raw.length && /[ \t\r\n]/.test(raw[offset])) offset++; };
+    const string = (): string => {
+      const start = offset;
+      if (raw[offset++] !== '"') return invalid();
+      while (offset < raw.length) {
+        const next = raw[offset++];
+        if (next === '\\') offset++;
+        else if (next === '"') {
+          const value: unknown = JSON.parse(raw.slice(start, offset)); // Envelope strings only.
+          return typeof value === 'string' ? value : invalid();
+        }
+        if (offset - start > 12_300) return invalid(); // Max escaped cursor2048, plus quotes.
+      }
+      return invalid();
+    };
+    const item = () => {
+      const start = offset;
+      if (raw[offset++] !== '{') return invalid();
+      let quoted = false;
+      while (offset < raw.length && offset - start <= 32_768) {
+        const next = raw[offset++];
+        if (quoted && next === '\\') offset++;
+        else if (next === '"') quoted = !quoted;
+        else if (!quoted && (next === '{' || next === '[')) return invalid();
+        else if (!quoted && next === '}') {
+          const scalarObject = raw.slice(start, offset);
+          if (new TextEncoder().encode(scalarObject).byteLength > 32_768) return invalid();
+          return readAdminItem(readFlatDetail(scalarObject)); // Numeric version tokens never enter JSON.parse.
+        }
+      }
+      return invalid();
+    };
+    space();
+    if (raw[offset++] !== '{') return invalid();
+    space();
+    while (raw[offset] !== '}') {
+      const name = string();
+      if (!['items', 'nextCursor'].includes(name) || names.has(name)) return invalid();
+      names.add(name); space();
+      if (raw[offset++] !== ':') return invalid();
+      space();
+      if (name === 'items') {
+        if (raw[offset++] !== '[') return invalid();
+        space();
+        while (raw[offset] !== ']') {
+          if (items.length >= limit) return invalid();
+          items.push(item()); space();
+          if (raw[offset] !== ',') break;
+          offset++; space();
+          if (raw[offset] === ']') return invalid();
+        }
+        if (raw[offset++] !== ']') return invalid();
+      } else if (raw.startsWith('null', offset)) offset += 4;
+      else { nextCursor = string(); if (!isComplaintSearchCursor(nextCursor)) return invalid(); }
+      space();
+      if (raw[offset] !== ',') break;
+      offset++; space();
+      if (raw[offset] === '}') return invalid();
+    }
+    if (raw[offset++] !== '}' || names.size !== 2) return invalid();
+    space();
+    if (offset !== raw.length || nextCursor !== null && items.length === 0 || new Set(items.map((row) => row.id)).size !== items.length) return invalid();
+    for (let index = 1; index < items.length; index++) {
+      const previous = items[index - 1], current = items[index];
+      const before = timeKey(previous.updatedAt), after = timeKey(current.updatedAt);
+      // Canonical UUID spelling has PostgreSQL's unsigned-byte lexical order.
+      if (before < after || before === after && previous.id <= current.id) return invalid();
+    }
+    return Object.freeze({ items: Object.freeze(items), nextCursor });
+  } catch { return invalid(); }
+}
+
+/** Same item rules for detail and search; only real detail metadata supplies an HTTP ETag/expected ID. */
+function readAdminItem(fields: Map<string, string | null>, expected?: { id: string; etag: string | null }): ParsedComplaintAdminItem {
+  const id = stringField(fields, 'id');
+  if (!isUuid(id) || expected && id !== expected.id) invalid();
+  const kind = stringField(fields, 'kind');
+  const version = stringField(fields, 'version'); // Original numeric token, never Number/JSON.parse.
+  const createdAt = stringField(fields, 'createdAt');
+  const updatedAt = stringField(fields, 'updatedAt');
+  if (timeKey(createdAt) > timeKey(updatedAt)) invalid();
+  const common = { id, version, createdAt, updatedAt };
+
+  if (kind === 'NOTICE') {
+    requireFields(fields, [...commonFields, 'noticeKey']);
+    if (stringField(fields, 'ownership') !== 'SYSTEM' || stringField(fields, 'status') !== 'PINNED' ||
+        nullableField(fields, 'ownerReference') !== null || expected && expected.etag !== null) invalid();
+    const noticeKey = stringField(fields, 'noticeKey');
+    requireNoticeKey(noticeKey);
+    return Object.freeze({ ...common, kind: 'NOTICE' as const, status: 'PINNED' as const, ownership: 'SYSTEM' as const, ownerReference: null, noticeKey });
+  }
+
+  if (kind !== 'REPORT' && kind !== 'REPLY') return invalid();
+  requireFields(fields, fields.has('noticeKey') ? [...contentFields, 'noticeKey'] : contentFields);
+  if (!isV4(id) || stringField(fields, 'ownership') !== 'INSTALLATION') invalid();
+  const ownerReference = stringField(fields, 'ownerReference');
+  if (!isV4(ownerReference)) invalid();
+  const type = stringField(fields, 'type') as ComplaintContentType;
+  const status = stringField(fields, 'status') as ReadStatus;
+  if (!types.includes(type) || !statuses.includes(status)) invalid();
+  const actionTag = stringField(fields, 'actionTag');
+  if (actionTag !== `"complaint-${id}-v${version}"` || expected && expected.etag !== actionTag) invalid();
+  const subject = nullableField(fields, 'subject');
+  const body = stringField(fields, 'body');
+  const replyToId = nullableField(fields, 'replyToId');
+  if ((kind === 'REPLY') !== (replyToId !== null) || replyToId === id || replyToId !== null && !isUuid(replyToId)) invalid();
+  const noticeKey = fields.has('noticeKey') ? stringField(fields, 'noticeKey') : undefined;
+  if (noticeKey !== undefined) {
+    requireNoticeKey(noticeKey);
+    if (kind !== 'REPLY' || type !== 'CUSTOM' || subject !== null) invalid();
+  } else if (subject === null) invalid();
+
+  const closureReason = nullableField(fields, 'closureReason');
+  const closedAt = nullableField(fields, 'closedAt');
+  const closureProvenance = nullableField(fields, 'closureProvenance');
+  const closureActorId = nullableField(fields, 'closureActorId');
+  if (status === 'CLOSED') {
+    if (closureReason === null || closedAt === null || closureProvenance !== 'ADMIN' || closureActorId === null || !isUuid(closureActorId)) return invalid();
+    timeKey(closedAt);
+  } else if (closureReason !== null || closedAt !== null || closureProvenance !== null || closureActorId !== null) invalid();
+  const platform = stringField(fields, 'platform');
+  if (platform !== 'ANDROID' && platform !== 'IOS') return invalid();
+  const item: ParsedComplaintAdminItem = Object.freeze({
+    ...common, kind, status, ownership: 'INSTALLATION', ownerReference, type, subject, body, actionTag,
+    appVersion: nullableField(fields, 'appVersion'), platform, osVersion: stringField(fields, 'osVersion'),
+    manufacturer: stringField(fields, 'manufacturer'), deviceModel: stringField(fields, 'deviceModel'),
+    closureReason, replyToId, closedAt, closureProvenance: status === 'CLOSED' ? 'ADMIN' : null, closureActorId,
+    ...(noticeKey === undefined ? {} : { noticeKey }),
+  });
+  return item;
 }
 
 /** Only the closed detail object's scalar fields. No recursion, arrays or generic JSON AST. */

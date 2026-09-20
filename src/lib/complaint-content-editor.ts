@@ -51,7 +51,7 @@ export type PreparedComplaintContentEdit =
     content: Readonly<NoticeReplyContent>;
   }>;
 
-export type ComplaintContentField = 'TARGET' | 'TYPE' | 'SUBJECT' | 'BODY' | 'CLOSURE_REASON' | 'IDEMPOTENCY_KEY';
+export type ComplaintContentField = 'TARGET' | 'TYPE' | 'SUBJECT' | 'BODY' | 'CLOSURE_REASON' | 'SEARCH' | 'IDEMPOTENCY_KEY';
 export type ComplaintContentReason =
   | 'READ_ONLY'
   | 'VARIANT_MISMATCH'
@@ -179,7 +179,12 @@ export function prepareComplaintClosureReason(value: string): string {
   return normalizeText(value, 'CLOSURE_REASON', 500, 2_000);
 }
 
-function normalizeText(value: string, field: 'SUBJECT' | 'BODY' | 'CLOSURE_REASON', maximum: number, maximumBytes: number): string {
+/** Same existing Unicode/whitespace rules, but backend adminSearch permits empty text. */
+export function prepareComplaintSearchText(value: string): string {
+  return normalizeText(value, 'SEARCH', 100, 400, true);
+}
+
+function normalizeText(value: string, field: 'SUBJECT' | 'BODY' | 'CLOSURE_REASON' | 'SEARCH', maximum: number, maximumBytes: number, allowEmpty = false): string {
   const lineNormalized = value.replace(/\r\n/g, '\n');
   // Match backend ComplaintTextRules: validation precedes trimming and UTF-8 measurement.
   for (let index = 0; index < lineNormalized.length; index++) {
@@ -205,7 +210,7 @@ function normalizeText(value: string, field: 'SUBJECT' | 'BODY' | 'CLOSURE_REASO
   while (start < end && isOuterWhitespace(lineNormalized.charCodeAt(start))) start++;
   while (end > start && isOuterWhitespace(lineNormalized.charCodeAt(end - 1))) end--;
   const normalized = lineNormalized.slice(start, end);
-  if (normalized.length === 0) throw new ComplaintContentError(field, 'REQUIRED');
+  if (!allowEmpty && normalized.length === 0) throw new ComplaintContentError(field, 'REQUIRED');
 
   let codePoints = 0;
   let bytes = 0;
