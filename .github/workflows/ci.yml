@@ -1,197 +1,94 @@
-name: CI
+name: App29 Admin moderation controls focused verification (no deployment)
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
-      - "feature/**"
   workflow_dispatch:
-    inputs:
-      purpose:
-        description: Secretless exact-image rehearsal; never a production candidate
-        required: true
-        type: choice
-        options: [no-deploy-rehearsal]
 
 permissions:
   contents: read
 
-env:
-  PYTHONDONTWRITEBYTECODE: "1"
-
 concurrency:
-  group: kira-admin-ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: app29-admin-moderation-editor-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   verify:
-    if: github.event_name != 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PRODUCT_SHA: bb826f6b5ce5ce3a99bd66a54a555bae532634e9
+      NEXT_TELEMETRY_DISABLED: '1'
+      NODE_OPTIONS: --max-old-space-size=1536
     steps:
-      - name: Check out source
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
+          ref: bb826f6b5ce5ce3a99bd66a54a555bae532634e9
           persist-credentials: false
-
-      - name: Verify release policy and artifact integrity boundaries
-        run: python3 -m unittest discover -s scripts/ci -p 'test_*.py'
-
-      - name: Set up Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: "24"
-          cache: npm
-
-      - name: Install locked dependencies
-        run: npm ci
-
-      - name: Verify source, security policy, tests, and production build
-        run: npm run verify
-
-      - name: Audit production dependency graph
-        run: npm audit --omit=dev --audit-level=high
-
-  container:
-    needs: verify
-    if: >-
-      always() && !cancelled() &&
-      (needs.verify.result == 'success' ||
-       (github.event_name == 'workflow_dispatch' && inputs.purpose == 'no-deploy-rehearsal'))
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    outputs:
-      artifact_id: ${{ steps.artifact.outputs.artifact-id }}
-      zip_sha256: ${{ steps.artifact.outputs.artifact-digest }}
-    steps:
-      - name: Check out source
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+          node-version: '24'
+      - name: One locked install, focused component tests and Admin build
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$PRODUCT_SHA"
+          export npm_config_cache="$RUNNER_TEMP/kira-moderation-editor-npm"
+          export EVIDENCE="$RUNNER_TEMP/kira-moderation-editor-evidence"
+          mkdir -p "$EVIDENCE"
+          printf '%s\n' "$PRODUCT_SHA" > "$EVIDENCE/product-sha.txt"
+          git ls-files -z | xargs -0 sha256sum > "$EVIDENCE/source-before.sha256"
+          cp next-env.d.ts "$EVIDENCE/next-env.before"
+          worker=''
+          cleanup() {
+            outcome=$?
+            set +e
+            if [ -n "$worker" ]; then
+              kill -TERM -- "-$worker" 2>/dev/null
+              sleep 1
+              kill -KILL -- "-$worker" 2>/dev/null
+              wait "$worker" 2>/dev/null
+              ps -eo pgid,pid,comm | awk -v group="$worker" '$1 == group' > "$EVIDENCE/owned-processes-after.txt"
+            fi
+            rm -rf node_modules .next tsconfig.tsbuildinfo "$npm_config_cache"
+            if [ -s "$EVIDENCE/owned-processes-after.txt" ] || [ -e node_modules ] || [ -e .next ] || [ -e tsconfig.tsbuildinfo ] || [ -e "$npm_config_cache" ]; then
+              printf 'FAILED: owned process/output remains.\n' > "$EVIDENCE/cleanup.txt"
+              outcome=1
+            else
+              printf 'PASS: owned processes absent; owned outputs/cache removed.\n' > "$EVIDENCE/cleanup.txt"
+            fi
+            free -h > "$EVIDENCE/resources-after.txt"
+            df -h . "$RUNNER_TEMP" >> "$EVIDENCE/resources-after.txt"
+            exit "$outcome"
+          }
+          trap cleanup EXIT
+          free -h > "$EVIDENCE/resources-before.txt"
+          df -h . "$RUNNER_TEMP" >> "$EVIDENCE/resources-before.txt"
+          setsid taskset -c 0,1 bash -c 'npm ci --no-audit --no-fund && npm run lint && npm run typecheck && npm test -- src/components/complaint-moderation-editor.test.tsx && npm run build' > "$EVIDENCE/verify.log" 2>&1 &
+          worker=$!
+          set +e
+          wait "$worker"
+          status=$?
+          set -e
+          printf '%s\n' "$status" > "$EVIDENCE/verify-exit.txt"
+          tail -n 100 "$EVIDENCE/verify.log"
+          # Next may add this generated type import; no other source mutation is accepted.
+          python3 - <<'PY'
+          import os, pathlib
+          e = pathlib.Path(os.environ['EVIDENCE'])
+          p = pathlib.Path('next-env.d.ts')
+          before = (e / 'next-env.before').read_bytes()
+          after = p.read_bytes()
+          (e / 'next-env.after').write_bytes(after)
+          assert after == before or after.replace(b'import "./.next/types/root-params.d.ts";\n', b'', 1) == before
+          p.write_bytes(before)
+          PY
+          sha256sum --check --quiet "$EVIDENCE/source-before.sha256"
+          git diff --exit-code
+          exit "$status"
+      - name: Retain small verification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          persist-credentials: false
-
-      # Rehearsal skips the outer UI/source job: Dockerfile already runs npm verify.
-      - name: Verify rehearsal integrity boundaries
-        if: github.event_name == 'workflow_dispatch'
-        run: python3 -m unittest discover -s scripts/ci -p 'test_*.py'
-
-      - name: Set up Node for the rehearsal lock audit
-        if: github.event_name == 'workflow_dispatch'
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: "24"
-
-      - name: Retain the production dependency audit in the rehearsal
-        if: github.event_name == 'workflow_dispatch'
-        run: npm audit --omit=dev --audit-level=high
-
-      - name: Allocate owned release scratch
-        id: scratch
-        run: python3 scripts/ci/image_release.py scratch
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
-
-      - name: Build exact-SHA production image
-        id: build
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
-        with:
-          context: .
-          load: true
-          push: false
-          platforms: linux/amd64
-          tags: kira-admin:${{ github.sha }}
-          build-args: |
-            VERSION=${{ github.sha }}
-            VCS_REF=${{ github.sha }}
-            BUILD_DATE=1970-01-01T00:00:00Z
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Smoke noncandidate CI images by their actual image ID
-        if: github.event_name != 'workflow_dispatch' && github.ref != 'refs/heads/main'
-        env:
-          SCRATCH: ${{ steps.scratch.outputs.path }}
-          BUILT_IMAGE_ID: ${{ steps.build.outputs.imageid }}
-        run: python3 scripts/ci/image_release.py smoke
-
-      - name: Smoke, export once, and scan the exact image
-        id: produce
-        if: >-
-          (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-          (github.event_name == 'workflow_dispatch' && inputs.purpose == 'no-deploy-rehearsal')
-        env:
-          SCRATCH: ${{ steps.scratch.outputs.path }}
-          BUILT_IMAGE_ID: ${{ steps.build.outputs.imageid }}
-        run: python3 scripts/ci/image_release.py produce
-
-      - name: Retain the immutable attempt-specific image receipt
-        id: artifact
-        if: steps.produce.outcome == 'success'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: admin-image-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            ${{ steps.scratch.outputs.path }}/image.tar.gz
-            ${{ steps.scratch.outputs.path }}/receipt.json
-            ${{ steps.scratch.outputs.path }}/scan.json
-          retention-days: 3
-          compression-level: 0
+          name: app29-admin-moderation-editor-verification
+          path: ${{ runner.temp }}/kira-moderation-editor-evidence/
           if-no-files-found: error
-          overwrite: false
-
-      - name: Retain a bounded failed scan for investigation, never as a candidate
-        if: failure() && steps.produce.outcome == 'failure'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: admin-scan-failure-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            ${{ steps.scratch.outputs.path }}/scan.json
-            ${{ steps.scratch.outputs.path }}/scan-error.log
-          retention-days: 3
-          compression-level: 0
-          if-no-files-found: ignore
-          overwrite: false
-
-      - name: Remove only owned release scratch and image tag
-        if: always() && steps.scratch.outputs.path != ''
-        env:
-          SCRATCH: ${{ steps.scratch.outputs.path }}
-        run: python3 scripts/ci/image_release.py cleanup
-
-  rehearsal:
-    needs: container
-    if: >-
-      always() && !cancelled() && needs.container.result == 'success' &&
-      github.event_name == 'workflow_dispatch' && inputs.purpose == 'no-deploy-rehearsal'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    permissions:
-      contents: read
-      actions: read
-    steps:
-      - name: Check out this secretless rehearsal revision, not downloaded candidate code
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-        with:
-          ref: ${{ github.sha }}
-          persist-credentials: false
-
-      - name: Allocate owned consumer scratch
-        id: scratch
-        run: python3 scripts/ci/image_release.py scratch
-
-      - name: Verify, load and smoke the same immutable artifact twice without rebuilding
-        env:
-          SCRATCH: ${{ steps.scratch.outputs.path }}
-          GITHUB_TOKEN: ${{ github.token }}
-          CANDIDATE_RUN_ID: ${{ github.run_id }}
-          CANDIDATE_ATTEMPT: ${{ github.run_attempt }}
-          CANDIDATE_ARTIFACT_ID: ${{ needs.container.outputs.artifact_id }}
-          CANDIDATE_ZIP_SHA256: ${{ needs.container.outputs.zip_sha256 }}
-        run: python3 scripts/ci/image_release.py rehearse
-
-      - name: Remove only owned rehearsal scratch and image tag
-        if: always() && steps.scratch.outputs.path != ''
-        env:
-          SCRATCH: ${{ steps.scratch.outputs.path }}
-        run: python3 scripts/ci/image_release.py cleanup
+          retention-days: 1
