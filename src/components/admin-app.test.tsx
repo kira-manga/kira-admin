@@ -8,6 +8,7 @@ import { captureAdminSession } from '@/lib/client-api';
 import { fixtureGeneration, fixtureProofId, otherGeneration, otherProofId, seedClientSession, sessionAcknowledgement, stepUpAcknowledgement } from '@/test/auth-fixture';
 import { appliedResponse, complaintId, complaintScope, mutationRequest, problemResponse } from '@/test/complaint-mutation-fixture';
 import { searchContent, searchCursor, searchPage, searchResponse } from '@/test/complaint-search-fixture';
+import { statsDocument, statsFixture, statsResponse, statsTotal } from '@/test/complaint-stats-fixture';
 import { AdminApp } from './admin-app';
 
 // Only unrelated view effects are suppressed. Shell, login, detail decoder, both existing editors,
@@ -25,6 +26,7 @@ let detailBody: string;
 let notice: boolean;
 let detailReply: () => Response | Promise<Response>;
 let searchReply: () => Response | Promise<Response>;
+let statsReply: () => Response | Promise<Response>;
 let mutationReply: (init: RequestInit) => Response | Promise<Response>;
 
 function detailResponse() {
@@ -58,8 +60,9 @@ function deferred<T>() {
 }
 const patches = () => fetchMock.mock.calls.filter(([, init]) => init?.method === 'PATCH');
 const verifications = () => fetchMock.mock.calls.filter(([path]) => path === '/api/auth/step-up');
-const detailReads = () => fetchMock.mock.calls.filter(([path, init]) => init?.method === 'GET' && String(path).startsWith('/api/backend/complaints/'));
+const detailReads = () => fetchMock.mock.calls.filter(([path, init]) => init?.method === 'GET' && /^\/api\/backend\/complaints\/[0-9a-f-]{36}\?/.test(String(path)));
 const searches = () => fetchMock.mock.calls.filter(([path]) => path === '/api/backend/complaints/search');
+const statsReads = () => fetchMock.mock.calls.filter(([path]) => String(path).startsWith('/api/backend/complaints/stats?'));
 const logouts = () => fetchMock.mock.calls.filter(([path]) => path === '/api/auth/logout');
 function form(label: string) { return container.querySelector<HTMLFormElement>(`[aria-label="${label}"] form`)!; }
 function submit(element: HTMLFormElement) { element.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); }
@@ -112,6 +115,7 @@ beforeEach(async () => {
   detailBody = 'Synthetic original body'; notice = false;
   detailReply = detailResponse;
   searchReply = () => searchResponse();
+  statsReply = () => statsResponse();
   mutationReply = acknowledgement;
   fetchMock.mockReset();
   fetchMock.mockImplementation(async (path, init) => {
@@ -121,6 +125,7 @@ beforeEach(async () => {
     if (path === '/api/auth/step-up') return Response.json(stepUpAcknowledgement('complaint-moderation-mutation', proofId, generation));
     if (path === '/api/backend/complaints/search') return searchReply();
     if (init?.method === 'PATCH') return mutationReply(init);
+    if (init?.method === 'GET' && String(path).startsWith('/api/backend/complaints/stats?')) return statsReply();
     if (init?.method === 'GET' && String(path).startsWith('/api/backend/complaints/')) return detailReply();
     throw new Error('Unexpected fixture request.');
   });
@@ -584,5 +589,201 @@ describe('mounted Admin search into the existing detail/operation owner', () => 
     expect(searches()).toHaveLength(1);
     await act(async () => { pending.resolve(acknowledgement(attempt)); });
     expect(container.textContent).not.toContain('Applied response verified.');
+  });
+});
+
+describe('mounted Admin unfiltered scope statistics connection', () => {
+  it('loads only on explicit action, independently of search filters/page, and displays exact counts and safe distinct version keys', async () => {
+    const storage = vi.spyOn(Storage.prototype, 'setItem'), history = vi.spyOn(window.history, 'pushState');
+    const snapshot = statsFixture();
+    snapshot.appVersions.buckets = [
+      { appVersion: null, count: '9007199254740988' },
+      ...['', '<img src=x onerror=alert(1)>', 'null', 'unreported', 'العربية\u202e'].map((appVersion) => ({ appVersion, count: '1' })),
+    ];
+    statsReply = () => statsResponse(statsDocument(snapshot));
+    searchReply = () => searchResponse(searchPage([searchContent()], searchCursor));
+    await mountSearch();
+    expect(statsReads()).toHaveLength(0);
+    expect(container.querySelector('[aria-label="Complaint statistics result"]')).toBeNull();
+    await enter('input[name="complaintSearchText"]', 'private search query');
+    await choose('complaintSearchStatus', 'OPEN'); await choose('complaintSearchType', 'TECHNICAL');
+    await choose('complaintSearchOwnership', 'INSTALLATION'); await enter('input[name="complaintSearchLimit"]', '1');
+    await click('Search complaints');
+    expect(container.textContent).toContain('Page 1: 1 results (not a total)');
+    expect(statsReads()).toHaveLength(0);
+    await click('Load scope statistics');
+    expect(statsReads()).toHaveLength(1);
+    const [path, init] = statsReads()[0];
+    expect(path).toBe(`/api/backend/complaints/stats?dataScopeId=${complaintScope}`);
+    expect(init).toMatchObject({ method: 'GET', credentials: 'same-origin', cache: 'no-store', redirect: 'error' });
+    expect(init?.body).toBeUndefined();
+    const headers = new Headers(init?.headers);
+    expect(headers.get('X-Kira-Session-Generation')).toBe(fixtureGeneration);
+    expect(headers.get('X-Kira-Complaint-Contract')).toBe('1');
+    for (const name of ['X-Kira-Step-Up-Proof-Id', 'X-Kira-Idempotency-Key', 'If-Match', 'Authorization']) expect(headers.has(name)).toBe(false);
+    const result = container.querySelector<HTMLElement>('[aria-label="Complaint statistics result"]')!;
+    expect(result.querySelector('h4')!.textContent).toBe(`Total visible rows: ${statsTotal}`);
+    expect(document.activeElement).toBe(result.querySelector('h4'));
+    expect([...result.querySelectorAll('[aria-label="Counts by status"] dt')].map((node) => node.textContent)).toEqual(snapshot.byStatus.map((row) => row.status));
+    expect([...result.querySelectorAll('[aria-label="Counts by status"] dd')].map((node) => node.textContent)).toEqual(snapshot.byStatus.map((row) => row.count));
+    expect([...result.querySelectorAll('[aria-label="Counts by type"] dt')].map((node) => node.textContent)).toEqual(snapshot.byType.map((row) => row.type ?? 'Not applicable (NOTICE)'));
+    expect([...result.querySelectorAll('[aria-label="Counts by type"] dd')].map((node) => node.textContent)).toEqual(snapshot.byType.map((row) => row.count));
+    expect([...result.querySelectorAll('[aria-label="Counts by ownership"] dt')].map((node) => node.textContent)).toEqual(['INSTALLATION', 'SYSTEM']);
+    expect([...result.querySelectorAll('[aria-label="Counts by ownership"] dd')].map((node) => node.textContent)).toEqual([statsTotal, '0']);
+    expect([...result.querySelectorAll('[aria-label="Counts by app version"] dt')].map((node) => node.textContent)).toEqual([
+      'Unreported (null key)', 'String “” (empty)', 'String “<img src=x onerror=alert(1)>”', 'String “null”', 'String “unreported”',
+      'String “العربية[U+202E]”', 'Other versions (rows, not groups)',
+    ]);
+    expect(result.querySelector('img, a, iframe, script')).toBeNull();
+    const prose = [...result.querySelectorAll<HTMLElement>('bdi')].find((node) => node.textContent === 'العربية[U+202E]')!;
+    expect(prose.dir).toBe('auto'); expect(prose.style.whiteSpace).toBe('pre-wrap');
+    expect(prose.style.unicodeBidi).toBe('isolate'); expect(prose.style.overflowWrap).toBe('anywhere');
+    // Display selection contains the visible control token; a real browser clipboard remains a manual check.
+    const selection = window.getSelection()!, range = document.createRange();
+    range.selectNodeContents(prose); selection.removeAllRanges(); selection.addRange(range);
+    expect(selection.toString()).toBe('العربية[U+202E]'); selection.removeAllRanges();
+    await choose('complaintSearchStatus', 'CLOSED');
+    expect(container.querySelector('[aria-label="Complaint statistics result"]')!.textContent).toContain(statsTotal);
+    expect(statsReads()).toHaveLength(1); // Search-filter edits neither refetch nor re-label the unfiltered snapshot.
+    expect(container.textContent).toContain('not the current search page or filters');
+    expect(detailReads()).toHaveLength(0); expect(patches()).toHaveLength(0); expect(verifications()).toHaveLength(0);
+    expect(history).not.toHaveBeenCalled();
+    for (const [key, value] of storage.mock.calls) { expect(key).toBe('kira-admin-session-generation'); expect(value).toBe(fixtureGeneration); }
+    expect(localStorage.length).toBe(0); expect(sessionStorage.length).toBe(1);
+    for (const [destination] of fetchMock.mock.calls) expect(String(destination)).not.toMatch(/private|query|v1\.AA|unreported|onerror/);
+  });
+
+  it('clears the old snapshot on refresh and distinguishes unavailable or malformed from an explicitly loaded genuine empty scope', async () => {
+    await mountSearch(); await click('Load scope statistics');
+    expect(container.querySelector('[aria-label="Complaint statistics result"]')).not.toBeNull();
+    const pending = deferred<Response>(); statsReply = () => pending.promise;
+    await click('Load scope statistics');
+    expect(container.querySelector('[aria-label="Complaint statistics result"]')).toBeNull();
+    expect(container.textContent).toContain('Loading complaint statistics');
+    await act(async () => { pending.resolve(statsResponse('private unavailable diagnostics', 503)); });
+    expect(container.textContent).toContain('Statistics are unavailable');
+    for (const response of [statsResponse('private disabled route', 404), statsResponse('{"total":0,"private":"not a valid snapshot"}')]) {
+      statsReply = () => response; await click('Load scope statistics');
+      expect(container.querySelector('[aria-label="Complaint statistics result"]')).toBeNull();
+      expect(container.querySelector('[aria-label="Complaint statistics"] [role="alert"]')).not.toBeNull();
+      expect(container.textContent).not.toContain('No currently visible complaints');
+      expect(container.textContent).not.toContain('private');
+    }
+    statsReply = () => statsResponse(statsDocument(statsFixture('0')));
+    await click('Load scope statistics');
+    const result = container.querySelector('[aria-label="Complaint statistics result"]')!;
+    expect(result.textContent).toContain('Total visible rows: 0');
+    expect(result.textContent).toContain('No currently visible complaints in this scope.');
+    expect([...result.querySelectorAll('dd')].map((node) => node.textContent)).toEqual(Array(17).fill('0'));
+    expect(container.querySelector('[aria-label="Complaint statistics"] [role="alert"]')).toBeNull();
+    expect(statsReads()).toHaveLength(5); expect(patches()).toHaveLength(0); expect(verifications()).toHaveLength(0);
+  });
+
+  it.each(['cancel', 'scope', 'navigation'] as const)('fences duplicate user loads and a late local401 after statistics %s invalidation', async (change) => {
+    const old = deferred<Response>(); statsReply = () => old.promise;
+    await mountSearch();
+    const button = [...container.querySelectorAll<HTMLButtonElement>('button')].find((node) => node.textContent === 'Load scope statistics')!;
+    await act(async () => { button.click(); button.click(); });
+    expect(statsReads()).toHaveLength(1);
+    const signal = statsReads()[0][1]?.signal;
+    if (change === 'cancel') await click('Cancel statistics');
+    else if (change === 'scope') await enter('input[name="dataScopeId"]', '44444444-4444-4444-8444-444444444444');
+    else { await navigate('Sources'); await navigate('Complaints'); await enter('input[name="dataScopeId"]', complaintScope); }
+    expect(signal?.aborted).toBe(true);
+    expect(container.querySelector('[aria-label="Complaint statistics result"]')).toBeNull();
+    const replacement = statsFixture('11');
+    if (change === 'scope') replacement.dataScopeId = '44444444-4444-4444-8444-444444444444';
+    replacement.appVersions.buckets[0].appVersion = 'Replacement version';
+    statsReply = () => statsResponse(statsDocument(replacement));
+    await click('Load scope statistics');
+    expect(statsReads()[1][0]).toBe(`/api/backend/complaints/stats?dataScopeId=${replacement.dataScopeId}`);
+    await act(async () => { old.resolve(detailReadFailure('KiraSession realm="kira-admin-bff"')); });
+    expect(container.querySelector('[aria-label="Complaint statistics result"]')?.textContent).toContain('Replacement version');
+    expect(container.querySelector('[role="alert"]')).toBeNull(); expect(logouts()).toHaveLength(0);
+    expect(captureAdminSession().generation).toBe(fixtureGeneration);
+    expect(patches()).toHaveLength(0); expect(verifications()).toHaveLength(0);
+  });
+
+  it.each([200, 401])('never adopts old-G statistics response%s under a later login or alters its new result/session/approval', async (status) => {
+    const storage = vi.spyOn(Storage.prototype, 'setItem');
+    const old = deferred<Response>(); statsReply = () => old.promise;
+    await mountSearch(); await click('Load scope statistics');
+    const original = statsReads()[0][1]!;
+    await act(async () => { container.querySelector<HTMLButtonElement>('button[title="Sign out"]')!.click(); });
+    expect(original.signal?.aborted).toBe(true);
+    generation = otherGeneration; proofId = otherProofId;
+    await enter('input[type="email"]', 'synthetic@example.test'); await enter('input[type="password"]', 'fixture-only-password');
+    await act(async () => { submit(container.querySelector('form')!); });
+    await enter('input[name="dataScopeId"]', complaintScope);
+    expect(container.querySelector('[aria-label="Complaint statistics result"]')).toBeNull();
+    const current = statsFixture('7'); current.appVersions.buckets[0].appVersion = 'Current-G version';
+    const previous = statsFixture(); previous.appVersions.buckets[0].appVersion = 'Old-G private version';
+    statsReply = () => statsResponse(statsDocument(current)); await click('Load scope statistics');
+    await act(async () => { old.resolve(status === 200 ? statsResponse(statsDocument(previous)) : detailReadFailure('KiraSession realm="kira-admin-bff"')); });
+    expect(container.textContent).toContain('Current-G version'); expect(container.textContent).not.toContain('Old-G private version');
+    expect(new Headers(statsReads()[1][1]?.headers).get('X-Kira-Session-Generation')).toBe(otherGeneration);
+    expect(captureAdminSession().generation).toBe(otherGeneration); expect(logouts()).toHaveLength(1);
+    await enter('input[name="complaintId"]', complaintId); await click('Load detail');
+    await prepareStatus(); await approve();
+    expect(verifications()).toHaveLength(1); expect(patches()).toHaveLength(1);
+    expect(new Headers(patches()[0][1]?.headers).get('X-Kira-Session-Generation')).toBe(otherGeneration);
+    expect(new Headers(patches()[0][1]?.headers).get('X-Kira-Step-Up-Proof-Id')).toBe(otherProofId);
+    expect(container.textContent).toContain('Applied response verified.');
+    for (const [key, value] of storage.mock.calls) { expect(key).toBe('kira-admin-session-generation'); expect([fixtureGeneration, otherGeneration]).toContain(value); }
+    expect(localStorage.length).toBe(0); expect(sessionStorage.length).toBe(1);
+  });
+
+  it('distinguishes current statistics401 denial from the exact local-expiry challenge without acquiring proof or mutation authority', async () => {
+    await mountSearch();
+    for (const challenge of [null, 'Bearer realm="kira-complaints"']) {
+      statsReply = () => detailReadFailure(challenge); await click('Load scope statistics');
+      expect(container.textContent).toContain('does not confirm local session expiry');
+      expect(container.querySelector('nav')).not.toBeNull(); expect(logouts()).toHaveLength(0);
+      expect(captureAdminSession().generation).toBe(fixtureGeneration);
+    }
+    statsReply = () => detailReadFailure('KiraSession realm="kira-admin-bff"'); await click('Load scope statistics');
+    expect(container.querySelector('nav, [aria-label="Complaint statistics"]')).toBeNull();
+    expect(container.querySelector('input[type="email"]')).not.toBeNull();
+    expect(logouts()).toHaveLength(1); expect(patches()).toHaveLength(0); expect(verifications()).toHaveLength(0);
+    expect(container.textContent).not.toContain('private upstream read failure');
+  });
+
+  it.each([200, 401])('expires the same mounted G when pending statistics response%s arrives after its local expiry', async (status) => {
+    const old = deferred<Response>(); statsReply = () => old.promise;
+    await mountSearch(); await click('Load scope statistics');
+    expect(statsReads()).toHaveLength(1);
+    vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 3_600_001);
+    const expired = statsFixture(); expired.appVersions.buckets[0].appVersion = 'Expired-session private version';
+    await act(async () => { old.resolve(status === 200 ? statsResponse(statsDocument(expired)) : detailReadFailure('KiraSession realm="kira-admin-bff"')); });
+    expect(container.querySelector('nav, [aria-label="Complaint statistics"]')).toBeNull();
+    expect(container.querySelector('input[type="email"]')).not.toBeNull();
+    expect(container.textContent).not.toContain('Expired-session private version');
+    expect(logouts()).toHaveLength(0); // Expired credentials cannot authorize a server logout.
+    expect(patches()).toHaveLength(0); expect(verifications()).toHaveLength(0);
+    expect(() => captureAdminSession()).toThrow();
+  });
+
+  it.each([200, 401])('removes/cancels statistics on retained operation capture and rejects late response%s without changing draft, G or original P', async (status) => {
+    const old = deferred<Response>(); statsReply = () => old.promise;
+    mutationReply = () => problemResponse('PRECONDITION_FAILED', 412, { 'X-Kira-Admin-Step-Up-Consumed': 'true' });
+    await loadDetail();
+    await enter('textarea[name="body"]', '  preserved stats-overlap draft  ');
+    await click('Load scope statistics');
+    const read = statsReads()[0][1]!;
+    await act(async () => { submit(form('Complaint content editor')); });
+    expect(read.signal?.aborted).toBe(true);
+    expect(container.querySelector('[aria-label="Complaint statistics"]')).toBeNull();
+    await approve();
+    const original = patches()[0][1]!, retained = container.querySelector('[aria-label="Retained complaint operation"] pre')!.textContent;
+    expect(new Headers(original.headers).get('X-Kira-Step-Up-Proof-Id')).toBe(fixtureProofId);
+    const late = statsFixture(); late.appVersions.buckets[0].appVersion = 'Late private stats version';
+    await act(async () => { old.resolve(status === 200 ? statsResponse(statsDocument(late)) : detailReadFailure('KiraSession realm="kira-admin-bff"')); });
+    expect(container.querySelector('[aria-label="Complaint statistics"]')).toBeNull();
+    expect(container.textContent).not.toContain('Late private stats version');
+    expect(container.textContent).toContain('Terminal rejection verified.');
+    expect(container.querySelector<HTMLTextAreaElement>('textarea[name="body"]')!.value).toBe('  preserved stats-overlap draft  ');
+    expect(container.querySelector('[aria-label="Retained complaint operation"] pre')!.textContent).toBe(retained);
+    expect(patches()).toHaveLength(1); expect(patches()[0][1]).toBe(original); expect(verifications()).toHaveLength(1);
+    expect(captureAdminSession().generation).toBe(fixtureGeneration); expect(logouts()).toHaveLength(0);
   });
 });

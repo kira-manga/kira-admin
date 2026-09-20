@@ -43,6 +43,7 @@ async function proxy(options: { path?: string[]; query?: string; method?: 'GET' 
 
 beforeEach(() => {
   vi.resetModules();
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
   vi.stubEnv('KIRA_BACKEND_URL', 'http://backend:8080');
   vi.stubEnv('KIRA_ADMIN_ORIGIN', origin);
   cookieBoundary.values.clear();
@@ -54,7 +55,7 @@ beforeEach(() => {
   vi.stubGlobal('fetch', fetchMock);
 });
 
-afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
+afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 describe('read-only complaint detail BFF connection', () => {
   it('uses the configured host/session and preserves raw Long bytes while stripping unrelated headers and proofs', async () => {
@@ -76,7 +77,7 @@ describe('read-only complaint detail BFF connection', () => {
     expect(init).toMatchObject({ method: 'GET', cache: 'no-store', redirect: 'manual', signal: expect.any(AbortSignal) });
     expect(init?.body).toBeUndefined();
     expect(Object.fromEntries(new Headers(init?.headers))).toEqual({
-      authorization: 'Bearer fixture-only-session', accept: 'application/json, application/problem+json', 'x-kira-complaint-contract': '1',
+      authorization: 'Bearer fixture-only-session', accept: 'application/json, application/problem+json', 'accept-encoding': 'identity', 'x-kira-complaint-contract': '1',
     });
     expect(cookieBoundary.values.get(proof.name)).toBe(proof.value);
     expect(response.headers.getSetCookie()).toHaveLength(0);
@@ -151,11 +152,8 @@ describe('read-only complaint detail BFF connection', () => {
   });
 
   it('cancels stalled body acquisition for both the original request and the existing finite server deadline', async () => {
-    const timeout = vi.spyOn(AbortSignal, 'timeout');
     for (const source of ['caller', 'deadline']) {
       const caller = new AbortController();
-      const deadline = new AbortController();
-      timeout.mockReturnValue(deadline.signal);
       let started = () => {};
       const reading = new Promise<void>((resolve) => { started = resolve; });
       const cancel = vi.fn();
@@ -166,12 +164,12 @@ describe('read-only complaint detail BFF connection', () => {
       const pending = proxy({ signal: caller.signal });
       await reading;
       if (source === 'caller') caller.abort('private cancellation reason');
-      else deadline.abort(new DOMException('private timeout reason', 'TimeoutError'));
+      else await vi.advanceTimersByTimeAsync(65_000);
       const response = await pending;
       expect(response.status).toBe(source === 'caller' ? 502 : 504);
       expect(await response.json()).toEqual({ detail: 'Complaint detail could not be loaded.' });
       expect(cancel).toHaveBeenCalledOnce();
-      expect(timeout).toHaveBeenLastCalledWith(65_000);
+      expect(vi.getTimerCount()).toBe(0);
     }
   });
 

@@ -2,6 +2,7 @@ import { isComplaintDetailPath, isComplaintDetailQuery } from './admin-route-pol
 import { authenticatedFetch } from './client-api';
 import { ComplaintReadWireError, decodeComplaintAdminDetail, decodeComplaintAdminPage, type ParsedComplaintAdminDetail, type ParsedComplaintAdminPage } from './complaint-read-wire';
 import { prepareComplaintAdminSearch, type ComplaintAdminSearchInput, type ComplaintAdminSearchQuery } from './complaint-search-wire';
+import { decodeComplaintAdminStats, type ParsedComplaintAdminStats } from './complaint-stats-wire';
 
 export type ComplaintAdminDetailRequest = Readonly<{ id: string; dataScopeId: string; signal: AbortSignal }>;
 export type ComplaintReadClientReason = 'UNAVAILABLE' | 'SESSION_EXPIRED' | 'UNAUTHORIZED' | 'FORBIDDEN' | 'INVALID_RESPONSE' | 'NETWORK';
@@ -30,7 +31,7 @@ export async function fetchComplaintAdminDetail({ id, dataScopeId, signal }: Com
   return fetchComplaintRead(signal, `/api/backend/complaints/${id}${query}`, undefined, 32_768, (response) => decodeComplaintAdminDetail(id, response));
 }
 
-/** The only added destination is body-only POST search, through the same selected session/CSRF boundary. */
+/** Body-only POST search, through the same selected session/CSRF boundary. */
 export async function fetchComplaintAdminSearch(input: ComplaintAdminSearchInput, signal: AbortSignal): Promise<ParsedComplaintAdminPage> {
   if (signal.aborted) throw cancelled();
   let query: ComplaintAdminSearchQuery;
@@ -38,9 +39,17 @@ export async function fetchComplaintAdminSearch(input: ComplaintAdminSearchInput
   return fetchComplaintRead(signal, '/api/backend/complaints/search', JSON.stringify(query), 2_097_152, (response) => decodeComplaintAdminPage(query.limit, response));
 }
 
+/** Unfiltered scope-wide GET only. Search pages, entered scope and returned counts grant no authority. */
+export async function fetchComplaintAdminStats({ dataScopeId, signal }: Readonly<{ dataScopeId: string; signal: AbortSignal }>): Promise<ParsedComplaintAdminStats> {
+  if (signal.aborted) throw cancelled();
+  const query = `?dataScopeId=${dataScopeId}`;
+  if (!isComplaintDetailQuery(query)) throw new ComplaintReadClientError('INVALID_RESPONSE');
+  return fetchComplaintRead(signal, `/api/backend/complaints/stats${query}`, undefined, 2_097_152, (response) => decodeComplaintAdminStats(dataScopeId, response));
+}
+
 type ReadResponse = { status: number; contentType: string | null; contract: string | null; etag: string | null; body: Uint8Array };
 
-/** Acquisition shared only by the two fixed complaint read callers above; never a public arbitrary proxy. */
+/** Acquisition shared only by the three fixed complaint read callers above; never a public arbitrary proxy. */
 async function fetchComplaintRead<T>(signal: AbortSignal, path: string, body: string | undefined, maximum: number, decode: (response: ReadResponse) => T): Promise<T> {
   const deadline = new AbortController();
   const abort = () => deadline.abort();
@@ -55,7 +64,7 @@ async function fetchComplaintRead<T>(signal: AbortSignal, path: string, body: st
     if (deadline.signal.aborted) throw new ComplaintReadClientError('NETWORK');
     if (response.redirected) throw new ComplaintReadClientError('INVALID_RESPONSE');
     if (response.status === 401) {
-      // Both read BFF paths strip upstream challenges; only the exact local boundary declares expiry.
+      // All read BFF paths strip upstream challenges; only the exact local boundary declares expiry.
       const localExpiry = response.headers.get('www-authenticate') === 'KiraSession realm="kira-admin-bff"';
       throw new ComplaintReadClientError(localExpiry ? 'SESSION_EXPIRED' : 'UNAUTHORIZED');
     }

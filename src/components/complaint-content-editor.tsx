@@ -28,7 +28,7 @@ const contentTypes: readonly ComplaintContentType[] = ['TECHNICAL', 'LANGUAGES',
 // Unicode Bidi_Control plus the deprecated directional controls U+206A–U+206F.
 const directionalControls = /[\u061c\u200e\u200f\u202a-\u202e\u2066-\u206f]/g;
 const fieldLabels: Record<ComplaintContentField, string> = {
-  TARGET: 'Target', TYPE: 'Type', SUBJECT: 'Subject', BODY: 'Body', CLOSURE_REASON: 'Closure reason', SEARCH: 'Search', IDEMPOTENCY_KEY: 'Idempotency key',
+  TARGET: 'Target', TYPE: 'Type', SUBJECT: 'Subject', BODY: 'Body', CLOSURE_REASON: 'Closure reason', SEARCH: 'Search', APP_VERSION: 'App version', IDEMPOTENCY_KEY: 'Idempotency key',
 };
 const reasonMessages: Record<ComplaintContentReason, string> = {
   READ_ONLY: 'is read-only.',
