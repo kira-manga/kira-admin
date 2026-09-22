@@ -1,6 +1,6 @@
 # Kira Admin Studio
 
-Private administration dashboard for Kira source catalogs and tutorials. Source operations include
+Authenticated administration dashboard for Kira source catalogs and tutorials. Source operations include
 optimistic server drafts, strict validation, quick single-source publishing, atomic multi-source
 changesets, lifecycle/order management, immutable revision history, and safe audit metadata.
 
@@ -25,16 +25,18 @@ dependency changes; the committed lockfile currently resolves with zero known vu
 
 ## Production deployment
 
-**Deployment is currently externally blocked, not operationally protected.** The 2026-09-09 policy
-receipts show a private repository with no production reviewers or deployment-ref policy, admin
-bypass enabled, and an unavailable main-protection API. Source changes and fixture tests do not fix
-account enforcement. An owner-authorized, supported private-repository approval/protection setup
-is required; **Pro alone does not provide the required private reviewer/bypass features**. Do not
-make the repository public, change settings/plans, or provision credentials merely to pass a gate.
+The owner intentionally made this repository **public**. Repository visibility is not a release
+eligibility requirement: explicit public or private metadata is accepted, while exact repository
+identity, active state, protected `main`, native approval and all artifact checks remain required.
+This does not make the deployed dashboard public-access or waive authentication. Historical
+2026-09-09 private-account protection failures are not evidence of the current configuration;
+the live policy must pass preflight and post-approval checks before any deployment.
 
 This release path removes automatic deployment. Main-push CI builds once, smoke-tests the actual
 image ID, confirms `kira-admin:<40-character-sha>` still resolves to it, exports that tag once, and
-scans that exact export. The image and bounded receipt become one immutable private artifact.
+scans that exact export. The image and bounded receipt become one immutable Actions artifact.
+Artifacts and logs in this public repository must be treated as publicly accessible; never include
+runtime secrets, production data or the private cross-repository remediation evidence.
 The existing production npm audit remains a separate, complementary gate.
 
 Promotion is manual through **Deploy server3**, from literal `main`, with four explicit inputs:
@@ -103,7 +105,7 @@ image ID**; these are different identities. Authenticated ZIP download never for
 to signed storage. Only regular `image.tar.gz`, `receipt.json`, and `scan.json` ZIP members are
 accepted; actual byte limits are 512 MiB each for ZIP/gzip, 2 GiB expanded Docker tar, 16 KiB receipt,
 and 8 MiB scan report. ZIP64/comments/extra entries are unsupported. These are initial fail-safe
-ceilings, not measured image sizes; do not automatically relax them. Artifacts have three-day private
+ceilings, not measured image sizes; do not automatically relax them. Artifacts have three-day
 retention, compression level zero and no overwrite. A receipt is not an independent signature: its
 authority depends on the protected producer, authenticated artifact identity and native approval.
 
@@ -131,7 +133,7 @@ the unchanged Dockerfile already runs `npm run verify`; it retains the productio
 Manual/feature rehearsal receipts are **never** production candidates. There is no production
 environment, policy token, SSH secret or deployment in this rehearsal.
 
-Workflow registration/dispatch availability on a private nondefault ref must be checked by the
+Workflow registration/dispatch availability on a nondefault ref must be checked by the
 coordinating owner. Do not merge to main or change the default branch merely to register dispatch,
 and do not invent another trigger to bypass a concrete API restriction. Fixture success does not
 prove GitHub ZIP metadata, real scanner output, Docker image-ID compatibility, or production policy.

@@ -329,7 +329,7 @@ def candidate_metadata(api, ctx, selected, rehearsal=False):
     verify_dispatch(ctx, rehearsal)
     repo = api.get('')
     need(repo.get('id') == ctx['repository_id'] and repo.get('full_name') == REPOSITORY
-         and repo.get('private') is True and repo.get('default_branch') == 'main'
+         and type(repo.get('private')) is bool and repo.get('default_branch') == 'main'
          and repo.get('archived') is False and repo.get('disabled') is False, 'repository policy mismatch')
     workflow = api.get('/actions/workflows/ci.yml')
     need(workflow.get('path') == CI and workflow.get('state') == 'active', 'producer workflow is not active')

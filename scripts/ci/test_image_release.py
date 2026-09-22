@@ -149,7 +149,7 @@ class Fixture:
                          'workflow_run': {'id': 101, 'repository_id': 55, 'head_repository_id': 55,
                                           'head_sha': SHA, 'head_branch': producer['ref'][11:]}}
         self.records = {
-            '': {**repo, 'private': True, 'default_branch': 'main', 'archived': False, 'disabled': False},
+            '': {**repo, 'private': False, 'default_branch': 'main', 'archived': False, 'disabled': False},
             '/actions/workflows/ci.yml': {'id': 60, 'path': release.CI, 'state': 'active'},
             '/actions/workflows/deploy-server3.yml': {'id': 61, 'path': release.PROMOTION, 'state': 'active'},
             '/actions/runs/101': copy.deepcopy(self.run), '/actions/runs/101/attempts/2': copy.deepcopy(self.run),
@@ -248,6 +248,28 @@ class CandidateTests(OfflineCase):
         self.assertEqual(fixture.downloads, [303])
         self.assertEqual(fixture.calls.count('/actions/runs/101/attempts/2'), 2)
         self.assertTrue((self.tmp / 'candidate.json').is_file())
+
+    def test_public_or_private_visibility_preserves_exact_repository_policy(self):
+        for private in (False, True):
+            fixture = Fixture()
+            fixture.records['']['private'] = private
+            with self.subTest(private=private), mock.patch.object(release, 'local_contract', return_value=fixture.contract):
+                metadata = release.candidate_metadata(fixture.api(), fixture.ctx, fixture.selected)
+                self.assertEqual(metadata['sha'], SHA)
+                self.assertEqual(metadata['purpose'], 'production-candidate')
+        for key, value in [('private', None), ('private', 0), ('private', 'false'),
+                           ('id', 999), ('full_name', 'fork/admin'), ('default_branch', 'other'),
+                           ('archived', True), ('disabled', True)]:
+            fixture = Fixture()
+            fixture.records[''][key] = value
+            with self.subTest(key=key, value=value), self.assertRaisesRegex(release.Refused, 'repository policy mismatch'):
+                release.candidate_metadata(fixture.api(), fixture.ctx, fixture.selected)
+            self.assertEqual(fixture.calls, [''])
+            self.assertFalse(fixture.downloads)
+        fixture = Fixture()
+        del fixture.records['']['private']
+        with self.assertRaisesRegex(release.Refused, 'repository policy mismatch'):
+            release.candidate_metadata(fixture.api(), fixture.ctx, fixture.selected)
 
     def test_wrong_trigger_ref_workflow_or_context_never_downloads(self):
         for key, value in [('event_name', 'push'), ('ref', 'refs/tags/main'), ('repository', 'fork/admin'),
