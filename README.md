@@ -77,6 +77,14 @@ The narrow checker requires all of the following, with complete readable API res
   applying to admins, with no PR-review bypass, force-push or deletion allowance.
 - Strict required `verify` and `container` checks bound to the GitHub Actions app.
 
+When REST omits the PR-bypass allowance field entirely, the policy step uses that same scoped token
+for one bounded, fixed GraphQL read of this repository's main-selected protection rule. Acceptance
+requires the matching repository ID/name, exact `main` ref/rule, and an explicit integer zero count,
+empty nodes and complete final page. Omission alone is never proof; present nonempty or malformed
+REST allowances, GraphQL errors, incomplete or contradictory results fail without a fallback.
+This corroborated zero has the same policy fingerprint as explicit empty REST allowances. Actual
+GraphQL read visibility remains a credential prerequisite, not an approval or privacy-policy waiver.
+
 Missing credentials, unsupported/unknown fields, incomplete lists and API errors fail closed.
 Metadata checks are not substitute approvals and cannot make revocation atomic. Account support,
 real native approval/self-review/bypass enforcement and revocation races remain **external

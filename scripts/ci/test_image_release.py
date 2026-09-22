@@ -212,6 +212,16 @@ def policy_fixture():
     return environment, branches, protection
 
 
+def main_bypass_fixture():
+    return {'data': {'repository': {
+        'databaseId': 55, 'nameWithOwner': release.REPOSITORY,
+        'ref': {'name': 'main', 'branchProtectionRule': {
+            'id': 'BPR_fixture', 'pattern': 'main',
+            'bypassPullRequestAllowances': {'totalCount': 0, 'nodes': [], 'pageInfo': {'hasNextPage': False}},
+        }},
+    }}}
+
+
 class OfflineCase(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(self.enterContext(tempfile.TemporaryDirectory()))
@@ -330,6 +340,91 @@ class CandidateTests(OfflineCase):
 
 
 class PolicyTests(OfflineCase):
+    def test_missing_rest_bypass_needs_explicit_graphql_proof_and_preserves_fingerprint(self):
+        values = policy_fixture()
+        expected = release.validate_policy(*values)
+        proof = main_bypass_fixture()
+        with self.assertRaises(release.Refused):
+            release.validate_policy(*values, bypass_proof=proof, repository_id=55)
+        del values[2]['required_pull_request_reviews']['bypass_pull_request_allowances']
+        before = copy.deepcopy(values)
+        with self.assertRaises(release.Refused):
+            release.validate_policy(*values)
+        self.assertEqual(expected, release.validate_policy(*values, bypass_proof=proof, repository_id=55))
+        self.assertEqual(values, before)  # Never synthesize an empty REST allowance field.
+
+    def test_graphql_bypass_proof_rejects_wrong_partial_or_contradictory_results(self):
+        values = policy_fixture()
+        del values[2]['required_pull_request_reviews']['bypass_pull_request_allowances']
+        repo = ['data', 'repository']
+        rule = repo + ['ref', 'branchProtectionRule']
+        allowances = rule + ['bypassPullRequestAllowances']
+        cases = [
+            (['errors'], []), (['data', 'otherRepository'], {}), (repo, None),
+            (repo + ['databaseId'], 56), (repo + ['nameWithOwner'], 'foreign/kira-admin'),
+            (repo + ['ref', 'name'], 'other'), (rule, None), (rule + ['id'], ''),
+            (rule + ['pattern'], '*'), (allowances + ['totalCount'], 1),
+            (allowances + ['totalCount'], False), (allowances + ['nodes'], [{'id': 'bypass'}]),
+            (allowances + ['nodes'], None), (allowances + ['pageInfo'], {}),
+            (allowances + ['pageInfo', 'hasNextPage'], True),
+            (allowances + ['pageInfo', 'hasNextPage'], 0),
+        ]
+        for path, value in cases:
+            proof = main_bypass_fixture()
+            change(proof, path, value)
+            with self.subTest(path=path, value=value), self.assertRaises(release.Refused):
+                release.validate_policy(*values, bypass_proof=proof, repository_id=55)
+
+    def test_policy_graphql_uses_scoped_token_and_failed_readback_never_writes_proof(self):
+        fixture = Fixture()
+        values = policy_fixture()
+        expected = release.validate_policy(*values)
+        del values[2]['required_pull_request_reviews']['bypass_pull_request_allowances']
+        records = dict(zip(('/environments/production', '/environments/production/deployment-branch-policies?per_page=100',
+                            '/branches/main/protection'), values))
+        api = mock.Mock(get=lambda path: records[path], main_bypass=mock.Mock(return_value=main_bypass_fixture()))
+        release.write_json(self.tmp / 'candidate.json', {'fingerprint': 'e' * 64})
+        with mock.patch.dict(os.environ, {'ADMIN8_POLICY_READ_TOKEN': 'fixture-policy-token'}), \
+             mock.patch.object(release, 'GitHub', return_value=api) as constructor:
+            release.policy(self.tmp, fixture.ctx)
+            constructor.assert_called_once_with('fixture-policy-token')
+            api.main_bypass.assert_called_once_with()
+            proof_path = self.tmp / 'policy.json'
+            proof = release.parse_json(proof_path.read_bytes(), release.MAX_RECEIPT)
+            self.assertEqual((proof['fingerprint'], proof['candidate']), (expected, 'e' * 64))
+            proof_path.unlink()
+            api.main_bypass.return_value = {**main_bypass_fixture(), 'errors': [{'message': 'unavailable'}]}
+            with self.assertRaises(release.Refused):
+                release.policy(self.tmp, fixture.ctx)
+            self.assertFalse(proof_path.exists())
+            api.main_bypass.side_effect = urllib.error.HTTPError('https://api.github.com/graphql', 403,
+                                                                'unavailable', {}, io.BytesIO())
+            with self.assertRaises(urllib.error.HTTPError):
+                release.policy(self.tmp, fixture.ctx)
+            self.assertFalse(proof_path.exists())
+
+    def test_policy_never_falls_back_for_present_rest_allowances(self):
+        fixture = Fixture()
+        release.write_json(self.tmp / 'candidate.json', {'fingerprint': 'e' * 64})
+        for value in ({'users': [], 'teams': [], 'apps': []}, None, {},
+                      {'users': ['bypass'], 'teams': [], 'apps': []}):
+            values = policy_fixture()
+            values[2]['required_pull_request_reviews']['bypass_pull_request_allowances'] = value
+            records = dict(zip(('/environments/production', '/environments/production/deployment-branch-policies?per_page=100',
+                                '/branches/main/protection'), values))
+            api = mock.Mock(get=lambda path: records[path])
+            proof_path = self.tmp / 'policy.json'
+            proof_path.unlink(missing_ok=True)
+            with self.subTest(value=value), mock.patch.object(release, 'GitHub', return_value=api):
+                if value == {'users': [], 'teams': [], 'apps': []}:
+                    release.policy(self.tmp, fixture.ctx)
+                    self.assertTrue(proof_path.exists())
+                else:
+                    with self.assertRaises(release.Refused):
+                        release.policy(self.tmp, fixture.ctx)
+                    self.assertFalse(proof_path.exists())
+                api.main_bypass.assert_not_called()
+
     def test_native_branch_policy_marker_preserves_fingerprint_in_either_order(self):
         environment, branches, protection = policy_fixture()
         expected = release.validate_policy(environment, branches, protection)
@@ -541,6 +636,37 @@ class ArchiveAndScanTests(OfflineCase):
 
 
 class ApiTests(OfflineCase):
+    def test_policy_graphql_transport_is_fixed_authenticated_bounded_and_never_redirects(self):
+        result = main_bypass_fixture()
+        response = io.BytesIO(release.canonical(result))
+        response.status, response.headers = 200, {}
+        self.network.side_effect = [response]
+        api = release.GitHub('fixture-policy-token')
+        self.assertEqual(api.main_bypass(), result)
+        sent = self.network.call_args.args[0]
+        self.assertEqual(sent.full_url, 'https://api.github.com/graphql')
+        self.assertEqual(sent.get_method(), 'POST')
+        self.assertEqual(sent.get_header('Authorization'), 'Bearer fixture-policy-token')
+        self.assertEqual(sent.get_header('Content-type'), 'application/json')
+        self.assertEqual(self.network.call_args.kwargs, {'timeout': 15})
+        self.assertEqual(json.loads(sent.data), {'query':
+            'query { repository(owner:"kira-manga", name:"kira-admin") { databaseId nameWithOwner '
+            'ref(qualifiedName:"refs/heads/main") { name branchProtectionRule { id pattern '
+            'bypassPullRequestAllowances(first:1) { totalCount nodes { id } pageInfo { hasNextPage } } } } } }'})
+        for body, status, headers in ((b'{}', 201, {}), (b'{}', 200, {'Link': '<next>; rel="next"'}),
+                                      (b' ' * (release.MAX_RECEIPT + 1), 200, {}), (b'{', 200, {})):
+            response = io.BytesIO(body)
+            response.status, response.headers = status, headers
+            self.network.side_effect = [response]
+            with self.subTest(status=status, size=len(body)), self.assertRaises(release.Refused):
+                api.main_bypass()
+        self.network.reset_mock()
+        self.network.side_effect = urllib.error.HTTPError('https://api.github.com/graphql', 302, 'redirect',
+                                                          {'Location': 'https://attacker.invalid/'}, io.BytesIO())
+        with self.assertRaises(urllib.error.HTTPError):
+            api.main_bypass()
+        self.assertEqual(self.network.call_count, 1)
+
     def test_download_authenticates_only_api_then_verifies_actual_zip_bytes(self):
         fixture = Fixture()
         requests = []

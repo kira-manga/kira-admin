@@ -28,6 +28,11 @@ import uuid
 import zipfile
 
 REPOSITORY = 'kira-manga/kira-admin'
+MAIN_BYPASS_QUERY = (
+    'query { repository(owner:"kira-manga", name:"kira-admin") { databaseId nameWithOwner '
+    'ref(qualifiedName:"refs/heads/main") { name branchProtectionRule { id pattern '
+    'bypassPullRequestAllowances(first:1) { totalCount nodes { id } pageInfo { hasNextPage } } } } } }'
+)
 CI = '.github/workflows/ci.yml'
 PROMOTION = '.github/workflows/deploy-server3.yml'
 CONTRACT_FILES = (CI, PROMOTION, 'scripts/ci/image_release.py', 'scripts/ci/test_image_release.py',
@@ -172,7 +177,7 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 OPENER = urllib.request.build_opener(NoRedirect())
 
 
-def request(url, token=None):
+def request(url, token=None, data=None):
     headers = {'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28',
                'User-Agent': 'kira-admin-exact-image'}
     if token:
@@ -180,7 +185,9 @@ def request(url, token=None):
         need(parsed.scheme == 'https' and parsed.hostname == 'api.github.com' and parsed.port in (None, 443)
              and not parsed.username and not parsed.password, 'refusing API token forwarding')
         headers['Authorization'] = 'Bearer ' + token
-    return urllib.request.Request(url, headers=headers)
+    if data is not None:
+        headers['Content-Type'] = 'application/json'
+    return urllib.request.Request(url, data=data, headers=headers)
 
 
 class GitHub:
@@ -196,6 +203,14 @@ class GitHub:
             need(response.status == 200 and 'rel="next"' not in response.headers.get('Link', ''),
                  'incomplete API response')
             return parse_json(response.read(4 * 1024 * 1024 + 1), 4 * 1024 * 1024)
+
+    def main_bypass(self):
+        # One fixed read-only query, using only the policy step's existing scoped token.
+        with deadline(30), OPENER.open(request('https://api.github.com/graphql', self.token,
+                                               canonical({'query': MAIN_BYPASS_QUERY})), timeout=15) as response:
+            need(response.status == 200 and 'rel="next"' not in response.headers.get('Link', ''),
+                 'incomplete GraphQL policy response')
+            return parse_json(response.read(MAX_RECEIPT + 1), MAX_RECEIPT)
 
     def download(self, artifact, destination, expected):
         # Authenticate only the fixed API endpoint. Never store/log the signed storage URL.
@@ -375,7 +390,30 @@ def candidate_metadata(api, ctx, selected, rehearsal=False):
                          'event': event, 'ref': 'refs/heads/' + branch}}
 
 
-def validate_policy(environment, branches, protection):
+def validate_zero_main_bypass(proof, repository_id):
+    # Closed fixed-query response: partial data/errors, aliases and incomplete lists fail.
+    keys(proof, 'data')
+    keys(proof['data'], 'repository')
+    repository = proof['data']['repository']
+    keys(repository, 'databaseId nameWithOwner ref')
+    need(integer(repository['databaseId']) == integer(repository_id)
+         and repository['nameWithOwner'] == REPOSITORY, 'wrong GraphQL policy repository')
+    ref = repository['ref']
+    keys(ref, 'name branchProtectionRule')
+    need(ref['name'] == 'main', 'wrong GraphQL policy ref')
+    rule = ref['branchProtectionRule']
+    keys(rule, 'id pattern bypassPullRequestAllowances')
+    need(isinstance(rule['id'], str) and 0 < len(rule['id']) <= 256 and rule['pattern'] == 'main',
+         'missing or non-exact main-selected protection rule')
+    allowances = rule['bypassPullRequestAllowances']
+    keys(allowances, 'totalCount nodes pageInfo')
+    keys(allowances['pageInfo'], 'hasNextPage')
+    need(type(allowances['totalCount']) is int and allowances['totalCount'] == 0
+         and type(allowances['nodes']) is list and allowances['nodes'] == []
+         and allowances['pageInfo']['hasNextPage'] is False, 'explicit complete zero bypass proof required')
+
+
+def validate_policy(environment, branches, protection, *, bypass_proof=None, repository_id=None):
     need(environment.get('name') == 'production' and environment.get('can_admins_bypass') is False,
          'production approval is missing or bypassable')
     need(environment.get('deployment_branch_policy') == {'protected_branches': False, 'custom_branch_policies': True},
@@ -405,10 +443,15 @@ def validate_policy(environment, branches, protection):
          and protection.get('allow_force_pushes', {}).get('enabled') is False
          and protection.get('allow_deletions', {}).get('enabled') is False, 'main protection is bypassable')
     reviews = protection.get('required_pull_request_reviews', {})
+    need(type(reviews) is dict, 'missing source review protection')
     need(type(reviews.get('required_approving_review_count')) is int and 1 <= reviews['required_approving_review_count'] <= 6
-         and reviews.get('dismiss_stale_reviews') is True and reviews.get('require_last_push_approval') is True
-         and reviews.get('bypass_pull_request_allowances') == {'users': [], 'teams': [], 'apps': []},
+         and reviews.get('dismiss_stale_reviews') is True and reviews.get('require_last_push_approval') is True,
          'enforcing source/workflow review protection is missing')
+    if 'bypass_pull_request_allowances' in reviews:
+        need(bypass_proof is None and reviews['bypass_pull_request_allowances'] == {'users': [], 'teams': [], 'apps': []},
+             'source review bypass is present or malformed')
+    else:
+        validate_zero_main_bypass(bypass_proof, repository_id)
     checks = protection.get('required_status_checks', {})
     required = checks.get('checks')
     need(checks.get('strict') is True and type(required) is list
@@ -797,9 +840,14 @@ def policy(directory, ctx):
     verify_dispatch(ctx)
     # This process receives ONLY the separately authorized repository-scoped read-only policy token.
     api = GitHub(os.environ.get('ADMIN8_POLICY_READ_TOKEN'))
-    fingerprint = validate_policy(api.get('/environments/production'),
-                                  api.get('/environments/production/deployment-branch-policies?per_page=100'),
-                                  api.get('/branches/main/protection'))
+    environment = api.get('/environments/production')
+    branches = api.get('/environments/production/deployment-branch-policies?per_page=100')
+    protection = api.get('/branches/main/protection')
+    reviews = protection.get('required_pull_request_reviews')
+    need(type(reviews) is dict, 'missing source review protection')
+    bypass_proof = api.main_bypass() if 'bypass_pull_request_allowances' not in reviews else None
+    fingerprint = validate_policy(environment, branches, protection, bypass_proof=bypass_proof,
+                                  repository_id=ctx['repository_id'])
     expected = os.environ.get('EXPECTED_POLICY')
     need(not expected or fingerprint == expected, 'approval/source policy changed after preflight')
     candidate = parse_json(file_bytes(directory / 'candidate.json', MAX_RECEIPT * 2), MAX_RECEIPT * 2)
