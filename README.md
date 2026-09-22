@@ -70,12 +70,18 @@ Its authorization and actual API visibility are external prerequisites; no token
 
 The narrow checker requires all of the following, with complete readable API responses:
 
-- Native production human reviewers as the sole protection rule, self-review prevented, admin bypass
-  disabled; exactly one custom environment policy `{type: branch, name: main}` with no extra ref/tag.
+- Native production human reviewers as the sole protection rule, with owner-authorized deployment
+  self-review allowed (`prevent_self_review: false`), admin bypass disabled; exactly one custom
+  environment policy `{type: branch, name: main}` with no extra ref/tag.
 - Explicit **User** reviewers. Teams are unsupported by this narrow checker, not inherently insecure.
 - Main protection enforcing PR approval, dismissing stale reviews, requiring last-push approval,
   applying to admins, with no PR-review bypass, force-push or deletion allowance.
 - Strict required `verify` and `container` checks bound to the GitHub Actions app.
+
+The deployment actor may approve only if listed as a required **User** reviewer, and must still take
+the explicit native approval action; dispatch is not approval. Independent source-PR/last-push
+approval remains required. The policy fingerprint records `self_review: true`, so a frozen policy
+from the prior self-review-prevented configuration fails post-approval revalidation.
 
 When REST omits the PR-bypass allowance field entirely, the policy step uses that same scoped token
 for one bounded, fixed GraphQL read of this repository's main-selected protection rule. Acceptance

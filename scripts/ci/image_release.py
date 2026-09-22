@@ -428,7 +428,8 @@ def validate_policy(environment, branches, protection, *, bypass_proof=None, rep
          and all(type(rule) is dict and rule.get('type') in ('required_reviewers', 'branch_policy') for rule in rules),
          'unsupported environment protection rules')
     approval = [rule for rule in rules if rule['type'] == 'required_reviewers']
-    need(len(approval) == 1 and approval[0].get('prevent_self_review') is True, 'non-self human approval required')
+    need(len(approval) == 1 and approval[0].get('prevent_self_review') is False,
+         'native human approval with explicit self-review allowance required')
     reviewers = approval[0].get('reviewers')
     need(type(reviewers) is list and 1 <= len(reviewers) <= 6, 'missing human reviewer identities')
     users = []
@@ -465,7 +466,7 @@ def validate_policy(environment, branches, protection, *, bypass_proof=None, rep
                              'dismiss_stale_reviews': True, 'require_last_push_approval': True,
                              'review_bypass': False, 'strict_ci': True,
                              'checks': sorted((item['context'], item['app_id']) for item in required),
-                             'main_only': True, 'self_review': False, 'admin_bypass': False}))
+                             'main_only': True, 'self_review': True, 'admin_bypass': False}))
 
 
 def validate_scan(report, expected_image, now=None):

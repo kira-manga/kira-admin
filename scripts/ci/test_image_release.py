@@ -198,7 +198,7 @@ class Fixture:
 def policy_fixture():
     environment = {'name': 'production', 'can_admins_bypass': False,
                    'deployment_branch_policy': {'protected_branches': False, 'custom_branch_policies': True},
-                   'protection_rules': [{'type': 'required_reviewers', 'prevent_self_review': True,
+                   'protection_rules': [{'type': 'required_reviewers', 'prevent_self_review': False,
                                          'reviewers': [{'type': 'User', 'reviewer': {'id': 77, 'type': 'User', 'login': 'reviewer'}}]}]}
     branches = {'total_count': 1, 'branch_policies': [{'name': 'main', 'type': 'branch'}]}
     protection = {'enforce_admins': {'enabled': True}, 'allow_force_pushes': {'enabled': False},
@@ -457,11 +457,44 @@ class PolicyTests(OfflineCase):
         environment['protection_rules'][0]['reviewers'][0]['reviewer']['avatar_url'] = 'decorative'
         self.assertEqual(expected, release.validate_policy(environment, branches, protection))
 
+    def test_explicit_self_review_allowance_is_bound_and_old_frozen_policy_is_refused(self):
+        values = policy_fixture()
+        fields = {'users': [77], 'review_count': 1, 'dismiss_stale_reviews': True,
+                  'require_last_push_approval': True, 'review_bypass': False, 'strict_ci': True,
+                  'checks': [('container', release.GITHUB_ACTIONS_APP_ID), ('verify', release.GITHUB_ACTIONS_APP_ID)],
+                  'main_only': True, 'self_review': True, 'admin_bypass': False}
+        fingerprint = release.validate_policy(*values)
+        self.assertEqual(fingerprint, release.digest(release.canonical(fields)))
+        fields['self_review'] = False
+        old_fingerprint = release.digest(release.canonical(fields))
+        self.assertNotEqual(fingerprint, old_fingerprint)
+        records = dict(zip(('/environments/production', '/environments/production/deployment-branch-policies?per_page=100',
+                            '/branches/main/protection'), values))
+        api = mock.Mock(get=lambda path: records[path])
+        release.write_json(self.tmp / 'candidate.json', {'fingerprint': 'e' * 64})
+        with mock.patch.dict(os.environ, {'ADMIN8_POLICY_READ_TOKEN': 'fixture-policy-token',
+                                         'EXPECTED_POLICY': old_fingerprint}), \
+             mock.patch.object(release, 'GitHub', return_value=api), \
+             self.assertRaisesRegex(release.Refused, 'approval/source policy changed after preflight'):
+            release.policy(self.tmp, Fixture().ctx)
+        self.assertFalse((self.tmp / 'policy.json').exists())
+
+    def test_self_review_allowance_must_be_present_and_literal_false(self):
+        for value in (None, True, 0, 1, 0.0, '', 'false', 'true', [], {}):
+            values = policy_fixture()
+            values[0]['protection_rules'][0]['prevent_self_review'] = value
+            with self.subTest(value=value), self.assertRaises(release.Refused):
+                release.validate_policy(*values)
+        values = policy_fixture()
+        del values[0]['protection_rules'][0]['prevent_self_review']
+        with self.assertRaises(release.Refused):
+            release.validate_policy(*values)
+
     def test_missing_bypass_self_review_team_and_extra_ref_policies_fail(self):
         cases = [
             (0, ['can_admins_bypass'], True), (0, ['protection_rules'], []),
             (0, ['deployment_branch_policy'], None),
-            (0, ['protection_rules', 0, 'prevent_self_review'], False),
+            (0, ['protection_rules', 0, 'prevent_self_review'], True),
             (0, ['protection_rules', 0, 'reviewers'], []),
             (0, ['protection_rules', 0, 'reviewers', 0, 'type'], 'Team'),
             (0, ['protection_rules', 0, 'reviewers', 0, 'reviewer', 'type'], 'Bot'),
