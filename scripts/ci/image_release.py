@@ -666,7 +666,7 @@ process.stdout.write(JSON.stringify({
     need(type(inventory) is dict and set(inventory) == {'node', 'openssl', 'uid', 'euid', 'apk', 'tool_paths_present'}
          and inventory['node'] == '24.21.0' and inventory['openssl'] == '3.5.8'
          and all(type(inventory[field]) is int and 0 < inventory[field] < 2**32 for field in ('uid', 'euid'))
-         and inventory['apk'] == [['libcrypto3', '3.5.8-r0'], ['libssl3', '3.5.8-r0']]
+         and inventory['apk'] == [['libcrypto3', '3.5.9-r0'], ['libssl3', '3.5.9-r0']]
          and inventory['tool_paths_present'] == [], 'exact-image runtime inventory mismatch')
     print('PASS exact-image runtime inventory:', canonical(inventory).decode())
     return inventory

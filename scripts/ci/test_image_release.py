@@ -87,7 +87,7 @@ def scan_report():
 
 def runtime_report():
     return {'node': '24.21.0', 'openssl': '3.5.8', 'uid': 1000, 'euid': 1000,
-            'apk': [['libcrypto3', '3.5.8-r0'], ['libssl3', '3.5.8-r0']], 'tool_paths_present': []}
+            'apk': [['libcrypto3', '3.5.9-r0'], ['libssl3', '3.5.9-r0']], 'tool_paths_present': []}
 
 
 def inspected(image):
@@ -1347,7 +1347,8 @@ class SubprocessTests(unittest.TestCase):
         for _ in range(50):
             try:
                 state = status.read_text().split(') ', 1)[1].split()[0]
-            except FileNotFoundError:
+            except (FileNotFoundError, ProcessLookupError):
+                # Linux procfs may report ESRCH if the task is reaped after open.
                 break
             if state == 'Z':
                 break
