@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 FROM node:24.21.0-alpine3.24@sha256:333f6b3eca25980d5682c26207665b93c9417786b21760b2764d5821d9704c8a AS builder
-RUN apk add --no-cache --upgrade 'libcrypto3=3.5.9-r0' 'libssl3=3.5.9-r0'
+RUN apk add --no-cache --upgrade 'libcrypto3=3.5.9-r0' 'libssl3=3.5.9-r0' 'zlib=1.3.2-r1'
 
 WORKDIR /workspace
 COPY package.json package-lock.json ./
@@ -11,7 +11,7 @@ RUN npm run verify
 
 FROM node:24.21.0-alpine3.24@sha256:333f6b3eca25980d5682c26207665b93c9417786b21760b2764d5821d9704c8a AS runtime
 # The standalone runtime invokes node directly; keep package managers only in the builder.
-RUN apk add --no-cache --upgrade 'libcrypto3=3.5.9-r0' 'libssl3=3.5.9-r0' \
+RUN apk add --no-cache --upgrade 'libcrypto3=3.5.9-r0' 'libssl3=3.5.9-r0' 'zlib=1.3.2-r1' \
     && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /opt/yarn-v1.22.22 \
     && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /usr/local/bin/yarn /usr/local/bin/yarnpkg
 ARG VERSION=unknown
