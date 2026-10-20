@@ -67,7 +67,7 @@ jobs:
         id: policy
         env:
           SCRATCH: ${{ steps.scratch.outputs.path }}
-          # EXTERNAL: owner-authorized single-repository read-only policy token.
+          # EXTERNAL: owner-authorized read-only policy token, repository or inherited org secret.
           # Only this policy API process receives it, never download/build/SSH commands.
           ADMIN8_POLICY_READ_TOKEN: ${{ secrets.ADMIN8_POLICY_READ_TOKEN }}
         run: python3 scripts/ci/image_release.py policy

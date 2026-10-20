@@ -63,9 +63,12 @@ and the actual remote running-image identity still require separate authorized v
 
 ### External protection and read authority
 
-Both preflight and the post-approval policy step require repository secret
-`ADMIN8_POLICY_READ_TOKEN`: an **owner-authorized, single-repository, read-only** credential with
-Administration:read and the required environment/metadata read capabilities. Ordinary
+Both preflight and the post-approval policy step require Actions secret
+`ADMIN8_POLICY_READ_TOKEN`: an **owner-authorized, read-only** credential with
+Administration:read, Actions:read and Contents:read for the fixed REST/GraphQL reads. It may be
+a repository secret or an organization secret explicitly made available to this repository.
+The owner may share that read-only policy credential across authorized organization repositories;
+no write permission is required. An environment-only secret cannot serve preflight. Ordinary
 `GITHUB_TOKEN` contents/actions:read must not be assumed sufficient for full main-protection reads.
 Only the policy API step receives this separate token, not download, build, scanner or SSH commands.
 Its authorization and actual API visibility are external prerequisites; no token is provisioned here.
@@ -76,14 +79,18 @@ The narrow checker requires all of the following, with complete readable API res
   self-review allowed (`prevent_self_review: false`), admin bypass disabled; exactly one custom
   environment policy `{type: branch, name: main}` with no extra ref/tag.
 - Explicit **User** reviewers. Teams are unsupported by this narrow checker, not inherently insecure.
-- Main protection enforcing PR approval, dismissing stale reviews, requiring last-push approval,
-  applying to admins, with no PR-review bypass, force-push or deletion allowance.
+- Main protection requiring a PR, with the owner-authorized single-developer policy:
+  zero mandatory approving reviews and no last-push approval. Stale-review dismissal and
+  admin enforcement remain enabled, with no PR-review bypass, force-push or deletion allowance.
 - Strict required `verify` and `container` checks bound to the GitHub Actions app.
 
 The deployment actor may approve only if listed as a required **User** reviewer, and must still take
-the explicit native approval action; dispatch is not approval. Independent source-PR/last-push
-approval remains required. The policy fingerprint records `self_review: true`, so a frozen policy
-from the prior self-review-prevented configuration fails post-approval revalidation.
+the explicit native approval action; dispatch is not approval. GitHub does not permit authors to
+approve their own PRs, so no external account or artificial approval is required. The owner may
+merge their own PR only after the strict required checks pass. Independent engineering diff
+review remains separate from a GitHub human approval. The policy fingerprint binds the zero
+review count, disabled last-push approval and `self_review: true`; a frozen policy from the prior
+multi-reviewer or self-review-prevented configuration fails post-approval revalidation.
 
 When REST omits the PR-bypass allowance field entirely, the policy step uses that same scoped token
 for one bounded, fixed GraphQL read of this repository's main-selected protection rule. Acceptance

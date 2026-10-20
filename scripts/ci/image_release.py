@@ -445,9 +445,11 @@ def validate_policy(environment, branches, protection, *, bypass_proof=None, rep
          and protection.get('allow_deletions', {}).get('enabled') is False, 'main protection is bypassable')
     reviews = protection.get('required_pull_request_reviews', {})
     need(type(reviews) is dict, 'missing source review protection')
-    need(type(reviews.get('required_approving_review_count')) is int and 1 <= reviews['required_approving_review_count'] <= 6
-         and reviews.get('dismiss_stale_reviews') is True and reviews.get('require_last_push_approval') is True,
-         'enforcing source/workflow review protection is missing')
+    # The sole owner cannot approve their own PR on GitHub. Keep the PR and required
+    # CI boundary, without inventing a second reviewer or granting an admin bypass.
+    need(type(reviews.get('required_approving_review_count')) is int and reviews['required_approving_review_count'] == 0
+         and reviews.get('dismiss_stale_reviews') is True and reviews.get('require_last_push_approval') is False,
+         'explicit single-owner source policy is missing')
     if 'bypass_pull_request_allowances' in reviews:
         need(bypass_proof is None and reviews['bypass_pull_request_allowances'] == {'users': [], 'teams': [], 'apps': []},
              'source review bypass is present or malformed')
@@ -463,7 +465,7 @@ def validate_policy(environment, branches, protection, *, bypass_proof=None, rep
          'inconsistent required CI contexts')
     # Hash only enforced policy fields, not avatar URLs or unrelated mutable API decoration.
     return digest(canonical({'users': sorted(users), 'review_count': reviews['required_approving_review_count'],
-                             'dismiss_stale_reviews': True, 'require_last_push_approval': True,
+                             'dismiss_stale_reviews': True, 'require_last_push_approval': False,
                              'review_bypass': False, 'strict_ci': True,
                              'checks': sorted((item['context'], item['app_id']) for item in required),
                              'main_only': True, 'self_review': True, 'admin_bypass': False}))
@@ -839,7 +841,7 @@ def verify_candidate(directory, ctx, selected, rehearsal=False):
 
 def policy(directory, ctx):
     verify_dispatch(ctx)
-    # This process receives ONLY the separately authorized repository-scoped read-only policy token.
+    # This process receives ONLY the separately authorized read-only policy token.
     api = GitHub(os.environ.get('ADMIN8_POLICY_READ_TOKEN'))
     environment = api.get('/environments/production')
     branches = api.get('/environments/production/deployment-branch-policies?per_page=100')

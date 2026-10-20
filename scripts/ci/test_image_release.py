@@ -203,8 +203,8 @@ def policy_fixture():
     branches = {'total_count': 1, 'branch_policies': [{'name': 'main', 'type': 'branch'}]}
     protection = {'enforce_admins': {'enabled': True}, 'allow_force_pushes': {'enabled': False},
                   'allow_deletions': {'enabled': False},
-                  'required_pull_request_reviews': {'required_approving_review_count': 1, 'dismiss_stale_reviews': True,
-                                                    'require_last_push_approval': True,
+                  'required_pull_request_reviews': {'required_approving_review_count': 0, 'dismiss_stale_reviews': True,
+                                                    'require_last_push_approval': False,
                                                     'bypass_pull_request_allowances': {'users': [], 'teams': [], 'apps': []}},
                   'required_status_checks': {'strict': True, 'contexts': ['verify', 'container'],
                                              'checks': [{'context': name, 'app_id': release.GITHUB_ACTIONS_APP_ID}
@@ -479,27 +479,28 @@ class PolicyTests(OfflineCase):
         environment['protection_rules'][0]['reviewers'][0]['reviewer']['avatar_url'] = 'decorative'
         self.assertEqual(expected, release.validate_policy(environment, branches, protection))
 
-    def test_explicit_self_review_allowance_is_bound_and_old_frozen_policy_is_refused(self):
+    def test_single_owner_policy_is_bound_and_old_frozen_policies_are_refused(self):
         values = policy_fixture()
-        fields = {'users': [77], 'review_count': 1, 'dismiss_stale_reviews': True,
-                  'require_last_push_approval': True, 'review_bypass': False, 'strict_ci': True,
+        fields = {'users': [77], 'review_count': 0, 'dismiss_stale_reviews': True,
+                  'require_last_push_approval': False, 'review_bypass': False, 'strict_ci': True,
                   'checks': [('container', release.GITHUB_ACTIONS_APP_ID), ('verify', release.GITHUB_ACTIONS_APP_ID)],
                   'main_only': True, 'self_review': True, 'admin_bypass': False}
         fingerprint = release.validate_policy(*values)
         self.assertEqual(fingerprint, release.digest(release.canonical(fields)))
-        fields['self_review'] = False
-        old_fingerprint = release.digest(release.canonical(fields))
-        self.assertNotEqual(fingerprint, old_fingerprint)
         records = dict(zip(('/environments/production', '/environments/production/deployment-branch-policies?per_page=100',
                             '/branches/main/protection'), values))
         api = mock.Mock(get=lambda path: records[path])
         release.write_json(self.tmp / 'candidate.json', {'fingerprint': 'e' * 64})
-        with mock.patch.dict(os.environ, {'ADMIN8_POLICY_READ_TOKEN': 'fixture-policy-token',
-                                         'EXPECTED_POLICY': old_fingerprint}), \
-             mock.patch.object(release, 'GitHub', return_value=api), \
-             self.assertRaisesRegex(release.Refused, 'approval/source policy changed after preflight'):
-            release.policy(self.tmp, Fixture().ctx)
-        self.assertFalse((self.tmp / 'policy.json').exists())
+        for prior in ({'self_review': False}, {'review_count': 1, 'require_last_push_approval': True}):
+            old_fingerprint = release.digest(release.canonical({**fields, **prior}))
+            self.assertNotEqual(fingerprint, old_fingerprint)
+            with self.subTest(prior=prior), \
+                 mock.patch.dict(os.environ, {'ADMIN8_POLICY_READ_TOKEN': 'fixture-policy-token',
+                                               'EXPECTED_POLICY': old_fingerprint}), \
+                 mock.patch.object(release, 'GitHub', return_value=api), \
+                 self.assertRaisesRegex(release.Refused, 'approval/source policy changed after preflight'):
+                release.policy(self.tmp, Fixture().ctx)
+            self.assertFalse((self.tmp / 'policy.json').exists())
 
     def test_self_review_allowance_must_be_present_and_literal_false(self):
         for value in (None, True, 0, 1, 0.0, '', 'false', 'true', [], {}):
@@ -523,9 +524,12 @@ class PolicyTests(OfflineCase):
             (1, ['branch_policies', 0, 'name'], '*'), (1, ['branch_policies', 0, 'type'], 'tag'),
             (1, ['total_count'], 2), (2, ['enforce_admins', 'enabled'], False),
             (2, ['allow_force_pushes', 'enabled'], True), (2, ['allow_deletions', 'enabled'], True),
-            (2, ['required_pull_request_reviews', 'required_approving_review_count'], 0),
+            (2, ['required_pull_request_reviews', 'required_approving_review_count'], 1),
+            (2, ['required_pull_request_reviews', 'required_approving_review_count'], False),
+            (2, ['required_pull_request_reviews', 'required_approving_review_count'], None),
             (2, ['required_pull_request_reviews', 'dismiss_stale_reviews'], False),
-            (2, ['required_pull_request_reviews', 'require_last_push_approval'], False),
+            (2, ['required_pull_request_reviews', 'require_last_push_approval'], True),
+            (2, ['required_pull_request_reviews', 'require_last_push_approval'], None),
             (2, ['required_pull_request_reviews', 'bypass_pull_request_allowances'], {'users': [77], 'teams': [], 'apps': []}),
             (2, ['required_status_checks', 'strict'], False), (2, ['required_status_checks', 'checks'], []),
             (2, ['required_status_checks', 'checks', 0, 'app_id'], -1),
