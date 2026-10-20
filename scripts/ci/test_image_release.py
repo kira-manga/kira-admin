@@ -87,7 +87,7 @@ def scan_report():
 
 def runtime_report():
     return {'node': '24.21.0', 'openssl': '3.5.8', 'uid': 1000, 'euid': 1000,
-            'apk': [['libcrypto3', '3.5.9-r0'], ['libssl3', '3.5.9-r0']], 'tool_paths_present': []}
+            'apk': [['libcrypto3', '3.5.9-r0'], ['libssl3', '3.5.9-r0'], ['zlib', '1.3.2-r1']], 'tool_paths_present': []}
 
 
 def inspected(image):
@@ -912,7 +912,7 @@ class SmokeProbeTests(OfflineCase):
     def test_inventory_rejects_wrong_versions_root_malformed_or_retained_payload_without_echo(self):
         cases = [(['node'], '24.18.0'), (['openssl'], '3.5.7'), (['uid'], 0), (['uid'], True),
                  (['euid'], 0), (['euid'], True), (['uid'], '1000'), (['apk'], []), (['apk', 0, 1], '3.5.7-r0'),
-                 (['apk', 1, 1], '3.5.7-r0'), (['apk', 1, 0], 'libcrypto3'),
+                 (['apk', 1, 1], '3.5.7-r0'), (['apk', 1, 0], 'libcrypto3'), (['apk', 2, 1], '1.3.2-r0'),
                  (['unexpected'], 'synthetic-private-value')]
         cases += [(['tool_paths_present'], [path]) for path in
                   ('/usr/local/lib/node_modules/npm', '/usr/local/lib/node_modules/corepack', '/opt/yarn-v1.22.22',

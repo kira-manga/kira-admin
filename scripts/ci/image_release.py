@@ -650,7 +650,7 @@ if (fs.readSync(fd, data, 0, data.length, 0) !== data.length) throw new Error('i
 fs.closeSync(fd);
 const apk = data.toString('utf8').split(/\n\n+/)
   .map(block => [block.match(/^P:(.+)$/m)?.[1], block.match(/^V:(.+)$/m)?.[1]])
-  .filter(([name]) => name === 'libcrypto3' || name === 'libssl3')
+  .filter(([name]) => name === 'libcrypto3' || name === 'libssl3' || name === 'zlib')
   .sort(([a], [b]) => a.localeCompare(b));
 const paths = [
   '/usr/local/lib/node_modules/npm', '/usr/local/lib/node_modules/corepack', '/opt/yarn-v1.22.22',
@@ -666,7 +666,7 @@ process.stdout.write(JSON.stringify({
     need(type(inventory) is dict and set(inventory) == {'node', 'openssl', 'uid', 'euid', 'apk', 'tool_paths_present'}
          and inventory['node'] == '24.21.0' and inventory['openssl'] == '3.5.8'
          and all(type(inventory[field]) is int and 0 < inventory[field] < 2**32 for field in ('uid', 'euid'))
-         and inventory['apk'] == [['libcrypto3', '3.5.9-r0'], ['libssl3', '3.5.9-r0']]
+         and inventory['apk'] == [['libcrypto3', '3.5.9-r0'], ['libssl3', '3.5.9-r0'], ['zlib', '1.3.2-r1']]
          and inventory['tool_paths_present'] == [], 'exact-image runtime inventory mismatch')
     print('PASS exact-image runtime inventory:', canonical(inventory).decode())
     return inventory
